@@ -7,6 +7,7 @@ use App\Filament\Pages\Auth\LoginCustom;
 use App\Filament\Pages\Auth\RegisterCustom;
 use App\Filament\Resources\UserResource;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
+use Carbon\Carbon;
 use Devonab\FilamentEasyFooter\EasyFooterPlugin;
 use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
 use Filament\Http\Middleware\Authenticate;
@@ -26,12 +27,53 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
 {
+    /**
+     * Fungsi untuk menangani redirect berdasarkan tanggal pendaftaran
+     */
+    protected function handleRegistrationRedirect(): string
+    {
+        $tahunPendaftaran = DB::table('tahun_pendaftarans')
+            ->where('status', 'Aktif')
+            ->first();
+
+        if (! $tahunPendaftaran) {
+            // Jika data tidak ditemukan, arahkan ke LoginCustom
+            return LoginCustom::class;
+        }
+
+        try {
+            // Parsing tanggal pendaftaran
+            $startDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_ppdb_mulai));
+            $endDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_ppdb_selesai));
+            $currentDate = Carbon::now();
+
+            // Cek apakah tanggal sekarang berada di dalam rentang pendaftaran
+            if ($currentDate->lt($startDate) || $currentDate->gt($endDate)) {
+                // Jika di luar rentang, arahkan ke LoginCustom
+                return LoginCustom::class;
+            }
+        } catch (\Exception $e) {
+            // Log error jika terjadi masalah parsing tanggal
+            Log::error('Error memproses tanggal: '.$e->getMessage());
+
+            return LoginCustom::class;
+        }
+
+        // Jika semua validasi berhasil, arahkan ke RegisterCustom
+        return RegisterCustom::class;
+    }
+
     public function panel(Panel $panel): Panel
     {
+        // Variabel default untuk halaman registrasi
+        $registerClass = $this->handleRegistrationRedirect();
+
         return $panel
             ->maxContentWidth(MaxWidth::Full)
             ->unsavedChangesAlerts()
@@ -40,7 +82,7 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogoHeight('2.6rem')
             ->topNavigation()
             ->login(LoginCustom::class)
-            ->registration(RegisterCustom::class)
+            ->registration($registerClass) // tambahkan logika pengecekan tanggal untuk ppdb seperti skrip terdahulu
             ->id('admin')
             ->profile(EditProfileCustom::class)
             ->path('')

@@ -2,38 +2,38 @@
 
 namespace App\Filament\Resources\CalonSiswaResource\Pages;
 
-use Filament\Forms\Get;
-use Filament\Forms\Set;
-use App\Models\Provinsi;
+use App\Filament\Resources\CalonSiswaResource;
 use App\Models\Kabupaten;
 use App\Models\Kecamatan;
 use App\Models\Kelurahan;
+use App\Models\Provinsi;
 use Filament\Facades\Filament;
-use Illuminate\Support\Collection;
-use Illuminate\Support\HtmlString;
-use Filament\Forms\Components\Tabs;
-use Illuminate\Support\Facades\Auth;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Wizard;
-use Filament\Forms\Components\Section;
-use Illuminate\Database\Eloquent\Model;
-use Filament\Forms\Components\TextInput;
-use Filament\Resources\Pages\EditRecord;
-use Filament\Support\Enums\IconPosition;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Wizard\Step;
 use Filament\Forms\Components\DateTimePicker;
-use App\Filament\Resources\CalonSiswaResource;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Tabs;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Wizard\Step;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
+use Filament\Resources\Pages\EditRecord;
 use Filament\Resources\Pages\EditRecord\Concerns\HasWizard;
+use Filament\Support\Enums\IconPosition;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\HtmlString;
+
 // ->submitAction(new HtmlString(Blade::render(<<<BLADE
-    //                 //     <x-filament::button
-    //                 //         type="submit"
-    //                 //         size="sm"
-    //                 //     >
-    //                 //         Kirim Formulir
-    //                 //     </x-filament::button>
-    //                 // BLADE)))
+//                 //     <x-filament::button
+//                 //         type="submit"
+//                 //         size="sm"
+//                 //     >
+//                 //         Kirim Formulir
+//                 //     </x-filament::button>
+//                 // BLADE)))
 class EditCalonSiswa extends EditRecord
 {
     protected static string $resource = CalonSiswaResource::class;
@@ -1512,91 +1512,91 @@ class EditCalonSiswa extends EditRecord
                     //     })
                     //     ->collapsible()
                     //     ->schema([
-                            // Tab Cetak Kartu Calon Peserta Didik Baru
-                            Tabs::make('Data Kartu Tes')
-                                ->tabs([
-                                    Tabs\Tab::make('Data Kartu Tes')
-                                        ->icon('heroicon-m-bell')
-                                        ->iconPosition(IconPosition::After)
-                                        ->schema([
-                                            // Data Kartu Tes
-                                            TextInput::make('tes_sesi')
-                                                ->label('Sesi Tes'),
-                                            TextInput::make('tes_ruang')
-                                                ->label('Ruang Tes'),
-                                            DateTimePicker::make('tes_akademik')
-                                                ->label('Tanggal Tes Akademik'),
-                                            DateTimePicker::make('tes_praktik')
-                                                ->label('Tanggal Tes Praktik'),
-                                        ]),
-                                ])
-                                ->columns([
-                                    'sm' => '100%',
-                                    'md' => 2,
-                                    'lg' => 2,
+                    // Tab Cetak Kartu Calon Peserta Didik Baru
+                    Tabs::make('Data Kartu Tes')
+                        ->tabs([
+                            Tabs\Tab::make('Data Kartu Tes')
+                                ->icon('heroicon-m-bell')
+                                ->iconPosition(IconPosition::After)
+                                ->schema([
+                                    // Data Kartu Tes
+                                    TextInput::make('tes_sesi')
+                                        ->label('Sesi Tes'),
+                                    TextInput::make('tes_ruang')
+                                        ->label('Ruang Tes'),
+                                    DateTimePicker::make('tes_akademik')
+                                        ->label('Tanggal Tes Akademik'),
+                                    DateTimePicker::make('tes_praktik')
+                                        ->label('Tanggal Tes Praktik'),
                                 ]),
+                        ])
+                        ->columns([
+                            'sm' => '100%',
+                            'md' => 2,
+                            'lg' => 2,
+                        ]),
 
-                            // Tab Nilai Calon Peserta Didik Baru
-                            Tabs::make('Data Nilai Tes')
-                                // ->hidden()
-                                ->tabs([
-                                    Tabs\Tab::make('Data Nilai Tes')
-                                        ->icon('heroicon-m-bell')
-                                        ->iconPosition(IconPosition::After)
-                                        ->schema([
-                                            // Data Nilai Tes Akademik IPA Calon Peserta Didik Baru
-                                            TextInput::make('nilai_ipa')
-                                                ->label('Nilai Tes IPA')
-                                                ->numeric(),
-                                            // Data Nilai Tes Akademik IPS Calon Peserta Didik Baru
-                                            TextInput::make('nilai_ips')
-                                                ->label('Nilai Tes IPS')
-                                                ->numeric(),
-                                            // Data Nilai Tes Akademik Matematika Calon Peserta Didik Baru
-                                            TextInput::make('nilai_matematika')
-                                                ->label('Nilai Tes Matematika')
-                                                ->numeric(),
-                                            // Data Nilai Tes Akademik Bahasa Indonesia Calon Peserta Didik Baru
-                                            TextInput::make('nilai_indonesia')
-                                                ->label('Nilai Tes Bahasa Indonesia')
-                                                ->numeric(),
-                                            // Data Nilai Tes Akademik Bahasa Inggris Calon Peserta Didik Baru
-                                            TextInput::make('nilai_inggris')
-                                                ->label('Nilai Tes Bahasa Inggris')
-                                                ->numeric(),
-                                            // Data Nilai Tes Akademik Bahasa Arab Calon Peserta Didik Baru
-                                            TextInput::make('nilai_arab')
-                                                ->label('Nilai Tes Bahasa Arab')
-                                                ->numeric(),
-                                            // Data Bobot Nilai Tes Akademik Calon Peserta Didik Baru
-                                            TextInput::make('bobot_nilai_akademik')
-                                                ->label('Bobot Nilai Tes Akademik')
-                                                ->numeric(),
-                                            // Data Bobot Nilai Tes Praktik Calon Peserta Didik Baru
-                                            TextInput::make('bobot_nilai_praktik')
-                                                ->label('Bobot Nilai Tes Praktik')
-                                                ->numeric(),
-                                            // Data Nilai Tes Akademik Calon Peserta Didik Baru
-                                            TextInput::make('nilai_akademik')
-                                                ->label('Nilai Tes Akademik')
-                                                ->numeric(),
-                                            // Data Nilai Tes Praktik Calon Peserta Didik Baru
-                                            TextInput::make('nilai_praktik')
-                                                ->label('Nilai Tes Praktik')
-                                                ->numeric(),
-                                        ]),
-                                ])
-                                ->columns([
-                                    'sm' => '100%',
-                                    'md' => 2,
-                                    'lg' => 2,
+                    // Tab Nilai Calon Peserta Didik Baru
+                    Tabs::make('Data Nilai Tes')
+                        // ->hidden()
+                        ->tabs([
+                            Tabs\Tab::make('Data Nilai Tes')
+                                ->icon('heroicon-m-bell')
+                                ->iconPosition(IconPosition::After)
+                                ->schema([
+                                    // Data Nilai Tes Akademik IPA Calon Peserta Didik Baru
+                                    TextInput::make('nilai_ipa')
+                                        ->label('Nilai Tes IPA')
+                                        ->numeric(),
+                                    // Data Nilai Tes Akademik IPS Calon Peserta Didik Baru
+                                    TextInput::make('nilai_ips')
+                                        ->label('Nilai Tes IPS')
+                                        ->numeric(),
+                                    // Data Nilai Tes Akademik Matematika Calon Peserta Didik Baru
+                                    TextInput::make('nilai_matematika')
+                                        ->label('Nilai Tes Matematika')
+                                        ->numeric(),
+                                    // Data Nilai Tes Akademik Bahasa Indonesia Calon Peserta Didik Baru
+                                    TextInput::make('nilai_indonesia')
+                                        ->label('Nilai Tes Bahasa Indonesia')
+                                        ->numeric(),
+                                    // Data Nilai Tes Akademik Bahasa Inggris Calon Peserta Didik Baru
+                                    TextInput::make('nilai_inggris')
+                                        ->label('Nilai Tes Bahasa Inggris')
+                                        ->numeric(),
+                                    // Data Nilai Tes Akademik Bahasa Arab Calon Peserta Didik Baru
+                                    TextInput::make('nilai_arab')
+                                        ->label('Nilai Tes Bahasa Arab')
+                                        ->numeric(),
+                                    // Data Bobot Nilai Tes Akademik Calon Peserta Didik Baru
+                                    TextInput::make('bobot_nilai_akademik')
+                                        ->label('Bobot Nilai Tes Akademik')
+                                        ->numeric(),
+                                    // Data Bobot Nilai Tes Praktik Calon Peserta Didik Baru
+                                    TextInput::make('bobot_nilai_praktik')
+                                        ->label('Bobot Nilai Tes Praktik')
+                                        ->numeric(),
+                                    // Data Nilai Tes Akademik Calon Peserta Didik Baru
+                                    TextInput::make('nilai_akademik')
+                                        ->label('Nilai Tes Akademik')
+                                        ->numeric(),
+                                    // Data Nilai Tes Praktik Calon Peserta Didik Baru
+                                    TextInput::make('nilai_praktik')
+                                        ->label('Nilai Tes Praktik')
+                                        ->numeric(),
                                 ]),
-                        // ])
-                        // ->columns([
-                        //     'sm' => '100%',
-                        //     'md' => '100%',
-                        //     'lg' => 2,
-                        // ]),
+                        ])
+                        ->columns([
+                            'sm' => '100%',
+                            'md' => 2,
+                            'lg' => 2,
+                        ]),
+                    // ])
+                    // ->columns([
+                    //     'sm' => '100%',
+                    //     'md' => '100%',
+                    //     'lg' => 2,
+                    // ]),
                 ])
                 ->columnSpanFull(),
         ];
