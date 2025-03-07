@@ -2,20 +2,30 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\ProvinsiResource\Pages;
-use App\Filament\Resources\ProvinsiResource\RelationManagers;
-use App\Models\Provinsi;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use App\Models\Provinsi;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Resources\Resource;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\ProvinsiResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\ProvinsiResource\RelationManagers;
 
 class ProvinsiResource extends Resource
 {
     protected static ?string $model = Provinsi::class;
+
+    protected static ?string $navigationLabel = 'Provinsi';
+
+    protected static ?string $label = 'Provinsi';
+
+    protected static ?string $navigationGroup = 'Wilayah';
+
+    protected static ?int $navigationSort = 2;
+
+    protected static bool $shouldRegisterNavigation = true;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 

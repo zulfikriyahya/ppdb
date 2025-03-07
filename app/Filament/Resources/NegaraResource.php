@@ -2,20 +2,30 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\NegaraResource\Pages;
-use App\Filament\Resources\NegaraResource\RelationManagers;
-use App\Models\Negara;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use App\Models\Negara;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Resources\Resource;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\NegaraResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\NegaraResource\RelationManagers;
 
 class NegaraResource extends Resource
 {
     protected static ?string $model = Negara::class;
+
+    protected static ?string $navigationLabel = 'Negara';
+
+    protected static ?string $label = 'Negara';
+
+    protected static ?string $navigationGroup = 'Wilayah';
+
+    protected static ?int $navigationSort = 1;
+
+    protected static bool $shouldRegisterNavigation = true;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 

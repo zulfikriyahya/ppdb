@@ -2,20 +2,30 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\JalurPendaftaranResource\Pages;
-use App\Filament\Resources\JalurPendaftaranResource\RelationManagers;
-use App\Models\JalurPendaftaran;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use App\Models\JalurPendaftaran;
+use Filament\Resources\Resource;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\JalurPendaftaranResource\Pages;
+use App\Filament\Resources\JalurPendaftaranResource\RelationManagers;
 
 class JalurPendaftaranResource extends Resource
 {
     protected static ?string $model = JalurPendaftaran::class;
+
+    protected static ?string $navigationLabel = 'Pengguna';
+
+    protected static ?string $label = 'Pengguna';
+
+    protected static ?string $navigationGroup = 'Referensi';
+
+    protected static ?int $navigationSort = 4;
+
+    protected static bool $shouldRegisterNavigation = true;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 

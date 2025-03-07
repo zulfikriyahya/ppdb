@@ -2,20 +2,30 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\PimpinanResource\Pages;
-use App\Filament\Resources\PimpinanResource\RelationManagers;
-use App\Models\Pimpinan;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use App\Models\Pimpinan;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Resources\Resource;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\PimpinanResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\PimpinanResource\RelationManagers;
 
 class PimpinanResource extends Resource
 {
     protected static ?string $model = Pimpinan::class;
+
+    protected static ?string $navigationLabel = 'Pengguna';
+
+    protected static ?string $label = 'Pengguna';
+
+    protected static ?string $navigationGroup = 'Referensi';
+
+    protected static ?int $navigationSort = 4;
+
+    protected static bool $shouldRegisterNavigation = true;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 

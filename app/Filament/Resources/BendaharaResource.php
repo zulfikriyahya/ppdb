@@ -2,20 +2,30 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\BendaharaResource\Pages;
-use App\Filament\Resources\BendaharaResource\RelationManagers;
-use App\Models\Bendahara;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Forms\Form;
+use App\Models\Bendahara;
 use Filament\Tables\Table;
+use Filament\Resources\Resource;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\BendaharaResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\BendaharaResource\RelationManagers;
 
 class BendaharaResource extends Resource
 {
     protected static ?string $model = Bendahara::class;
+
+    protected static ?string $navigationLabel = 'Pengguna';
+
+    protected static ?string $label = 'Pengguna';
+
+    protected static ?string $navigationGroup = 'Referensi';
+
+    protected static ?int $navigationSort = 4;
+
+    protected static bool $shouldRegisterNavigation = true;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 

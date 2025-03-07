@@ -2,20 +2,30 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\KabupatenResource\Pages;
-use App\Filament\Resources\KabupatenResource\RelationManagers;
-use App\Models\Kabupaten;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Forms\Form;
+use App\Models\Kabupaten;
 use Filament\Tables\Table;
+use Filament\Resources\Resource;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\KabupatenResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\KabupatenResource\RelationManagers;
 
 class KabupatenResource extends Resource
 {
     protected static ?string $model = Kabupaten::class;
+
+    protected static ?string $navigationLabel = 'Kabupaten';
+
+    protected static ?string $label = 'Kabupaten';
+
+    protected static ?string $navigationGroup = 'Wilayah';
+
+    protected static ?int $navigationSort = 3;
+
+    protected static bool $shouldRegisterNavigation = true;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 

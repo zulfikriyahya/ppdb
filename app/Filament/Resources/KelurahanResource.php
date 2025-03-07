@@ -2,20 +2,30 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\KelurahanResource\Pages;
-use App\Filament\Resources\KelurahanResource\RelationManagers;
-use App\Models\Kelurahan;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Forms\Form;
+use App\Models\Kelurahan;
 use Filament\Tables\Table;
+use Filament\Resources\Resource;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\KelurahanResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\KelurahanResource\RelationManagers;
 
 class KelurahanResource extends Resource
 {
     protected static ?string $model = Kelurahan::class;
+
+    protected static ?string $navigationLabel = 'Kelurahan';
+
+    protected static ?string $label = 'Kelurahan';
+
+    protected static ?string $navigationGroup = 'Wilayah';
+
+    protected static ?int $navigationSort = 5;
+
+    protected static bool $shouldRegisterNavigation = true;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
