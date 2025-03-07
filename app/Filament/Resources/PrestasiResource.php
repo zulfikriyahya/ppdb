@@ -17,13 +17,13 @@ class PrestasiResource extends Resource
 {
     protected static ?string $model = Prestasi::class;
 
-    protected static ?string $navigationLabel = 'Pengguna';
+    protected static ?string $navigationLabel = 'Prestasi';
 
-    protected static ?string $label = 'Pengguna';
+    protected static ?string $label = 'Prestasi';
 
     protected static ?string $navigationGroup = 'Referensi';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 5;
 
     protected static bool $shouldRegisterNavigation = true;
 

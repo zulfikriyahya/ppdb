@@ -17,13 +17,13 @@ class TahunPelajaranResource extends Resource
 {
     protected static ?string $model = TahunPelajaran::class;
 
-    protected static ?string $navigationLabel = 'Pengguna';
+    protected static ?string $navigationLabel = 'Tahun Pelajaran';
 
-    protected static ?string $label = 'Pengguna';
+    protected static ?string $label = 'Tahun Pelajaran';
 
     protected static ?string $navigationGroup = 'Referensi';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 1;
 
     protected static bool $shouldRegisterNavigation = true;
 

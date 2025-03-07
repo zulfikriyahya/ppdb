@@ -17,13 +17,13 @@ class JalurPendaftaranResource extends Resource
 {
     protected static ?string $model = JalurPendaftaran::class;
 
-    protected static ?string $navigationLabel = 'Pengguna';
+    protected static ?string $navigationLabel = 'Jalur Pendaftaran';
 
-    protected static ?string $label = 'Pengguna';
+    protected static ?string $label = 'Jalur Pendaftaran';
 
     protected static ?string $navigationGroup = 'Referensi';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 2;
 
     protected static bool $shouldRegisterNavigation = true;
 

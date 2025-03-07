@@ -17,13 +17,13 @@ class SekolahResource extends Resource
 {
     protected static ?string $model = Sekolah::class;
 
-    protected static ?string $navigationLabel = 'Pengguna';
+    protected static ?string $navigationLabel = 'Instansi';
 
-    protected static ?string $label = 'Pengguna';
+    protected static ?string $label = 'Instansi';
 
     protected static ?string $navigationGroup = 'Referensi';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 3;
 
     protected static bool $shouldRegisterNavigation = true;
 

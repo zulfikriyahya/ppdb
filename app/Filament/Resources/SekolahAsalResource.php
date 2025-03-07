@@ -17,9 +17,9 @@ class SekolahAsalResource extends Resource
 {
     protected static ?string $model = SekolahAsal::class;
 
-    protected static ?string $navigationLabel = 'Pengguna';
+    protected static ?string $navigationLabel = 'Sekolah Asal';
 
-    protected static ?string $label = 'Pengguna';
+    protected static ?string $label = 'Sekolah Asal';
 
     protected static ?string $navigationGroup = 'Referensi';
 

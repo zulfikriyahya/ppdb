@@ -17,13 +17,13 @@ class KelasResource extends Resource
 {
     protected static ?string $model = Kelas::class;
 
-    protected static ?string $navigationLabel = 'Pengguna';
+    protected static ?string $navigationLabel = 'Kelas';
 
-    protected static ?string $label = 'Pengguna';
+    protected static ?string $label = 'Kelas';
 
     protected static ?string $navigationGroup = 'Referensi';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 6;
 
     protected static bool $shouldRegisterNavigation = true;
 

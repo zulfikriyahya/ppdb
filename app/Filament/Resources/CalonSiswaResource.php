@@ -17,13 +17,13 @@ class CalonSiswaResource extends Resource
 {
     protected static ?string $model = CalonSiswa::class;
 
-    protected static ?string $navigationLabel = 'Pengguna';
+    protected static ?string $navigationLabel = 'Formulir Pendaftaran';
 
-    protected static ?string $label = 'Pengguna';
+    protected static ?string $label = 'Formulir Pendaftaran';
 
-    protected static ?string $navigationGroup = 'Referensi';
+    protected static ?string $navigationGroup = 'Formulir';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 1;
 
     protected static bool $shouldRegisterNavigation = true;
 
