@@ -1,0 +1,286 @@
+models:
+  # Tabel Pimpinan
+  Pimpinan:
+    nama: string
+    nip: string nullable
+    periode_awal: date nullable
+    periode_akhir: date nullable
+    berkas_foto: string nullable
+    berkas_tte: string nullable
+    status: enum('Aktif','Nonaktif')
+    relationships:
+      hasMany: CalonSiswa
+      belongsTo: #
+
+  # Tabel Ketua
+  Ketua:
+    nama: string
+    nip: string nullable
+    periode_awal: date nullable
+    periode_akhir: date nullable
+    berkas_foto: string nullable
+    berkas_tte: string nullable
+    status: enum('Aktif','Nonaktif')
+    relationships:
+      hasMany: CalonSiswa
+      belongsTo: #
+
+  # Tabel Sekretaris
+  Sekretaris:
+    nama: string
+    nip: string nullable
+    periode_awal: date nullable
+    periode_akhir: date nullable
+    berkas_foto: string nullable
+    berkas_tte: string nullable
+    status: enum('Aktif','Nonaktif')
+    relationships:
+      hasMany: CalonSiswa
+      belongsTo: #
+
+  # Tabel Bendahara
+  Bendahara:
+    nama: string
+    nip: string nullable
+    periode_awal: date nullable
+    periode_akhir: date nullable
+    berkas_foto: string nullable
+    berkas_tte: string nullable
+    status: enum('Aktif','Nonaktif')
+    relationships:
+      hasMany: CalonSiswa
+      belongsTo: #
+
+  # Tabel Negara
+  Negara:
+    nama: string
+    bendera: string nullable
+    relationships:
+      hasMany: Provinsi, CalonSiswa, Sekolah, SekolahAsal
+      # belongsTo: #
+
+  # Tabel Provinsi
+  Provinsi:
+    nama: string
+    negara_id: id foreign:negaras
+    relationships:
+      hasMany: Kabupaten, CalonSiswa, Sekolah, SekolahAsal
+      belongsTo: Negara
+
+  # Tabel Kabupaten
+  Kabupaten:
+    nama: string
+    provinsi_id: id foreign:provinsis
+    relationships:
+      hasMany: Kecamatan, CalonSiswa, Sekolah, SekolahAsal
+      belongsTo: Provinsi
+
+  # Tabel Kecamatan
+  Kecamatan:
+    nama: string
+    kabupaten_id: id foreign:kabupatens
+    relationships:
+      hasMany: Kelurahan, CalonSiswa, Sekolah, SekolahAsal
+      belongsTo: Kabupaten
+
+  # Tabel Kelurahan
+  Kelurahan:
+    nama: string
+    kecamatan_id: id foreign:kecamatans
+    relationships:
+      hasMany: CalonSiswa, Sekolah, SekolahAsal
+      belongsTo: Kecamatan
+
+  # Tabel Pengumuman
+  Informasi:
+    judul: string
+    isi: string
+    gambar: string nullable
+    tanggal: date
+    tahun_pelajaran_id: id foreign:tahun_pelajarans
+    status: enum('Published','Draft')
+    relationships:
+      hasMany: CalonSiswa
+      belongsTo: TahunPelajaran
+
+  # Tabel Sekolah
+  Sekolah:
+    nama: string
+    npsn: string nullable
+    nss: string nullable
+    logo: string nullable
+    pimpinan_id: id foreign:pimpinans
+    akreditasi: enum('A','B','C','D') nullable
+    alamat: string
+    negara_id: id foreign:negaras
+    provinsi_id: id foreign:provinsis
+    kabupaten_id: id foreign:kabupatens
+    kecamatan_id: id foreign:kecamatans
+    kelurahan_id: id foreign:kelurahans
+    website: string nullable
+    telepon: string nullable
+    email: string nullable
+    relationships:
+      hasMany: CalonSiswa
+      belongsTo: Pimpinan, Negara, Provinsi, Kabupaten, Kecamatan, Kelurahan
+
+  # Tabel Sekolah Asal
+  SekolahAsal:
+    nama: string
+    npsn: string nullable
+    nss: string nullable
+    logo: string nullable
+    akreditasi: enum('A','B','C','D') nullable
+    alamat: string nullable
+    negara_id: id foreign:negaras nullable
+    provinsi_id: id foreign:provinsis nullable
+    kabupaten_id: id foreign:kabupatens nullable
+    kecamatan_id: id foreign:kecamatans nullable
+    kelurahan_id: id foreign:kelurahans nullable
+    website: string nullable
+    telepon: string nullable
+    email: string nullable
+    relationships:
+      hasMany: CalonSiswa
+      belongsTo: Negara, Provinsi, Kabupaten, Kecamatan, Kelurahan
+
+  # Tabel Tahun Pelajaran
+  TahunPelajaran:
+    nama: string
+    tanggal_pendaftaran_mulai: date
+    tanggal_pengumuman_jalur_prestasi: datetime
+    tanggal_tes_akademik: date
+    tanggal_tes_praktik: date
+    tanggal_pengumuman_jalur_reguler: datetime
+    tanggal_registrasi_berkas: date
+    tanggal_pendaftaran_selesai: date
+    kuantitas: integer
+    status: enum('Aktif','Nonaktif')
+    relationships:
+      hasMany: CalonSiswa
+      # belongsTo: #
+
+  # Tabel Prestasi
+  Prestasi:
+    nama: string
+    tingkat: integer
+    kategori: string
+    peringkat: integer
+    relationships:
+      hasMany: CalonSiswa
+      # belongsTo: #
+
+  # Tabel Jalur Pendaftaran
+  JalurPendaftaran:
+    nama: string
+    kuantitas: integer
+    tahun_pelajaran_id: id foreign:tahun_pelajarans
+    relationships:
+      hasMany: CalonSiswa
+      belongsTo: TahunPelajaran
+
+  # Tabel Kelas
+  Kelas:
+    nama: string
+    total_pria: integer nullabel
+    total_wanita: integer nullabel
+    tahun_pelajaran_id: id foreign:tahun_pelajarans
+    relationships:
+      hasMany: CalonSiswa
+      belongsTo: TahunPelajaran
+
+  # Tabel Calon Siswa
+  CalonSiswa:
+    nama: string
+    nik: string
+    nisn: string
+    tempat_lahir: string
+    tanggal_lahir: date
+    tahun_lulus: date
+    jenis_kelamin: enum('Pria','Wanita')
+    golongan_darah: enum('A-','A+','B-','b+','AB-','AB+','O')
+    agama: enum('Islam','Kristen Katholik','Kristen Protestan','Hindu','Buddha','Konghucu')
+    anak_ke: integer
+    jumlah_saudara: integer
+    tinggal_bersama: enum('Orang Tua','Saudara','Panti Asuhan','Kost')
+    jarak_ke_sekolah: enum('0 - 1 Km','1 - 5 Km','5 - 10 Km','10 - 50 Km')
+    disabilitas: enum('Non Disabilitas','Fisik','Penglihatan','Pendengaran','Kognitif','Mental','Lainnya')
+    tinggi_badan: integer nullable
+    berat_badan: integer nullable
+    no_kip: string nullable
+    siswa_telepon: string nullable
+    siswa_alamat: string
+    siswa_negara_id: id foreign:negaras
+    siswa_provinsi_id: id foreign:provinsis
+    siswa_kabupaten_id: id foreign:kabupatens
+    siswa_kecamatan_id: id foreign:kecamatans
+    siswa_kelurahan_id: id foreign:kelurahans
+    berkas_foto: string
+    berkas_kk: string
+    berkas_akta: string
+    berkas_kip: string nullable # Ada Jika Nomor KIP Terisi
+    berkas_nisn: string nullable # Ada Jika Nomor NISN Terisi
+    berkas_skbb: string
+    berkas_skab: string
+    berkas_prestasi: string nullable # Ada Jika Pendaftar Jalur Prestasi
+    ibu_nama: string
+    ibu_telepon: string nullable
+    ibu_pekerjaan: string nullable
+    ibu_status: enum('Hidup','Meninggal')
+    # Muncul Jika Alamat Tidak Sama dengan Alamat Siswa && Isi Otomatis Ketika Alamat Sesuai dengan Alamat Siswa
+    ibu_alamat: string
+    ibu_negara_id: id foreign:negaras
+    ibu_provinsi_id: id foreign:provinsis
+    ibu_kabupaten_id: id foreign:kabupatens
+    ibu_kecamatan_id: id foreign:kecamatans
+    ibu_kelurahan_id: id foreign:kelurahans
+    ayah_nama: string
+    ayah_telepon: string nullable
+    ayah_pekerjaan: string nullable
+    ayah_status: enum('Hidup','Meninggal')
+    # Muncul Jika Alamat Tidak Sama dengan Alamat Siswa && Isi Otomatis Ketika Alamat Sesuai dengan Alamat Siswa
+    ayah_alamat: string
+    ayah_negara_id: id foreign:negaras
+    ayah_provinsi_id: id foreign:provinsis
+    ayah_kabupaten_id: id foreign:kabupatens
+    ayah_kecamatan_id: id foreign:kecamatans
+    ayah_kelurahan_id: id foreign:kelurahans
+    wali_nama: string nullable
+    wali_telepon: string nullable
+    wali_pekerjaan: string nullable
+    wali_status: enum('Hidup','Meninggal') nullable
+    # Muncul Jika Alamat Tidak Sama dengan Alamat Siswa && Isi Otomatis Ketika Alamat Sesuai dengan Alamat Siswa
+    wali_alamat: string nullable
+    wali_negara_id: id foreign:negaras nullable
+    wali_provinsi_id: id foreign:provinsis nullable
+    wali_kabupaten_id: id foreign:kabupatens nullable
+    wali_kecamatan_id: id foreign:kecamatans nullable
+    wali_kelurahan_id: id foreign:kelurahans nullable
+    sekolah_asal_id: id foreign:sekolah_asals
+    jalur_pendaftaran_id: id foreign:jalur_pendaftarans
+    prestasi_id: id foreign:prestasis nullable # Muncul Juka Jalur Pendaftaran yang dipilih Jalur Prestasi
+    peminatan_ekstrakurikuler: enum('Pramuka','Paskibra','Adiwiyata','Olahraga','Kesenian','Kerohanian','Lainnya') # Siswa Dapat Memilih Maksimal 2 Ekstrakurikuler
+    peminatan_pelajaran: enum('IPA','IPS','Matematika','Bahasa Indonesia','Bahasa Arab','Bahasa Inggris','Lainnya') # Siswa Dapat Memilih Maksimal 2 Mata Pelajaran
+    nilai_ipa: integer nullable # Hanya Admin Yang Dapat Mengisi Ini
+    nilai_ips: integer nullable # Hanya Admin Yang Dapat Mengisi Ini
+    nilai_bind: integer nullable # Hanya Admin Yang Dapat Mengisi Ini
+    nilai_mtk: integer nullable # Hanya Admin Yang Dapat Mengisi Ini
+    bobot_nilai_akademik: integer nullable # Hanya Admin Yang Dapat Mengisi Ini
+    bobot_nilai_praktik: integer nullable # Hanya Admin Yang Dapat Mengisi Ini
+    nilai_akademik: integer nullable # Hanya Admin Yang Dapat Mengisi Ini
+    nilai_praktik: integer nullable # Hanya Admin Yang Dapat Mengisi Ini
+    status_pendaftaran: enum('Diproses','Berkas Tidak Lengkap','Diverifikasi','Ditolak','Diterima','Diterima Di Kelas Reguler','Diterima Di Kelas Unggulan') nullable # Hanya Admin Yang Dapat Mengisi Ini
+    kelas_id: id foreign:kelas nullable # Hanya Admin Yang Dapat Mengisi Ini
+    tes_sesi: string nullable # Hanya Admin Yang Dapat Mengisi Ini
+    tes_ruang: string nullable # Hanya Admin Yang Dapat Mengisi Ini
+    tes_akademik: datetime nullable # Hanya Admin Yang Dapat Mengisi Ini
+    tes_praktik: datetime nullable # Hanya Admin Yang Dapat Mengisi Ini
+    relationships:
+      # hasMany: #
+      belongsTo: JalurPendaftaran, Negara, Provinsi, Kabupaten, Kecamatan, Kelurahan, Kelas, SekolahAsal, Prestasi
+# Report
+# Formulir Pendaftaran
+# Kartu Tes
+# Surat Keterangan Diterima
+# Pakta Integritas
+#
