@@ -12,7 +12,7 @@ Sebuah aplikasi berbasis web untuk proses penerimaan siswa baru di MTs Negeri 1 
 
 ## Persyaratan
 
-- PHP >= 8.0
+- PHP >= 8.3
 - Composer
 - MySQL
 - Web server (Apache, Nginx, dll.)
