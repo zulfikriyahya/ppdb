@@ -17,13 +17,13 @@ class PimpinanResource extends Resource
 {
     protected static ?string $model = Pimpinan::class;
 
-    protected static ?string $navigationLabel = 'Pengguna';
+    protected static ?string $navigationLabel = 'Penanggung Jawab';
 
-    protected static ?string $label = 'Pengguna';
+    protected static ?string $label = 'Penanggung Jawab';
 
-    protected static ?string $navigationGroup = 'Referensi';
+    protected static ?string $navigationGroup = 'Eksekutif';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 1;
 
     protected static bool $shouldRegisterNavigation = true;
 

@@ -17,13 +17,13 @@ class SekretarisResource extends Resource
 {
     protected static ?string $model = Sekretaris::class;
 
-    protected static ?string $navigationLabel = 'Pengguna';
+    protected static ?string $navigationLabel = 'Sekretaris';
 
-    protected static ?string $label = 'Pengguna';
+    protected static ?string $label = 'Sekretaris';
 
-    protected static ?string $navigationGroup = 'Referensi';
+    protected static ?string $navigationGroup = 'Eksekutif';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 3;
 
     protected static bool $shouldRegisterNavigation = true;
 

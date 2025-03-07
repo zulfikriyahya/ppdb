@@ -17,13 +17,13 @@ class KetuaResource extends Resource
 {
     protected static ?string $model = Ketua::class;
 
-    protected static ?string $navigationLabel = 'Pengguna';
+    protected static ?string $navigationLabel = 'Ketua';
 
-    protected static ?string $label = 'Pengguna';
+    protected static ?string $label = 'Ketua';
 
-    protected static ?string $navigationGroup = 'Referensi';
+    protected static ?string $navigationGroup = 'Eksekutif';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 2;
 
     protected static bool $shouldRegisterNavigation = true;
 

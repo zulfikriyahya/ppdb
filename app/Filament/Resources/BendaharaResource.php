@@ -17,11 +17,11 @@ class BendaharaResource extends Resource
 {
     protected static ?string $model = Bendahara::class;
 
-    protected static ?string $navigationLabel = 'Pengguna';
+    protected static ?string $navigationLabel = 'Bendahara';
 
-    protected static ?string $label = 'Pengguna';
+    protected static ?string $label = 'Bendahara';
 
-    protected static ?string $navigationGroup = 'Referensi';
+    protected static ?string $navigationGroup = 'Eksekutif';
 
     protected static ?int $navigationSort = 4;
 
