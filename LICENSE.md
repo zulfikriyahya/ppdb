@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2025 [Yahya Zulfikri]
+Copyright (c) 2025 Yahya Zulfikri
 
 Dengan ini diberikan izin, tanpa biaya, kepada siapa pun yang memperoleh salinan dari perangkat lunak ini dan file dokumentasi terkait (Perangkat Lunak), untuk berurusan dalam Perangkat Lunak tanpa batasan, termasuk tanpa batasan hak untuk menggunakan, menyalin, memodifikasi, menggabungkan, menerbitkan, mendistribusikan, memberikan lisensi, dan/atau menjual salinan Perangkat Lunak, dan untuk mengizinkan orang-orang kepada siapa Perangkat Lunak diberikan, dengan ketentuan berikut:
 
