@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('judul');
             $table->string('isi');
             $table->string('gambar')->nullable();
-            $table->date('tanggal');
+            $table->dateTime('tanggal');
             $table->foreignId('tahun_pelajaran_id')->constrained('tahun_pelajarans')->cascadeOnDelete()->cascadeOnUpdate();
             $table->enum('status', ['Publish', 'Draft'])->default('Publish');
             $table->timestamps();

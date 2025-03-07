@@ -84,8 +84,10 @@ return new class extends Migration
             $table->enum('peminatan_pelajaran', ['IPA', 'IPS', 'Matematika', 'Bahasa Indonesia', 'Bahasa Arab', 'Bahasa Inggris', 'Lainnya']);
             $table->integer('nilai_ipa')->nullable();
             $table->integer('nilai_ips')->nullable();
-            $table->integer('nilai_bind')->nullable();
-            $table->integer('nilai_mtk')->nullable();
+            $table->integer('nilai_matematika')->nullable();
+            $table->integer('nilai_indonesia')->nullable();
+            $table->integer('nilai_inggris')->nullable();
+            $table->integer('nilai_arab')->nullable();
             $table->integer('bobot_nilai_akademik')->nullable();
             $table->integer('bobot_nilai_praktik')->nullable();
             $table->integer('nilai_akademik')->nullable();
@@ -94,8 +96,10 @@ return new class extends Migration
             $table->foreignId('kelas_id')->nullable()->constrained('kelas')->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('tes_sesi')->nullable();
             $table->string('tes_ruang')->nullable();
-            $table->dateTime('tes_akademik')->nullable();
-            $table->dateTime('tes_praktik')->nullable();
+            $table->dateTime('tes_akademik_mulai')->nullable();
+            $table->dateTime('tes_akademik_selesai')->nullable();
+            $table->dateTime('tes_praktik_mulai')->nullable();
+            $table->dateTime('tes_praktik_selesai')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

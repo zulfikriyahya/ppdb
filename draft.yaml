@@ -96,7 +96,7 @@ models:
     judul: string
     isi: string
     gambar: string nullable
-    tanggal: date
+    tanggal: datetime
     tahun_pelajaran_id: id foreign:tahun_pelajarans
     status: enum('Published','Draft')
     relationships:
@@ -147,13 +147,18 @@ models:
   # Tabel Tahun Pelajaran
   TahunPelajaran:
     nama: string
-    tanggal_pendaftaran_mulai: date
-    tanggal_pengumuman_jalur_prestasi: datetime
-    tanggal_tes_akademik: date
-    tanggal_tes_praktik: date
-    tanggal_pengumuman_jalur_reguler: datetime
-    tanggal_registrasi_berkas: date
-    tanggal_pendaftaran_selesai: date
+    tanggal_pendaftaran_mulai: datetime
+    tanggal_pengumuman_jalur_prestasi_mulai: datetime
+    tanggal_pengumuman_jalur_prestasi_selesai: datetime
+    tanggal_tes_akademik_mulai: datetime
+    tanggal_tes_akademik_selesai: datetime
+    tanggal_tes_praktik_mulai: datetime
+    tanggal_tes_praktik_selesai: datetime
+    tanggal_pengumuman_jalur_reguler_mulai: datetime
+    tanggal_pengumuman_jalur_reguler_selesai: datetime
+    tanggal_registrasi_berkas_mulai: datetime
+    tanggal_registrasi_berkas_selesai: datetime
+    tanggal_pendaftaran_selesai: datetime
     kuantitas: integer
     status: enum('Aktif','Nonaktif')
     relationships:
@@ -182,8 +187,9 @@ models:
   # Tabel Kelas
   Kelas:
     nama: string
-    total_pria: integer nullabel
-    total_wanita: integer nullabel
+    kuantitas_pria: integer nullabel
+    kuantitas_wanita: integer nullabel
+    kuantitas: integer nullabel
     tahun_pelajaran_id: id foreign:tahun_pelajarans
     relationships:
       hasMany: CalonSiswa
@@ -263,8 +269,10 @@ models:
     peminatan_pelajaran: enum('IPA','IPS','Matematika','Bahasa Indonesia','Bahasa Arab','Bahasa Inggris','Lainnya') # Siswa Dapat Memilih Maksimal 2 Mata Pelajaran
     nilai_ipa: integer nullable # Hanya Admin Yang Dapat Mengisi Ini
     nilai_ips: integer nullable # Hanya Admin Yang Dapat Mengisi Ini
-    nilai_bind: integer nullable # Hanya Admin Yang Dapat Mengisi Ini
     nilai_mtk: integer nullable # Hanya Admin Yang Dapat Mengisi Ini
+    nilai_indonesia: integer nullable # Hanya Admin Yang Dapat Mengisi Ini
+    nilai_inggris: integer nullable # Hanya Admin Yang Dapat Mengisi Ini
+    nilai_arab: integer nullable # Hanya Admin Yang Dapat Mengisi Ini
     bobot_nilai_akademik: integer nullable # Hanya Admin Yang Dapat Mengisi Ini
     bobot_nilai_praktik: integer nullable # Hanya Admin Yang Dapat Mengisi Ini
     nilai_akademik: integer nullable # Hanya Admin Yang Dapat Mengisi Ini
@@ -273,8 +281,10 @@ models:
     kelas_id: id foreign:kelas nullable # Hanya Admin Yang Dapat Mengisi Ini
     tes_sesi: string nullable # Hanya Admin Yang Dapat Mengisi Ini
     tes_ruang: string nullable # Hanya Admin Yang Dapat Mengisi Ini
-    tes_akademik: datetime nullable # Hanya Admin Yang Dapat Mengisi Ini
-    tes_praktik: datetime nullable # Hanya Admin Yang Dapat Mengisi Ini
+    tes_akademik_mulai: datetime nullable # Hanya Admin Yang Dapat Mengisi Ini
+    tes_akademik_selesai: datetime nullable # Hanya Admin Yang Dapat Mengisi Ini
+    tes_praktik_mulai: datetime nullable # Hanya Admin Yang Dapat Mengisi Ini
+    tes_praktik_selesai: datetime nullable # Hanya Admin Yang Dapat Mengisi Ini
     relationships:
       # hasMany: #
       belongsTo: JalurPendaftaran, Negara, Provinsi, Kabupaten, Kecamatan, Kelurahan, Kelas, SekolahAsal, Prestasi

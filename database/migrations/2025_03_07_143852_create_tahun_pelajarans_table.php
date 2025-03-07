@@ -16,13 +16,18 @@ return new class extends Migration
         Schema::create('tahun_pelajarans', function (Blueprint $table) {
             $table->id();
             $table->string('nama');
-            $table->date('tanggal_pendaftaran_mulai');
-            $table->dateTime('tanggal_pengumuman_jalur_prestasi');
-            $table->date('tanggal_tes_akademik');
-            $table->date('tanggal_tes_praktik');
-            $table->dateTime('tanggal_pengumuman_jalur_reguler');
-            $table->date('tanggal_registrasi_berkas');
-            $table->date('tanggal_pendaftaran_selesai');
+            $table->dateTime('tanggal_pendaftaran_mulai');
+            $table->dateTime('tanggal_pengumuman_jalur_prestasi_mulai');
+            $table->dateTime('tanggal_pengumuman_jalur_prestasi_selesai');
+            $table->dateTime('tanggal_tes_akademik_mulai');
+            $table->dateTime('tanggal_tes_akademik_selesai');
+            $table->dateTime('tanggal_tes_praktik_mulai');
+            $table->dateTime('tanggal_tes_praktik_selesai');
+            $table->dateTime('tanggal_pengumuman_jalur_reguler_mulai');
+            $table->dateTime('tanggal_pengumuman_jalur_reguler_selesai');
+            $table->dateTime('tanggal_registrasi_berkas_mulai');
+            $table->dateTime('tanggal_registrasi_berkas_selesai');
+            $table->dateTime('tanggal_pendaftaran_selesai');
             $table->integer('kuantitas');
             $table->enum('status', ['Aktif', 'Nonaktif'])->default('Aktif');
             $table->timestamps();

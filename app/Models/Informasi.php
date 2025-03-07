@@ -33,7 +33,7 @@ class Informasi extends Model
      */
     protected $casts = [
         'id' => 'integer',
-        'tanggal' => 'date',
+        'tanggal' => 'datetime',
         'tahun_pelajaran_id' => 'integer',
     ];
 

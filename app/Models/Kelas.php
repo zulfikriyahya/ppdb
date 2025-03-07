@@ -19,8 +19,9 @@ class Kelas extends Model
      */
     protected $fillable = [
         'nama',
-        'total_pria',
-        'total_wanita',
+        'kuantitas_pria',
+        'kuantitas_wanita',
+        'kuantitas',
         'tahun_pelajaran_id',
     ];
 
@@ -31,6 +32,9 @@ class Kelas extends Model
      */
     protected $casts = [
         'id' => 'integer',
+        'kuantitas_pria' => 'integer',
+        'kuantitas_wanita' => 'integer',
+        'kuantitas' => 'integer',
         'tahun_pelajaran_id' => 'integer',
     ];
 

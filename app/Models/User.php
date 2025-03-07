@@ -2,13 +2,12 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-
 use Filament\Panel;
-use Laravel\Sanctum\HasApiTokens;
-use Laravel\Jetstream\HasProfilePhoto;
-use Filament\Models\Contracts\HasAvatar;
+
 use Illuminate\Notifications\Notifiable;
+// use Laravel\Sanctum\HasApiTokens;
+// use Laravel\Jetstream\HasProfilePhoto;
+// use Filament\Models\Contracts\HasAvatar;
 use Filament\Models\Contracts\FilamentUser;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -16,21 +15,21 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class User extends Authenticatable implements MustVerifyEmail, FilamentUser, HasAvatar
+class User extends Authenticatable implements MustVerifyEmail, FilamentUser //, HasAvatar
 {
-    use HasApiTokens;
+    // use HasApiTokens;
     use SoftDeletes;
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory;
-    use HasProfilePhoto;
+    // use HasProfilePhoto;
     use Notifiable;
     use TwoFactorAuthenticatable;
 
-    public function getFilamentAvatarUrl(): ?string
-    {
-        return false;
-        // return $this->avatar_url;
-    }
+    // public function getFilamentAvatarUrl(): ?string
+    // {
+    //     // return false;
+    //     return $this->avatar_url;
+    // }
 
     public function canAccessPanel(Panel $panel): bool
     {
@@ -44,9 +43,11 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
      */
     protected $fillable = [
         'name',
-        'username',
+        // 'username',
         'email',
+        'email_verified_at',
         'password',
+        'avatar',
     ];
 
     /**
@@ -61,14 +62,14 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
         'two_factor_secret',
     ];
 
-    /**
-     * The accessors to append to the model's array form.
-     *
-     * @var array<int, string>
-     */
-    protected $appends = [
-        'profile_photo_url',
-    ];
+    // /**
+    //  * The accessors to append to the model's array form.
+    //  *
+    //  * @var array<int, string>
+    //  */
+    // protected $appends = [
+    //     'avatar',
+    // ];
 
     /**
      * Get the attributes that should be cast.

@@ -16,8 +16,9 @@ return new class extends Migration
         Schema::create('kelas', function (Blueprint $table) {
             $table->id();
             $table->string('nama');
-            $table->integer('total_pria');
-            $table->integer('total_wanita');
+            $table->integer('kuantitas_pria');
+            $table->integer('kuantitas_wanita');
+            $table->integer('kuantitas');
             $table->foreignId('tahun_pelajaran_id')->constrained('tahun_pelajarans')->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamps();
             $table->softDeletes();
