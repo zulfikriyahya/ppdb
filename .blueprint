@@ -1,0 +1,70 @@
+created:
+    - database/factories/PimpinanFactory.php
+    - database/factories/KetuaFactory.php
+    - database/factories/SekretarisFactory.php
+    - database/factories/BendaharaFactory.php
+    - database/factories/NegaraFactory.php
+    - database/factories/ProvinsiFactory.php
+    - database/factories/KabupatenFactory.php
+    - database/factories/KecamatanFactory.php
+    - database/factories/KelurahanFactory.php
+    - database/factories/InformasiFactory.php
+    - database/factories/SekolahFactory.php
+    - database/factories/SekolahAsalFactory.php
+    - database/factories/TahunPelajaranFactory.php
+    - database/factories/PrestasiFactory.php
+    - database/factories/JalurPendaftaranFactory.php
+    - database/factories/KelasFactory.php
+    - database/factories/CalonSiswaFactory.php
+    - database/migrations/2025_03_07_143840_create_pimpinans_table.php
+    - database/migrations/2025_03_07_143841_create_ketuas_table.php
+    - database/migrations/2025_03_07_143842_create_sekretaris_table.php
+    - database/migrations/2025_03_07_143843_create_bendaharas_table.php
+    - database/migrations/2025_03_07_143844_create_negaras_table.php
+    - database/migrations/2025_03_07_143845_create_provinsis_table.php
+    - database/migrations/2025_03_07_143846_create_kabupatens_table.php
+    - database/migrations/2025_03_07_143847_create_kecamatans_table.php
+    - database/migrations/2025_03_07_143848_create_kelurahans_table.php
+    - database/migrations/2025_03_07_143849_create_informasis_table.php
+    - database/migrations/2025_03_07_143850_create_sekolahs_table.php
+    - database/migrations/2025_03_07_143851_create_sekolah_asals_table.php
+    - database/migrations/2025_03_07_143852_create_tahun_pelajarans_table.php
+    - database/migrations/2025_03_07_143853_create_prestasis_table.php
+    - database/migrations/2025_03_07_143854_create_jalur_pendaftarans_table.php
+    - database/migrations/2025_03_07_143855_create_kelas_table.php
+    - database/migrations/2025_03_07_143856_create_calon_siswas_table.php
+    - app/Models/Pimpinan.php
+    - app/Models/Ketua.php
+    - app/Models/Sekretaris.php
+    - app/Models/Bendahara.php
+    - app/Models/Negara.php
+    - app/Models/Provinsi.php
+    - app/Models/Kabupaten.php
+    - app/Models/Kecamatan.php
+    - app/Models/Kelurahan.php
+    - app/Models/Informasi.php
+    - app/Models/Sekolah.php
+    - app/Models/SekolahAsal.php
+    - app/Models/TahunPelajaran.php
+    - app/Models/Prestasi.php
+    - app/Models/JalurPendaftaran.php
+    - app/Models/Kelas.php
+    - app/Models/CalonSiswa.php
+models:
+    Pimpinan: { nama: string, nip: 'string nullable', periode_awal: 'date nullable', periode_akhir: 'date nullable', berkas_foto: 'string nullable', berkas_tte: 'string nullable', status: "enum('Aktif','Nonaktif')", relationships: { hasMany: CalonSiswa } }
+    Ketua: { nama: string, nip: 'string nullable', periode_awal: 'date nullable', periode_akhir: 'date nullable', berkas_foto: 'string nullable', berkas_tte: 'string nullable', status: "enum('Aktif','Nonaktif')", relationships: { hasMany: CalonSiswa } }
+    Sekretaris: { nama: string, nip: 'string nullable', periode_awal: 'date nullable', periode_akhir: 'date nullable', berkas_foto: 'string nullable', berkas_tte: 'string nullable', status: "enum('Aktif','Nonaktif')", relationships: { hasMany: CalonSiswa } }
+    Bendahara: { nama: string, nip: 'string nullable', periode_awal: 'date nullable', periode_akhir: 'date nullable', berkas_foto: 'string nullable', berkas_tte: 'string nullable', status: "enum('Aktif','Nonaktif')", relationships: { hasMany: CalonSiswa } }
+    Negara: { nama: string, bendera: 'string nullable', relationships: { hasMany: 'Provinsi, CalonSiswa, Sekolah, SekolahAsal' } }
+    Provinsi: { nama: string, negara_id: 'id foreign:negaras', relationships: { hasMany: 'Kabupaten, CalonSiswa, Sekolah, SekolahAsal', belongsTo: Negara } }
+    Kabupaten: { nama: string, provinsi_id: 'id foreign:provinsis', relationships: { hasMany: 'Kecamatan, CalonSiswa, Sekolah, SekolahAsal', belongsTo: Provinsi } }
+    Kecamatan: { nama: string, kabupaten_id: 'id foreign:kabupatens', relationships: { hasMany: 'Kelurahan, CalonSiswa, Sekolah, SekolahAsal', belongsTo: Kabupaten } }
+    Kelurahan: { nama: string, kecamatan_id: 'id foreign:kecamatans', relationships: { hasMany: 'CalonSiswa, Sekolah, SekolahAsal', belongsTo: Kecamatan } }
+    Informasi: { judul: string, isi: string, gambar: 'string nullable', tanggal: date, tahun_pelajaran_id: 'id foreign:tahun_pelajarans', status: "enum('Published','Draft')", relationships: { hasMany: CalonSiswa, belongsTo: TahunPelajaran } }
+    Sekolah: { nama: string, npsn: 'string nullable', nss: 'string nullable', logo: 'string nullable', pimpinan_id: 'id foreign:pimpinans', akreditasi: "enum('A','B','C','D') nullable", alamat: string, negara_id: 'id foreign:negaras', provinsi_id: 'id foreign:provinsis', kabupaten_id: 'id foreign:kabupatens', kecamatan_id: 'id foreign:kecamatans', kelurahan_id: 'id foreign:kelurahans', website: 'string nullable', telepon: 'string nullable', email: 'string nullable', relationships: { hasMany: CalonSiswa, belongsTo: 'Pimpinan, Negara, Provinsi, Kabupaten, Kecamatan, Kelurahan' } }
+    SekolahAsal: { nama: string, npsn: 'string nullable', nss: 'string nullable', logo: 'string nullable', akreditasi: "enum('A','B','C','D') nullable", alamat: 'string nullable', negara_id: 'id foreign:negaras nullable', provinsi_id: 'id foreign:provinsis nullable', kabupaten_id: 'id foreign:kabupatens nullable', kecamatan_id: 'id foreign:kecamatans nullable', kelurahan_id: 'id foreign:kelurahans nullable', website: 'string nullable', telepon: 'string nullable', email: 'string nullable', relationships: { hasMany: CalonSiswa, belongsTo: 'Negara, Provinsi, Kabupaten, Kecamatan, Kelurahan' } }
+    TahunPelajaran: { nama: string, tanggal_pendaftaran_mulai: date, tanggal_pengumuman_jalur_prestasi: datetime, tanggal_tes_akademik: date, tanggal_tes_praktik: date, tanggal_pengumuman_jalur_reguler: datetime, tanggal_registrasi_berkas: date, tanggal_pendaftaran_selesai: date, kuantitas: integer, status: "enum('Aktif','Nonaktif')", relationships: { hasMany: CalonSiswa } }
+    Prestasi: { nama: string, tingkat: integer, kategori: string, peringkat: integer, relationships: { hasMany: CalonSiswa } }
+    JalurPendaftaran: { nama: string, kuantitas: integer, tahun_pelajaran_id: 'id foreign:tahun_pelajarans', relationships: { hasMany: CalonSiswa, belongsTo: TahunPelajaran } }
+    Kelas: { nama: string, total_pria: 'integer nullabel', total_wanita: 'integer nullabel', tahun_pelajaran_id: 'id foreign:tahun_pelajarans', relationships: { hasMany: CalonSiswa, belongsTo: TahunPelajaran } }
+    CalonSiswa: { nama: string, nik: string, nisn: string, tempat_lahir: string, tanggal_lahir: date, tahun_lulus: date, jenis_kelamin: "enum('Pria','Wanita')", golongan_darah: "enum('A-','A+','B-','b+','AB-','AB+','O')", agama: "enum('Islam','Kristen Katholik','Kristen Protestan','Hindu','Buddha','Konghucu')", anak_ke: integer, jumlah_saudara: integer, tinggal_bersama: "enum('Orang Tua','Saudara','Panti Asuhan','Kost')", jarak_ke_sekolah: "enum('0 - 1 Km','1 - 5 Km','5 - 10 Km','10 - 50 Km')", disabilitas: "enum('Non Disabilitas','Fisik','Penglihatan','Pendengaran','Kognitif','Mental','Lainnya')", tinggi_badan: 'integer nullable', berat_badan: 'integer nullable', no_kip: 'string nullable', siswa_telepon: 'string nullable', siswa_alamat: string, siswa_negara_id: 'id foreign:negaras', siswa_provinsi_id: 'id foreign:provinsis', siswa_kabupaten_id: 'id foreign:kabupatens', siswa_kecamatan_id: 'id foreign:kecamatans', siswa_kelurahan_id: 'id foreign:kelurahans', berkas_foto: string, berkas_kk: string, berkas_akta: string, berkas_kip: 'string nullable', berkas_nisn: 'string nullable', berkas_skbb: string, berkas_skab: string, berkas_prestasi: 'string nullable', ibu_nama: string, ibu_telepon: 'string nullable', ibu_pekerjaan: 'string nullable', ibu_status: "enum('Hidup','Meninggal')", ibu_alamat: string, ibu_negara_id: 'id foreign:negaras', ibu_provinsi_id: 'id foreign:provinsis', ibu_kabupaten_id: 'id foreign:kabupatens', ibu_kecamatan_id: 'id foreign:kecamatans', ibu_kelurahan_id: 'id foreign:kelurahans', ayah_nama: string, ayah_telepon: 'string nullable', ayah_pekerjaan: 'string nullable', ayah_status: "enum('Hidup','Meninggal')", ayah_alamat: string, ayah_negara_id: 'id foreign:negaras', ayah_provinsi_id: 'id foreign:provinsis', ayah_kabupaten_id: 'id foreign:kabupatens', ayah_kecamatan_id: 'id foreign:kecamatans', ayah_kelurahan_id: 'id foreign:kelurahans', wali_nama: 'string nullable', wali_telepon: 'string nullable', wali_pekerjaan: 'string nullable', wali_status: "enum('Hidup','Meninggal') nullable", wali_alamat: 'string nullable', wali_negara_id: 'id foreign:negaras nullable', wali_provinsi_id: 'id foreign:provinsis nullable', wali_kabupaten_id: 'id foreign:kabupatens nullable', wali_kecamatan_id: 'id foreign:kecamatans nullable', wali_kelurahan_id: 'id foreign:kelurahans nullable', sekolah_asal_id: 'id foreign:sekolah_asals', jalur_pendaftaran_id: 'id foreign:jalur_pendaftarans', prestasi_id: 'id foreign:prestasis nullable', peminatan_ekstrakurikuler: "enum('Pramuka','Paskibra','Adiwiyata','Olahraga','Kesenian','Kerohanian','Lainnya')", peminatan_pelajaran: "enum('IPA','IPS','Matematika','Bahasa Indonesia','Bahasa Arab','Bahasa Inggris','Lainnya')", nilai_ipa: 'integer nullable', nilai_ips: 'integer nullable', nilai_bind: 'integer nullable', nilai_mtk: 'integer nullable', bobot_nilai_akademik: 'integer nullable', bobot_nilai_praktik: 'integer nullable', nilai_akademik: 'integer nullable', nilai_praktik: 'integer nullable', status_pendaftaran: "enum('Diproses','Berkas Tidak Lengkap','Diverifikasi','Ditolak','Diterima','Diterima Di Kelas Reguler','Diterima Di Kelas Unggulan') nullable", kelas_id: 'id foreign:kelas nullable', tes_sesi: 'string nullable', tes_ruang: 'string nullable', tes_akademik: 'datetime nullable', tes_praktik: 'datetime nullable', relationships: { belongsTo: 'JalurPendaftaran, Negara, Provinsi, Kabupaten, Kecamatan, Kelurahan, Kelas, SekolahAsal, Prestasi' } }

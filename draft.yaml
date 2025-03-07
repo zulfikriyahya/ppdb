@@ -10,7 +10,7 @@ models:
     status: enum('Aktif','Nonaktif')
     relationships:
       hasMany: CalonSiswa
-      belongsTo: #
+      # belongsTo: #
 
   # Tabel Ketua
   Ketua:
@@ -23,7 +23,7 @@ models:
     status: enum('Aktif','Nonaktif')
     relationships:
       hasMany: CalonSiswa
-      belongsTo: #
+      # belongsTo: #
 
   # Tabel Sekretaris
   Sekretaris:
@@ -36,7 +36,7 @@ models:
     status: enum('Aktif','Nonaktif')
     relationships:
       hasMany: CalonSiswa
-      belongsTo: #
+      # belongsTo: #
 
   # Tabel Bendahara
   Bendahara:
@@ -49,7 +49,7 @@ models:
     status: enum('Aktif','Nonaktif')
     relationships:
       hasMany: CalonSiswa
-      belongsTo: #
+      # belongsTo: #
 
   # Tabel Negara
   Negara:
@@ -198,7 +198,7 @@ models:
     tanggal_lahir: date
     tahun_lulus: date
     jenis_kelamin: enum('Pria','Wanita')
-    golongan_darah: enum('A-','A+','B-','b+','AB-','AB+','O')
+    golongan_darah: enum('A-','A+','B-','B+','AB-','AB+','O')
     agama: enum('Islam','Kristen Katholik','Kristen Protestan','Hindu','Buddha','Konghucu')
     anak_ke: integer
     jumlah_saudara: integer
@@ -278,9 +278,14 @@ models:
     relationships:
       # hasMany: #
       belongsTo: JalurPendaftaran, Negara, Provinsi, Kabupaten, Kecamatan, Kelurahan, Kelas, SekolahAsal, Prestasi
-# Report
+# Report:
 # Formulir Pendaftaran
 # Kartu Tes
 # Surat Keterangan Diterima
 # Pakta Integritas
-#
+# Action Button Calon Siswa:
+# Cetak Formulir Pendaftaran
+# Cetak Kartu Tes
+# Cetak Surat Keterangan Diterima
+# Cetak Pakta Integritas
+# Edit Data Calon Siswa
