@@ -150,6 +150,8 @@ models:
     tanggal_pendaftaran_mulai: datetime
     tanggal_pengumuman_jalur_prestasi_mulai: datetime
     tanggal_pengumuman_jalur_prestasi_selesai: datetime
+    tanggal_penerbitan_kartu_tes_mulai: datetime
+    tanggal_penerbitan_kartu_tes_selesai: datetime
     tanggal_tes_akademik_mulai: datetime
     tanggal_tes_akademik_selesai: datetime
     tanggal_tes_praktik_mulai: datetime

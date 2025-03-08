@@ -77,6 +77,7 @@ class UserResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            // ->recordTitleAttribute('name')
             ->columns([
                 Tables\Columns\ImageColumn::make('avatar')
                     ->circular()
@@ -121,6 +122,7 @@ class UserResource extends Resource
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\ForceDeleteAction::make(),
                     Tables\Actions\RestoreAction::make(),
                 ]),
             ])

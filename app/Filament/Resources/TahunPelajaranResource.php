@@ -2,12 +2,14 @@
 
 namespace App\Filament\Resources;
 
+use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Models\TahunPelajaran;
 use Filament\Resources\Resource;
+use Illuminate\Support\HtmlString;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\TahunPelajaranResource\Pages;
@@ -33,97 +35,323 @@ class TahunPelajaranResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('nama')
-                    ->required(),
-                Forms\Components\DateTimePicker::make('tanggal_pendaftaran_mulai')
-                    ->required(),
-                Forms\Components\DateTimePicker::make('tanggal_pengumuman_jalur_prestasi_mulai')
-                    ->required(),
-                Forms\Components\DateTimePicker::make('tanggal_pengumuman_jalur_prestasi_selesai')
-                    ->required(),
-                Forms\Components\DateTimePicker::make('tanggal_tes_akademik_mulai')
-                    ->required(),
-                Forms\Components\DateTimePicker::make('tanggal_tes_akademik_selesai')
-                    ->required(),
-                Forms\Components\DateTimePicker::make('tanggal_tes_praktik_mulai')
-                    ->required(),
-                Forms\Components\DateTimePicker::make('tanggal_tes_praktik_selesai')
-                    ->required(),
-                Forms\Components\DateTimePicker::make('tanggal_pengumuman_jalur_reguler_mulai')
-                    ->required(),
-                Forms\Components\DateTimePicker::make('tanggal_pengumuman_jalur_reguler_selesai')
-                    ->required(),
-                Forms\Components\DateTimePicker::make('tanggal_registrasi_berkas_mulai')
-                    ->required(),
-                Forms\Components\DateTimePicker::make('tanggal_registrasi_berkas_selesai')
-                    ->required(),
-                Forms\Components\DateTimePicker::make('tanggal_pendaftaran_selesai')
-                    ->required(),
-                Forms\Components\TextInput::make('kuantitas')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('status')
-                    ->required(),
+                Forms\Components\Section::make('Tahun Pelajaran')
+                    ->collapsed()
+                    ->description('Data Tahun Pelajaran.')
+                    ->schema([
+                        Forms\Components\TextInput::make('nama')
+                            ->label('Tahun Pelajaran')
+                            ->required()
+                            ->placeholder('Contoh: 2025/2026'),
+
+                        Forms\Components\TextInput::make('kuantitas')
+                            ->label('Kuota Maksimal Pendaftar')
+                            ->required()
+                            ->helperText(new HtmlString('<small><i>Kuota maksimal pendaftar yang dapat membuat akun pendaftaran.<sup style="color:red">*</sup></i></small>'))
+                            ->numeric()
+                            ->postfix('Pendaftar'),
+                        Forms\Components\Select::make('status')
+                            ->label('Status')
+                            ->required()
+                            ->options([
+                                'Aktif' => 'Aktif',
+                                'Nonaktif' => 'Nonaktif',
+                            ])
+                            ->default('Aktif')
+                            ->native(false),
+                    ])
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => 3,
+                        'lg' => 3,
+                        'xl' => 3,
+                        '2xl' => 3,
+                    ]),
+
+                Forms\Components\Section::make('Pendaftaran')
+                    ->collapsed()
+                    ->description('Tanggal pendaftaran untuk jalur prestasi dan jalur reguler.')
+                    ->schema([
+                        Forms\Components\DateTimePicker::make('tanggal_pendaftaran_mulai')
+                            ->label('Tanggal Mulai Pendaftaran')
+                            ->required(),
+                        Forms\Components\DateTimePicker::make('tanggal_pendaftaran_selesai')
+                            ->label('Tanggal Selesai Pendaftaran')
+                            ->required(),
+                    ])
+                    ->columns([
+                        'sm' => '50%',
+                        'md' => 2,
+                        'lg' => 2,
+                        'xl' => 2,
+                        '2xl' => 2,
+                    ]),
+
+                Forms\Components\Section::make('Pengumuman Jalur Prestasi')
+                    ->collapsed()
+                    ->description('Tanggal pengumuman untuk jalur prestasi.')
+                    ->schema([
+                        Forms\Components\DateTimePicker::make('tanggal_pengumuman_jalur_prestasi_mulai')
+                            ->label('Tanggal Mulai Pengumuman Jalur Prestasi')
+                            ->required(),
+                        Forms\Components\DateTimePicker::make('tanggal_pengumuman_jalur_prestasi_selesai')
+                            ->label('Tanggal Selesai Pengumuman Jalur Prestasi')
+                            ->required(),
+                    ])
+                    ->columns([
+                        'sm' => '50%',
+                        'md' => 2,
+                        'lg' => 2,
+                        'xl' => 2,
+                        '2xl' => 2,
+                    ]),
+
+                Forms\Components\Section::make('Penerbitan Kartu Tes')
+                    ->collapsed()
+                    ->description('Tanggal penerbitan kartu tes untuk jalur prestasi dan jalur reguler.')
+                    ->schema([
+                        Forms\Components\DateTimePicker::make('tanggal_penerbitan_kartu_tes_mulai')
+                            ->label('Tanggal Mulai Penerbitan Kartu Tes')
+                            ->required(),
+                        Forms\Components\DateTimePicker::make('tanggal_penerbitan_kartu_tes_selesai')
+                            ->label('Tanggal Selesai Penerbitan Kartu Tes')
+                            ->required(),
+                    ])
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => 2,
+                        'lg' => 2,
+                        'xl' => 2,
+                        '2xl' => 2,
+                    ]),
+
+                Forms\Components\Section::make('Tes Akademik')
+                    ->collapsed()
+                    ->description('Tanggal tes akademik untuk jalur prestasi dan jalur reguler.')
+                    ->schema([
+                        Forms\Components\DateTimePicker::make('tanggal_tes_akademik_mulai')
+                            ->label('Tanggal Mulai Tes Akademik')
+                            ->required(),
+                        Forms\Components\DateTimePicker::make('tanggal_tes_akademik_selesai')
+                            ->label('Tanggal Selesai Tes Akademik')
+                            ->required(),
+                    ])
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => 2,
+                        'lg' => 2,
+                        'xl' => 2,
+                        '2xl' => 2,
+                    ]),
+
+                Forms\Components\Section::make('Tes Praktik')
+                    ->collapsed()
+                    ->description('Tanggal tes praktik untuk jalur prestasi dan jalur reguler.')
+                    ->schema([
+                        Forms\Components\DateTimePicker::make('tanggal_tes_praktik_mulai')
+                            ->label('Tanggal Mulai Tes Praktik')
+                            ->required(),
+                        Forms\Components\DateTimePicker::make('tanggal_tes_praktik_selesai')
+                            ->label('Tanggal Selesai Tes Praktik')
+                            ->required(),
+                    ])
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => 2,
+                        'lg' => 2,
+                        'xl' => 2,
+                        '2xl' => 2,
+                    ]),
+
+                Forms\Components\Section::make('Pengumuman Jalur Reguler')
+                    ->collapsed()
+                    ->description('Tanggal pengumuman untuk jalur reguler.')
+                    ->schema([
+                        Forms\Components\DateTimePicker::make('tanggal_pengumuman_jalur_reguler_mulai')
+                            ->label('Tanggal Mulai Pengumuman Jalur Reguler')
+                            ->required(),
+                        Forms\Components\DateTimePicker::make('tanggal_pengumuman_jalur_reguler_selesai')
+                            ->label('Tanggal Selesai Pengumuman Jalur Reguler')
+                            ->required(),
+                    ])
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => 2,
+                        'lg' => 2,
+                        'xl' => 2,
+                        '2xl' => 2,
+                    ]),
+
+                Forms\Components\Section::make('Registrasi Berkas')
+                    ->collapsed()
+                    ->description('Tanggal registrasi berkas untuk jalur prestasi dan jalur reguler.')
+                    ->schema([
+                        Forms\Components\DateTimePicker::make('tanggal_registrasi_berkas_mulai')
+                            ->label('Tanggal Mulai Registrasi Berkas')
+                            ->required(),
+                        Forms\Components\DateTimePicker::make('tanggal_registrasi_berkas_selesai')
+                            ->label('Tanggal Selesai Registrasi Berkas')
+                            ->required(),
+                    ])
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => 2,
+                        'lg' => 2,
+                        'xl' => 2,
+                        '2xl' => 2,
+                    ]),
             ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
+            // ->recordTitleAttribute('nama')
             ->columns([
                 Tables\Columns\TextColumn::make('nama')
+                    ->label('Tahun Pelajaran')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('tanggal_pendaftaran_mulai')
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('tanggal_pengumuman_jalur_prestasi_mulai')
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('tanggal_pengumuman_jalur_prestasi_selesai')
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('tanggal_tes_akademik_mulai')
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('tanggal_tes_akademik_selesai')
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('tanggal_tes_praktik_mulai')
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('tanggal_tes_praktik_selesai')
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('tanggal_pengumuman_jalur_reguler_mulai')
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('tanggal_pengumuman_jalur_reguler_selesai')
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('tanggal_registrasi_berkas_mulai')
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('tanggal_registrasi_berkas_selesai')
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('tanggal_pendaftaran_selesai')
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('kuantitas')
-                    ->numeric()
-                    ->sortable(),
+
                 Tables\Columns\TextColumn::make('status')
-                    ->searchable(),
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'Aktif' => 'success',
+                        'Nonaktif' => 'gray'
+                    }),
+
+                Tables\Columns\TextColumn::make('kuantitas')
+                    ->label('Kuota')
+                    ->numeric()
+                    ->description(' Pendaftar')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                // Pendaftaran
+                Tables\Columns\TextColumn::make('tanggal_pendaftaran_mulai')
+                    ->label('Pendaftaran')
+                    ->dateTime('d F Y H:m:s')
+                    ->description(
+                        fn(TahunPelajaran $record) => $record->tanggal_pendaftaran_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pendaftaran_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
+                    ),
+                // Tables\Columns\TextColumn::make('tanggal_pendaftaran_mulai')
+                //     ->label('Mulai Pendaftaran')
+                //     ->dateTime('d F Y H:m:s')
+                //     ->sortable(),
+                // Tables\Columns\TextColumn::make('tanggal_pendaftaran_selesai')
+                //     ->label('Selesai Pendaftaran')
+                //     ->dateTime('d F Y H:m:s')
+                //     ->sortable(),
+
+                // Pengumuman Jalur Prestasi
+                Tables\Columns\TextColumn::make('tanggal_pengumuman_jalur_prestasi_mulai')
+                    ->label('Pengumuman Jalur Prestasi')
+                    ->dateTime('d F Y H:m:s')
+                    ->description(
+                        fn(TahunPelajaran $record) => $record->tanggal_pengumuman_jalur_prestasi_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pengumuman_jalur_prestasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
+                    ),
+                // Tables\Columns\TextColumn::make('tanggal_pengumuman_jalur_prestasi_mulai')
+                //     ->label('Mulai Pengumuman Jalur Prestasi')
+                //     ->dateTime('d F Y H:m:s')
+                //     ->sortable(),
+                // Tables\Columns\TextColumn::make('tanggal_pengumuman_jalur_prestasi_selesai')
+                //     ->label('Selesai Pengumuman Jalur Prestasi')
+                //     ->dateTime('d F Y H:m:s')
+                //     ->sortable(),
+
+                // Penerbitan Kartu Tes
+                Tables\Columns\TextColumn::make('tanggal_penerbitan_kartu_tes_mulai')
+                    ->label('Penerbitan Kartu Tes')
+                    ->dateTime('d F Y H:m:s')
+                    ->description(
+                        fn(TahunPelajaran $record) => $record->tanggal_penerbitan_kartu_tes_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_penerbitan_kartu_tes_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
+                    ),
+                // Tables\Columns\TextColumn::make('tanggal_penerbitan_kartu_tes_mulai')
+                //     ->label('Mulai Penerbitan Kartu Tes')
+                //     ->dateTime('d F Y H:m:s')
+                //     ->sortable(),
+                // Tables\Columns\TextColumn::make('tanggal_penerbitan_kartu_tes_selesai')
+                //     ->label('Selesai Penerbitan Kartu Tes')
+                //     ->dateTime('d F Y H:m:s')
+                //     ->sortable(),
+
+                // Tes Akademik
+                Tables\Columns\TextColumn::make('tanggal_tes_akademik_mulai')
+                    ->label('Tes Akademik')
+                    ->dateTime('d F Y H:m:s')
+                    ->description(
+                        fn(TahunPelajaran $record) => $record->tanggal_tes_akademik_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_tes_akademik_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
+                    ),
+                // Tables\Columns\TextColumn::make('tanggal_tes_akademik_mulai')
+                //     ->label('Mulai Tes Akademik')
+                //     ->dateTime('d F Y H:m:s')
+                //     ->sortable(),
+                // Tables\Columns\TextColumn::make('tanggal_tes_akademik_selesai')
+                //     ->label('Selesai Tes Akademik')
+                //     ->dateTime('d F Y H:m:s')
+                //     ->sortable(),
+
+                // Tes Praktik
+                Tables\Columns\TextColumn::make('tanggal_tes_praktik_mulai')
+                    ->label('Tes Praktik')
+                    ->dateTime('d F Y H:m:s')
+                    ->description(
+                        fn(TahunPelajaran $record) => $record->tanggal_tes_praktik_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_tes_praktik_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
+                    ),
+                // Tables\Columns\TextColumn::make('tanggal_tes_praktik_mulai')
+                //     ->label('Mulai Tes Praktik')
+                //     ->dateTime('d F Y H:m:s')
+                //     ->sortable(),
+                // Tables\Columns\TextColumn::make('tanggal_tes_praktik_selesai')
+                //     ->label('Selesai Tes Praktik')
+                //     ->dateTime('d F Y H:m:s')
+                //     ->sortable(),
+
+                // Pengumuman Jalur Reguler
+                Tables\Columns\TextColumn::make('tanggal_pengumuman_jalur_reguler_mulai')
+                    ->label('Pengumuman Jalur Reguler')
+                    ->dateTime('d F Y H:m:s')
+                    ->description(
+                        fn(TahunPelajaran $record) => $record->tanggal_pengumuman_jalur_reguler_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pengumuman_jalur_reguler_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
+                    ),
+                // Tables\Columns\TextColumn::make('tanggal_pengumuman_jalur_reguler_mulai')
+                //     ->label('Mulai Pengumuman Jalur Reguler')
+                //     ->dateTime('d F Y H:m:s')
+                //     ->sortable(),
+                // Tables\Columns\TextColumn::make('tanggal_pengumuman_jalur_reguler_selesai')
+                //     ->label('Selesai Pengumuman Jalur Reguler')
+                //     ->dateTime('d F Y H:m:s')
+                //     ->sortable(),
+
+                // Registrasi Berkas
+                Tables\Columns\TextColumn::make('tanggal_registrasi_berkas_mulai')
+                    ->label('Registrasi Berkas')
+                    ->dateTime('d F Y H:m:s')
+                    ->description(
+                        fn(TahunPelajaran $record) => $record->tanggal_registrasi_berkas_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_registrasi_berkas_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
+                    ),
+                // Tables\Columns\TextColumn::make('tanggal_registrasi_berkas_mulai')
+                //     ->label('Mulai Registrasi Berkas')
+                //     ->dateTime('d F Y H:m:s')
+                //     ->sortable(),
+                // Tables\Columns\TextColumn::make('tanggal_registrasi_berkas_selesai')
+                //     ->label('Selesai Registrasi Berkas')
+                //     ->dateTime('d F Y H:m:s')
+                //     ->sortable(),
+
+                // Timestamp
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
+                    ->label('Dibuat')
+                    ->dateTime('d F Y H:m:s')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->label('Diubah')
+                    ->dateTime('d F Y H:m:s')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('deleted_at')
-                    ->dateTime()
+                    ->label('Dihapus')
+                    ->dateTime('d F Y H:m:s')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
@@ -131,8 +359,13 @@ class TahunPelajaranResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\ForceDeleteAction::make(),
+                    Tables\Actions\RestoreAction::make(),
+                ])
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

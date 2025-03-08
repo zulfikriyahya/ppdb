@@ -211,6 +211,7 @@ class CalonSiswaResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            // ->recordTitleAttribute('nama')
             ->columns([
                 Tables\Columns\TextColumn::make('nama')
                     ->searchable(),

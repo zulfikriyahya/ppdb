@@ -19,6 +19,8 @@ return new class extends Migration
             $table->dateTime('tanggal_pendaftaran_mulai');
             $table->dateTime('tanggal_pengumuman_jalur_prestasi_mulai');
             $table->dateTime('tanggal_pengumuman_jalur_prestasi_selesai');
+            $table->dateTime('tanggal_penerbitan_kartu_tes_mulai');
+            $table->dateTime('tanggal_penerbitan_kartu_tes_selesai');
             $table->dateTime('tanggal_tes_akademik_mulai');
             $table->dateTime('tanggal_tes_akademik_selesai');
             $table->dateTime('tanggal_tes_praktik_mulai');
