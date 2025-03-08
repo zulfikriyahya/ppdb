@@ -35,7 +35,7 @@
         } => $footerPosition === 'footer',
     ])
 >
-    <span @class(['flex items-center gap-2' => $isHtmlSentence])>&copy; {{ "1970 - " . now()->format('Y') . " MTs Negeri 1 Pandeglang" }}
+    <a href='https://mtsn1pandeglang.sch.id' class="text-gray-600 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 font-semibold" @class(['flex gap-2 font-semibold' => $isHtmlSentence])>&copy; {{ "1970 - " . now()->format('Y') . " Negeri 1 Pandeglang" }}
         @if($sentence)
             @if($isHtmlSentence)
                 <span class="flex items-center gap-2">{!! $sentence !!}</span>
@@ -45,7 +45,7 @@
         @else
             {{-- {{ config('filament-easy-footer.app_name') }} --}}
         @endif
-    </span>
+    </a>
 
     @if($githubEnabled)
         <livewire:devonab.filament-easy-footer.github-version
@@ -74,21 +74,23 @@
         </span>
     @endif
 
-    @if($loadTime)
-        @if($footerPosition === 'sidebar' || $footerPosition === 'sidebar.footer')
-            <span class="w-full">{{ $loadTimePrefix ?? '' }} {{ $loadTime }}s</span>
-        @else
-            <span>{{ $loadTimePrefix ?? '' }} {{ $loadTime }}s</span>
-        @endif
-    @endif
 
     @if(count($links) > 0)
         <ul class="gap-2 flex">
             @foreach($links as $link)
                 <li>
-                    <a href="{{ $link['url'] }}" class="text-primary-600 dark:text-primary-400 hover:text-primary-600 dark:hover:text-primary-300" target="_blank">{{ $link['title'] }}</a>
+                    <a href="{{ $link['url'] }}" class="text-gray-600 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 font-semibold" target="_blank">{{ $link['title'] }}</a>
                 </li>
             @endforeach
         </ul>
+    @endif
+
+    
+    @if($loadTime)
+        @if($footerPosition === 'sidebar' || $footerPosition === 'sidebar.footer')
+            <span class="w-full text-gray-600 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 font-semibold">{{ $loadTimePrefix ?? '' }} {{ $loadTime }}s</span>
+        @else
+            <span>{{ $loadTimePrefix ?? '' }} {{ $loadTime }}s</span>
+        @endif
     @endif
 </footer>
