@@ -79,15 +79,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->plugins([
                 EasyFooterPlugin::make()
-                    // ->footerEnabled() // true by default,
                     ->withFooterPosition('footer')
-                    // ->withGithub(showLogo: true, showUrl: true)
                     ->withLoadTime('Halaman ini dimuat dalam')
-                    // ->withSentence(
-                    //     new HtmlString(
-                    //         'Dibuat dan dikembangkan dengan ❤ oleh <a href="https://instagram.com/zulfikriyahya_"><b>Yahya Zulfikri</b></a>'
-                    //     )
-                    // )
                     ->withLinks([
                         // ['title' => 'Official Website', 'url' => 'https://www.mtsn1pandeglang.sch.id/'],
                         // ['title' => 'Kebijakan Privasi', 'url' => 'https://www.mtsn1pandeglang.sch.id/kebijakan-privasi/'],
