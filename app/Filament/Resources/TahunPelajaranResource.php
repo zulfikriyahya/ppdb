@@ -80,7 +80,7 @@ class TahunPelajaranResource extends Resource
                             ->required(),
                     ])
                     ->columns([
-                        'sm' => '50%',
+                        'sm' => '100%',
                         'md' => 2,
                         'lg' => 2,
                         'xl' => 2,
@@ -99,7 +99,7 @@ class TahunPelajaranResource extends Resource
                             ->required(),
                     ])
                     ->columns([
-                        'sm' => '50%',
+                        'sm' => '100%',
                         'md' => 2,
                         'lg' => 2,
                         'xl' => 2,
@@ -118,7 +118,7 @@ class TahunPelajaranResource extends Resource
                             ->required(),
                     ])
                     ->columns([
-                        'sm' => '50%',
+                        'sm' => '100%',
                         'md' => 2,
                         'lg' => 2,
                         'xl' => 2,
@@ -248,16 +248,15 @@ class TahunPelajaranResource extends Resource
                 // Pendaftaran Jalur Prestasi
                 Tables\Columns\TextColumn::make('tanggal_pendaftaran_jalur_prestasi_mulai')
                     ->label('Pendaftaran Jalur Prestasi')
-                    ->dateTime('d F Y H:m:s')
+                    ->dateTime('d F Y H:i:s')
                     ->description(
                         fn(TahunPelajaran $record) => $record->tanggal_pendaftaran_jalur_prestasi_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pendaftaran_jalur_prestasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
-                    )
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ),
 
                 // Pengumuman Jalur Prestasi
                 Tables\Columns\TextColumn::make('tanggal_pengumuman_jalur_prestasi_mulai')
                     ->label('Pengumuman Jalur Prestasi')
-                    ->dateTime('d F Y H:m:s')
+                    ->dateTime('d F Y H:i:s')
                     ->description(
                         fn(TahunPelajaran $record) => $record->tanggal_pengumuman_jalur_prestasi_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pengumuman_jalur_prestasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
                     ),
@@ -265,16 +264,15 @@ class TahunPelajaranResource extends Resource
                 // Pendaftaran Jalur Reguler
                 Tables\Columns\TextColumn::make('tanggal_pendaftaran_jalur_reguler_mulai')
                     ->label('Pendaftaran Jalur Reguler')
-                    ->dateTime('d F Y H:m:s')
+                    ->dateTime('d F Y H:i:s')
                     ->description(
                         fn(TahunPelajaran $record) => $record->tanggal_pendaftaran_jalur_reguler_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pendaftaran_jalur_reguler_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
-                    )
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ),
 
                 // Penerbitan Kartu Tes
                 Tables\Columns\TextColumn::make('tanggal_penerbitan_kartu_tes_mulai')
                     ->label('Penerbitan Kartu Tes')
-                    ->dateTime('d F Y H:m:s')
+                    ->dateTime('d F Y H:i:s')
                     ->description(
                         fn(TahunPelajaran $record) => $record->tanggal_penerbitan_kartu_tes_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_penerbitan_kartu_tes_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
                     ),
@@ -282,7 +280,7 @@ class TahunPelajaranResource extends Resource
                 // Tes Akademik
                 Tables\Columns\TextColumn::make('tanggal_tes_akademik_mulai')
                     ->label('Tes Akademik')
-                    ->dateTime('d F Y H:m:s')
+                    ->dateTime('d F Y H:i:s')
                     ->description(
                         fn(TahunPelajaran $record) => $record->tanggal_tes_akademik_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_tes_akademik_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
                     ),
@@ -290,7 +288,7 @@ class TahunPelajaranResource extends Resource
                 // Tes Praktik
                 Tables\Columns\TextColumn::make('tanggal_tes_praktik_mulai')
                     ->label('Tes Praktik')
-                    ->dateTime('d F Y H:m:s')
+                    ->dateTime('d F Y H:i:s')
                     ->description(
                         fn(TahunPelajaran $record) => $record->tanggal_tes_praktik_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_tes_praktik_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
                     ),
@@ -298,7 +296,7 @@ class TahunPelajaranResource extends Resource
                 // Pengumuman Jalur Reguler
                 Tables\Columns\TextColumn::make('tanggal_pengumuman_jalur_reguler_mulai')
                     ->label('Pengumuman Jalur Reguler')
-                    ->dateTime('d F Y H:m:s')
+                    ->dateTime('d F Y H:i:s')
                     ->description(
                         fn(TahunPelajaran $record) => $record->tanggal_pengumuman_jalur_reguler_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pengumuman_jalur_reguler_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
                     ),
@@ -306,7 +304,7 @@ class TahunPelajaranResource extends Resource
                 // Registrasi Berkas
                 Tables\Columns\TextColumn::make('tanggal_registrasi_berkas_mulai')
                     ->label('Registrasi Berkas')
-                    ->dateTime('d F Y H:m:s')
+                    ->dateTime('d F Y H:i:s')
                     ->description(
                         fn(TahunPelajaran $record) => $record->tanggal_registrasi_berkas_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_registrasi_berkas_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
                     ),
@@ -314,17 +312,17 @@ class TahunPelajaranResource extends Resource
                 // Timestamp
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat')
-                    ->dateTime('d F Y H:m:s')
+                    ->dateTime('d F Y H:i:s')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('Diubah')
-                    ->dateTime('d F Y H:m:s')
+                    ->dateTime('d F Y H:i:s')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('deleted_at')
                     ->label('Dihapus')
-                    ->dateTime('d F Y H:m:s')
+                    ->dateTime('d F Y H:i:s')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
