@@ -88,9 +88,9 @@
     
     @if($loadTime)
         @if($footerPosition === 'sidebar' || $footerPosition === 'sidebar.footer')
-            <span class="w-full text-gray-600 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 font-semibold">{{ $loadTimePrefix ?? '' }} {{ $loadTime }}s</span>
+            <span class="text-gray-600 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 font-semibold">{{ $loadTimePrefix ?? '' }} {{ $loadTime }} detik</span>
         @else
-            <span>{{ $loadTimePrefix ?? '' }} {{ $loadTime }}s</span>
+            <span class="text-gray-600 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 font-semibold">{{ $loadTimePrefix ?? '' }} {{ $loadTime }} detik</span>
         @endif
     @endif
 </footer>
