@@ -95,7 +95,7 @@ class AdminPanelProvider extends PanelProvider
                         // ['title' => 'Kontak', 'url' => 'https://wa.me/6289612050291/?text=Hallo,%20PTSP%20MTs%20Negeri%201%20Pandeglang.'],
                         ['title' => 'Dibuat dan dikembangkan dengan ❤ oleh Yahya Zulfikri', 'url' => 'https://instagram.com/zulfikriyahya_'],
                     ])
-                // ->withBorder()
+                    ->withBorder()
                 // ->hiddenFromPagesEnabled()
                 // ->hiddenFromPages(['admin/login', 'admin/forgot-password', 'admin/register', 'admin/email/verify']),
             ]);
