@@ -36,7 +36,7 @@ class KecamatanResource extends Resource
                 Forms\Components\TextInput::make('nama')
                     ->required(),
                 Forms\Components\Select::make('kabupaten_id')
-                    ->relationship('kabupaten', 'id')
+                    ->relationship('kabupaten', 'nama')
                     ->required(),
             ]);
     }
@@ -48,7 +48,7 @@ class KecamatanResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('nama')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('kabupaten.id')
+                Tables\Columns\TextColumn::make('kabupaten.nama')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
@@ -68,8 +68,13 @@ class KecamatanResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\ForceDeleteAction::make(),
+                    Tables\Actions\RestoreAction::make(),
+                ])
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

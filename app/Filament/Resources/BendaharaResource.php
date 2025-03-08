@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
@@ -51,21 +52,32 @@ class BendaharaResource extends Resource
             // ->recordTitleAttribute('nama')
             ->columns([
                 Tables\Columns\TextColumn::make('nama')
+                    ->label('Nama Lengkap')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('nip')
+                    ->label('Nomor Induk Pegawai')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('periode_awal')
-                    ->date()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('periode_akhir')
-                    ->date()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('berkas_foto')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('berkas_tte')
-                    ->searchable(),
+                    ->label('Periode')
+                    ->date('d F Y')
+                    ->sortable()
+                    ->description(
+                        fn(Bendahara $record) => $record->periode_akhir ? 'Hingga: ' . Carbon::parse($record->periode_akhir)->translatedFormat('d F Y') : 'Hingga: (Sekarang)'
+                    ),
+                // Tables\Columns\TextColumn::make('periode_akhir')
+                //     ->date()
+                //     ->sortable(),
+                Tables\Columns\ImageColumn::make('berkas_foto')
+                    ->label('Foto'),
+                Tables\Columns\ImageColumn::make('berkas_tte')
+                    ->label('Tanda Tangan Elektronik'),
                 Tables\Columns\TextColumn::make('status')
-                    ->searchable(),
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'Aktif' => 'success',
+                        'Nonaktif' => 'gray'
+                    }),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -83,8 +95,13 @@ class BendaharaResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\ForceDeleteAction::make(),
+                    Tables\Actions\RestoreAction::make(),
+                ])
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

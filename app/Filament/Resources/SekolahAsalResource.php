@@ -75,19 +75,19 @@ class SekolahAsalResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('alamat')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('negara.id')
+                Tables\Columns\TextColumn::make('negara.nama')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('provinsi.id')
+                Tables\Columns\TextColumn::make('provinsi.nama')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('kabupaten.id')
+                Tables\Columns\TextColumn::make('kabupaten.nama')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('kecamatan.id')
+                Tables\Columns\TextColumn::make('kecamatan.nama')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('kelurahan.id')
+                Tables\Columns\TextColumn::make('kelurahan.nama')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('website')
@@ -113,8 +113,13 @@ class SekolahAsalResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\ForceDeleteAction::make(),
+                    Tables\Actions\RestoreAction::make(),
+                ])
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
