@@ -11,7 +11,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         User::factory()->create([
-            'name' => 'Administrator MTs Negeri 1 Pandeglang',
+            'name' => 'Admin ADMISI',
             'email' => 'adm@mtsn1pandeglang.sch.id',
         ]);
     }

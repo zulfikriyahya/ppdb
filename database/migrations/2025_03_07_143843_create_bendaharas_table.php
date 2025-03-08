@@ -6,9 +6,6 @@ use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('bendaharas', function (Blueprint $table) {
@@ -24,10 +21,6 @@ return new class extends Migration
             $table->softDeletes();
         });
     }
-
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('bendaharas');

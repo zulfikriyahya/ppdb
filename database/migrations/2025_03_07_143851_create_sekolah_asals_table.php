@@ -6,13 +6,9 @@ use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::disableForeignKeyConstraints();
-
         Schema::create('sekolah_asals', function (Blueprint $table) {
             $table->id();
             $table->string('nama');
@@ -32,13 +28,8 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
         });
-
         Schema::enableForeignKeyConstraints();
     }
-
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('sekolah_asals');
