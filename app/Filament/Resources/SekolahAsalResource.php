@@ -34,26 +34,47 @@ class SekolahAsalResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('nama')
+                    ->label('Nama Instansi')
                     ->required(),
-                Forms\Components\TextInput::make('npsn'),
-                Forms\Components\TextInput::make('nss'),
-                Forms\Components\TextInput::make('logo'),
-                Forms\Components\TextInput::make('akreditasi'),
-                Forms\Components\TextInput::make('alamat'),
+                Forms\Components\TextInput::make('npsn')
+                    ->label('Nomor Pokok Sekolah Nasional'),
+                Forms\Components\TextInput::make('nss')
+                    ->label('Nomor Statistik Sekolah'),
+                Forms\Components\TextInput::make('logo')
+                    ->label('Logo'),
+                Forms\Components\Select::make('akreditasi')
+                    ->label('Akreditasi')
+                    ->options(['A' => 'A', 'B' => 'B', 'C' => 'C', 'D' => 'D']),
+                Forms\Components\TextInput::make('alamat')
+                    ->label('Alamat')
+                    ->required(),
                 Forms\Components\Select::make('negara_id')
-                    ->relationship('negara', 'id'),
+                    ->label('Negara')
+                    ->relationship('negara', 'nama')
+                    ->required(),
                 Forms\Components\Select::make('provinsi_id')
-                    ->relationship('provinsi', 'id'),
+                    ->label('Provinsi')
+                    ->relationship('provinsi', 'nama')
+                    ->required(),
                 Forms\Components\Select::make('kabupaten_id')
-                    ->relationship('kabupaten', 'id'),
+                    ->label('Kabupaten')
+                    ->relationship('kabupaten', 'nama')
+                    ->required(),
                 Forms\Components\Select::make('kecamatan_id')
-                    ->relationship('kecamatan', 'id'),
+                    ->label('Kecamatan')
+                    ->relationship('kecamatan', 'nama')
+                    ->required(),
                 Forms\Components\Select::make('kelurahan_id')
-                    ->relationship('kelurahan', 'id'),
-                Forms\Components\TextInput::make('website'),
+                    ->label('Kelurahan')
+                    ->relationship('kelurahan', 'nama')
+                    ->required(),
+                Forms\Components\TextInput::make('website')
+                    ->label('Website'),
                 Forms\Components\TextInput::make('telepon')
+                    ->label('Telepon')
                     ->tel(),
                 Forms\Components\TextInput::make('email')
+                    ->label('Email')
                     ->email(),
             ]);
     }
@@ -64,47 +85,65 @@ class SekolahAsalResource extends Resource
             // ->recordTitleAttribute('nama')
             ->columns([
                 Tables\Columns\TextColumn::make('nama')
+                    ->label('Nama Instansi')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('npsn')
+                    ->label('Nomor Pokok Sekolah Nasional')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('nss')
+                    ->label('Nomor Statistik Sekolah')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('logo')
+                    ->label('Logo')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('akreditasi')
+                    ->label('Akreditasi')
+                    ->badge()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('alamat')
+                    ->label('Alamat')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('negara.nama')
+                    ->label('Negara')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('provinsi.nama')
+                    ->label('Provinsi')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('kabupaten.nama')
+                    ->label('Kabupaten')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('kecamatan.nama')
+                    ->label('Kecamatan')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('kelurahan.nama')
+                    ->label('Kelurahan')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('website')
+                    ->label('Website')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('telepon')
+                    ->label('Telepon')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
+                    ->label('Email')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label('Dibuat')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Diubah')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('deleted_at')
+                    ->label('Dihapus')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

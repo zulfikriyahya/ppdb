@@ -34,12 +34,19 @@ class PrestasiResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('nama')
+                    ->label('Nama Prestasi')
                     ->required(),
-                Forms\Components\TextInput::make('tingkat')
+                Forms\Components\Select::make('tingkat')
+                    ->label('Tingkat')
+                    ->options(['Nasional' => 'Nasional', 'Provinsi' => 'Provinsi', 'Kabupaten/Kota' => 'Kabupaten/Kota'])
                     ->required(),
-                Forms\Components\TextInput::make('kategori')
+                Forms\Components\Select::make('kategori')
+                    ->label('Kategori')
+                    ->options(['Regu' => 'Regu', 'Tunggal' => 'Tunggal'])
                     ->required(),
-                Forms\Components\TextInput::make('peringkat')
+                Forms\Components\Select::make('peringkat')
+                    ->label('Peringkat')
+                    ->options(['1' => '1', '2' => '2', '3' => '3'])
                     ->required(),
             ]);
     }
@@ -50,22 +57,29 @@ class PrestasiResource extends Resource
             // ->recordTitleAttribute('nama')
             ->columns([
                 Tables\Columns\TextColumn::make('nama')
+                    ->label('Nama Prestasi')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('tingkat')
+                    ->label('Tingkat')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('kategori')
+                    ->label('Kategori')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('peringkat')
+                    ->label('Peringkat')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label('Dibuat')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Diubah')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('deleted_at')
+                    ->label('Dihapus')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

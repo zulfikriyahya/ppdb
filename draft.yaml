@@ -147,20 +147,27 @@ models:
   # Tabel Tahun Pelajaran
   TahunPelajaran:
     nama: string
-    tanggal_pendaftaran_mulai: datetime
+    tanggal_pendaftaran_jalur_prestasi_mulai: datetime
+    tanggal_pendaftaran_jalur_prestasi_selesai: datetime
+
     tanggal_pengumuman_jalur_prestasi_mulai: datetime
     tanggal_pengumuman_jalur_prestasi_selesai: datetime
+
     tanggal_penerbitan_kartu_tes_mulai: datetime
     tanggal_penerbitan_kartu_tes_selesai: datetime
+
     tanggal_tes_akademik_mulai: datetime
     tanggal_tes_akademik_selesai: datetime
+
     tanggal_tes_praktik_mulai: datetime
     tanggal_tes_praktik_selesai: datetime
+
     tanggal_pengumuman_jalur_reguler_mulai: datetime
     tanggal_pengumuman_jalur_reguler_selesai: datetime
+
     tanggal_registrasi_berkas_mulai: datetime
     tanggal_registrasi_berkas_selesai: datetime
-    tanggal_pendaftaran_selesai: datetime
+
     kuantitas: integer
     status: enum('Aktif','Nonaktif')
     relationships:
@@ -170,9 +177,9 @@ models:
   # Tabel Prestasi
   Prestasi:
     nama: string
-    tingkat: integer
-    kategori: string
-    peringkat: integer
+    tingkat: enum('Nasional','Provinsi','Kabupaten/Kota')
+    kategori: enum('Regu','Tunggal')
+    peringkat: enum('1', '2', '3')
     relationships:
       hasMany: CalonSiswa
       # belongsTo: #

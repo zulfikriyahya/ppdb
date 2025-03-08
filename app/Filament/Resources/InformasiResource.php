@@ -8,6 +8,7 @@ use Filament\Forms\Form;
 use App\Models\Informasi;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\InformasiResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -34,16 +35,29 @@ class InformasiResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('judul')
+                    ->label('Judul')
                     ->required(),
-                Forms\Components\TextInput::make('isi')
+                Forms\Components\TextArea::make('isi')
+                    ->label('Uraian')
                     ->required(),
-                Forms\Components\TextInput::make('gambar'),
+                Forms\Components\FileUpload::make('gambar')
+                    ->label('Lampiran')
+                    ->maxSize('2048')
+                    ->minSize('10')
+                    ->downloadable(true)
+                    ->fetchFileInformation(false)
+                    ->directory('assets/')
+                    ->acceptedFileTypes(['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/pdf', 'image/png', 'image/jpeg', 'image/png', 'image/webp']),
                 Forms\Components\DateTimePicker::make('tanggal')
+                    ->label('Tanggal')
                     ->required(),
                 Forms\Components\Select::make('tahun_pelajaran_id')
-                    ->relationship('tahunPelajaran', 'id')
+                    ->label('')
+                    ->relationship('tahunPelajaran', 'nama')
                     ->required(),
-                Forms\Components\TextInput::make('status')
+                Forms\Components\Select::make('status')
+                    ->label('Status')
+                    ->options(['Publish' => 'Publish', 'Draft' => 'Draft'])
                     ->required(),
             ]);
     }
@@ -54,28 +68,50 @@ class InformasiResource extends Resource
             // ->recordTitleAttribute('nama')
             ->columns([
                 Tables\Columns\TextColumn::make('judul')
+                    ->label('Judul')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('isi')
+                    ->label('Uraian')
+                    ->wrap()
+                    ->words(5)
+                    ->tooltip(function (TextColumn $column): ?string {
+                        $state = $column->getState();
+                        if (strlen($state) <= $column->getCharacterLimit()) {
+                            return null;
+                        }
+                        return $state;
+                    })
                     ->searchable(),
-                Tables\Columns\TextColumn::make('gambar')
+                Tables\Columns\ImageColumn::make('gambar')
+                    ->label('Lampiran')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('tanggal')
+                    ->label('Tanggal')
                     ->dateTime()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('tahunPelajaran.id')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('tahunPelajaran.nama')
+                    ->label('Tahun Pendaftaran')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'Publish' => 'success',
+                        'Draft' => 'gray'
+                    })
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label('Dibuat')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Diubah')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('deleted_at')
+                    ->label('Dihapus')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

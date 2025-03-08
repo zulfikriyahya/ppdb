@@ -35,7 +35,7 @@
         } => $footerPosition === 'footer',
     ])
 >
-    <span @class(['flex items-center gap-2' => $isHtmlSentence])>&copy; {{ "1970 - " . now()->format('Y') }}
+    <span @class(['flex items-center gap-2' => $isHtmlSentence])>&copy; {{ "1970 - " . now()->format('Y') . " MTs Negeri 1 Pandeglang" }}
         @if($sentence)
             @if($isHtmlSentence)
                 <span class="flex items-center gap-2">{!! $sentence !!}</span>
@@ -43,7 +43,7 @@
                 {{ $sentence }}
             @endif
         @else
-            {{ config('filament-easy-footer.app_name') }}
+            {{-- {{ config('filament-easy-footer.app_name') }} --}}
         @endif
     </span>
 

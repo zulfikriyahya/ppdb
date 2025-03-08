@@ -81,20 +81,20 @@ class AdminPanelProvider extends PanelProvider
                 EasyFooterPlugin::make()
                     // ->footerEnabled() // true by default,
                     ->withFooterPosition('footer')
-                    ->withGithub(showLogo: true, showUrl: true)
-                    ->withLoadTime('Halaman ini dimuat dalam')
-                    ->withSentence(
-                        new HtmlString(
-                            '<b>Madrasah Tsanawiyah Negeri 1 Pandeglang</b> | Dibuat dan dikembangkan dengan ❤ oleh <a href="https://instagram.com/zulfikriyahya_"><b>Yahya Zulfikri</b></a>'
-                        )
-                    )
+                    // ->withGithub(showLogo: true, showUrl: true)
+                    // ->withLoadTime('Halaman ini dimuat dalam')
+                    // ->withSentence(
+                    //     new HtmlString(
+                    //         '<b>Madrasah Tsanawiyah Negeri 1 Pandeglang</b> | Dibuat dan dikembangkan dengan ❤ oleh <a href="https://instagram.com/zulfikriyahya_"><b>Yahya Zulfikri</b></a>'
+                    //     )
+                    // )
                     ->withLinks([
                         ['title' => 'Official Website', 'url' => 'https://www.mtsn1pandeglang.sch.id/'],
                         ['title' => 'Kebijakan Privasi', 'url' => 'https://www.mtsn1pandeglang.sch.id/kebijakan-privasi/'],
                         ['title' => 'Tentang Kami', 'url' => 'https://www.mtsn1pandeglang.sch.id/about/'],
                         // ['title' => 'Kontak', 'url' => 'https://wa.me/6289612050291/?text=Hallo,%20PTSP%20MTs%20Negeri%201%20Pandeglang.'],
                     ])
-                    ->withBorder()
+                // ->withBorder()
                 // ->hiddenFromPagesEnabled()
                 // ->hiddenFromPages(['admin/login', 'admin/forgot-password', 'admin/register', 'admin/email/verify']),
             ]);

@@ -242,6 +242,7 @@ class TahunPelajaranResource extends Resource
                 Tables\Columns\TextColumn::make('kuantitas')
                     ->label('Kuota')
                     ->numeric()
+                    ->suffix(' Pendaftar')
                     ->badge()
                     ->toggleable(isToggledHiddenByDefault: true),
 

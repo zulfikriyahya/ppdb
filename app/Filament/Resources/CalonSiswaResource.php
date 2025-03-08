@@ -73,19 +73,19 @@ class CalonSiswaResource extends Resource
                 Forms\Components\TextInput::make('siswa_alamat')
                     ->required(),
                 Forms\Components\Select::make('siswa_negara_id')
-                    ->relationship('siswaNegara', 'id')
+                    ->relationship('siswaNegara', 'nama')
                     ->required(),
                 Forms\Components\Select::make('siswa_provinsi_id')
-                    ->relationship('siswaProvinsi', 'id')
+                    ->relationship('siswaProvinsi', 'nama')
                     ->required(),
                 Forms\Components\Select::make('siswa_kabupaten_id')
-                    ->relationship('siswaKabupaten', 'id')
+                    ->relationship('siswaKabupaten', 'nama')
                     ->required(),
                 Forms\Components\Select::make('siswa_kecamatan_id')
-                    ->relationship('siswaKecamatan', 'id')
+                    ->relationship('siswaKecamatan', 'nama')
                     ->required(),
                 Forms\Components\Select::make('siswa_kelurahan_id')
-                    ->relationship('siswaKelurahan', 'id')
+                    ->relationship('siswaKelurahan', 'nama')
                     ->required(),
                 Forms\Components\TextInput::make('berkas_foto')
                     ->required(),
@@ -110,19 +110,19 @@ class CalonSiswaResource extends Resource
                 Forms\Components\TextInput::make('ibu_alamat')
                     ->required(),
                 Forms\Components\Select::make('ibu_negara_id')
-                    ->relationship('ibuNegara', 'id')
+                    ->relationship('ibuNegara', 'nama')
                     ->required(),
                 Forms\Components\Select::make('ibu_provinsi_id')
-                    ->relationship('ibuProvinsi', 'id')
+                    ->relationship('ibuProvinsi', 'nama')
                     ->required(),
                 Forms\Components\Select::make('ibu_kabupaten_id')
-                    ->relationship('ibuKabupaten', 'id')
+                    ->relationship('ibuKabupaten', 'nama')
                     ->required(),
                 Forms\Components\Select::make('ibu_kecamatan_id')
-                    ->relationship('ibuKecamatan', 'id')
+                    ->relationship('ibuKecamatan', 'nama')
                     ->required(),
                 Forms\Components\Select::make('ibu_kelurahan_id')
-                    ->relationship('ibuKelurahan', 'id')
+                    ->relationship('ibuKelurahan', 'nama')
                     ->required(),
                 Forms\Components\TextInput::make('ayah_nama')
                     ->required(),
@@ -134,19 +134,19 @@ class CalonSiswaResource extends Resource
                 Forms\Components\TextInput::make('ayah_alamat')
                     ->required(),
                 Forms\Components\Select::make('ayah_negara_id')
-                    ->relationship('ayahNegara', 'id')
+                    ->relationship('ayahNegara', 'nama')
                     ->required(),
                 Forms\Components\Select::make('ayah_provinsi_id')
-                    ->relationship('ayahProvinsi', 'id')
+                    ->relationship('ayahProvinsi', 'nama')
                     ->required(),
                 Forms\Components\Select::make('ayah_kabupaten_id')
-                    ->relationship('ayahKabupaten', 'id')
+                    ->relationship('ayahKabupaten', 'nama')
                     ->required(),
                 Forms\Components\Select::make('ayah_kecamatan_id')
-                    ->relationship('ayahKecamatan', 'id')
+                    ->relationship('ayahKecamatan', 'nama')
                     ->required(),
                 Forms\Components\Select::make('ayah_kelurahan_id')
-                    ->relationship('ayahKelurahan', 'id')
+                    ->relationship('ayahKelurahan', 'nama')
                     ->required(),
                 Forms\Components\TextInput::make('wali_nama'),
                 Forms\Components\TextInput::make('wali_telepon')
@@ -155,23 +155,23 @@ class CalonSiswaResource extends Resource
                 Forms\Components\TextInput::make('wali_status'),
                 Forms\Components\TextInput::make('wali_alamat'),
                 Forms\Components\Select::make('wali_negara_id')
-                    ->relationship('waliNegara', 'id'),
+                    ->relationship('waliNegara', 'nama'),
                 Forms\Components\Select::make('wali_provinsi_id')
-                    ->relationship('waliProvinsi', 'id'),
+                    ->relationship('waliProvinsi', 'nama'),
                 Forms\Components\Select::make('wali_kabupaten_id')
-                    ->relationship('waliKabupaten', 'id'),
+                    ->relationship('waliKabupaten', 'nama'),
                 Forms\Components\Select::make('wali_kecamatan_id')
-                    ->relationship('waliKecamatan', 'id'),
+                    ->relationship('waliKecamatan', 'nama'),
                 Forms\Components\Select::make('wali_kelurahan_id')
-                    ->relationship('waliKelurahan', 'id'),
+                    ->relationship('waliKelurahan', 'nama'),
                 Forms\Components\Select::make('sekolah_asal_id')
-                    ->relationship('sekolahAsal', 'id')
+                    ->relationship('sekolahAsal', 'nama')
                     ->required(),
                 Forms\Components\Select::make('jalur_pendaftaran_id')
-                    ->relationship('jalurPendaftaran', 'id')
+                    ->relationship('jalurPendaftaran', 'nama')
                     ->required(),
                 Forms\Components\Select::make('prestasi_id')
-                    ->relationship('prestasi', 'id'),
+                    ->relationship('prestasi', 'nama'),
                 Forms\Components\TextInput::make('peminatan_ekstrakurikuler')
                     ->required(),
                 Forms\Components\TextInput::make('peminatan_pelajaran')
@@ -198,7 +198,7 @@ class CalonSiswaResource extends Resource
                     ->numeric(),
                 Forms\Components\TextInput::make('status_pendaftaran'),
                 Forms\Components\Select::make('kelas_id')
-                    ->relationship('kelas', 'id'),
+                    ->relationship('kelas', 'nama'),
                 Forms\Components\TextInput::make('tes_sesi'),
                 Forms\Components\TextInput::make('tes_ruang'),
                 Forms\Components\DateTimePicker::make('tes_akademik_mulai'),
