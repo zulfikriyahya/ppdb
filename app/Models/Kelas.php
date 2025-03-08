@@ -12,11 +12,6 @@ class Kelas extends Model
 {
     use HasFactory, SoftDeletes;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'nama',
         'kuantitas_pria',
@@ -25,11 +20,6 @@ class Kelas extends Model
         'tahun_pelajaran_id',
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
     protected $casts = [
         'id' => 'integer',
         'kuantitas_pria' => 'integer',

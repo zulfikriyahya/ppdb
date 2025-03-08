@@ -11,11 +11,6 @@ class Sekretaris extends Model
 {
     use HasFactory, SoftDeletes;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'nama',
         'nip',
@@ -26,11 +21,6 @@ class Sekretaris extends Model
         'status',
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
     protected $casts = [
         'id' => 'integer',
         'periode_awal' => 'date',

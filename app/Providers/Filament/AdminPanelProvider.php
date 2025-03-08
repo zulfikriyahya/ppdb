@@ -82,7 +82,7 @@ class AdminPanelProvider extends PanelProvider
                     // ->footerEnabled() // true by default,
                     ->withFooterPosition('footer')
                     // ->withGithub(showLogo: true, showUrl: true)
-                    // ->withLoadTime('Halaman ini dimuat dalam')
+                    ->withLoadTime('Halaman ini dimuat dalam')
                     // ->withSentence(
                     //     new HtmlString(
                     //         '<b>Madrasah Tsanawiyah Negeri 1 Pandeglang</b> | Dibuat dan dikembangkan dengan ❤ oleh <a href="https://instagram.com/zulfikriyahya_"><b>Yahya Zulfikri</b></a>'

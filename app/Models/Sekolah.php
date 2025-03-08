@@ -12,11 +12,6 @@ class Sekolah extends Model
 {
     use HasFactory, SoftDeletes;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'nama',
         'npsn',
@@ -35,11 +30,6 @@ class Sekolah extends Model
         'email',
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
     protected $casts = [
         'id' => 'integer',
         'pimpinan_id' => 'integer',

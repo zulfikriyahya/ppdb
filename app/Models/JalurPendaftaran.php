@@ -12,22 +12,12 @@ class JalurPendaftaran extends Model
 {
     use HasFactory, SoftDeletes;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'nama',
         'kuantitas',
         'tahun_pelajaran_id',
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
     protected $casts = [
         'id' => 'integer',
         'tahun_pelajaran_id' => 'integer',
