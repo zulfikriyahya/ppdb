@@ -85,14 +85,15 @@ class AdminPanelProvider extends PanelProvider
                     ->withLoadTime('Halaman ini dimuat dalam')
                     // ->withSentence(
                     //     new HtmlString(
-                    //         '<b>Madrasah Tsanawiyah Negeri 1 Pandeglang</b> | Dibuat dan dikembangkan dengan ❤ oleh <a href="https://instagram.com/zulfikriyahya_"><b>Yahya Zulfikri</b></a>'
+                    //         'Dibuat dan dikembangkan dengan ❤ oleh <a href="https://instagram.com/zulfikriyahya_"><b>Yahya Zulfikri</b></a>'
                     //     )
                     // )
                     ->withLinks([
-                        ['title' => 'Official Website', 'url' => 'https://www.mtsn1pandeglang.sch.id/'],
-                        ['title' => 'Kebijakan Privasi', 'url' => 'https://www.mtsn1pandeglang.sch.id/kebijakan-privasi/'],
-                        ['title' => 'Tentang Kami', 'url' => 'https://www.mtsn1pandeglang.sch.id/about/'],
+                        // ['title' => 'Official Website', 'url' => 'https://www.mtsn1pandeglang.sch.id/'],
+                        // ['title' => 'Kebijakan Privasi', 'url' => 'https://www.mtsn1pandeglang.sch.id/kebijakan-privasi/'],
+                        // ['title' => 'Tentang Kami', 'url' => 'https://www.mtsn1pandeglang.sch.id/about/'],
                         // ['title' => 'Kontak', 'url' => 'https://wa.me/6289612050291/?text=Hallo,%20PTSP%20MTs%20Negeri%201%20Pandeglang.'],
+                        ['title' => 'Dibuat dan dikembangkan dengan ❤ oleh Yahya Zulfikri', 'url' => 'https://instagram.com/zulfikriyahya_'],
                     ])
                 // ->withBorder()
                 // ->hiddenFromPagesEnabled()
