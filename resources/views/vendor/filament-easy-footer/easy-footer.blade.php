@@ -35,7 +35,7 @@
         } => $footerPosition === 'footer',
     ])
 >
-    <a href='https://mtsn1pandeglang.sch.id' class="text-gray-600 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 font-semibold" @class(['flex gap-2 font-semibold' => $isHtmlSentence])>&copy; {{ "1970 - " . now()->format('Y') . " Madrasah Tsanawiyah Negeri 1 Pandeglang" }}
+    <a href='https://mtsn1pandeglang.sch.id' class="text-gray-600 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 font-semibold" @class(['flex gap-2 font-semibold' => $isHtmlSentence])>&copy; {{ "1970 - " . now()->format('Y') . " MTs Negeri 1 Pandeglang" }}
         @if($sentence)
             @if($isHtmlSentence)
                 <span class="flex items-center gap-2">{!! $sentence !!}</span>
