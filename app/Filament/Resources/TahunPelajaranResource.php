@@ -242,12 +242,12 @@ class TahunPelajaranResource extends Resource
                 Tables\Columns\TextColumn::make('kuantitas')
                     ->label('Kuota')
                     ->numeric()
-                    ->description(' Pendaftar')
+                    ->badge()
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 // Pendaftaran Jalur Prestasi
                 Tables\Columns\TextColumn::make('tanggal_pendaftaran_jalur_prestasi_mulai')
-                    ->label('Pendaftaran')
+                    ->label('Pendaftaran Jalur Prestasi')
                     ->dateTime('d F Y H:m:s')
                     ->description(
                         fn(TahunPelajaran $record) => $record->tanggal_pendaftaran_jalur_prestasi_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pendaftaran_jalur_prestasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
@@ -261,6 +261,15 @@ class TahunPelajaranResource extends Resource
                     ->description(
                         fn(TahunPelajaran $record) => $record->tanggal_pengumuman_jalur_prestasi_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pengumuman_jalur_prestasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
                     ),
+
+                // Pendaftaran Jalur Reguler
+                Tables\Columns\TextColumn::make('tanggal_pendaftaran_jalur_reguler_mulai')
+                    ->label('Pendaftaran Jalur Reguler')
+                    ->dateTime('d F Y H:m:s')
+                    ->description(
+                        fn(TahunPelajaran $record) => $record->tanggal_pendaftaran_jalur_reguler_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pendaftaran_jalur_reguler_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
+                    )
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 // Penerbitan Kartu Tes
                 Tables\Columns\TextColumn::make('tanggal_penerbitan_kartu_tes_mulai')
