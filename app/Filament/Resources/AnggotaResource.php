@@ -36,93 +36,84 @@ class AnggotaResource extends Resource
     {
         return $form
             ->schema([
-                Repeater::make('Anggota')
+                // Biodata
+                Section::make('Biodata')
+                    ->collapsible()
                     ->schema([
-                        // Biodata
-                        Section::make('Biodata')
-                            ->collapsible()
-                            ->schema([
-                                // Nama Lengkap
-                                Forms\Components\TextInput::make('nama')
-                                    ->label('Nama Lengkap')
-                                    ->required(),
-                                // Nomor Indul Pegawai (NIP)
-                                Forms\Components\TextInput::make('nip')
-                                    ->label('Nomor Induk Pegawai')
-                                    ->prefix('NIP'),
-                                // Tahun Pendaftaran
-                                Forms\Components\Select::make('tahun_pendaftaran_id')
-                                    ->label('Tahun Pendaftaran')
-                                    ->relationship('tahunPendaftaran', 'nama'),
-                                // Status
-                                Forms\Components\Select::make('status')
-                                    ->label('Status')
-                                    ->options(['Aktif' => 'Aktif', 'Nonaktif' => 'Nonaktif',])
-                                    ->required(),
-                            ])
-                            ->columns([
-                                'sm' => '100%',
-                                'md' => 2,
-                                'lg' => 4,
-                            ]),
-
-                        // Berkas
-                        Section::make('Berkas')
-                            ->collapsed()
-                            ->schema([
-                                // Foto
-                                Forms\Components\FileUpload::make('berkas_foto')
-                                    ->label('Foto')
-                                    ->image()
-                                    ->imageEditor()
-                                    ->imageEditorAspectRatios([
-                                        null,
-                                        '1:1' => '1:1',
-                                        '3:4' => '3:4',
-                                    ])
-                                    ->fetchFileInformation(false)
-                                    ->directory('assets/anggota')
-                                    ->downloadable()
-                                    ->maxSize(500)
-                                    ->minSize(10)
-                                    ->required(),
-                                // Tanda Tangan Elektronik
-                                Forms\Components\FileUpload::make('berkas_tte')
-                                    ->label('Tanda Tangan Elektronik')
-                                    ->image()
-                                    ->imageEditor()
-                                    ->imageEditorAspectRatios([
-                                        null,
-                                        '1:1' => '1:1',
-                                    ])
-                                    ->fetchFileInformation(false)
-                                    ->directory('assets/anggota')
-                                    ->downloadable()
-                                    ->maxSize(500)
-                                    ->minSize(10)
-                                    ->required(),
-                                // Surat Tugas/Surat Keputusan
-                                Forms\Components\FileUpload::make('berkas_sk')
-                                    ->label('Surat Tugas/Surat Keputusan')
-                                    ->fetchFileInformation(false)
-                                    ->directory('assets/anggota')
-                                    ->downloadable()
-                                    ->maxSize(500)
-                                    ->minSize(10)
-                                    ->required(),
-                            ])
-                            ->columns([
-                                'sm' => '100%',
-                                'md' => 3,
-                                'lg' => 3,
-                            ]),
+                        // Nama Lengkap
+                        Forms\Components\TextInput::make('nama')
+                            ->label('Nama Lengkap')
+                            ->required(),
+                        // Nomor Indul Pegawai (NIP)
+                        Forms\Components\TextInput::make('nip')
+                            ->label('Nomor Induk Pegawai')
+                            ->prefix('NIP'),
+                        // Tahun Pendaftaran
+                        Forms\Components\Select::make('tahun_pendaftaran_id')
+                            ->label('Tahun Pendaftaran')
+                            ->relationship('tahunPendaftaran', 'nama'),
+                        // Status
+                        Forms\Components\Select::make('status')
+                            ->label('Status')
+                            ->options(['Aktif' => 'Aktif', 'Nonaktif' => 'Nonaktif',])
+                            ->required(),
                     ])
-                    // ->columns([
-                    //     'sm' => '100%',
-                    //     'md' => 2,
-                    //     'lg' => 2,
-                    // ]),
-                    ->columnSpanFull(),
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => 2,
+                        'lg' => 4,
+                    ]),
+
+                // Berkas
+                Section::make('Berkas')
+                    ->collapsed()
+                    ->schema([
+                        // Foto
+                        Forms\Components\FileUpload::make('berkas_foto')
+                            ->label('Foto')
+                            ->image()
+                            ->imageEditor()
+                            ->imageEditorAspectRatios([
+                                null,
+                                '1:1' => '1:1',
+                                '3:4' => '3:4',
+                            ])
+                            ->fetchFileInformation(false)
+                            ->directory('assets/anggota')
+                            ->downloadable()
+                            ->maxSize(500)
+                            ->minSize(10),
+                        // ->required(),
+                        // Tanda Tangan Elektronik
+                        Forms\Components\FileUpload::make('berkas_tte')
+                            ->label('Tanda Tangan Elektronik')
+                            ->image()
+                            ->imageEditor()
+                            ->imageEditorAspectRatios([
+                                null,
+                                '1:1' => '1:1',
+                            ])
+                            ->fetchFileInformation(false)
+                            ->directory('assets/anggota')
+                            ->downloadable()
+                            ->maxSize(500)
+                            ->minSize(10),
+                        // ->required(),
+                        // Surat Tugas/Surat Keputusan
+                        Forms\Components\FileUpload::make('berkas_sk')
+                            ->label('Surat Tugas/Surat Keputusan')
+                            ->fetchFileInformation(false)
+                            ->directory('assets/anggota')
+                            ->downloadable()
+                            ->maxSize(500)
+                            ->minSize(10),
+                        // ->required(),
+                    ])
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => 3,
+                        'lg' => 3,
+                    ]),
             ]);
     }
 

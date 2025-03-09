@@ -25,7 +25,6 @@ class Anggota extends Model
     protected $casts = [
         'id' => 'integer',
         'tahun_pendaftaran_id' => 'integer',
-        'data' => 'array',
     ];
 
     public function tahunPendaftaran(): BelongsTo
