@@ -52,8 +52,6 @@ class UserResource extends Resource
                     ->password()
                     ->required(fn($record) => $record === null)
                     ->dehydrateStateUsing(fn($state, $record) => $state ? bcrypt($state) : $record->password),
-                // Forms\Components\TextInput::make('current_team_id')
-                //     ->numeric(),
                 Forms\Components\FileUpload::make('avatar')
                     ->label('Avatar')
                     ->avatar()
@@ -61,16 +59,7 @@ class UserResource extends Resource
                     ->preserveFilenames()
                     ->minSize(10)
                     ->maxSize(100)
-                    // ->validationMessages([
-                    //     'maxSize' => 'Ukuran file tidak boleh lebih dari 100 KB',
-                    //     'minSize' => 'Ukuran file tidak boleh kurang dari 10 KB',
-                    // ])
                     ->fetchFileInformation(false),
-                // Forms\Components\Textarea::make('two_factor_secret')
-                //     ->columnSpanFull(),
-                // Forms\Components\Textarea::make('two_factor_recovery_codes')
-                //     ->columnSpanFull(),
-                // Forms\Components\DateTimePicker::make('two_factor_confirmed_at'),
             ]);
     }
 
@@ -92,9 +81,6 @@ class UserResource extends Resource
                     ->label('Diverifikasi')
                     ->dateTime()
                     ->sortable(),
-                // Tables\Columns\TextColumn::make('current_team_id')
-                //     ->numeric()
-                //     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat')
                     ->dateTime()
@@ -110,9 +96,6 @@ class UserResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                // Tables\Columns\TextColumn::make('two_factor_confirmed_at')
-                //     ->dateTime()
-                //     ->sortable(),
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),

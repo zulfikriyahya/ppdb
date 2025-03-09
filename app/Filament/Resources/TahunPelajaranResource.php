@@ -228,7 +228,7 @@ class TahunPelajaranResource extends Resource
             // ->recordTitleAttribute('nama')
             ->columns([
                 Tables\Columns\TextColumn::make('nama')
-                    ->label('Tahun Pelajaran')
+                    ->label('Tahun Pendaftaran')
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('status')

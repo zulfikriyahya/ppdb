@@ -33,13 +33,17 @@ class JalurPendaftaranResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('nama')
+                Forms\Components\Select::make('nama')
+                    ->label('Jalur Pendaftaran')
+                    ->options(['Prestasi' => 'Prestasi', 'Reguler' => 'Reguler'])
                     ->required(),
                 Forms\Components\TextInput::make('kuantitas')
+                    ->label('Kuota Pendaftar')
                     ->required()
                     ->numeric(),
                 Forms\Components\Select::make('tahun_pelajaran_id')
-                    ->relationship('tahunPelajaran', 'id')
+                    ->label('Tahun Pendaftaran')
+                    ->relationship('tahunPelajaran', 'nama')
                     ->required(),
             ]);
     }
@@ -50,22 +54,28 @@ class JalurPendaftaranResource extends Resource
             // ->recordTitleAttribute('nama')
             ->columns([
                 Tables\Columns\TextColumn::make('nama')
+                    ->label('Jalur Pendaftaran')
+
                     ->searchable(),
                 Tables\Columns\TextColumn::make('kuantitas')
+                    ->label('Kuota Pendaftar')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('tahunPelajaran.id')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('tahunPelajaran.nama')
+                    ->label('Tahun Pendaftaran')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label('Dibuat')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Diubah')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('deleted_at')
+                    ->label('Dihapus')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

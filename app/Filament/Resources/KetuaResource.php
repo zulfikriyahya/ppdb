@@ -7,7 +7,9 @@ use Filament\Tables;
 use App\Models\Ketua;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Illuminate\Support\Carbon;
 use Filament\Resources\Resource;
+use Filament\Forms\Components\Section;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\KetuaResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -33,15 +35,77 @@ class KetuaResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('nama')
-                    ->required(),
-                Forms\Components\TextInput::make('nip'),
-                Forms\Components\DatePicker::make('periode_awal'),
-                Forms\Components\DatePicker::make('periode_akhir'),
-                Forms\Components\TextInput::make('berkas_foto'),
-                Forms\Components\TextInput::make('berkas_tte'),
-                Forms\Components\TextInput::make('status')
-                    ->required(),
+                Section::make('Biodata')
+                    ->collapsible()
+                    ->schema([
+                        Forms\Components\TextInput::make('nama')
+                            ->label('Nama Lengkap')
+                            ->required(),
+                        Forms\Components\TextInput::make('nip')
+                            ->label('Nomor Induk Kepegawaian')
+                            ->prefix('NIP'),
+                        Forms\Components\Select::make('status')
+                            ->label('Status')
+                            ->options(['Aktif' => 'Aktif', 'Nonaktif' => 'Nonaktif',])
+                            ->required(),
+                    ])
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => 3,
+                        'lg' => 3,
+                    ]),
+                Section::make('Periode')
+                    ->collapsed()
+                    ->schema([
+                        Forms\Components\DatePicker::make('periode_awal')
+                            ->label('TMT Awal')
+                            ->required(),
+                        Forms\Components\DatePicker::make('periode_akhir')
+                            ->label('TMT Akhir'),
+                    ])
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => 2,
+                        'lg' => 2,
+                    ]),
+                Section::make('Berkas')
+                    ->collapsed()
+                    ->schema([
+                        Forms\Components\FileUpload::make('berkas_foto')
+                            ->label('Foto')
+                            ->image()
+                            ->imageEditor()
+                            ->imageEditorAspectRatios([
+                                null,
+                                '1:1' => '1:1',
+                                '4:3' => '4:3',
+                            ])
+                            ->fetchFileInformation(false)
+                            ->directory('assets/ketua')
+                            ->downloadable()
+                            ->maxSize(500)
+                            ->minSize(10)
+                            ->required(),
+                        Forms\Components\FileUpload::make('berkas_tte')
+                            ->label('Tanda Tangan Elektronik')
+                            ->image()
+                            ->imageEditor()
+                            ->imageEditorAspectRatios([
+                                null,
+                                '1:1' => '1:1',
+                            ])
+                            ->fetchFileInformation(false)
+                            ->directory('assets/ketua')
+                            ->downloadable()
+                            ->maxSize(500)
+                            ->minSize(10)
+                            ->required(),
+                    ])
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => 2,
+                        'lg' => 2,
+                    ]),
             ]);
     }
 
@@ -50,31 +114,45 @@ class KetuaResource extends Resource
         return $table
             // ->recordTitleAttribute('nama')
             ->columns([
+                Tables\Columns\ImageColumn::make('berkas_foto')
+                    ->label('Foto')
+                    ->circular()
+                    ->defaultImageUrl('/img/avatar.png'),
                 Tables\Columns\TextColumn::make('nama')
+                    ->label('Nama Lengkap')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('nip')
+                    ->label('NIP')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('periode_awal')
-                    ->date()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('periode_akhir')
-                    ->date()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('berkas_foto')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('berkas_tte')
-                    ->searchable(),
+                    ->label('Periode')
+                    ->date('d F Y')
+                    ->sortable()
+                    ->description(
+                        fn(Ketua $record) => $record->periode_akhir ? 'Hingga: ' . Carbon::parse($record->periode_akhir)->translatedFormat('d F Y') : 'Hingga: (Sekarang)'
+                    ),
+                Tables\Columns\ImageColumn::make('berkas_tte')
+                    ->label('TTE')
+                    ->defaultImageUrl('/img/tte.png'),
                 Tables\Columns\TextColumn::make('status')
-                    ->searchable(),
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'Aktif' => 'success',
+                        'Nonaktif' => 'gray'
+                    }),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label('Dibuat')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Diubah')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('deleted_at')
+                    ->label('Dihapus')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

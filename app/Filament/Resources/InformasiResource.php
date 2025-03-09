@@ -46,7 +46,7 @@ class InformasiResource extends Resource
                     ->minSize('10')
                     ->downloadable(true)
                     ->fetchFileInformation(false)
-                    ->directory('assets/')
+                    ->directory('assets/informasi/')
                     ->acceptedFileTypes(['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/pdf', 'image/png', 'image/jpeg', 'image/png', 'image/webp']),
                 Forms\Components\DateTimePicker::make('tanggal')
                     ->label('Tanggal')
