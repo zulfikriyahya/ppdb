@@ -110,6 +110,8 @@ class AnggotaResource extends Resource
                             ->maxSize(500)
                             ->minSize(10)
                             ->visibility('private')
+                            ->openable()
+                            ->acceptedFileTypes(['application/pdf'])
                             ->required(),
                     ])
                     ->columns([
