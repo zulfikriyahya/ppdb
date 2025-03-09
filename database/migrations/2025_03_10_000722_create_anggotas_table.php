@@ -22,6 +22,7 @@ return new class extends Migration
             $table->enum('status', ['Aktif', 'Nonaktif'])->default('Aktif');
             $table->timestamps();
             $table->softDeletes();
+            $table->json('data')->nullable(); // Tambahkan kolom JSON untuk mode Repeater Form
         });
     }
 

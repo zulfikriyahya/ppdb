@@ -19,11 +19,13 @@ class Anggota extends Model
         'berkas_foto',
         'berkas_tte',
         'status',
+        'data',
     ];
 
     protected $casts = [
         'id' => 'integer',
         'tahun_pendaftaran_id' => 'integer',
+        'data' => 'array',
     ];
 
     public function tahunPendaftaran(): BelongsTo
