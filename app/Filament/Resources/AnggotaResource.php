@@ -83,6 +83,7 @@ class AnggotaResource extends Resource
                             ->downloadable()
                             ->maxSize(500)
                             ->minSize(10)
+                            ->visibility('private')
                             ->required(),
                         // Tanda Tangan Elektronik
                         Forms\Components\FileUpload::make('berkas_tte')
@@ -98,6 +99,7 @@ class AnggotaResource extends Resource
                             ->downloadable()
                             ->maxSize(500)
                             ->minSize(10)
+                            ->visibility('private')
                             ->required(),
                         // Surat Tugas/Surat Keputusan
                         Forms\Components\FileUpload::make('berkas_sk')
@@ -107,6 +109,7 @@ class AnggotaResource extends Resource
                             ->downloadable()
                             ->maxSize(500)
                             ->minSize(10)
+                            ->visibility('private')
                             ->required(),
                     ])
                     ->columns([
@@ -145,9 +148,6 @@ class AnggotaResource extends Resource
                 Tables\Columns\ImageColumn::make('berkas_tte')
                     ->label('TTE')
                     ->defaultImageUrl('/img/tte.png'),
-                Tables\Columns\TextColumn::make('berkas_sk')
-                    ->label('SK')
-                    ->badge(),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()
