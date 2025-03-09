@@ -82,8 +82,8 @@ class AnggotaResource extends Resource
                             ->directory('assets/anggota')
                             ->downloadable()
                             ->maxSize(500)
-                            ->minSize(10),
-                        // ->required(),
+                            ->minSize(10)
+                            ->required(),
                         // Tanda Tangan Elektronik
                         Forms\Components\FileUpload::make('berkas_tte')
                             ->label('Tanda Tangan Elektronik')
@@ -97,8 +97,8 @@ class AnggotaResource extends Resource
                             ->directory('assets/anggota')
                             ->downloadable()
                             ->maxSize(500)
-                            ->minSize(10),
-                        // ->required(),
+                            ->minSize(10)
+                            ->required(),
                         // Surat Tugas/Surat Keputusan
                         Forms\Components\FileUpload::make('berkas_sk')
                             ->label('Surat Tugas/Surat Keputusan')
@@ -106,8 +106,8 @@ class AnggotaResource extends Resource
                             ->directory('assets/anggota')
                             ->downloadable()
                             ->maxSize(500)
-                            ->minSize(10),
-                        // ->required(),
+                            ->minSize(10)
+                            ->required(),
                     ])
                     ->columns([
                         'sm' => '100%',
