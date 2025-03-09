@@ -17,14 +17,14 @@ class Informasi extends Model
         'isi',
         'gambar',
         'tanggal',
-        'tahun_pelajaran_id',
+        'tahun_pendaftaran_id',
         'status',
     ];
 
     protected $casts = [
         'id' => 'integer',
         'tanggal' => 'datetime',
-        'tahun_pelajaran_id' => 'integer',
+        'tahun_pendaftaran_id' => 'integer',
     ];
 
     public function calonSiswas(): HasMany
@@ -32,8 +32,8 @@ class Informasi extends Model
         return $this->hasMany(CalonSiswa::class);
     }
 
-    public function tahunPelajaran(): BelongsTo
+    public function tahunPendaftaran(): BelongsTo
     {
-        return $this->belongsTo(TahunPelajaran::class);
+        return $this->belongsTo(TahunPendaftaran::class);
     }
 }

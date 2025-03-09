@@ -7,17 +7,17 @@ use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
-use App\Models\TahunPelajaran;
+use App\Models\TahunPendaftaran;
 use Filament\Resources\Resource;
 use Illuminate\Support\HtmlString;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\TahunPelajaranResource\Pages;
-use App\Filament\Resources\TahunPelajaranResource\RelationManagers;
+use App\Filament\Resources\TahunPendaftaranResource\Pages;
+use App\Filament\Resources\TahunPendaftaranResource\RelationManagers;
 
-class TahunPelajaranResource extends Resource
+class TahunPendaftaranResource extends Resource
 {
-    protected static ?string $model = TahunPelajaran::class;
+    protected static ?string $model = TahunPendaftaran::class;
 
     protected static ?string $navigationLabel = 'Tahun Pendaftaran';
 
@@ -36,7 +36,7 @@ class TahunPelajaranResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make('Tahun Pendaftaran')
-                    ->collapsed()
+                    ->collapsible()
                     ->description('Data Tahun Pendaftaran.')
                     ->schema([
                         Forms\Components\TextInput::make('nama')
@@ -45,11 +45,11 @@ class TahunPelajaranResource extends Resource
                             ->placeholder('Contoh: 2025/2026'),
 
                         Forms\Components\TextInput::make('kuantitas')
-                            ->label('Kuota Maksimal Pendaftar')
+                            ->label('Kuota Maksimal Registrasi Akun')
                             ->required()
                             ->helperText(new HtmlString('<small><i>Kuota maksimal pendaftar yang dapat membuat akun pendaftaran.<sup style="color:red">*</sup></i></small>'))
                             ->numeric()
-                            ->postfix('Pendaftar'),
+                            ->postfix('Akun'),
                         Forms\Components\Select::make('status')
                             ->label('Status')
                             ->required()
@@ -68,8 +68,27 @@ class TahunPelajaranResource extends Resource
                         '2xl' => 3,
                     ]),
 
+                Forms\Components\Section::make('PPDB')
+                    ->collapsible()
+                    ->description('Tanggal Pelaksanaan PPDB')
+                    ->schema([
+                        Forms\Components\DatePicker::make('tanggal_ppdb_mulai')
+                            ->label('Tanggal Mulai PPDB')
+                            ->required(),
+                        Forms\Components\DatePicker::make('tanggal_ppdb_selesai')
+                            ->label('Tanggal Selesai PPDB')
+                            ->required(),
+                    ])
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => 2,
+                        'lg' => 2,
+                        'xl' => 2,
+                        '2xl' => 2,
+                    ]),
+
                 Forms\Components\Section::make('Pendaftaran Jalur Prestasi')
-                    ->collapsed()
+                    ->collapsible()
                     ->description('Tanggal pendaftaran untuk jalur prestasi.')
                     ->schema([
                         Forms\Components\DateTimePicker::make('tanggal_pendaftaran_jalur_prestasi_mulai')
@@ -88,7 +107,7 @@ class TahunPelajaranResource extends Resource
                     ]),
 
                 Forms\Components\Section::make('Pengumuman Jalur Prestasi')
-                    ->collapsed()
+                    ->collapsible()
                     ->description('Tanggal pengumuman untuk jalur prestasi.')
                     ->schema([
                         Forms\Components\DateTimePicker::make('tanggal_pengumuman_jalur_prestasi_mulai')
@@ -107,7 +126,7 @@ class TahunPelajaranResource extends Resource
                     ]),
 
                 Forms\Components\Section::make('Pendaftaran Jalur Reguler')
-                    ->collapsed()
+                    ->collapsible()
                     ->description('Tanggal pendaftaran untuk jalur reguler.')
                     ->schema([
                         Forms\Components\DateTimePicker::make('tanggal_pendaftaran_jalur_reguler_mulai')
@@ -126,7 +145,7 @@ class TahunPelajaranResource extends Resource
                     ]),
 
                 Forms\Components\Section::make('Penerbitan Kartu Tes')
-                    ->collapsed()
+                    ->collapsible()
                     ->description('Tanggal penerbitan kartu tes untuk jalur prestasi dan jalur reguler.')
                     ->schema([
                         Forms\Components\DateTimePicker::make('tanggal_penerbitan_kartu_tes_mulai')
@@ -145,7 +164,7 @@ class TahunPelajaranResource extends Resource
                     ]),
 
                 Forms\Components\Section::make('Tes Akademik')
-                    ->collapsed()
+                    ->collapsible()
                     ->description('Tanggal tes akademik untuk jalur prestasi dan jalur reguler.')
                     ->schema([
                         Forms\Components\DateTimePicker::make('tanggal_tes_akademik_mulai')
@@ -164,7 +183,7 @@ class TahunPelajaranResource extends Resource
                     ]),
 
                 Forms\Components\Section::make('Tes Praktik')
-                    ->collapsed()
+                    ->collapsible()
                     ->description('Tanggal tes praktik untuk jalur prestasi dan jalur reguler.')
                     ->schema([
                         Forms\Components\DateTimePicker::make('tanggal_tes_praktik_mulai')
@@ -183,7 +202,7 @@ class TahunPelajaranResource extends Resource
                     ]),
 
                 Forms\Components\Section::make('Pengumuman Jalur Reguler')
-                    ->collapsed()
+                    ->collapsible()
                     ->description('Tanggal pengumuman untuk jalur reguler.')
                     ->schema([
                         Forms\Components\DateTimePicker::make('tanggal_pengumuman_jalur_reguler_mulai')
@@ -202,7 +221,7 @@ class TahunPelajaranResource extends Resource
                     ]),
 
                 Forms\Components\Section::make('Registrasi Berkas')
-                    ->collapsed()
+                    ->collapsible()
                     ->description('Tanggal registrasi berkas untuk jalur prestasi dan jalur reguler.')
                     ->schema([
                         Forms\Components\DateTimePicker::make('tanggal_registrasi_berkas_mulai')
@@ -246,12 +265,20 @@ class TahunPelajaranResource extends Resource
                     ->badge()
                     ->toggleable(isToggledHiddenByDefault: true),
 
+                // PPDB
+                Tables\Columns\TextColumn::make('tanggal_ppdb_mulai')
+                    ->label('Pendaftaran Jalur Prestasi')
+                    ->date('d F Y')
+                    ->description(
+                        fn(TahunPendaftaran $record) => $record->tanggal_ppdb_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_ppdb_selesai)->translatedFormat('d F Y') : 'Hingga: (Sekarang)'
+                    ),
+
                 // Pendaftaran Jalur Prestasi
                 Tables\Columns\TextColumn::make('tanggal_pendaftaran_jalur_prestasi_mulai')
                     ->label('Pendaftaran Jalur Prestasi')
                     ->dateTime('d F Y H:i:s')
                     ->description(
-                        fn(TahunPelajaran $record) => $record->tanggal_pendaftaran_jalur_prestasi_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pendaftaran_jalur_prestasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
+                        fn(TahunPendaftaran $record) => $record->tanggal_pendaftaran_jalur_prestasi_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pendaftaran_jalur_prestasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
                     ),
 
                 // Pengumuman Jalur Prestasi
@@ -259,7 +286,7 @@ class TahunPelajaranResource extends Resource
                     ->label('Pengumuman Jalur Prestasi')
                     ->dateTime('d F Y H:i:s')
                     ->description(
-                        fn(TahunPelajaran $record) => $record->tanggal_pengumuman_jalur_prestasi_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pengumuman_jalur_prestasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
+                        fn(TahunPendaftaran $record) => $record->tanggal_pengumuman_jalur_prestasi_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pengumuman_jalur_prestasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
                     ),
 
                 // Pendaftaran Jalur Reguler
@@ -267,7 +294,7 @@ class TahunPelajaranResource extends Resource
                     ->label('Pendaftaran Jalur Reguler')
                     ->dateTime('d F Y H:i:s')
                     ->description(
-                        fn(TahunPelajaran $record) => $record->tanggal_pendaftaran_jalur_reguler_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pendaftaran_jalur_reguler_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
+                        fn(TahunPendaftaran $record) => $record->tanggal_pendaftaran_jalur_reguler_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pendaftaran_jalur_reguler_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
                     ),
 
                 // Penerbitan Kartu Tes
@@ -275,7 +302,7 @@ class TahunPelajaranResource extends Resource
                     ->label('Penerbitan Kartu Tes')
                     ->dateTime('d F Y H:i:s')
                     ->description(
-                        fn(TahunPelajaran $record) => $record->tanggal_penerbitan_kartu_tes_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_penerbitan_kartu_tes_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
+                        fn(TahunPendaftaran $record) => $record->tanggal_penerbitan_kartu_tes_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_penerbitan_kartu_tes_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
                     ),
 
                 // Tes Akademik
@@ -283,7 +310,7 @@ class TahunPelajaranResource extends Resource
                     ->label('Tes Akademik')
                     ->dateTime('d F Y H:i:s')
                     ->description(
-                        fn(TahunPelajaran $record) => $record->tanggal_tes_akademik_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_tes_akademik_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
+                        fn(TahunPendaftaran $record) => $record->tanggal_tes_akademik_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_tes_akademik_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
                     ),
 
                 // Tes Praktik
@@ -291,7 +318,7 @@ class TahunPelajaranResource extends Resource
                     ->label('Tes Praktik')
                     ->dateTime('d F Y H:i:s')
                     ->description(
-                        fn(TahunPelajaran $record) => $record->tanggal_tes_praktik_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_tes_praktik_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
+                        fn(TahunPendaftaran $record) => $record->tanggal_tes_praktik_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_tes_praktik_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
                     ),
 
                 // Pengumuman Jalur Reguler
@@ -299,7 +326,7 @@ class TahunPelajaranResource extends Resource
                     ->label('Pengumuman Jalur Reguler')
                     ->dateTime('d F Y H:i:s')
                     ->description(
-                        fn(TahunPelajaran $record) => $record->tanggal_pengumuman_jalur_reguler_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pengumuman_jalur_reguler_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
+                        fn(TahunPendaftaran $record) => $record->tanggal_pengumuman_jalur_reguler_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pengumuman_jalur_reguler_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
                     ),
 
                 // Registrasi Berkas
@@ -307,7 +334,7 @@ class TahunPelajaranResource extends Resource
                     ->label('Registrasi Berkas')
                     ->dateTime('d F Y H:i:s')
                     ->description(
-                        fn(TahunPelajaran $record) => $record->tanggal_registrasi_berkas_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_registrasi_berkas_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
+                        fn(TahunPendaftaran $record) => $record->tanggal_registrasi_berkas_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_registrasi_berkas_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
                     ),
 
                 // Timestamp
@@ -358,10 +385,10 @@ class TahunPelajaranResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListTahunPelajarans::route('/'),
-            'create' => Pages\CreateTahunPelajaran::route('/create'),
-            'view' => Pages\ViewTahunPelajaran::route('/{record}'),
-            'edit' => Pages\EditTahunPelajaran::route('/{record}/edit'),
+            'index' => Pages\ListTahunPendaftarans::route('/'),
+            'create' => Pages\CreateTahunPendaftaran::route('/create'),
+            'view' => Pages\ViewTahunPendaftaran::route('/{record}'),
+            'edit' => Pages\EditTahunPendaftaran::route('/{record}/edit'),
         ];
     }
 

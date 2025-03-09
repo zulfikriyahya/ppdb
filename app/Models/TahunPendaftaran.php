@@ -7,12 +7,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class TahunPelajaran extends Model
+class TahunPendaftaran extends Model
 {
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'nama',
+        'tanggal_ppdb_mulai',
+        'tanggal_ppdb_selesai',
         'tanggal_pendaftaran_jalur_prestasi_mulai',
         'tanggal_pendaftaran_jalur_prestasi_selesai',
         'tanggal_pengumuman_jalur_prestasi_mulai',
@@ -35,6 +37,8 @@ class TahunPelajaran extends Model
 
     protected $casts = [
         'id' => 'integer',
+        'tanggal_ppdb_mulai' => 'date',
+        'tanggal_ppdb_selesai' => 'date',
         'tanggal_pendaftaran_jalur_prestasi_mulai' => 'datetime',
         'tanggal_pendaftaran_jalur_prestasi_selesai' => 'datetime',
         'tanggal_pengumuman_jalur_prestasi_mulai' => 'datetime',

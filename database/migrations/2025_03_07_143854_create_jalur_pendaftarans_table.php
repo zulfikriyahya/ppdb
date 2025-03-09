@@ -13,7 +13,7 @@ return new class extends Migration
             $table->id();
             $table->string('nama');
             $table->integer('kuantitas');
-            $table->foreignId('tahun_pelajaran_id')->constrained('tahun_pelajarans')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId('tahun_pendaftaran_id')->constrained('tahun_pendaftarans')->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamps();
             $table->softDeletes();
         });

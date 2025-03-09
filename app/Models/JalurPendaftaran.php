@@ -15,12 +15,12 @@ class JalurPendaftaran extends Model
     protected $fillable = [
         'nama',
         'kuantitas',
-        'tahun_pelajaran_id',
+        'tahun_pendaftaran_id',
     ];
 
     protected $casts = [
         'id' => 'integer',
-        'tahun_pelajaran_id' => 'integer',
+        'tahun_pendaftaran_id' => 'integer',
     ];
 
     public function calonSiswas(): HasMany
@@ -28,8 +28,8 @@ class JalurPendaftaran extends Model
         return $this->hasMany(CalonSiswa::class);
     }
 
-    public function tahunPelajaran(): BelongsTo
+    public function tahunPendaftaran(): BelongsTo
     {
-        return $this->belongsTo(TahunPelajaran::class);
+        return $this->belongsTo(TahunPendaftaran::class);
     }
 }

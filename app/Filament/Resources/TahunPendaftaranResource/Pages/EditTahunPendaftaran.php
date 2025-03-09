@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Filament\Resources\TahunPelajaranResource\Pages;
+namespace App\Filament\Resources\TahunPendaftaranResource\Pages;
 
-use App\Filament\Resources\TahunPelajaranResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
+use App\Filament\Resources\TahunPendaftaranResource;
 
-class EditTahunPelajaran extends EditRecord
+class EditTahunPendaftaran extends EditRecord
 {
-    protected static string $resource = TahunPelajaranResource::class;
+    protected static string $resource = TahunPendaftaranResource::class;
 
     protected function getHeaderActions(): array
     {

@@ -17,7 +17,7 @@ class Kelas extends Model
         'kuantitas_pria',
         'kuantitas_wanita',
         'kuantitas',
-        'tahun_pelajaran_id',
+        'tahun_pendaftaran_id',
     ];
 
     protected $casts = [
@@ -25,7 +25,7 @@ class Kelas extends Model
         'kuantitas_pria' => 'integer',
         'kuantitas_wanita' => 'integer',
         'kuantitas' => 'integer',
-        'tahun_pelajaran_id' => 'integer',
+        'tahun_pendaftaran_id' => 'integer',
     ];
 
     public function calonSiswas(): HasMany
@@ -33,8 +33,8 @@ class Kelas extends Model
         return $this->hasMany(CalonSiswa::class);
     }
 
-    public function tahunPelajaran(): BelongsTo
+    public function tahunPendaftaran(): BelongsTo
     {
-        return $this->belongsTo(TahunPelajaran::class);
+        return $this->belongsTo(TahunPendaftaran::class);
     }
 }

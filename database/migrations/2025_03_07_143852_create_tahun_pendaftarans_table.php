@@ -9,9 +9,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::disableForeignKeyConstraints();
-        Schema::create('tahun_pelajarans', function (Blueprint $table) {
+        Schema::create('tahun_pendaftarans', function (Blueprint $table) {
             $table->id();
             $table->string('nama');
+            $table->date('tanggal_ppdb_mulai');
+            $table->date('tanggal_ppdb_selesai');
             $table->dateTime('tanggal_pendaftaran_jalur_prestasi_mulai');
             $table->dateTime('tanggal_pendaftaran_jalur_prestasi_selesai');
             $table->dateTime('tanggal_pengumuman_jalur_prestasi_mulai');
@@ -37,6 +39,6 @@ return new class extends Migration
     }
     public function down(): void
     {
-        Schema::dropIfExists('tahun_pelajarans');
+        Schema::dropIfExists('tahun_pendaftarans');
     }
 };
