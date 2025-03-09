@@ -8,6 +8,7 @@ use App\Models\Negara;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Filament\Forms\Components\Section;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\NegaraResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -33,9 +34,30 @@ class NegaraResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('nama')
-                    ->required(),
-                Forms\Components\TextInput::make('bendera'),
+                Section::make('Negara')
+                    ->collapsible()
+                    ->schema([
+                        Forms\Components\TextInput::make('nama')
+                            ->label('Negara')
+                            ->required(),
+                        Forms\Components\FileUpload::make('bendera')
+                            ->label('Bendera')
+                            ->image()
+                            ->imageEditor()
+                            ->imageEditorAspectRatios([
+                                null,
+                                '4:3' => '4:3',
+                            ])
+                            ->fetchFileInformation(false)
+                            ->directory('assets/bendera')
+                            ->downloadable()
+                            ->maxSize(500),
+                    ])
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => 2,
+                        'lg' => 2,
+                    ]),
             ]);
     }
 
@@ -45,18 +67,23 @@ class NegaraResource extends Resource
             // ->recordTitleAttribute('nama')
             ->columns([
                 Tables\Columns\TextColumn::make('nama')
+                    ->label('Negara')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('bendera')
-                    ->searchable(),
+                Tables\Columns\ImageColumn::make('bendera')
+                    ->label('Bendera')
+                    ->defaultImageUrl('/img/bendera.png'),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label('Dibuat')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Diubah')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('deleted_at')
+                    ->label('Dihapus')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

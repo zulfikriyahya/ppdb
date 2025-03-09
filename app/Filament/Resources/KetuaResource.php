@@ -78,7 +78,7 @@ class KetuaResource extends Resource
                             ->imageEditorAspectRatios([
                                 null,
                                 '1:1' => '1:1',
-                                '4:3' => '4:3',
+                                '3:4' => '3:4',
                             ])
                             ->fetchFileInformation(false)
                             ->directory('assets/ketua')

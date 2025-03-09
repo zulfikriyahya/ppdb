@@ -8,6 +8,7 @@ use Filament\Forms\Form;
 use App\Models\Kecamatan;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Filament\Forms\Components\Section;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\KecamatanResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -33,11 +34,22 @@ class KecamatanResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('nama')
-                    ->required(),
-                Forms\Components\Select::make('kabupaten_id')
-                    ->relationship('kabupaten', 'nama')
-                    ->required(),
+                Section::make('Kecamatan')
+                    ->collapsible()
+                    ->schema([
+                        Forms\Components\TextInput::make('nama')
+                            ->label('Kecamatan')
+                            ->required(),
+                        Forms\Components\Select::make('kabupaten_id')
+                            ->label('Kabupaten')
+                            ->relationship('kabupaten', 'nama')
+                            ->required(),
+                    ])
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => 2,
+                        'lg' => 2,
+                    ]),
             ]);
     }
 
@@ -47,19 +59,32 @@ class KecamatanResource extends Resource
             // ->recordTitleAttribute('nama')
             ->columns([
                 Tables\Columns\TextColumn::make('nama')
+                    ->label('Kecamatan')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('kabupaten.nama')
-                    ->numeric()
+                    ->label('Kabupaten/Kota')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('kabupaten.provinsi.nama')
+                    ->label('Provinsi')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('kabupaten.provinsi.negara.nama')
+                    ->label('Negara')
+                    ->sortable(),
+                Tables\Columns\ImageColumn::make('kabupaten.provinsi.negara.bendera')
+                    ->label('Bendera')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label('Dibuat')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Diubah')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('deleted_at')
+                    ->label('Dihapus')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
