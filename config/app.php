@@ -1,9 +1,9 @@
 <?php
 return [
-    'name' => env('APP_NAME', 'Admisi MTs Negeri 1 Pandeglang'),
+    'name' => env('APP_NAME', 'PTSP MTs Negeri 1 Pandeglang'),
     'env' => env('APP_ENV', 'production'),
     'debug' => (bool) env('APP_DEBUG', false),
-    'url' => env('APP_URL', 'https://admisi.mtsn1pandeglang.sch.id'),
+    'url' => env('APP_URL', 'https://ppdb.mtsn1pandeglang.sch.id'),
     'timezone' => env('APP_TIMEZONE', 'Asia/Jakarta'),
     'locale' => env('APP_LOCALE', 'id'),
     'fallback_locale' => env('APP_FALLBACK_LOCALE', 'id'),
