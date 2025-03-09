@@ -6,9 +6,12 @@ use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
-        Schema::create('ketuas', function (Blueprint $table) {
+        Schema::create('anggotas', function (Blueprint $table) {
             $table->id();
             $table->string('nama');
             $table->string('nip')->nullable();
@@ -21,8 +24,12 @@ return new class extends Migration
             $table->softDeletes();
         });
     }
+
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        Schema::dropIfExists('ketuas');
+        Schema::dropIfExists('anggotas');
     }
 };

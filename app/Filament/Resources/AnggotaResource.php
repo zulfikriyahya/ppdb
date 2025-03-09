@@ -5,27 +5,27 @@ namespace App\Filament\Resources;
 use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Tables;
-use App\Models\Pimpinan;
+use App\Models\Anggota;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\Section;
 use Illuminate\Database\Eloquent\Builder;
-use App\Filament\Resources\PimpinanResource\Pages;
+use App\Filament\Resources\AnggotaResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\PimpinanResource\RelationManagers;
+use App\Filament\Resources\AnggotaResource\RelationManagers;
 
-class PimpinanResource extends Resource
+class AnggotaResource extends Resource
 {
-    protected static ?string $model = Pimpinan::class;
+    protected static ?string $model = Anggota::class;
 
-    protected static ?string $navigationLabel = 'Pimpinan';
+    protected static ?string $navigationLabel = 'Anggota';
 
-    protected static ?string $label = 'Pimpinan';
+    protected static ?string $label = 'Anggota';
 
     protected static ?string $navigationGroup = 'Administrasi';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 5;
 
     protected static bool $shouldRegisterNavigation = true;
 
@@ -78,7 +78,7 @@ class PimpinanResource extends Resource
                                 '3:4' => '3:4',
                             ])
                             ->fetchFileInformation(false)
-                            ->directory('assets/pimpinan')
+                            ->directory('assets/anggota')
                             ->downloadable()
                             ->maxSize(500)
                             ->minSize(10)
@@ -93,7 +93,7 @@ class PimpinanResource extends Resource
                                 '1:1' => '1:1',
                             ])
                             ->fetchFileInformation(false)
-                            ->directory('assets/pimpinan')
+                            ->directory('assets/anggota')
                             ->downloadable()
                             ->maxSize(500)
                             ->minSize(10)
@@ -102,7 +102,7 @@ class PimpinanResource extends Resource
                         Forms\Components\FileUpload::make('berkas_sk')
                             ->label('Surat Tugas/Surat Keputusan')
                             ->fetchFileInformation(false)
-                            ->directory('assets/pimpinan')
+                            ->directory('assets/anggota')
                             ->downloadable()
                             ->maxSize(500)
                             ->minSize(10)
@@ -201,10 +201,10 @@ class PimpinanResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListPimpinans::route('/'),
-            'create' => Pages\CreatePimpinan::route('/create'),
-            'view' => Pages\ViewPimpinan::route('/{record}'),
-            'edit' => Pages\EditPimpinan::route('/{record}/edit'),
+            'index' => Pages\ListAnggotas::route('/'),
+            'create' => Pages\CreateAnggota::route('/create'),
+            'view' => Pages\ViewAnggota::route('/{record}'),
+            'edit' => Pages\EditAnggota::route('/{record}/edit'),
         ];
     }
 

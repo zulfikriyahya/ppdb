@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Pimpinan extends Model
@@ -14,8 +15,7 @@ class Pimpinan extends Model
     protected $fillable = [
         'nama',
         'nip',
-        'periode_awal',
-        'periode_akhir',
+        'tahun_pendaftaran_id',
         'berkas_foto',
         'berkas_tte',
         'status',
@@ -23,9 +23,13 @@ class Pimpinan extends Model
 
     protected $casts = [
         'id' => 'integer',
-        'periode_awal' => 'date',
-        'periode_akhir' => 'date',
+        'tahun_pendaftaran_id' => 'integer',
     ];
+
+    public function tahunPendaftaran(): BelongsTo
+    {
+        return $this->belongsTo(TahunPendaftaran::class);
+    }
 
     public function calonSiswas(): HasMany
     {

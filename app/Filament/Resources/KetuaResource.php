@@ -23,7 +23,7 @@ class KetuaResource extends Resource
 
     protected static ?string $label = 'Ketua';
 
-    protected static ?string $navigationGroup = 'Eksekutif';
+    protected static ?string $navigationGroup = 'Administrasi';
 
     protected static ?int $navigationSort = 2;
 
@@ -35,15 +35,23 @@ class KetuaResource extends Resource
     {
         return $form
             ->schema([
+                // Biodata
                 Section::make('Biodata')
                     ->collapsible()
                     ->schema([
+                        // Nama Lengkap
                         Forms\Components\TextInput::make('nama')
                             ->label('Nama Lengkap')
                             ->required(),
+                        // Nomor Indul Pegawai (NIP)
                         Forms\Components\TextInput::make('nip')
-                            ->label('Nomor Induk Kepegawaian')
+                            ->label('Nomor Induk Pegawai')
                             ->prefix('NIP'),
+                        // Tahun Pendaftaran
+                        Forms\Components\Select::make('tahun_pendaftaran_id')
+                            ->label('Tahun Pendaftaran')
+                            ->relationship('tahunPendaftaran', 'nama'),
+                        // Status
                         Forms\Components\Select::make('status')
                             ->label('Status')
                             ->options(['Aktif' => 'Aktif', 'Nonaktif' => 'Nonaktif',])
@@ -51,26 +59,15 @@ class KetuaResource extends Resource
                     ])
                     ->columns([
                         'sm' => '100%',
-                        'md' => 3,
-                        'lg' => 3,
-                    ]),
-                Section::make('Periode')
-                    ->collapsed()
-                    ->schema([
-                        Forms\Components\DatePicker::make('periode_awal')
-                            ->label('TMT Awal')
-                            ->required(),
-                        Forms\Components\DatePicker::make('periode_akhir')
-                            ->label('TMT Akhir'),
-                    ])
-                    ->columns([
-                        'sm' => '100%',
                         'md' => 2,
-                        'lg' => 2,
+                        'lg' => 4,
                     ]),
+
+                // Berkas
                 Section::make('Berkas')
                     ->collapsed()
                     ->schema([
+                        // Foto
                         Forms\Components\FileUpload::make('berkas_foto')
                             ->label('Foto')
                             ->image()
@@ -86,6 +83,7 @@ class KetuaResource extends Resource
                             ->maxSize(500)
                             ->minSize(10)
                             ->required(),
+                        // Tanda Tangan Elektronik
                         Forms\Components\FileUpload::make('berkas_tte')
                             ->label('Tanda Tangan Elektronik')
                             ->image()
@@ -100,11 +98,20 @@ class KetuaResource extends Resource
                             ->maxSize(500)
                             ->minSize(10)
                             ->required(),
+                        // Surat Tugas/Surat Keputusan
+                        Forms\Components\FileUpload::make('berkas_sk')
+                            ->label('Surat Tugas/Surat Keputusan')
+                            ->fetchFileInformation(false)
+                            ->directory('assets/ketua')
+                            ->downloadable()
+                            ->maxSize(500)
+                            ->minSize(10)
+                            ->required(),
                     ])
                     ->columns([
                         'sm' => '100%',
-                        'md' => 2,
-                        'lg' => 2,
+                        'md' => 3,
+                        'lg' => 3,
                     ]),
             ]);
     }
@@ -124,16 +131,22 @@ class KetuaResource extends Resource
                 Tables\Columns\TextColumn::make('nip')
                     ->label('NIP')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('periode_awal')
-                    ->label('Periode')
-                    ->date('d F Y')
-                    ->sortable()
-                    ->description(
-                        fn(Ketua $record) => $record->periode_akhir ? 'Hingga: ' . Carbon::parse($record->periode_akhir)->translatedFormat('d F Y') : 'Hingga: (Sekarang)'
-                    ),
+                Tables\Columns\TextColumn::make('tahunPendaftaran.nama')
+                    ->label('Tahun Pendaftaran')
+                    ->searchable(),
+                // Tables\Columns\TextColumn::make('periode_awal')
+                //     ->label('Periode')
+                //     ->date('d F Y')
+                //     ->sortable()
+                //     ->description(
+                //         fn(Anggota $record) => $record->periode_akhir ? 'Hingga: ' . Carbon::parse($record->periode_akhir)->translatedFormat('d F Y') : 'Hingga: (Sekarang)'
+                //     ),
                 Tables\Columns\ImageColumn::make('berkas_tte')
                     ->label('TTE')
                     ->defaultImageUrl('/img/tte.png'),
+                Tables\Columns\TextColumn::make('berkas_sk')
+                    ->label('SK')
+                    ->badge(),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()

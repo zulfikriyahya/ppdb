@@ -12,10 +12,10 @@ return new class extends Migration
             $table->id();
             $table->string('nama');
             $table->string('nip')->nullable();
-            $table->date('periode_awal');
-            $table->date('periode_akhir')->nullable();
+            $table->foreignId('tahun_pendaftaran_id')->constrained('tahun_pendaftarans')->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('berkas_foto')->nullable();
             $table->string('berkas_tte')->nullable();
+            $table->string('berkas_sk')->nullable();
             $table->enum('status', ['Aktif', 'Nonaktif'])->default('Aktif');
             $table->timestamps();
             $table->softDeletes();
