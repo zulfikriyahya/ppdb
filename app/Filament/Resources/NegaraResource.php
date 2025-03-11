@@ -39,7 +39,10 @@ class NegaraResource extends Resource
                     ->schema([
                         Forms\Components\TextInput::make('nama')
                             ->label('Negara')
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
                         Forms\Components\FileUpload::make('bendera')
                             ->label('Bendera')
                             ->image()

@@ -24,7 +24,7 @@ class InformasiResource extends Resource
 
     protected static ?string $navigationGroup = 'Referensi';
 
-    protected static ?int $navigationSort = 7;
+    protected static ?int $navigationSort = 8;
 
     protected static bool $shouldRegisterNavigation = true;
 
@@ -36,29 +36,47 @@ class InformasiResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('judul')
                     ->label('Judul')
-                    ->required(),
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
                 Forms\Components\TextArea::make('isi')
                     ->label('Uraian')
-                    ->required(),
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
                 Forms\Components\FileUpload::make('gambar')
                     ->label('Lampiran')
                     ->maxSize('2048')
                     ->minSize('10')
                     ->downloadable(true)
+                    ->openable()
+                    ->deletable()
                     ->fetchFileInformation(false)
-                    ->directory('assets/informasi/')
+                    ->directory('assets/informasi')
                     ->acceptedFileTypes(['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/pdf', 'image/png', 'image/jpeg', 'image/png', 'image/webp']),
                 Forms\Components\DateTimePicker::make('tanggal')
                     ->label('Tanggal')
-                    ->required(),
-                Forms\Components\Select::make('tahun_pelajaran_id')
-                    ->label('')
-                    ->relationship('tahunPelajaran', 'nama')
-                    ->required(),
+                    ->default(now())
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
+                Forms\Components\Select::make('tahun_pendaftaran_id')
+                    ->label('Tahun Pendaftaran')
+                    ->relationship('tahunPendaftaran', 'nama')
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
                 Forms\Components\Select::make('status')
                     ->label('Status')
                     ->options(['Publish' => 'Publish', 'Draft' => 'Draft'])
-                    ->required(),
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
             ]);
     }
 
@@ -82,14 +100,15 @@ class InformasiResource extends Resource
                         return $state;
                     })
                     ->searchable(),
-                Tables\Columns\ImageColumn::make('gambar')
+                Tables\Columns\TextColumn::make('gambar')
                     ->label('Lampiran')
+                    ->url('#')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('tanggal')
                     ->label('Tanggal')
                     ->dateTime()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('tahunPelajaran.nama')
+                Tables\Columns\TextColumn::make('tahunPendaftaran.nama')
                     ->label('Tahun Pendaftaran')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status')

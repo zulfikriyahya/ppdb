@@ -11,10 +11,11 @@ return new class extends Migration
         Schema::disableForeignKeyConstraints();
         Schema::create('prestasis', function (Blueprint $table) {
             $table->id();
+            $table->enum('jenis', ['Hafalan Al-Quran', 'Olimpiade/Kejuaraan']);
             $table->string('nama');
-            $table->enum('tingkat', ['Nasional', 'Provinsi', 'Kabupaten/Kota']);
-            $table->enum('kategori', ['Regu', 'Tunggal']);
-            $table->enum('peringkat', ['1', '2', '3']);
+            $table->enum('tingkat', ['Nasional', 'Provinsi', 'Kabupaten/Kota'])->nullable();
+            $table->enum('kategori', ['Regu/Kelompok', 'Individu'])->nullable();
+            $table->enum('peringkat', ['1', '2', '3'])->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

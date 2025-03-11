@@ -23,11 +23,11 @@ return new class extends Migration
             $table->integer('anak_ke');
             $table->integer('jumlah_saudara');
             $table->enum('tinggal_bersama', ['Orang Tua', 'Saudara', 'Panti Asuhan', 'Kost', 'Lainnya']);
-            $table->enum('jarak_ke_sekolah', ['0 - 1 Km', '1 - 5 Km', '5 - 10 Km', '10 - 50 Km']);
+            $table->enum('jarak_ke_sekolah', ['0 - 1 Km', '1 - 5 Km', '5 - 10 Km', '10 - 50 Km', '50 - 100 Km']);
             $table->enum('disabilitas', ['Non Disabilitas', 'Fisik', 'Penglihatan', 'Pendengaran', 'Kognitif', 'Mental', 'Lainnya']);
             $table->integer('tinggi_badan')->nullable();
             $table->integer('berat_badan')->nullable();
-            $table->string('no_kip')->nullable();
+            $table->integer('no_kip')->nullable();
             $table->string('siswa_telepon')->nullable();
             $table->string('siswa_alamat');
             $table->foreignId('siswa_negara_id')->constrained('negaras')->cascadeOnDelete()->cascadeOnUpdate();

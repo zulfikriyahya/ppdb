@@ -12,9 +12,7 @@ return new class extends Migration
         Schema::create('kelas', function (Blueprint $table) {
             $table->id();
             $table->string('nama');
-            $table->integer('kuantitas_pria');
-            $table->integer('kuantitas_wanita');
-            $table->integer('kuantitas');
+            $table->foreignId('jurusan_id')->constrained('jurusans')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('tahun_pendaftaran_id')->constrained('tahun_pendaftarans')->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamps();
             $table->softDeletes();

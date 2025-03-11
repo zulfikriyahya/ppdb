@@ -8,6 +8,8 @@ use App\Models\Sekolah;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Illuminate\Support\HtmlString;
+use Filament\Forms\Components\Section;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\SekolahResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -33,53 +35,621 @@ class SekolahResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('nama')
-                    ->label('Nama Instansi')
-                    ->required(),
-                Forms\Components\TextInput::make('npsn')
-                    ->label('Nomor Pokok Sekolah Nasional'),
-                Forms\Components\TextInput::make('nss')
-                    ->label('Nomor Statistik Sekolah'),
-                Forms\Components\TextInput::make('logo')
-                    ->label('Logo'),
-                Forms\Components\Select::make('pimpinan_id')
-                    ->label('Kepala Instansi')
-                    ->relationship('pimpinan', 'id')
-                    ->required(),
-                Forms\Components\Select::make('akreditasi')
-                    ->label('Akreditasi')
-                    ->options(['A' => 'A', 'B' => 'B', 'C' => 'C', 'D' => 'D']),
-                Forms\Components\TextInput::make('alamat')
-                    ->label('Alamat')
-                    ->required(),
-                Forms\Components\Select::make('negara_id')
-                    ->label('Negara')
-                    ->relationship('negara', 'nama')
-                    ->required(),
-                Forms\Components\Select::make('provinsi_id')
-                    ->label('Provinsi')
-                    ->relationship('provinsi', 'nama')
-                    ->required(),
-                Forms\Components\Select::make('kabupaten_id')
-                    ->label('Kabupaten')
-                    ->relationship('kabupaten', 'nama')
-                    ->required(),
-                Forms\Components\Select::make('kecamatan_id')
-                    ->label('Kecamatan')
-                    ->relationship('kecamatan', 'nama')
-                    ->required(),
-                Forms\Components\Select::make('kelurahan_id')
-                    ->label('Kelurahan')
-                    ->relationship('kelurahan', 'nama')
-                    ->required(),
-                Forms\Components\TextInput::make('website')
-                    ->label('Website'),
-                Forms\Components\TextInput::make('telepon')
-                    ->label('Telepon')
-                    ->tel(),
-                Forms\Components\TextInput::make('email')
-                    ->label('Email')
-                    ->email(),
+                Section::make('Instansi')
+                    ->collapsible()
+                    ->schema([
+                        Forms\Components\TextInput::make('nama')
+                            ->label('Nama Instansi')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
+                        Forms\Components\TextInput::make('npsn')
+                            ->label('Nomor Pokok Sekolah Nasional'),
+                        Forms\Components\TextInput::make('nss')
+                            ->label('Nomor Statistik Sekolah'),
+                        Forms\Components\FileUpload::make('logo')
+                            ->label('Logo')
+                            ->image()
+                            ->imageEditor()
+                            ->imageEditorAspectRatios([
+                                null,
+                                '1:1' => '1:1',
+                            ])
+                            ->fetchFileInformation(false)
+                            ->directory('assets/instansi')
+                            ->downloadable()
+                            ->maxSize(500)
+                            ->minSize(10)
+                            ->visibility('private')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
+                        Forms\Components\Select::make('pimpinan_id')
+                            ->label('Kepala Instansi')
+                            ->relationship('pimpinan', 'nama')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
+                            ->createOptionForm([
+                                // Biodata
+                                Section::make('Biodata')
+                                    ->collapsible()
+                                    ->schema([
+                                        // Nama Lengkap
+                                        Forms\Components\TextInput::make('nama')
+                                            ->label('Nama Lengkap')
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
+                                        // Nomor Indul Pegawai (NIP)
+                                        Forms\Components\TextInput::make('nip')
+                                            ->label('Nomor Induk Pegawai')
+                                            ->prefix('NIP'),
+                                        // Tahun Pendaftaran
+                                        Forms\Components\Select::make('tahun_pendaftaran_id')
+                                            ->label('Tahun Pendaftaran')
+                                            ->relationship('tahunPendaftaran', 'nama')
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ])
+                                            ->createOptionForm([
+                                                Forms\Components\Section::make('Tahun Pendaftaran')
+                                                    ->collapsible()
+                                                    ->description('Data Tahun Pendaftaran.')
+                                                    ->schema([
+                                                        Forms\Components\TextInput::make('nama')
+                                                            ->label('Tahun Pendaftaran')
+                                                            ->required()
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
+                                                            ])
+                                                            ->placeholder('Contoh: 2025/2026'),
+
+                                                        Forms\Components\TextInput::make('kuantitas')
+                                                            ->label('Kuota Maksimal Registrasi Akun')
+                                                            ->required()
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
+                                                            ])
+                                                            ->helperText(new HtmlString('<small><i>Kuota maksimal pendaftar yang dapat membuat akun pendaftaran.<sup style="color:red">*</sup></i></small>'))
+                                                            ->numeric()
+                                                            ->postfix('Akun'),
+                                                        Forms\Components\Select::make('status')
+                                                            ->label('Status')
+                                                            ->required()
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
+                                                            ])
+                                                            ->options([
+                                                                'Aktif' => 'Aktif',
+                                                                'Nonaktif' => 'Nonaktif',
+                                                            ])
+                                                            ->default('Aktif')
+                                                            ->native(false),
+                                                    ])
+                                                    ->columns([
+                                                        'sm' => '100%',
+                                                        'md' => 3,
+                                                        'lg' => 3,
+                                                        'xl' => 3,
+                                                        '2xl' => 3,
+                                                    ]),
+
+                                                Forms\Components\Section::make('PPDB')
+                                                    ->collapsible()
+                                                    ->description('Tanggal Pelaksanaan PPDB')
+                                                    ->schema([
+                                                        Forms\Components\DatePicker::make('tanggal_ppdb_mulai')
+                                                            ->label('Tanggal Mulai PPDB')
+                                                            ->required()
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
+                                                            ]),
+                                                        Forms\Components\DatePicker::make('tanggal_ppdb_selesai')
+                                                            ->label('Tanggal Selesai PPDB')
+                                                            ->required()
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
+                                                            ]),
+                                                    ])
+                                                    ->columns([
+                                                        'sm' => '100%',
+                                                        'md' => 2,
+                                                        'lg' => 2,
+                                                        'xl' => 2,
+                                                        '2xl' => 2,
+                                                    ]),
+
+                                                Forms\Components\Section::make('Pendaftaran Jalur Prestasi')
+                                                    ->collapsible()
+                                                    ->description('Tanggal pendaftaran untuk jalur prestasi.')
+                                                    ->schema([
+                                                        Forms\Components\DateTimePicker::make('tanggal_pendaftaran_jalur_prestasi_mulai')
+                                                            ->label('Tanggal Mulai Pendaftaran Jalur Prestasi')
+                                                            ->required()
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
+                                                            ]),
+                                                        Forms\Components\DateTimePicker::make('tanggal_pendaftaran_jalur_prestasi_selesai')
+                                                            ->label('Tanggal Selesai Pendaftaran Jalur Prestasi')
+                                                            ->required()
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
+                                                            ]),
+                                                    ])
+                                                    ->columns([
+                                                        'sm' => '100%',
+                                                        'md' => 2,
+                                                        'lg' => 2,
+                                                        'xl' => 2,
+                                                        '2xl' => 2,
+                                                    ]),
+
+                                                Forms\Components\Section::make('Pengumuman Jalur Prestasi')
+                                                    ->collapsible()
+                                                    ->description('Tanggal pengumuman untuk jalur prestasi.')
+                                                    ->schema([
+                                                        Forms\Components\DateTimePicker::make('tanggal_pengumuman_jalur_prestasi_mulai')
+                                                            ->label('Tanggal Mulai Pengumuman Jalur Prestasi')
+                                                            ->required()
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
+                                                            ]),
+                                                        Forms\Components\DateTimePicker::make('tanggal_pengumuman_jalur_prestasi_selesai')
+                                                            ->label('Tanggal Selesai Pengumuman Jalur Prestasi')
+                                                            ->required()
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
+                                                            ]),
+                                                    ])
+                                                    ->columns([
+                                                        'sm' => '100%',
+                                                        'md' => 2,
+                                                        'lg' => 2,
+                                                        'xl' => 2,
+                                                        '2xl' => 2,
+                                                    ]),
+
+                                                Forms\Components\Section::make('Pendaftaran Jalur Reguler')
+                                                    ->collapsible()
+                                                    ->description('Tanggal pendaftaran untuk jalur reguler.')
+                                                    ->schema([
+                                                        Forms\Components\DateTimePicker::make('tanggal_pendaftaran_jalur_reguler_mulai')
+                                                            ->label('Tanggal Mulai Pendaftaran Jalur Reguler')
+                                                            ->required()
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
+                                                            ]),
+                                                        Forms\Components\DateTimePicker::make('tanggal_pendaftaran_jalur_reguler_selesai')
+                                                            ->label('Tanggal Selesai Pendaftaran Jalur Reguler')
+                                                            ->required()
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
+                                                            ]),
+                                                    ])
+                                                    ->columns([
+                                                        'sm' => '100%',
+                                                        'md' => 2,
+                                                        'lg' => 2,
+                                                        'xl' => 2,
+                                                        '2xl' => 2,
+                                                    ]),
+
+                                                Forms\Components\Section::make('Penerbitan Kartu Tes')
+                                                    ->collapsible()
+                                                    ->description('Tanggal penerbitan kartu tes untuk jalur prestasi dan jalur reguler.')
+                                                    ->schema([
+                                                        Forms\Components\DateTimePicker::make('tanggal_penerbitan_kartu_tes_mulai')
+                                                            ->label('Tanggal Mulai Penerbitan Kartu Tes')
+                                                            ->required()
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
+                                                            ]),
+                                                        Forms\Components\DateTimePicker::make('tanggal_penerbitan_kartu_tes_selesai')
+                                                            ->label('Tanggal Selesai Penerbitan Kartu Tes')
+                                                            ->required()
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
+                                                            ]),
+                                                    ])
+                                                    ->columns([
+                                                        'sm' => '100%',
+                                                        'md' => 2,
+                                                        'lg' => 2,
+                                                        'xl' => 2,
+                                                        '2xl' => 2,
+                                                    ]),
+
+                                                Forms\Components\Section::make('Tes Akademik')
+                                                    ->collapsible()
+                                                    ->description('Tanggal tes akademik untuk jalur prestasi dan jalur reguler.')
+                                                    ->schema([
+                                                        Forms\Components\DateTimePicker::make('tanggal_tes_akademik_mulai')
+                                                            ->label('Tanggal Mulai Tes Akademik')
+                                                            ->required()
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
+                                                            ]),
+                                                        Forms\Components\DateTimePicker::make('tanggal_tes_akademik_selesai')
+                                                            ->label('Tanggal Selesai Tes Akademik')
+                                                            ->required()
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
+                                                            ]),
+                                                    ])
+                                                    ->columns([
+                                                        'sm' => '100%',
+                                                        'md' => 2,
+                                                        'lg' => 2,
+                                                        'xl' => 2,
+                                                        '2xl' => 2,
+                                                    ]),
+
+                                                Forms\Components\Section::make('Tes Praktik')
+                                                    ->collapsible()
+                                                    ->description('Tanggal tes praktik untuk jalur prestasi dan jalur reguler.')
+                                                    ->schema([
+                                                        Forms\Components\DateTimePicker::make('tanggal_tes_praktik_mulai')
+                                                            ->label('Tanggal Mulai Tes Praktik')
+                                                            ->required()
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
+                                                            ]),
+                                                        Forms\Components\DateTimePicker::make('tanggal_tes_praktik_selesai')
+                                                            ->label('Tanggal Selesai Tes Praktik')
+                                                            ->required()
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
+                                                            ]),
+                                                    ])
+                                                    ->columns([
+                                                        'sm' => '100%',
+                                                        'md' => 2,
+                                                        'lg' => 2,
+                                                        'xl' => 2,
+                                                        '2xl' => 2,
+                                                    ]),
+
+                                                Forms\Components\Section::make('Pengumuman Jalur Reguler')
+                                                    ->collapsible()
+                                                    ->description('Tanggal pengumuman untuk jalur reguler.')
+                                                    ->schema([
+                                                        Forms\Components\DateTimePicker::make('tanggal_pengumuman_jalur_reguler_mulai')
+                                                            ->label('Tanggal Mulai Pengumuman Jalur Reguler')
+                                                            ->required()
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
+                                                            ]),
+                                                        Forms\Components\DateTimePicker::make('tanggal_pengumuman_jalur_reguler_selesai')
+                                                            ->label('Tanggal Selesai Pengumuman Jalur Reguler')
+                                                            ->required()
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
+                                                            ]),
+                                                    ])
+                                                    ->columns([
+                                                        'sm' => '100%',
+                                                        'md' => 2,
+                                                        'lg' => 2,
+                                                        'xl' => 2,
+                                                        '2xl' => 2,
+                                                    ]),
+
+                                                Forms\Components\Section::make('Registrasi Berkas')
+                                                    ->collapsible()
+                                                    ->description('Tanggal registrasi berkas untuk jalur prestasi dan jalur reguler.')
+                                                    ->schema([
+                                                        Forms\Components\DateTimePicker::make('tanggal_registrasi_berkas_mulai')
+                                                            ->label('Tanggal Mulai Registrasi Berkas')
+                                                            ->required()
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
+                                                            ]),
+                                                        Forms\Components\DateTimePicker::make('tanggal_registrasi_berkas_selesai')
+                                                            ->label('Tanggal Selesai Registrasi Berkas')
+                                                            ->required()
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
+                                                            ]),
+                                                    ])
+                                                    ->columns([
+                                                        'sm' => '100%',
+                                                        'md' => 2,
+                                                        'lg' => 2,
+                                                        'xl' => 2,
+                                                        '2xl' => 2,
+                                                    ]),
+                                            ]),
+                                        // Status
+                                        Forms\Components\Select::make('status')
+                                            ->label('Status')
+                                            ->options(['Aktif' => 'Aktif', 'Nonaktif' => 'Nonaktif',])
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
+                                    ])
+                                    ->columns([
+                                        'sm' => '100%',
+                                        'md' => 2,
+                                        'lg' => 4,
+                                    ]),
+
+                                // Berkas
+                                Section::make('Berkas')
+                                    ->collapsed()
+                                    ->schema([
+                                        // Foto
+                                        Forms\Components\FileUpload::make('berkas_foto')
+                                            ->label('Foto')
+                                            ->image()
+                                            ->imageEditor()
+                                            ->imageEditorAspectRatios([
+                                                null,
+                                                '1:1' => '1:1',
+                                                '3:4' => '3:4',
+                                            ])
+                                            ->fetchFileInformation(false)
+                                            ->directory('assets/pimpinan')
+                                            ->downloadable()
+                                            ->maxSize(500)
+                                            ->minSize(10)
+                                            ->visibility('private')
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
+                                        // Tanda Tangan Elektronik
+                                        Forms\Components\FileUpload::make('berkas_tte')
+                                            ->label('Tanda Tangan Elektronik')
+                                            ->image()
+                                            ->imageEditor()
+                                            ->imageEditorAspectRatios([
+                                                null,
+                                                '1:1' => '1:1',
+                                            ])
+                                            ->fetchFileInformation(false)
+                                            ->directory('assets/pimpinan')
+                                            ->downloadable()
+                                            ->maxSize(500)
+                                            ->minSize(10)
+                                            ->visibility('private')
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
+                                        // Surat Tugas/Surat Keputusan
+                                        Forms\Components\FileUpload::make('berkas_sk')
+                                            ->label('Surat Tugas/Surat Keputusan')
+                                            ->fetchFileInformation(false)
+                                            ->directory('assets/pimpinan')
+                                            ->downloadable()
+                                            ->maxSize(500)
+                                            ->minSize(10)
+                                            ->visibility('private')
+                                            ->openable()
+                                            ->acceptedFileTypes(['application/pdf'])
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
+                                    ])
+                                    ->columns([
+                                        'sm' => '100%',
+                                        'md' => 3,
+                                        'lg' => 3,
+                                    ]),
+                            ]),
+                        Forms\Components\Select::make('akreditasi')
+                            ->label('Akreditasi')
+                            ->options(['A' => 'A', 'B' => 'B', 'C' => 'C', 'D' => 'D']),
+                    ])
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => 3,
+                        'lg' => 3,
+                    ]),
+
+                // Alamat
+                Section::make('Alamat')
+                    ->collapsible()
+                    ->schema([
+                        Forms\Components\TextInput::make('alamat')
+                            ->label('Alamat')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
+                        Forms\Components\Select::make('negara_id')
+                            ->label('Negara')
+                            ->relationship('negara', 'nama')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
+                            ->createOptionForm([
+                                Section::make('Negara')
+                                    ->collapsible()
+                                    ->schema([
+                                        Forms\Components\TextInput::make('nama')
+                                            ->label('Negara')
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
+                                        Forms\Components\FileUpload::make('bendera')
+                                            ->label('Bendera')
+                                            ->image()
+                                            ->imageEditor()
+                                            ->imageEditorAspectRatios([
+                                                null,
+                                                '4:3' => '4:3',
+                                            ])
+                                            ->fetchFileInformation(false)
+                                            ->directory('assets/bendera')
+                                            ->downloadable()
+                                            ->maxSize(500),
+                                    ])
+                                    ->columns([
+                                        'sm' => '100%',
+                                        'md' => 2,
+                                        'lg' => 2,
+                                    ]),
+                            ]),
+                        Forms\Components\Select::make('provinsi_id')
+                            ->label('Provinsi')
+                            ->relationship('provinsi', 'nama')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
+                            ->createOptionForm([
+                                Section::make('Provinsi')
+                                    ->collapsible()
+                                    ->schema([
+                                        Forms\Components\TextInput::make('nama')
+                                            ->label('Provinsi')
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
+                                        Forms\Components\Select::make('negara_id')
+                                            ->label('Negara')
+                                            ->relationship('negara', 'nama')
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
+                                    ])
+                                    ->columns([
+                                        'sm' => '100%',
+                                        'md' => 2,
+                                        'lg' => 2,
+                                    ]),
+                            ]),
+                        Forms\Components\Select::make('kabupaten_id')
+                            ->label('Kabupaten')
+                            ->relationship('kabupaten', 'nama')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
+                            ->createOptionForm([
+                                Section::make('Kabupaten/Kota')
+                                    ->collapsible()
+                                    ->schema([
+                                        Forms\Components\TextInput::make('nama')
+                                            ->label('Kabupaten/Kota')
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
+                                        Forms\Components\Select::make('provinsi_id')
+                                            ->label('Provinsi')
+                                            ->relationship('provinsi', 'nama')
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
+                                    ])
+                                    ->columns([
+                                        'sm' => '100%',
+                                        'md' => 2,
+                                        'lg' => 2,
+                                    ]),
+                            ]),
+                        Forms\Components\Select::make('kecamatan_id')
+                            ->label('Kecamatan')
+                            ->relationship('kecamatan', 'nama')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
+                            ->createOptionForm([
+                                Section::make('Kecamatan')
+                                    ->collapsible()
+                                    ->schema([
+                                        Forms\Components\TextInput::make('nama')
+                                            ->label('Kecamatan')
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
+                                        Forms\Components\Select::make('kabupaten_id')
+                                            ->label('Kabupaten')
+                                            ->relationship('kabupaten', 'nama')
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
+                                    ])
+                                    ->columns([
+                                        'sm' => '100%',
+                                        'md' => 2,
+                                        'lg' => 2,
+                                    ]),
+                            ]),
+                        Forms\Components\Select::make('kelurahan_id')
+                            ->label('Kelurahan')
+                            ->relationship('kelurahan', 'nama')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
+                            ->createOptionForm([
+                                Section::make('Kelurahan/Desa')
+                                    ->collapsible()
+                                    ->schema([
+                                        Forms\Components\TextInput::make('nama')
+                                            ->label('Kelurahan/Desa')
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
+                                        Forms\Components\Select::make('kecamatan_id')
+                                            ->label('Kecamatan')
+                                            ->relationship('kecamatan', 'nama')
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
+                                    ])
+                                    ->columns([
+                                        'sm' => '100%',
+                                        'md' => 2,
+                                        'lg' => 2,
+                                    ]),
+                            ]),
+                    ])
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => 3,
+                        'lg' => 3,
+                    ]),
+
+                // Kontak
+                Section::make('Kontak')
+                    ->collapsible()
+                    ->schema([
+                        Forms\Components\TextInput::make('website')
+                            ->label('Website'),
+                        Forms\Components\TextInput::make('telepon')
+                            ->label('Telepon')
+                            ->tel(),
+                        Forms\Components\TextInput::make('email')
+                            ->label('Email')
+                            ->email(),
+                    ])
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => 3,
+                        'lg' => 3,
+                    ])
             ]);
     }
 
@@ -97,9 +667,8 @@ class SekolahResource extends Resource
                 Tables\Columns\TextColumn::make('nss')
                     ->label('Nomor Statistik Sekolah')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('logo')
-                    ->label('Logo')
-                    ->searchable(),
+                Tables\Columns\ImageColumn::make('logo')
+                    ->label('Logo'),
                 Tables\Columns\TextColumn::make('pimpinan.nama')
                     ->label('Kepala Instansi')
                     ->sortable(),

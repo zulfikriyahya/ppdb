@@ -25,7 +25,7 @@ class TahunPendaftaranResource extends Resource
 
     protected static ?string $navigationGroup = 'Referensi';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 3;
 
     protected static bool $shouldRegisterNavigation = true;
 
@@ -42,17 +42,26 @@ class TahunPendaftaranResource extends Resource
                         Forms\Components\TextInput::make('nama')
                             ->label('Tahun Pendaftaran')
                             ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->placeholder('Contoh: 2025/2026'),
 
                         Forms\Components\TextInput::make('kuantitas')
                             ->label('Kuota Maksimal Registrasi Akun')
                             ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->helperText(new HtmlString('<small><i>Kuota maksimal pendaftar yang dapat membuat akun pendaftaran.<sup style="color:red">*</sup></i></small>'))
                             ->numeric()
                             ->postfix('Akun'),
                         Forms\Components\Select::make('status')
                             ->label('Status')
                             ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->options([
                                 'Aktif' => 'Aktif',
                                 'Nonaktif' => 'Nonaktif',
@@ -74,10 +83,16 @@ class TahunPendaftaranResource extends Resource
                     ->schema([
                         Forms\Components\DatePicker::make('tanggal_ppdb_mulai')
                             ->label('Tanggal Mulai PPDB')
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
                         Forms\Components\DatePicker::make('tanggal_ppdb_selesai')
                             ->label('Tanggal Selesai PPDB')
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
                     ])
                     ->columns([
                         'sm' => '100%',
@@ -93,10 +108,16 @@ class TahunPendaftaranResource extends Resource
                     ->schema([
                         Forms\Components\DateTimePicker::make('tanggal_pendaftaran_jalur_prestasi_mulai')
                             ->label('Tanggal Mulai Pendaftaran Jalur Prestasi')
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
                         Forms\Components\DateTimePicker::make('tanggal_pendaftaran_jalur_prestasi_selesai')
                             ->label('Tanggal Selesai Pendaftaran Jalur Prestasi')
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
                     ])
                     ->columns([
                         'sm' => '100%',
@@ -112,10 +133,16 @@ class TahunPendaftaranResource extends Resource
                     ->schema([
                         Forms\Components\DateTimePicker::make('tanggal_pengumuman_jalur_prestasi_mulai')
                             ->label('Tanggal Mulai Pengumuman Jalur Prestasi')
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
                         Forms\Components\DateTimePicker::make('tanggal_pengumuman_jalur_prestasi_selesai')
                             ->label('Tanggal Selesai Pengumuman Jalur Prestasi')
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
                     ])
                     ->columns([
                         'sm' => '100%',
@@ -131,10 +158,16 @@ class TahunPendaftaranResource extends Resource
                     ->schema([
                         Forms\Components\DateTimePicker::make('tanggal_pendaftaran_jalur_reguler_mulai')
                             ->label('Tanggal Mulai Pendaftaran Jalur Reguler')
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
                         Forms\Components\DateTimePicker::make('tanggal_pendaftaran_jalur_reguler_selesai')
                             ->label('Tanggal Selesai Pendaftaran Jalur Reguler')
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
                     ])
                     ->columns([
                         'sm' => '100%',
@@ -150,10 +183,16 @@ class TahunPendaftaranResource extends Resource
                     ->schema([
                         Forms\Components\DateTimePicker::make('tanggal_penerbitan_kartu_tes_mulai')
                             ->label('Tanggal Mulai Penerbitan Kartu Tes')
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
                         Forms\Components\DateTimePicker::make('tanggal_penerbitan_kartu_tes_selesai')
                             ->label('Tanggal Selesai Penerbitan Kartu Tes')
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
                     ])
                     ->columns([
                         'sm' => '100%',
@@ -169,10 +208,16 @@ class TahunPendaftaranResource extends Resource
                     ->schema([
                         Forms\Components\DateTimePicker::make('tanggal_tes_akademik_mulai')
                             ->label('Tanggal Mulai Tes Akademik')
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
                         Forms\Components\DateTimePicker::make('tanggal_tes_akademik_selesai')
                             ->label('Tanggal Selesai Tes Akademik')
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
                     ])
                     ->columns([
                         'sm' => '100%',
@@ -188,10 +233,16 @@ class TahunPendaftaranResource extends Resource
                     ->schema([
                         Forms\Components\DateTimePicker::make('tanggal_tes_praktik_mulai')
                             ->label('Tanggal Mulai Tes Praktik')
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
                         Forms\Components\DateTimePicker::make('tanggal_tes_praktik_selesai')
                             ->label('Tanggal Selesai Tes Praktik')
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
                     ])
                     ->columns([
                         'sm' => '100%',
@@ -207,10 +258,16 @@ class TahunPendaftaranResource extends Resource
                     ->schema([
                         Forms\Components\DateTimePicker::make('tanggal_pengumuman_jalur_reguler_mulai')
                             ->label('Tanggal Mulai Pengumuman Jalur Reguler')
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
                         Forms\Components\DateTimePicker::make('tanggal_pengumuman_jalur_reguler_selesai')
                             ->label('Tanggal Selesai Pengumuman Jalur Reguler')
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
                     ])
                     ->columns([
                         'sm' => '100%',
@@ -226,10 +283,16 @@ class TahunPendaftaranResource extends Resource
                     ->schema([
                         Forms\Components\DateTimePicker::make('tanggal_registrasi_berkas_mulai')
                             ->label('Tanggal Mulai Registrasi Berkas')
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
                         Forms\Components\DateTimePicker::make('tanggal_registrasi_berkas_selesai')
                             ->label('Tanggal Selesai Registrasi Berkas')
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
                     ])
                     ->columns([
                         'sm' => '100%',

@@ -39,11 +39,17 @@ class KecamatanResource extends Resource
                     ->schema([
                         Forms\Components\TextInput::make('nama')
                             ->label('Kecamatan')
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
                         Forms\Components\Select::make('kabupaten_id')
                             ->label('Kabupaten')
                             ->relationship('kabupaten', 'nama')
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
                     ])
                     ->columns([
                         'sm' => '100%',

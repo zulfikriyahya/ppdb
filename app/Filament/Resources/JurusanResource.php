@@ -4,27 +4,27 @@ namespace App\Filament\Resources;
 
 use Filament\Forms;
 use Filament\Tables;
+use App\Models\Jurusan;
 use Filament\Forms\Form;
-use App\Models\Kabupaten;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\Section;
 use Illuminate\Database\Eloquent\Builder;
-use App\Filament\Resources\KabupatenResource\Pages;
+use App\Filament\Resources\JurusanResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\KabupatenResource\RelationManagers;
+use App\Filament\Resources\JurusanResource\RelationManagers;
 
-class KabupatenResource extends Resource
+class JurusanResource extends Resource
 {
-    protected static ?string $model = Kabupaten::class;
+    protected static ?string $model = Jurusan::class;
 
-    protected static ?string $navigationLabel = 'Kabupaten/Kota';
+    protected static ?string $navigationLabel = 'Jurusan';
 
-    protected static ?string $label = 'Kabupaten/Kota';
+    protected static ?string $label = 'Jurusan';
 
-    protected static ?string $navigationGroup = 'Wilayah';
+    protected static ?string $navigationGroup = 'Referensi';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 6;
 
     protected static bool $shouldRegisterNavigation = true;
 
@@ -34,27 +34,15 @@ class KabupatenResource extends Resource
     {
         return $form
             ->schema([
-                Section::make('Kabupaten/Kota')
+                Section::make('Jurusan')
                     ->collapsible()
                     ->schema([
                         Forms\Components\TextInput::make('nama')
-                            ->label('Kabupaten/Kota')
+                            ->label('Nama Jurusan')
                             ->required()
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ]),
-                        Forms\Components\Select::make('provinsi_id')
-                            ->label('Provinsi')
-                            ->relationship('provinsi', 'nama')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                    ])
-                    ->columns([
-                        'sm' => '100%',
-                        'md' => 2,
-                        'lg' => 2,
                     ]),
             ]);
     }
@@ -62,20 +50,10 @@ class KabupatenResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            // ->recordTitleAttribute('nama')
             ->columns([
                 Tables\Columns\TextColumn::make('nama')
-                    ->label('Kabupaten/Kota')
+                    ->label('Jurusan')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('provinsi.nama')
-                    ->label('Provinsi')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('provinsi.negara.nama')
-                    ->label('Negara')
-                    ->sortable(),
-                Tables\Columns\ImageColumn::make('provinsi.negara.bendera')
-                    ->label('Bendera')
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat')
                     ->dateTime()
@@ -123,10 +101,10 @@ class KabupatenResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListKabupatens::route('/'),
-            'create' => Pages\CreateKabupaten::route('/create'),
-            'view' => Pages\ViewKabupaten::route('/{record}'),
-            'edit' => Pages\EditKabupaten::route('/{record}/edit'),
+            'index' => Pages\ListJurusans::route('/'),
+            'create' => Pages\CreateJurusan::route('/create'),
+            'view' => Pages\ViewJurusan::route('/{record}'),
+            'edit' => Pages\EditJurusan::route('/{record}/edit'),
         ];
     }
 

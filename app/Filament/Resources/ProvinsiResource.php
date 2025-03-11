@@ -39,11 +39,17 @@ class ProvinsiResource extends Resource
                     ->schema([
                         Forms\Components\TextInput::make('nama')
                             ->label('Provinsi')
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
                         Forms\Components\Select::make('negara_id')
                             ->label('Negara')
                             ->relationship('negara', 'nama')
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
                     ])
                     ->columns([
                         'sm' => '100%',

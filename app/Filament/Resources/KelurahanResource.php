@@ -39,11 +39,17 @@ class KelurahanResource extends Resource
                     ->schema([
                         Forms\Components\TextInput::make('nama')
                             ->label('Kelurahan/Desa')
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
                         Forms\Components\Select::make('kecamatan_id')
                             ->label('Kecamatan')
                             ->relationship('kecamatan', 'nama')
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
                     ])
                     ->columns([
                         'sm' => '100%',

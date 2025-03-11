@@ -35,7 +35,10 @@ class UserResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('name')
                     ->label('Nama Lengkap')
-                    ->required(),
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
                 Forms\Components\TextInput::make('email')
                     ->label('Email')
                     ->helperText('Isi dengan email yang masih aktif')
@@ -43,7 +46,10 @@ class UserResource extends Resource
                     ->rule(fn($record) => $record === null ? 'unique:users,email' : 'unique:users,email,' . $record->id)
                     ->dehydrateStateUsing(fn($state) => $state ? $state : null)
                     ->disabledOn('edit')
-                    ->required(),
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
                 Forms\Components\DateTimePicker::make('email_verified_at')
                     ->label('Diverifikasi')
                     ->default(now()),

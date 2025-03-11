@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::disableForeignKeyConstraints();
         Schema::create('jalur_pendaftarans', function (Blueprint $table) {
             $table->id();
-            $table->string('nama');
+            $table->enum('nama', ['Prestasi', 'Reguler', 'Mutasi', 'Zonasi', 'Afirmasi']);
             $table->integer('kuantitas');
             $table->foreignId('tahun_pendaftaran_id')->constrained('tahun_pendaftarans')->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamps();

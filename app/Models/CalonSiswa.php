@@ -123,7 +123,7 @@ class CalonSiswa extends Model
         'wali_kelurahan_id' => 'integer',
         'sekolah_asal_id' => 'integer',
         'jalur_pendaftaran_id' => 'integer',
-        'prestasi_id' => 'integer',
+        'prestasi_id' => 'array',
         'kelas_id' => 'integer',
         'tes_akademik_mulai' => 'datetime',
         'tes_akademik_selesai' => 'datetime',

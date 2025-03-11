@@ -8,6 +8,7 @@ use App\Models\Prestasi;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Filament\Forms\Components\Section;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\PrestasiResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -33,21 +34,59 @@ class PrestasiResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('nama')
-                    ->label('Nama Prestasi')
-                    ->required(),
-                Forms\Components\Select::make('tingkat')
-                    ->label('Tingkat')
-                    ->options(['Nasional' => 'Nasional', 'Provinsi' => 'Provinsi', 'Kabupaten/Kota' => 'Kabupaten/Kota'])
-                    ->required(),
-                Forms\Components\Select::make('kategori')
-                    ->label('Kategori')
-                    ->options(['Regu' => 'Regu', 'Tunggal' => 'Tunggal'])
-                    ->required(),
-                Forms\Components\Select::make('peringkat')
-                    ->label('Peringkat')
-                    ->options(['1' => '1', '2' => '2', '3' => '3'])
-                    ->required(),
+                // Biodata
+                Section::make('Prestasi')
+                    ->collapsible()
+                    ->schema([
+                        Forms\Components\Select::make('jenis')
+                            ->label('Jenis Prestasi')
+                            ->options([
+                                'Hafalan Al-Quran' => 'Hafalan Al-Quran (Minimal 3 Juz)',
+                                'Olimpiade/Kejuaraan' => 'Olimpiade/Kejuaraan'
+                            ])
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
+                            ->live(),
+                        Forms\Components\TextInput::make('nama')
+                            ->label('Nama Prestasi')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
+                        Forms\Components\Select::make('tingkat')
+                            ->label('Tingkat')
+                            ->options([
+                                'Nasional' => 'Nasional',
+                                'Provinsi' => 'Provinsi',
+                                'Kabupaten/Kota' => 'Kabupaten/Kota'
+                            ])
+                            ->visible(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan')
+                            ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                        Forms\Components\Select::make('kategori')
+                            ->label('Kategori')
+                            ->options([
+                                'Regu/Kelompok' => 'Regu/Kelompok',
+                                'Individu' => 'Individu'
+                            ])
+                            ->visible(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan')
+                            ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                        Forms\Components\Select::make('peringkat')
+                            ->label('Peringkat')
+                            ->options([
+                                '1' => '1',
+                                '2' => '2',
+                                '3' => '3',
+                            ])
+                            ->visible(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan')
+                            ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                    ])
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => 5,
+                        'lg' => 5,
+                    ]),
             ]);
     }
 
@@ -59,6 +98,13 @@ class PrestasiResource extends Resource
                 Tables\Columns\TextColumn::make('nama')
                     ->label('Nama Prestasi')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('jenis')
+                    ->label('Jenis Prestasi')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'Hafalan Al-Quran' => 'success',
+                        'Olimpiade/Kejuaraan' => 'primary'
+                    }),
                 Tables\Columns\TextColumn::make('tingkat')
                     ->label('Tingkat')
                     ->searchable(),

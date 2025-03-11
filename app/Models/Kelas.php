@@ -14,17 +14,13 @@ class Kelas extends Model
 
     protected $fillable = [
         'nama',
-        'kuantitas_pria',
-        'kuantitas_wanita',
-        'kuantitas',
+        'jurusan_id',
         'tahun_pendaftaran_id',
     ];
 
     protected $casts = [
         'id' => 'integer',
-        'kuantitas_pria' => 'integer',
-        'kuantitas_wanita' => 'integer',
-        'kuantitas' => 'integer',
+        'jurusan_id' => 'integer',
         'tahun_pendaftaran_id' => 'integer',
     ];
 
@@ -32,7 +28,10 @@ class Kelas extends Model
     {
         return $this->hasMany(CalonSiswa::class);
     }
-
+    public function jurusan(): BelongsTo
+    {
+        return $this->belongsTo(Jurusan::class);
+    }
     public function tahunPendaftaran(): BelongsTo
     {
         return $this->belongsTo(TahunPendaftaran::class);
