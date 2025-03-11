@@ -4,13 +4,21 @@ namespace App\Filament\Resources;
 
 use Filament\Forms;
 use Filament\Tables;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
+use App\Models\Provinsi;
 use Filament\Forms\Form;
+use App\Models\Kabupaten;
+use App\Models\Kecamatan;
+use App\Models\Kelurahan;
 use App\Models\CalonSiswa;
 use Filament\Tables\Table;
 use Filament\Facades\Filament;
 use Filament\Resources\Resource;
+use Illuminate\Support\Collection;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Section;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Support\Enums\IconPosition;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -352,34 +360,68 @@ class CalonSiswaResource extends Resource
                                             ->validationMessages([
                                                 'required' => 'Form ini wajib diisi.',
                                             ])
-                                            ->native(false),
+                                            ->native(false)
+                                            ->preload()
+                                            ->live()
+                                            ->afterStateUpdated(function (Set $set) {
+                                                $set('siswa_provinsi_id', null);
+                                                $set('siswa_kabupaten_id', null);
+                                                $set('siswa_kecamatan_id', null);
+                                                $set('siswa_kelurahan_id', null);
+                                            }),
                                         Forms\Components\Select::make('siswa_provinsi_id')
                                             ->label('Provinsi')
-                                            ->relationship('siswaProvinsi', 'nama')
+                                            ->options(fn(Get $get): Collection => Provinsi::query()
+                                                ->where('negara_id', $get('siswa_negara_id'))
+                                                ->pluck('nama', 'id'))
                                             ->required()
                                             ->validationMessages([
                                                 'required' => 'Form ini wajib diisi.',
                                             ])
-                                            ->native(false),
+                                            ->native(false)
+                                            ->preload()
+                                            ->live()
+                                            ->afterStateUpdated(function (Set $set) {
+                                                $set('siswa_kabupaten_id', null);
+                                                $set('siswa_kecamatan_id', null);
+                                                $set('siswa_kelurahan_id', null);
+                                            }),
                                         Forms\Components\Select::make('siswa_kabupaten_id')
                                             ->label('Kabupaten')
-                                            ->relationship('siswaKabupaten', 'nama')
+                                            ->options(fn(Get $get): Collection => Kabupaten::query()
+                                                ->where('provinsi_id', $get('siswa_provinsi_id'))
+                                                ->pluck('nama', 'id'))
                                             ->required()
                                             ->validationMessages([
                                                 'required' => 'Form ini wajib diisi.',
                                             ])
-                                            ->native(false),
+                                            ->native(false)
+                                            ->preload()
+                                            ->live()
+                                            ->afterStateUpdated(function (Set $set) {
+                                                $set('siswa_kecamatan_id', null);
+                                                $set('siswa_kelurahan_id', null);
+                                            }),
                                         Forms\Components\Select::make('siswa_kecamatan_id')
                                             ->label('Kecamatan')
-                                            ->relationship('siswaKecamatan', 'nama')
+                                            ->options(fn(Get $get): Collection => Kecamatan::query()
+                                                ->where('kabupaten_id', $get('siswa_kabupaten_id'))
+                                                ->pluck('nama', 'id'))
                                             ->required()
                                             ->validationMessages([
                                                 'required' => 'Form ini wajib diisi.',
                                             ])
-                                            ->native(false),
+                                            ->native(false)
+                                            ->preload()
+                                            ->live()
+                                            ->afterStateUpdated(function (Set $set) {
+                                                $set('siswa_kelurahan_id', null);
+                                            }),
                                         Forms\Components\Select::make('siswa_kelurahan_id')
                                             ->label('Kelurahan')
-                                            ->relationship('siswaKelurahan', 'nama')
+                                            ->options(fn(Get $get): Collection => Kelurahan::query()
+                                                ->where('kecamatan_id', $get('siswa_kecamatan_id'))
+                                                ->pluck('nama', 'id'))
                                             ->required()
                                             ->validationMessages([
                                                 'required' => 'Form ini wajib diisi.',
@@ -515,34 +557,68 @@ class CalonSiswaResource extends Resource
                                             ->validationMessages([
                                                 'required' => 'Form ini wajib diisi.',
                                             ])
-                                            ->native(false),
+                                            ->native(false)
+                                            ->preload()
+                                            ->live()
+                                            ->afterStateUpdated(function (Set $set) {
+                                                $set('ibu_provinsi_id', null);
+                                                $set('ibu_kabupaten_id', null);
+                                                $set('ibu_kecamatan_id', null);
+                                                $set('ibu_kelurahan_id', null);
+                                            }),
                                         Forms\Components\Select::make('ibu_provinsi_id')
                                             ->label('Provinsi')
-                                            ->relationship('ibuProvinsi', 'nama')
+                                            ->options(fn(Get $get): Collection => Provinsi::query()
+                                                ->where('negara_id', $get('ibu_negara_id'))
+                                                ->pluck('nama', 'id'))
                                             ->required()
                                             ->validationMessages([
                                                 'required' => 'Form ini wajib diisi.',
                                             ])
-                                            ->native(false),
+                                            ->native(false)
+                                            ->preload()
+                                            ->live()
+                                            ->afterStateUpdated(function (Set $set) {
+                                                $set('ibu_kabupaten_id', null);
+                                                $set('ibu_kecamatan_id', null);
+                                                $set('ibu_kelurahan_id', null);
+                                            }),
                                         Forms\Components\Select::make('ibu_kabupaten_id')
                                             ->label('Kabupaten')
-                                            ->relationship('ibuKabupaten', 'nama')
+                                            ->options(fn(Get $get): Collection => Kabupaten::query()
+                                                ->where('provinsi_id', $get('ibu_provinsi_id'))
+                                                ->pluck('nama', 'id'))
                                             ->required()
                                             ->validationMessages([
                                                 'required' => 'Form ini wajib diisi.',
                                             ])
-                                            ->native(false),
+                                            ->native(false)
+                                            ->preload()
+                                            ->live()
+                                            ->afterStateUpdated(function (Set $set) {
+                                                $set('ibu_kecamatan_id', null);
+                                                $set('ibu_kelurahan_id', null);
+                                            }),
                                         Forms\Components\Select::make('ibu_kecamatan_id')
                                             ->label('Kecamatan')
-                                            ->relationship('ibuKecamatan', 'nama')
+                                            ->options(fn(Get $get): Collection => Kecamatan::query()
+                                                ->where('kabupaten_id', $get('ibu_kabupaten_id'))
+                                                ->pluck('nama', 'id'))
                                             ->required()
                                             ->validationMessages([
                                                 'required' => 'Form ini wajib diisi.',
                                             ])
-                                            ->native(false),
+                                            ->native(false)
+                                            ->preload()
+                                            ->live()
+                                            ->afterStateUpdated(function (Set $set) {
+                                                $set('ibu_kelurahan_id', null);
+                                            }),
                                         Forms\Components\Select::make('ibu_kelurahan_id')
                                             ->label('Kelurahan')
-                                            ->relationship('ibuKelurahan', 'nama')
+                                            ->options(fn(Get $get): Collection => Kelurahan::query()
+                                                ->where('kecamatan_id', $get('ibu_kecamatan_id'))
+                                                ->pluck('nama', 'id'))
                                             ->required()
                                             ->validationMessages([
                                                 'required' => 'Form ini wajib diisi.',
@@ -609,34 +685,68 @@ class CalonSiswaResource extends Resource
                                             ->validationMessages([
                                                 'required' => 'Form ini wajib diisi.',
                                             ])
-                                            ->native(false),
+                                            ->native(false)
+                                            ->preload()
+                                            ->live()
+                                            ->afterStateUpdated(function (Set $set) {
+                                                $set('ayah_provinsi_id', null);
+                                                $set('ayah_kabupaten_id', null);
+                                                $set('ayah_kecamatan_id', null);
+                                                $set('ayah_kelurahan_id', null);
+                                            }),
                                         Forms\Components\Select::make('ayah_provinsi_id')
                                             ->label('Provinsi')
-                                            ->relationship('ayahProvinsi', 'nama')
+                                            ->options(fn(Get $get): Collection => Provinsi::query()
+                                                ->where('negara_id', $get('ayah_negara_id'))
+                                                ->pluck('nama', 'id'))
                                             ->required()
                                             ->validationMessages([
                                                 'required' => 'Form ini wajib diisi.',
                                             ])
-                                            ->native(false),
+                                            ->native(false)
+                                            ->preload()
+                                            ->live()
+                                            ->afterStateUpdated(function (Set $set) {
+                                                $set('ayah_kabupaten_id', null);
+                                                $set('ayah_kecamatan_id', null);
+                                                $set('ayah_kelurahan_id', null);
+                                            }),
                                         Forms\Components\Select::make('ayah_kabupaten_id')
                                             ->label('Kabupaten')
-                                            ->relationship('ayahKabupaten', 'nama')
+                                            ->options(fn(Get $get): Collection => Kabupaten::query()
+                                                ->where('provinsi_id', $get('ayah_provinsi_id'))
+                                                ->pluck('nama', 'id'))
                                             ->required()
                                             ->validationMessages([
                                                 'required' => 'Form ini wajib diisi.',
                                             ])
-                                            ->native(false),
+                                            ->native(false)
+                                            ->preload()
+                                            ->live()
+                                            ->afterStateUpdated(function (Set $set) {
+                                                $set('ayah_kecamatan_id', null);
+                                                $set('ayah_kelurahan_id', null);
+                                            }),
                                         Forms\Components\Select::make('ayah_kecamatan_id')
                                             ->label('Kecamatan')
-                                            ->relationship('ayahKecamatan', 'nama')
+                                            ->options(fn(Get $get): Collection => Kecamatan::query()
+                                                ->where('kabupaten_id', $get('ayah_kabupaten_id'))
+                                                ->pluck('nama', 'id'))
                                             ->required()
                                             ->validationMessages([
                                                 'required' => 'Form ini wajib diisi.',
                                             ])
-                                            ->native(false),
+                                            ->native(false)
+                                            ->preload()
+                                            ->live()
+                                            ->afterStateUpdated(function (Set $set) {
+                                                $set('ayah_kelurahan_id', null);
+                                            }),
                                         Forms\Components\Select::make('ayah_kelurahan_id')
                                             ->label('Kelurahan')
-                                            ->relationship('ayahKelurahan', 'nama')
+                                            ->options(fn(Get $get): Collection => Kelurahan::query()
+                                                ->where('kecamatan_id', $get('ayah_kecamatan_id'))
+                                                ->pluck('nama', 'id'))
                                             ->required()
                                             ->validationMessages([
                                                 'required' => 'Form ini wajib diisi.',
@@ -671,8 +781,7 @@ class CalonSiswaResource extends Resource
                                                 'Hidup' => 'Hidup',
                                                 'Meninggal' => 'Meninggal',
                                             ])
-                                            ->native(false)
-                                            ->default('Hidup'),
+                                            ->native(false),
                                     ]),
 
                                 Tabs\Tab::make('Alamat')
@@ -684,22 +793,56 @@ class CalonSiswaResource extends Resource
                                         Forms\Components\Select::make('wali_negara_id')
                                             ->label('Negara')
                                             ->relationship('waliNegara', 'nama')
-                                            ->native(false),
+                                            ->native(false)
+                                            ->preload()
+                                            ->live()
+                                            ->afterStateUpdated(function (Set $set) {
+                                                $set('wali_provinsi_id', null);
+                                                $set('wali_kabupaten_id', null);
+                                                $set('wali_kecamatan_id', null);
+                                                $set('wali_kelurahan_id', null);
+                                            }),
                                         Forms\Components\Select::make('wali_provinsi_id')
                                             ->label('Provinsi')
-                                            ->relationship('waliProvinsi', 'nama')
-                                            ->native(false),
+                                            ->options(fn(Get $get): Collection => Provinsi::query()
+                                                ->where('negara_id', $get('wali_negara_id'))
+                                                ->pluck('nama', 'id'))
+                                            ->native(false)
+                                            ->preload()
+                                            ->live()
+                                            ->afterStateUpdated(function (Set $set) {
+                                                $set('wali_kabupaten_id', null);
+                                                $set('wali_kecamatan_id', null);
+                                                $set('wali_kelurahan_id', null);
+                                            }),
                                         Forms\Components\Select::make('wali_kabupaten_id')
-                                            ->label('Kabupaten/Kota')
-                                            ->relationship('waliKabupaten', 'nama')
-                                            ->native(false),
+                                            ->label('Kabupaten')
+                                            ->options(fn(Get $get): Collection => Kabupaten::query()
+                                                ->where('provinsi_id', $get('wali_provinsi_id'))
+                                                ->pluck('nama', 'id'))
+                                            ->native(false)
+                                            ->preload()
+                                            ->live()
+                                            ->afterStateUpdated(function (Set $set) {
+                                                $set('wali_kecamatan_id', null);
+                                                $set('wali_kelurahan_id', null);
+                                            }),
                                         Forms\Components\Select::make('wali_kecamatan_id')
                                             ->label('Kecamatan')
-                                            ->relationship('waliKecamatan', 'nama')
-                                            ->native(false),
+                                            ->options(fn(Get $get): Collection => Kecamatan::query()
+                                                ->where('kabupaten_id', $get('wali_kabupaten_id'))
+                                                ->pluck('nama', 'id'))
+                                            ->native(false)
+                                            ->preload()
+                                            ->live()
+                                            ->afterStateUpdated(function (Set $set) {
+                                                $set('wali_kelurahan_id', null);
+                                            }),
                                         Forms\Components\Select::make('wali_kelurahan_id')
-                                            ->label('Kelurahan/Desa')
-                                            ->relationship('waliKelurahan', 'nama')
+                                            ->label('Kelurahan')
+                                            ->options(fn(Get $get): Collection => Kelurahan::query()
+                                                ->where('kecamatan_id', $get('wali_kecamatan_id'))
+                                                ->pluck('nama', 'id'))
                                             ->native(false),
                                     ]),
                             ])
