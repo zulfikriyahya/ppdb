@@ -1,4 +1,4 @@
-# Admisi MTs Negeri 1 Pandeglang
+# PPDB MTs Negeri 1 Pandeglang
 
 Sebuah aplikasi berbasis web untuk proses penerimaan siswa baru di MTs Negeri 1 Pandeglang, dibangun menggunakan framework Laravel 12.
 
@@ -21,12 +21,12 @@ Sebuah aplikasi berbasis web untuk proses penerimaan siswa baru di MTs Negeri 1 
 
 1. Clone repositori ini:
     ```bash
-    git clone https://github.com/zulfikriyahya/admisi.git
+    git clone https://github.com/zulfikriyahya/ppdb.git
     ```
 
 2. Masuk ke direktori proyek:
     ```bash
-    cd admisi
+    cd ppdb
     ```
 
 3. Install dependencies menggunakan Composer:
