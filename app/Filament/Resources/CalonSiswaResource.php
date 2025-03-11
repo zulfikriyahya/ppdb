@@ -298,7 +298,19 @@ class CalonSiswaResource extends Resource
                                             ->label('Prestasi')
                                             ->relationship('prestasi', 'nama')
                                             ->multiple()
+                                            ->preload()
+                                            ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->nama} | {$record->tingkat} | {$record->kategori} | {$record->peringkat}")
                                             ->native(false),
+
+
+                                        // Select::make('author_id')
+                                        //     ->relationship(
+                                        //         name: 'author',
+                                        //         modifyQueryUsing: fn(Builder $query) => $query->orderBy('first_name')->orderBy('last_name'),
+                                        //     )
+                                        //     ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->first_name} {$record->last_name}")
+                                        //     ->searchable(['first_name', 'last_name']),
+
                                         // Data Peminatan Ekstrakurikuler Calon Peserta Didik Baru
                                         Forms\Components\Select::make('peminatan_ekstrakurikuler')
                                             ->label('Peminatan Ekstrakurikuler')
@@ -485,7 +497,8 @@ class CalonSiswaResource extends Resource
                                             ]),
                                         // Berkas Prestasi Belajar Calon Peserta Didik Baru
                                         Forms\Components\FileUpload::make('berkas_prestasi')
-                                            ->label('Berkas Prestasi Siswa'),
+                                            ->label('Berkas Prestasi Siswa')
+                                            ->openable(),
                                     ]),
                             ])
                             ->columns([
