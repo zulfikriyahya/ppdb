@@ -76,7 +76,7 @@ return new class extends Migration
             $table->foreignId('sekolah_asal_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('jalur_pendaftaran_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('prestasi_id')->nullable()->constrained('prestasis')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->enum('peminatan_ekstrakurikuler', ['Pramuka', 'Paskibra', 'Adiwiyata', 'Olahraga', 'Kesenian', 'Kerohanian', 'Lainnya']);
+            $table->enum('peminatan_ekstrakurikuler', ['Pramuka', 'Paskibra', 'Kesehatan', 'Kebersihan', 'Kesenian', 'Kerohanian', 'Olahraga Footsal', 'Olahraga Bulu Tangkis', 'Olahraga Voli', 'Olahraga Renang']);
             $table->enum('peminatan_pelajaran', ['IPA', 'IPS', 'Matematika', 'Bahasa Indonesia', 'Bahasa Arab', 'Bahasa Inggris', 'Lainnya']);
             $table->integer('nilai_ipa')->nullable();
             $table->integer('nilai_ips')->nullable();

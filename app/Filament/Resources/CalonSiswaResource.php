@@ -346,6 +346,7 @@ class CalonSiswaResource extends Resource
                                                 'Bahasa Indonesia' => 'Bahasa Indonesia',
                                                 'Bahasa Inggris' => 'Bahasa Inggris',
                                                 'Bahasa Arab' => 'Bahasa Arab',
+                                                'Lainnya' => 'Lainnya',
                                             ])
                                             // ->relationship('mataPelajaran', 'nama')
                                             ->validationMessages([
@@ -457,6 +458,19 @@ class CalonSiswaResource extends Resource
                                         // Berkas Foto Calon Peserta Didik Baru
                                         Forms\Components\FileUpload::make('berkas_foto')
                                             ->label('Foto Latar Merah')
+                                            ->image()
+                                            ->imageEditor()
+                                            ->imageEditorAspectRatios([
+                                                null,
+                                                '1:1' => '1:1',
+                                                '3:4' => '3:4',
+                                            ])
+                                            ->fetchFileInformation(false)
+                                            ->directory('assets/berkas')
+                                            ->downloadable()
+                                            ->maxSize(500)
+                                            ->minSize(10)
+                                            ->visibility('private')
                                             ->required()
                                             ->validationMessages([
                                                 'required' => 'Form ini wajib diisi.',
@@ -464,6 +478,19 @@ class CalonSiswaResource extends Resource
                                         // Berkas KK Calon Peserta Didik Baru
                                         Forms\Components\FileUpload::make('berkas_kk')
                                             ->label('Kartu Keluarga')
+                                            ->image()
+                                            ->imageEditor()
+                                            ->imageEditorAspectRatios([
+                                                null,
+                                                '1:1' => '1:1',
+                                                '3:4' => '3:4',
+                                            ])
+                                            ->fetchFileInformation(false)
+                                            ->directory('assets/berkas')
+                                            ->downloadable()
+                                            ->maxSize(500)
+                                            ->minSize(10)
+                                            ->visibility('private')
                                             ->required()
                                             ->validationMessages([
                                                 'required' => 'Form ini wajib diisi.',
@@ -471,19 +498,71 @@ class CalonSiswaResource extends Resource
                                         // Berkas Akta Calon Peserta Didik Baru
                                         Forms\Components\FileUpload::make('berkas_akta')
                                             ->label('Akta Kelahiran')
+                                            ->image()
+                                            ->imageEditor()
+                                            ->imageEditorAspectRatios([
+                                                null,
+                                                '1:1' => '1:1',
+                                                '3:4' => '3:4',
+                                            ])
+                                            ->fetchFileInformation(false)
+                                            ->directory('assets/berkas')
+                                            ->downloadable()
+                                            ->maxSize(500)
+                                            ->minSize(10)
+                                            ->visibility('private')
                                             ->required()
                                             ->validationMessages([
                                                 'required' => 'Form ini wajib diisi.',
                                             ]),
                                         // Berkas KIP Calon Peserta Didik Baru
                                         Forms\Components\FileUpload::make('berkas_kip')
-                                            ->label('Kartu Indonesia Pintar'),
+                                            ->label('Kartu Indonesia Pintar')
+                                            ->image()
+                                            ->imageEditor()
+                                            ->imageEditorAspectRatios([
+                                                null,
+                                                '1:1' => '1:1',
+                                                '3:4' => '3:4',
+                                            ])
+                                            ->fetchFileInformation(false)
+                                            ->directory('assets/berkas')
+                                            ->downloadable()
+                                            ->maxSize(500)
+                                            ->minSize(10)
+                                            ->visibility('private'),
                                         // Berkas NISN Calon Peserta Didik Baru
                                         Forms\Components\FileUpload::make('berkas_nisn')
-                                            ->label('Kartu NISN/Tangkapan Layar NISN (Web)'),
+                                            ->label('Kartu NISN/Tangkapan Layar NISN (Web)')
+                                            ->image()
+                                            ->imageEditor()
+                                            ->imageEditorAspectRatios([
+                                                null,
+                                                '1:1' => '1:1',
+                                                '3:4' => '3:4',
+                                            ])
+                                            ->fetchFileInformation(false)
+                                            ->directory('assets/berkas')
+                                            ->downloadable()
+                                            ->maxSize(500)
+                                            ->minSize(10)
+                                            ->visibility('private'),
                                         // Berkas Surat Keterangan Berkelakuan Baik Calon Peserta Didik Baru
                                         Forms\Components\FileUpload::make('berkas_skbb')
                                             ->label('Surat Keterangan Berkelakuan Baik')
+                                            ->image()
+                                            ->imageEditor()
+                                            ->imageEditorAspectRatios([
+                                                null,
+                                                '1:1' => '1:1',
+                                                '3:4' => '3:4',
+                                            ])
+                                            ->fetchFileInformation(false)
+                                            ->directory('assets/berkas')
+                                            ->downloadable()
+                                            ->maxSize(500)
+                                            ->minSize(10)
+                                            ->visibility('private')
                                             ->required()
                                             ->validationMessages([
                                                 'required' => 'Form ini wajib diisi.',
@@ -491,6 +570,19 @@ class CalonSiswaResource extends Resource
                                         // Berkas Surat Keterangan Aktif Belajar Calon Peserta Didik Baru
                                         Forms\Components\FileUpload::make('berkas_skab')
                                             ->label('Surat Keterangan Aktif Belajar')
+                                            ->image()
+                                            ->imageEditor()
+                                            ->imageEditorAspectRatios([
+                                                null,
+                                                '1:1' => '1:1',
+                                                '3:4' => '3:4',
+                                            ])
+                                            ->fetchFileInformation(false)
+                                            ->directory('assets/berkas')
+                                            ->downloadable()
+                                            ->maxSize(500)
+                                            ->minSize(10)
+                                            ->visibility('private')
                                             ->required()
                                             ->validationMessages([
                                                 'required' => 'Form ini wajib diisi.',
@@ -498,7 +590,19 @@ class CalonSiswaResource extends Resource
                                         // Berkas Prestasi Belajar Calon Peserta Didik Baru
                                         Forms\Components\FileUpload::make('berkas_prestasi')
                                             ->label('Berkas Prestasi Siswa')
-                                            ->openable(),
+                                            ->image()
+                                            ->imageEditor()
+                                            ->imageEditorAspectRatios([
+                                                null,
+                                                '1:1' => '1:1',
+                                                '3:4' => '3:4',
+                                            ])
+                                            ->fetchFileInformation(false)
+                                            ->directory('assets/berkas')
+                                            ->downloadable()
+                                            ->maxSize(500)
+                                            ->minSize(10)
+                                            ->visibility('private'),
                                     ]),
                             ])
                             ->columns([
