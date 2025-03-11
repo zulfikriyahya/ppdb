@@ -4,10 +4,17 @@ namespace App\Filament\Resources;
 
 use Filament\Forms;
 use Filament\Tables;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
+use App\Models\Provinsi;
 use Filament\Forms\Form;
+use App\Models\Kabupaten;
+use App\Models\Kecamatan;
+use App\Models\Kelurahan;
 use Filament\Tables\Table;
 use App\Models\SekolahAsal;
 use Filament\Resources\Resource;
+use Illuminate\Support\Collection;
 use Filament\Forms\Components\Section;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -80,7 +87,7 @@ class SekolahAsalResource extends Resource
                 Section::make('Alamat')
                     ->collapsible()
                     ->schema([
-                        Forms\Components\TextInput::make('alamat')
+                        Forms\Components\TextArea::make('alamat')
                             ->label('Alamat')
                             ->required()
                             ->validationMessages([
@@ -93,159 +100,73 @@ class SekolahAsalResource extends Resource
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ])
-                            ->createOptionForm([
-                                Section::make('Negara')
-                                    ->collapsible()
-                                    ->schema([
-                                        Forms\Components\TextInput::make('nama')
-                                            ->label('Negara')
-                                            ->required()
-                                            ->validationMessages([
-                                                'required' => 'Form ini wajib diisi.',
-                                            ]),
-                                        Forms\Components\FileUpload::make('bendera')
-                                            ->label('Bendera')
-                                            ->image()
-                                            ->imageEditor()
-                                            ->imageEditorAspectRatios([
-                                                null,
-                                                '4:3' => '4:3',
-                                            ])
-                                            ->fetchFileInformation(false)
-                                            ->directory('assets/bendera')
-                                            ->downloadable()
-                                            ->maxSize(500),
-                                    ])
-                                    ->columns([
-                                        'sm' => '100%',
-                                        'md' => 2,
-                                        'lg' => 2,
-                                    ]),
-                            ]),
+                            ->native(false)
+                            ->preload()
+                            ->live()
+                            ->afterStateUpdated(function (Set $set) {
+                                $set('provinsi_id', null);
+                                $set('kabupaten_id', null);
+                                $set('kecamatan_id', null);
+                                $set('kelurahan_id', null);
+                            }),
                         Forms\Components\Select::make('provinsi_id')
                             ->label('Provinsi')
-                            ->relationship('provinsi', 'nama')
+                            ->options(fn(Get $get): Collection => Provinsi::query()
+                                ->where('negara_id', $get('negara_id'))
+                                ->pluck('nama', 'id'))
                             ->required()
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ])
-                            ->createOptionForm([
-                                Section::make('Provinsi')
-                                    ->collapsible()
-                                    ->schema([
-                                        Forms\Components\TextInput::make('nama')
-                                            ->label('Provinsi')
-                                            ->required()
-                                            ->validationMessages([
-                                                'required' => 'Form ini wajib diisi.',
-                                            ]),
-                                        Forms\Components\Select::make('negara_id')
-                                            ->label('Negara')
-                                            ->relationship('negara', 'nama')
-                                            ->required()
-                                            ->validationMessages([
-                                                'required' => 'Form ini wajib diisi.',
-                                            ]),
-                                    ])
-                                    ->columns([
-                                        'sm' => '100%',
-                                        'md' => 2,
-                                        'lg' => 2,
-                                    ]),
-                            ]),
+                            ->native(false)
+                            ->preload()
+                            ->live()
+                            ->afterStateUpdated(function (Set $set) {
+                                $set('kabupaten_id', null);
+                                $set('kecamatan_id', null);
+                                $set('kelurahan_id', null);
+                            }),
                         Forms\Components\Select::make('kabupaten_id')
                             ->label('Kabupaten')
-                            ->relationship('kabupaten', 'nama')
+                            ->options(fn(Get $get): Collection => Kabupaten::query()
+                                ->where('provinsi_id', $get('provinsi_id'))
+                                ->pluck('nama', 'id'))
                             ->required()
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ])
-                            ->createOptionForm([
-                                Section::make('Kabupaten/Kota')
-                                    ->collapsible()
-                                    ->schema([
-                                        Forms\Components\TextInput::make('nama')
-                                            ->label('Kabupaten/Kota')
-                                            ->required()
-                                            ->validationMessages([
-                                                'required' => 'Form ini wajib diisi.',
-                                            ]),
-                                        Forms\Components\Select::make('provinsi_id')
-                                            ->label('Provinsi')
-                                            ->relationship('provinsi', 'nama')
-                                            ->required()
-                                            ->validationMessages([
-                                                'required' => 'Form ini wajib diisi.',
-                                            ]),
-                                    ])
-                                    ->columns([
-                                        'sm' => '100%',
-                                        'md' => 2,
-                                        'lg' => 2,
-                                    ]),
-                            ]),
+                            ->native(false)
+                            ->preload()
+                            ->live()
+                            ->afterStateUpdated(function (Set $set) {
+                                $set('kecamatan_id', null);
+                                $set('kelurahan_id', null);
+                            }),
                         Forms\Components\Select::make('kecamatan_id')
                             ->label('Kecamatan')
-                            ->relationship('kecamatan', 'nama')
+                            ->options(fn(Get $get): Collection => Kecamatan::query()
+                                ->where('kabupaten_id', $get('kabupaten_id'))
+                                ->pluck('nama', 'id'))
                             ->required()
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ])
-                            ->createOptionForm([
-                                Section::make('Kecamatan')
-                                    ->collapsible()
-                                    ->schema([
-                                        Forms\Components\TextInput::make('nama')
-                                            ->label('Kecamatan')
-                                            ->required()
-                                            ->validationMessages([
-                                                'required' => 'Form ini wajib diisi.',
-                                            ]),
-                                        Forms\Components\Select::make('kabupaten_id')
-                                            ->label('Kabupaten')
-                                            ->relationship('kabupaten', 'nama')
-                                            ->required()
-                                            ->validationMessages([
-                                                'required' => 'Form ini wajib diisi.',
-                                            ]),
-                                    ])
-                                    ->columns([
-                                        'sm' => '100%',
-                                        'md' => 2,
-                                        'lg' => 2,
-                                    ]),
-                            ]),
+                            ->native(false)
+                            ->preload()
+                            ->live()
+                            ->afterStateUpdated(function (Set $set) {
+                                $set('kelurahan_id', null);
+                            }),
                         Forms\Components\Select::make('kelurahan_id')
                             ->label('Kelurahan')
-                            ->relationship('kelurahan', 'nama')
+                            ->options(fn(Get $get): Collection => Kelurahan::query()
+                                ->where('kecamatan_id', $get('kecamatan_id'))
+                                ->pluck('nama', 'id'))
                             ->required()
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ])
-                            ->createOptionForm([
-                                Section::make('Kelurahan/Desa')
-                                    ->collapsible()
-                                    ->schema([
-                                        Forms\Components\TextInput::make('nama')
-                                            ->label('Kelurahan/Desa')
-                                            ->required()
-                                            ->validationMessages([
-                                                'required' => 'Form ini wajib diisi.',
-                                            ]),
-                                        Forms\Components\Select::make('kecamatan_id')
-                                            ->label('Kecamatan')
-                                            ->relationship('kecamatan', 'nama')
-                                            ->required()
-                                            ->validationMessages([
-                                                'required' => 'Form ini wajib diisi.',
-                                            ]),
-                                    ])
-                                    ->columns([
-                                        'sm' => '100%',
-                                        'md' => 2,
-                                        'lg' => 2,
-                                    ]),
-                            ]),
+                            ->native(false),
                     ])
                     ->columns([
                         'sm' => '100%',
