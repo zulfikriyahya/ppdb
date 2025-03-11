@@ -8,7 +8,9 @@ use Filament\Forms\Form;
 use App\Models\CalonSiswa;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Section;
+use Filament\Support\Enums\IconPosition;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\CalonSiswaResource\Pages;
@@ -34,6 +36,7 @@ class CalonSiswaResource extends Resource
     {
         return $form
             ->schema([
+
                 Section::make('Formulir Pendaftaran')
                     ->collapsible()
                     ->schema([
@@ -44,544 +47,674 @@ class CalonSiswaResource extends Resource
                             ->required()
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
-                            ]),
-                        // Nama Lengkap Calon Siswa 
-                        Forms\Components\TextInput::make('nama')
-                            ->label('Nama Lengkap')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        // NIK Calon Siswa
-                        Forms\Components\TextInput::make('nik')
-                            ->label('Nomor Induk Kependudukan (NIK)')
-                            ->required()
-                            ->unique()
-                            ->maxLength(16)
-                            ->minLength(16)
-                            ->validationMessages([
-                                'max' => 'NIK : Masukkan maksimal 16 Angka.',
-                                'min' => 'NIK : Masukkan minimal 16 Angka.',
-                                'unique' => 'NIK : Nomor ini sudah pernah di isi.',
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        // NISN Calon Siswa
-                        Forms\Components\TextInput::make('nisn')
-                            ->label('Nomor Induk Siswa Nasional (NISN)')
-                            ->required()
-                            ->unique()
-                            ->maxLength(10)
-                            ->minLength(10)
-                            ->validationMessages([
-                                'max' => 'NISN : Masukkan maksimal 10 Angka.',
-                                'min' => 'NISN : Masukkan minimal 10 Angka.',
-                                'unique' => 'NISN : Nomor ini sudah pernah di isi.',
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        // Tempat Lahir Calon Siswa
-                        Forms\Components\TextInput::make('tempat_lahir')
-                            ->label('Tempat Lahir')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        // Tanggal Lahir Calon Siswa
-                        Forms\Components\DatePicker::make('tanggal_lahir')
-                            ->label('Tanggal Lahir')
-                            ->maxDate(now())
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        // Tahun Lulus Calon Siswa
-                        Forms\Components\Select::make('tahun_lulus')
-                            ->label('Tahun Lulus')
-                            ->options(function () {
-                                $tahun = range(date('Y'), date('Y') - 2);
-                                return array_combine($tahun, $tahun);
-                            })
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        // Jenis Kelamin Calon Siswa
-                        Forms\Components\Select::make('jenis_kelamin')
-                            ->label('Jenis Kelamin')
-                            ->options([
-                                'Pria' => 'Laki-laki',
-                                'Wanita' => 'Perempuan',
                             ])
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        // Golongan Darah Calon Siswa
-                        Forms\Components\Select::make('golongan_darah')
-                            ->label('Golongan Darah')
-                            ->options([
-                                'A-' => 'A-',
-                                'A+' => 'A+',
-                                'B-' => 'B-',
-                                'B+' => 'B+',
-                                'AB-' => 'AB-',
-                                'AB+' => 'AB+',
-                                'O-' => 'O-',
-                                'O+' => 'O+',
+                    ])
+                    ->columnSpanFull(),
+
+                Section::make('Data Calon Peserta Didik Baru')
+                    ->collapsible()
+                    ->schema([
+                        // Tab Calon Peserta Didik Baru
+                        Tabs::make('Data Calon Peserta Didik Baru')
+                            ->tabs([
+                                Tabs\Tab::make('Data Calon Peserta Didik Baru')
+                                    ->icon('heroicon-m-bell')
+                                    ->iconPosition(IconPosition::After)
+                                    ->schema([
+                                        //
+                                    ]),
                             ])
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
+                            ->columns([
+                                'sm' => '100%',
+                                'md' => 2,
+                                'lg' => 2,
                             ]),
-                        // Agama Calon Siswa
-                        Forms\Components\Select::make('agama')
-                            ->label('Agama')
-                            ->options([
-                                'Islam' => 'Islam',
-                                'Kristen Katholik' => 'Kristen Katholik',
-                                'Kristen Protestan' => 'Kristen Protestan',
-                                'Hindu' => 'Hindu',
-                                'Buddha' => 'Buddha',
-                                'Konghucu' => 'Konghucu',
+
+                        // Tab Berkas Calon Peserta Didik Baru
+                        Tabs::make('Data Berkas Calon Peserta Didik Baru')
+                            ->tabs([
+                                Tabs\Tab::make('Data Berkas Calon Peserta Didik Baru')
+                                    ->icon('heroicon-m-bell')
+                                    ->iconPosition(IconPosition::After)
+                                    ->schema([
+                                        //
+                                    ]),
                             ])
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
+                            ->columns([
+                                'sm' => '100%',
+                                'md' => 2,
+                                'lg' => 2,
                             ]),
-                        // Anak Ke Calon Siswa
-                        Forms\Components\TextInput::make('anak_ke')
-                            ->label('Anak Ke')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
+
+                        // Tab Cetak Kartu Calon Peserta Didik Baru
+                        Tabs::make('Data Cetak Kartu Calon Peserta Didik Baru')
+                            ->tabs([
+                                Tabs\Tab::make('Data Cetak Kartu Calon Peserta Didik Baru')
+                                    ->icon('heroicon-m-bell')
+                                    ->iconPosition(IconPosition::After)
+                                    ->schema([
+                                        //
+                                    ]),
                             ])
-                            ->numeric(),
-                        // Jumlah Saudara Calon Siswa
-                        Forms\Components\TextInput::make('jumlah_saudara')
-                            ->label('Jumlah Saudara Kandung')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ])
-                            ->numeric(),
-                        // Tinggal Bersama Calon Siswa
-                        Forms\Components\Select::make('tinggal_bersama')
-                            ->label('Tinggal Bersama')
-                            ->options([
-                                'Orang Tua' => 'Orang Tua',
-                                'Saudara' => 'Saudara',
-                                'Panti Asuhan' => 'Panti Asuhan',
-                                'Kost' => 'Kost',
-                                'Lainnya' => 'Lainnya',
-                            ])
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
+                            ->columns([
+                                'sm' => '100%',
+                                'md' => 2,
+                                'lg' => 2,
                             ]),
-                        // Jarak Ke Sekolah Calon Siswa
-                        Forms\Components\Select::make('jarak_ke_sekolah')
-                            ->label('Jarak Ke Sekolah')
-                            ->options([
-                                '0 - 1 Km' => '0 - 1 Km',
-                                '1 - 5 Km' => '1 - 5 Km',
-                                '5 - 10 Km' => '5 - 10 Km',
-                                '10 - 50 Km' => '10 - 50 Km',
-                                '50 - 100 Km' => '50 - 100 Km',
-                            ])
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        // Disabilitas Calon Siswa
-                        Forms\Components\Select::make('disabilitas')
-                            ->label('Disabilitas')
-                            ->options([
-                                'Non Disabilitas' => 'Non Disabilitas',
-                                'Fisik' => 'Fisik',
-                                'Penglihatan' => 'Penglihatan',
-                                'Pendengaran' => 'Pendengaran',
-                                'Kognitif' => 'Kognitif',
-                                'Mental' => 'Mental',
-                                'Lainnya' => 'Lainnya',
-                            ])
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        // Tinggi Badan Calon Siswa
-                        Forms\Components\TextInput::make('tinggi_badan')
-                            ->label('Tinggi Badan')
-                            ->postFix('Cm')
-                            ->numeric(),
-                        // Berat Badan Calon Siswa
-                        Forms\Components\TextInput::make('berat_badan')
-                            ->label('Berat Badan')
-                            ->postFix('Kg')
-                            ->numeric(),
-                        // No KIP Calon Siswa
-                        Forms\Components\TextInput::make('no_kip')
-                            ->label('Nomor Kartu Indonesia Pintar')
-                            ->unique()
-                            ->maxLength(6)
-                            ->minLength(6)
-                            ->validationMessages([
-                                'max' => 'KIP : Masukkan maksimal 6 Karakter.',
-                                'min' => 'KIP : Masukkan minimal 6 Karakter.',
-                                'unique' => 'KIP : Nomor ini sudah pernah di isi.',
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        Forms\Components\TextInput::make('siswa_telepon')
-                            ->label('Nomor Telepon')
-                            ->tel(),
-                        // Alamat Calon Siswa
-                        Forms\Components\TextArea::make('siswa_alamat')
-                            ->label('Alamat')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        Forms\Components\Select::make('siswa_negara_id')
-                            ->label('Negara')
-                            ->relationship('siswaNegara', 'nama')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        Forms\Components\Select::make('siswa_provinsi_id')
-                            ->label('Provinsi')
-                            ->relationship('siswaProvinsi', 'nama')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        Forms\Components\Select::make('siswa_kabupaten_id')
-                            ->label('Kabupaten')
-                            ->relationship('siswaKabupaten', 'nama')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        Forms\Components\Select::make('siswa_kecamatan_id')
-                            ->label('Kecamatan')
-                            ->relationship('siswaKecamatan', 'nama')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        Forms\Components\Select::make('siswa_kelurahan_id')
-                            ->label('Kelurahan')
-                            ->relationship('siswaKelurahan', 'nama')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-
-
-
-                        // Berkas Foto Calon Siswa
-                        Forms\Components\FileUpload::make('berkas_foto')
-                            ->label('Foto Latar Merah')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        // Berkas KK Calon Siswa
-                        Forms\Components\FileUpload::make('berkas_kk')
-                            ->label('Kartu Keluarga')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        // Berkas Akta Calon Siswa
-                        Forms\Components\FileUpload::make('berkas_akta')
-                            ->label('Akta Kelahiran')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        // Berkas KIP Calon Siswa
-                        Forms\Components\FileUpload::make('berkas_kip')
-                            ->label('Kartu Indonesia Pintar'),
-                        // Berkas NISN Calon Siswa
-                        Forms\Components\FileUpload::make('berkas_nisn')
-                            ->label('Kartu NISN/Tangkapan Layar NISN(Web)'),
-                        // Berkas Surat Keterangan Berkelakuan Baik Calon Siswa
-                        Forms\Components\FileUpload::make('berkas_skbb')
-                            ->label('Surat Keterangan Berkelakuan Baik')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        // Berkas Surat Keterangan Aktif Belajar Calon Siswa
-                        Forms\Components\FileUpload::make('berkas_skab')
-                            ->label('Surat Keterangan Aktif Belajar')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        // Berkas Prestasi Belajar Calon Siswa
-                        Forms\Components\FileUpload::make('berkas_prestasi')
-                            ->label('Berkas Prestasi Siswa'),
-
-
-
-                        // Biodata Ibu Calon Siswa
-                        Forms\Components\TextInput::make('ibu_nama')
-                            ->label('Nama Lengkap Ibu Kandung')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        Forms\Components\TextInput::make('ibu_telepon')
-                            ->label('Nomor Telepon')
-                            ->tel(),
-                        Forms\Components\TextInput::make('ibu_pekerjaan')
-                            ->label('Pekerjaan'),
-                        Forms\Components\Select::make('ibu_status')
-                            ->label('Status')
-                            ->options([
-                                'Hidup' => 'Hidup',
-                                'Meninggal' => 'Meninggal',
-                            ])
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        Forms\Components\TextArea::make('ibu_alamat')
-                            ->label('Alamat')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        Forms\Components\Select::make('ibu_negara_id')
-                            ->label('Negara')
-                            ->relationship('ibuNegara', 'nama')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        Forms\Components\Select::make('ibu_provinsi_id')
-                            ->label('Provinsi')
-                            ->relationship('ibuProvinsi', 'nama')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        Forms\Components\Select::make('ibu_kabupaten_id')
-                            ->label('Kabupaten')
-                            ->relationship('ibuKabupaten', 'nama')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        Forms\Components\Select::make('ibu_kecamatan_id')
-                            ->label('Kecamatan')
-                            ->relationship('ibuKecamatan', 'nama')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        Forms\Components\Select::make('ibu_kelurahan_id')
-                            ->label('Kelurahan')
-                            ->relationship('ibuKelurahan', 'nama')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        // Biodata Ayah Calon Siswa
-                        Forms\Components\TextInput::make('ayah_nama')
-                            ->label('Nama Lengkap Ayah Kanung')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        Forms\Components\TextInput::make('ayah_telepon')
-                            ->label('Nomor Telepon')
-                            ->tel(),
-                        Forms\Components\TextInput::make('ayah_pekerjaan')
-                            ->label('Pekerjaan'),
-                        Forms\Components\Select::make('ayah_status')
-                            ->label('Status')
-                            ->options([
-                                'Hidup' => 'Hidup',
-                                'Meninggal' => 'Meninggal',
-                            ])
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        Forms\Components\TextArea::make('ayah_alamat')
-                            ->label('Alamat')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        Forms\Components\Select::make('ayah_negara_id')
-                            ->label('Negara')
-                            ->relationship('ayahNegara', 'nama')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        Forms\Components\Select::make('ayah_provinsi_id')
-                            ->label('Provinsi')
-                            ->relationship('ayahProvinsi', 'nama')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        Forms\Components\Select::make('ayah_kabupaten_id')
-                            ->label('Kabupaten')
-                            ->relationship('ayahKabupaten', 'nama')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        Forms\Components\Select::make('ayah_kecamatan_id')
-                            ->label('Kecamatan')
-                            ->relationship('ayahKecamatan', 'nama')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        Forms\Components\Select::make('ayah_kelurahan_id')
-                            ->label('Kelurahan')
-                            ->relationship('ayahKelurahan', 'nama')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-
-
-
-
-                        // Biodata Wali Calon Siswa
-                        Forms\Components\TextInput::make('wali_nama')
-                            ->label('Nama Lengkap Wali'),
-                        Forms\Components\TextInput::make('wali_telepon')
-                            ->label('Nomor Telepon')
-                            ->tel(),
-                        Forms\Components\TextInput::make('wali_pekerjaan')
-                            ->label('Pekerjaan'),
-                        Forms\Components\Select::make('wali_status')
-                            ->label('Status')
-                            ->options([
-                                'Hidup' => 'Hidup',
-                                'Meninggal' => 'Meninggal',
-                            ])
-                            ->default('Hidup'),
-                        Forms\Components\TextArea::make('wali_alamat')
-                            ->label('Alamat'),
-                        Forms\Components\Select::make('wali_negara_id')
-                            ->label('Negara')
-                            ->relationship('waliNegara', 'nama'),
-                        Forms\Components\Select::make('wali_provinsi_id')
-                            ->label('Provinsi')
-                            ->relationship('waliProvinsi', 'nama'),
-                        Forms\Components\Select::make('wali_kabupaten_id')
-                            ->label('Kabupaten/Kota')
-                            ->relationship('waliKabupaten', 'nama'),
-                        Forms\Components\Select::make('wali_kecamatan_id')
-                            ->label('Kecamatan')
-                            ->relationship('waliKecamatan', 'nama'),
-                        Forms\Components\Select::make('wali_kelurahan_id')
-                            ->label('Kelurahan/Desa')
-                            ->relationship('waliKelurahan', 'nama'),
-
-
-
-
-                        // Data Sekolah Asal Calon Siswa
-                        Forms\Components\Select::make('sekolah_asal_id')
-                            ->label('Sekolah Asal')
-                            ->relationship('sekolahAsal', 'nama')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        // Data Prestasi Calon Siswa
-                        Forms\Components\Select::make('prestasi_id')
-                            ->label('Prestasi')
-                            ->relationship('prestasi', 'nama'),
-                        // Data Peminatan Ekstrakurikuler Calon Siswa
-                        Forms\Components\TextInput::make('peminatan_ekstrakurikuler')
-                            ->label('Peminatan Ekstrakurikuler')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        // Data Peminatan Pelajaran Calon Siswa
-                        Forms\Components\TextInput::make('peminatan_pelajaran')
-                            ->label('Peminata Mata Pelajaran')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
-                        // Data Nilai Tes Akademik IPA Calon Siswa
-                        Forms\Components\TextInput::make('nilai_ipa')
-                            ->label('Nilai Tes IPA')
-                            ->numeric(),
-                        // Data Nilai Tes Akademik IPS Calon Siswa
-                        Forms\Components\TextInput::make('nilai_ips')
-                            ->label('Nilai Tes IPS')
-                            ->numeric(),
-                        // Data Nilai Tes Akademik Matematika Calon Siswa
-                        Forms\Components\TextInput::make('nilai_matematika')
-                            ->label('Nilai Tes Matematika')
-                            ->numeric(),
-                        // Data Nilai Tes Akademik Bahasa Indonesia Calon Siswa
-                        Forms\Components\TextInput::make('nilai_indonesia')
-                            ->label('Nilai Tes Bahasa Indonesia')
-                            ->numeric(),
-                        // Data Nilai Tes Akademik Bahasa Inggris Calon Siswa
-                        Forms\Components\TextInput::make('nilai_inggris')
-                            ->label('Nilai Tes Bahasa Inggris')
-                            ->numeric(),
-                        // Data Nilai Tes Akademik Bahasa Arab Calon Siswa
-                        Forms\Components\TextInput::make('nilai_arab')
-                            ->label('Nilai Tes Bahasa Arab')
-                            ->numeric(),
-                        // Data Bobot Nilai Tes Akademik Calon Siswa
-                        Forms\Components\TextInput::make('bobot_nilai_akademik')
-                            ->label('Bobot Nilai Tes Akademik')
-                            ->numeric(),
-                        // Data Bobot Nilai Tes Praktik Calon Siswa
-                        Forms\Components\TextInput::make('bobot_nilai_praktik')
-                            ->label('Bobot Nilai Tes Praktik')
-                            ->numeric(),
-                        // Data Nilai Tes Akademik Calon Siswa
-                        Forms\Components\TextInput::make('nilai_akademik')
-                            ->label('Nilai Tes Akademik')
-                            ->numeric(),
-                        // Data Nilai Tes Praktik Calon Siswa
-                        Forms\Components\TextInput::make('nilai_praktik')
-                            ->label('Nilai Tes Praktik')
-                            ->numeric(),
-                        // Data Status Pendaftaran Calon Siswa
-                        Forms\Components\TextInput::make('status_pendaftaran')
-                            ->label('Status Pendaftaran'),
-                        // Data Kelas Pendaftaran Calon Siswa
-                        Forms\Components\Select::make('kelas_id')
-                            ->label('Kelas')
-                            ->relationship('kelas', 'nama'),
-                        // Data Kartu Tes
-                        Forms\Components\TextInput::make('tes_sesi')
-                            ->label('Sesi Tes'),
-                        Forms\Components\TextInput::make('tes_ruang')
-                            ->label('Ruang Tes'),
-                        Forms\Components\DateTimePicker::make('tes_akademik_mulai')
-                            ->label('Tanggal Mulai Tes Akademik'),
-                        Forms\Components\DateTimePicker::make('tes_akademik_selesai')
-                            ->label('Tanggal Selesai Tes Akademik'),
-                        Forms\Components\DateTimePicker::make('tes_praktik_mulai')
-                            ->label('Tanggal Mulai Tes Praktik'),
-                        Forms\Components\DateTimePicker::make('tes_praktik_selesai')
-                            ->label('Tanggal Selesai Tes Praktik'),
                     ])
                     ->columns([
                         'sm' => '100%',
-                        'md' => 2,
-                        'lg' => 4,
+                        'md' => '100%',
+                        'lg' => 3,
                     ]),
+
+
+                Section::make('Data Orang Tua')
+                    ->collapsible()
+                    ->schema([
+                        // Tab Ibu
+                        Tabs::make('Data Ibu')
+                            ->tabs([
+                                Tabs\Tab::make('Data Ibu Calon Peserta Didik Baru')
+                                    ->icon('heroicon-m-bell')
+                                    ->iconPosition(IconPosition::After)
+                                    ->schema([
+                                        // Biodata Ibu Calon Peserta Didik Baru
+                                        Forms\Components\TextInput::make('ibu_nama')
+                                            ->label('Nama Lengkap Ibu Kandung')
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
+                                        Forms\Components\TextInput::make('ibu_telepon')
+                                            ->label('Nomor Telepon')
+                                            ->tel(),
+                                        Forms\Components\TextInput::make('ibu_pekerjaan')
+                                            ->label('Pekerjaan'),
+                                        Forms\Components\Select::make('ibu_status')
+                                            ->label('Status')
+                                            ->options([
+                                                'Hidup' => 'Hidup',
+                                                'Meninggal' => 'Meninggal',
+                                            ])
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
+                                        Forms\Components\TextArea::make('ibu_alamat')
+                                            ->label('Alamat')
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
+                                        Forms\Components\Select::make('ibu_negara_id')
+                                            ->label('Negara')
+                                            ->relationship('ibuNegara', 'nama')
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
+                                        Forms\Components\Select::make('ibu_provinsi_id')
+                                            ->label('Provinsi')
+                                            ->relationship('ibuProvinsi', 'nama')
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
+                                        Forms\Components\Select::make('ibu_kabupaten_id')
+                                            ->label('Kabupaten')
+                                            ->relationship('ibuKabupaten', 'nama')
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
+                                        Forms\Components\Select::make('ibu_kecamatan_id')
+                                            ->label('Kecamatan')
+                                            ->relationship('ibuKecamatan', 'nama')
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
+                                        Forms\Components\Select::make('ibu_kelurahan_id')
+                                            ->label('Kelurahan')
+                                            ->relationship('ibuKelurahan', 'nama')
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
+                                    ]),
+                            ])
+                            ->columns([
+                                'sm' => '100%',
+                                'md' => 2,
+                                'lg' => 2,
+                            ]),
+
+                        // Tab Ayah
+                        Tabs::make('Data Ayah')
+                            ->tabs([
+                                Tabs\Tab::make('Data Ayah Calon Peserta Didik Baru')
+                                    ->icon('heroicon-m-bell')
+                                    ->iconPosition(IconPosition::After)
+                                    ->schema([
+                                        // Biodata Ayah Calon Peserta Didik Baru
+                                        Forms\Components\TextInput::make('ayah_nama')
+                                            ->label('Nama Lengkap Ayah Kanung')
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
+                                        Forms\Components\TextInput::make('ayah_telepon')
+                                            ->label('Nomor Telepon')
+                                            ->tel(),
+                                        Forms\Components\TextInput::make('ayah_pekerjaan')
+                                            ->label('Pekerjaan'),
+                                        Forms\Components\Select::make('ayah_status')
+                                            ->label('Status')
+                                            ->options([
+                                                'Hidup' => 'Hidup',
+                                                'Meninggal' => 'Meninggal',
+                                            ])
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
+                                        Forms\Components\TextArea::make('ayah_alamat')
+                                            ->label('Alamat')
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
+                                        Forms\Components\Select::make('ayah_negara_id')
+                                            ->label('Negara')
+                                            ->relationship('ayahNegara', 'nama')
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
+                                        Forms\Components\Select::make('ayah_provinsi_id')
+                                            ->label('Provinsi')
+                                            ->relationship('ayahProvinsi', 'nama')
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
+                                        Forms\Components\Select::make('ayah_kabupaten_id')
+                                            ->label('Kabupaten')
+                                            ->relationship('ayahKabupaten', 'nama')
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
+                                        Forms\Components\Select::make('ayah_kecamatan_id')
+                                            ->label('Kecamatan')
+                                            ->relationship('ayahKecamatan', 'nama')
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
+                                        Forms\Components\Select::make('ayah_kelurahan_id')
+                                            ->label('Kelurahan')
+                                            ->relationship('ayahKelurahan', 'nama')
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
+                                    ]),
+                            ])
+                            ->columns([
+                                'sm' => '100%',
+                                'md' => 2,
+                                'lg' => 2,
+                            ]),
+
+                        // Tab Wali
+                        Tabs::make('Data Wali')
+                            ->tabs([
+                                Tabs\Tab::make('Data Wali Calon Peserta Didik Baru')
+                                    ->icon('heroicon-m-bell')
+                                    ->iconPosition(IconPosition::After)
+                                    ->schema([
+                                        // Biodata Wali Calon Peserta Didik Baru
+                                        Forms\Components\TextInput::make('wali_nama')
+                                            ->label('Nama Lengkap Wali'),
+                                        Forms\Components\TextInput::make('wali_telepon')
+                                            ->label('Nomor Telepon')
+                                            ->tel(),
+                                        Forms\Components\TextInput::make('wali_pekerjaan')
+                                            ->label('Pekerjaan'),
+                                        Forms\Components\Select::make('wali_status')
+                                            ->label('Status')
+                                            ->options([
+                                                'Hidup' => 'Hidup',
+                                                'Meninggal' => 'Meninggal',
+                                            ])
+                                            ->default('Hidup'),
+                                        Forms\Components\TextArea::make('wali_alamat')
+                                            ->label('Alamat'),
+                                        Forms\Components\Select::make('wali_negara_id')
+                                            ->label('Negara')
+                                            ->relationship('waliNegara', 'nama'),
+                                        Forms\Components\Select::make('wali_provinsi_id')
+                                            ->label('Provinsi')
+                                            ->relationship('waliProvinsi', 'nama'),
+                                        Forms\Components\Select::make('wali_kabupaten_id')
+                                            ->label('Kabupaten/Kota')
+                                            ->relationship('waliKabupaten', 'nama'),
+                                        Forms\Components\Select::make('wali_kecamatan_id')
+                                            ->label('Kecamatan')
+                                            ->relationship('waliKecamatan', 'nama'),
+                                        Forms\Components\Select::make('wali_kelurahan_id')
+                                            ->label('Kelurahan/Desa')
+                                            ->relationship('waliKelurahan', 'nama'),
+                                    ]),
+                            ])
+                            ->columns([
+                                'sm' => '100%',
+                                'md' => 2,
+                                'lg' => 2,
+                            ]),
+                    ])
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => '100%',
+                        'lg' => 3,
+                    ]),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                // Nama Lengkap Calon Peserta Didik Baru 
+                Forms\Components\TextInput::make('nama')
+                    ->label('Nama Lengkap')
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
+                // NIK Calon Peserta Didik Baru
+                Forms\Components\TextInput::make('nik')
+                    ->label('Nomor Induk Kependudukan (NIK)')
+                    ->required()
+                    ->unique()
+                    ->maxLength(16)
+                    ->minLength(16)
+                    ->validationMessages([
+                        'max' => 'NIK : Masukkan maksimal 16 Angka.',
+                        'min' => 'NIK : Masukkan minimal 16 Angka.',
+                        'unique' => 'NIK : Nomor ini sudah pernah di isi.',
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
+                // NISN Calon Peserta Didik Baru
+                Forms\Components\TextInput::make('nisn')
+                    ->label('Nomor Induk Siswa Nasional (NISN)')
+                    ->required()
+                    ->unique()
+                    ->maxLength(10)
+                    ->minLength(10)
+                    ->validationMessages([
+                        'max' => 'NISN : Masukkan maksimal 10 Angka.',
+                        'min' => 'NISN : Masukkan minimal 10 Angka.',
+                        'unique' => 'NISN : Nomor ini sudah pernah di isi.',
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
+
+                // Tempat Lahir Calon Peserta Didik Baru
+                Forms\Components\TextInput::make('tempat_lahir')
+                    ->label('Tempat Lahir')
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
+                // Tanggal Lahir Calon Peserta Didik Baru
+                Forms\Components\DatePicker::make('tanggal_lahir')
+                    ->label('Tanggal Lahir')
+                    ->maxDate(now())
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
+                // Tahun Lulus Calon Peserta Didik Baru
+                Forms\Components\Select::make('tahun_lulus')
+                    ->label('Tahun Lulus')
+                    ->options(function () {
+                        $tahun = range(date('Y'), date('Y') - 2);
+                        return array_combine($tahun, $tahun);
+                    })
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
+                // Jenis Kelamin Calon Peserta Didik Baru
+                Forms\Components\Select::make('jenis_kelamin')
+                    ->label('Jenis Kelamin')
+                    ->options([
+                        'Pria' => 'Laki-laki',
+                        'Wanita' => 'Perempuan',
+                    ])
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
+                // Golongan Darah Calon Peserta Didik Baru
+                Forms\Components\Select::make('golongan_darah')
+                    ->label('Golongan Darah')
+                    ->options([
+                        'A-' => 'A-',
+                        'A+' => 'A+',
+                        'B-' => 'B-',
+                        'B+' => 'B+',
+                        'AB-' => 'AB-',
+                        'AB+' => 'AB+',
+                        'O-' => 'O-',
+                        'O+' => 'O+',
+                    ])
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
+                // Agama Calon Peserta Didik Baru
+                Forms\Components\Select::make('agama')
+                    ->label('Agama')
+                    ->options([
+                        'Islam' => 'Islam',
+                        'Kristen Katholik' => 'Kristen Katholik',
+                        'Kristen Protestan' => 'Kristen Protestan',
+                        'Hindu' => 'Hindu',
+                        'Buddha' => 'Buddha',
+                        'Konghucu' => 'Konghucu',
+                    ])
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
+                // Anak Ke Calon Peserta Didik Baru
+                Forms\Components\TextInput::make('anak_ke')
+                    ->label('Anak Ke')
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ])
+                    ->numeric(),
+                // Jumlah Saudara Calon Peserta Didik Baru
+                Forms\Components\TextInput::make('jumlah_saudara')
+                    ->label('Jumlah Saudara Kandung')
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ])
+                    ->numeric(),
+                // Tinggal Bersama Calon Peserta Didik Baru
+                Forms\Components\Select::make('tinggal_bersama')
+                    ->label('Tinggal Bersama')
+                    ->options([
+                        'Orang Tua' => 'Orang Tua',
+                        'Saudara' => 'Saudara',
+                        'Panti Asuhan' => 'Panti Asuhan',
+                        'Kost' => 'Kost',
+                        'Lainnya' => 'Lainnya',
+                    ])
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
+                // Jarak Ke Sekolah Calon Peserta Didik Baru
+                Forms\Components\Select::make('jarak_ke_sekolah')
+                    ->label('Jarak Ke Sekolah')
+                    ->options([
+                        '0 - 1 Km' => '0 - 1 Km',
+                        '1 - 5 Km' => '1 - 5 Km',
+                        '5 - 10 Km' => '5 - 10 Km',
+                        '10 - 50 Km' => '10 - 50 Km',
+                        '50 - 100 Km' => '50 - 100 Km',
+                    ])
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
+                // Disabilitas Calon Peserta Didik Baru
+                Forms\Components\Select::make('disabilitas')
+                    ->label('Disabilitas')
+                    ->options([
+                        'Non Disabilitas' => 'Non Disabilitas',
+                        'Fisik' => 'Fisik',
+                        'Penglihatan' => 'Penglihatan',
+                        'Pendengaran' => 'Pendengaran',
+                        'Kognitif' => 'Kognitif',
+                        'Mental' => 'Mental',
+                        'Lainnya' => 'Lainnya',
+                    ])
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
+                // Tinggi Badan Calon Peserta Didik Baru
+                Forms\Components\TextInput::make('tinggi_badan')
+                    ->label('Tinggi Badan')
+                    ->postFix('Cm')
+                    ->numeric(),
+                // Berat Badan Calon Peserta Didik Baru
+                Forms\Components\TextInput::make('berat_badan')
+                    ->label('Berat Badan')
+                    ->postFix('Kg')
+                    ->numeric(),
+                // No KIP Calon Peserta Didik Baru
+                Forms\Components\TextInput::make('no_kip')
+                    ->label('Nomor Kartu Indonesia Pintar')
+                    ->unique()
+                    ->maxLength(6)
+                    ->minLength(6)
+                    ->validationMessages([
+                        'max' => 'KIP : Masukkan maksimal 6 Karakter.',
+                        'min' => 'KIP : Masukkan minimal 6 Karakter.',
+                        'unique' => 'KIP : Nomor ini sudah pernah di isi.',
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
+                Forms\Components\TextInput::make('siswa_telepon')
+                    ->label('Nomor Telepon')
+                    ->tel(),
+                // Alamat Calon Peserta Didik Baru
+                Forms\Components\TextArea::make('siswa_alamat')
+                    ->label('Alamat')
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
+                Forms\Components\Select::make('siswa_negara_id')
+                    ->label('Negara')
+                    ->relationship('siswaNegara', 'nama')
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
+                Forms\Components\Select::make('siswa_provinsi_id')
+                    ->label('Provinsi')
+                    ->relationship('siswaProvinsi', 'nama')
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
+                Forms\Components\Select::make('siswa_kabupaten_id')
+                    ->label('Kabupaten')
+                    ->relationship('siswaKabupaten', 'nama')
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
+                Forms\Components\Select::make('siswa_kecamatan_id')
+                    ->label('Kecamatan')
+                    ->relationship('siswaKecamatan', 'nama')
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
+                Forms\Components\Select::make('siswa_kelurahan_id')
+                    ->label('Kelurahan')
+                    ->relationship('siswaKelurahan', 'nama')
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
+
+
+
+                // Berkas Foto Calon Peserta Didik Baru
+                Forms\Components\FileUpload::make('berkas_foto')
+                    ->label('Foto Latar Merah')
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
+                // Berkas KK Calon Peserta Didik Baru
+                Forms\Components\FileUpload::make('berkas_kk')
+                    ->label('Kartu Keluarga')
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
+                // Berkas Akta Calon Peserta Didik Baru
+                Forms\Components\FileUpload::make('berkas_akta')
+                    ->label('Akta Kelahiran')
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
+                // Berkas KIP Calon Peserta Didik Baru
+                Forms\Components\FileUpload::make('berkas_kip')
+                    ->label('Kartu Indonesia Pintar'),
+                // Berkas NISN Calon Peserta Didik Baru
+                Forms\Components\FileUpload::make('berkas_nisn')
+                    ->label('Kartu NISN/Tangkapan Layar NISN (Web)'),
+                // Berkas Surat Keterangan Berkelakuan Baik Calon Peserta Didik Baru
+                Forms\Components\FileUpload::make('berkas_skbb')
+                    ->label('Surat Keterangan Berkelakuan Baik')
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
+                // Berkas Surat Keterangan Aktif Belajar Calon Peserta Didik Baru
+                Forms\Components\FileUpload::make('berkas_skab')
+                    ->label('Surat Keterangan Aktif Belajar')
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
+                // Berkas Prestasi Belajar Calon Peserta Didik Baru
+                Forms\Components\FileUpload::make('berkas_prestasi')
+                    ->label('Berkas Prestasi Siswa'),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                // Data Sekolah Asal Calon Peserta Didik Baru
+                Forms\Components\Select::make('sekolah_asal_id')
+                    ->label('Sekolah Asal')
+                    ->relationship('sekolahAsal', 'nama')
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
+                // Data Prestasi Calon Peserta Didik Baru
+                Forms\Components\Select::make('prestasi_id')
+                    ->label('Prestasi')
+                    ->relationship('prestasi', 'nama'),
+                // Data Peminatan Ekstrakurikuler Calon Peserta Didik Baru
+                Forms\Components\TextInput::make('peminatan_ekstrakurikuler')
+                    ->label('Peminatan Ekstrakurikuler')
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
+                // Data Peminatan Pelajaran Calon Peserta Didik Baru
+                Forms\Components\TextInput::make('peminatan_pelajaran')
+                    ->label('Peminata Mata Pelajaran')
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
+                // Data Nilai Tes Akademik IPA Calon Peserta Didik Baru
+                Forms\Components\TextInput::make('nilai_ipa')
+                    ->label('Nilai Tes IPA')
+                    ->numeric(),
+                // Data Nilai Tes Akademik IPS Calon Peserta Didik Baru
+                Forms\Components\TextInput::make('nilai_ips')
+                    ->label('Nilai Tes IPS')
+                    ->numeric(),
+                // Data Nilai Tes Akademik Matematika Calon Peserta Didik Baru
+                Forms\Components\TextInput::make('nilai_matematika')
+                    ->label('Nilai Tes Matematika')
+                    ->numeric(),
+                // Data Nilai Tes Akademik Bahasa Indonesia Calon Peserta Didik Baru
+                Forms\Components\TextInput::make('nilai_indonesia')
+                    ->label('Nilai Tes Bahasa Indonesia')
+                    ->numeric(),
+                // Data Nilai Tes Akademik Bahasa Inggris Calon Peserta Didik Baru
+                Forms\Components\TextInput::make('nilai_inggris')
+                    ->label('Nilai Tes Bahasa Inggris')
+                    ->numeric(),
+                // Data Nilai Tes Akademik Bahasa Arab Calon Peserta Didik Baru
+                Forms\Components\TextInput::make('nilai_arab')
+                    ->label('Nilai Tes Bahasa Arab')
+                    ->numeric(),
+                // Data Bobot Nilai Tes Akademik Calon Peserta Didik Baru
+                Forms\Components\TextInput::make('bobot_nilai_akademik')
+                    ->label('Bobot Nilai Tes Akademik')
+                    ->numeric(),
+                // Data Bobot Nilai Tes Praktik Calon Peserta Didik Baru
+                Forms\Components\TextInput::make('bobot_nilai_praktik')
+                    ->label('Bobot Nilai Tes Praktik')
+                    ->numeric(),
+                // Data Nilai Tes Akademik Calon Peserta Didik Baru
+                Forms\Components\TextInput::make('nilai_akademik')
+                    ->label('Nilai Tes Akademik')
+                    ->numeric(),
+                // Data Nilai Tes Praktik Calon Peserta Didik Baru
+                Forms\Components\TextInput::make('nilai_praktik')
+                    ->label('Nilai Tes Praktik')
+                    ->numeric(),
+                // Data Status Pendaftaran Calon Peserta Didik Baru
+                Forms\Components\TextInput::make('status_pendaftaran')
+                    ->label('Status Pendaftaran'),
+                // Data Kelas Pendaftaran Calon Peserta Didik Baru
+                Forms\Components\Select::make('kelas_id')
+                    ->label('Kelas')
+                    ->relationship('kelas', 'nama'),
+                // Data Kartu Tes
+                Forms\Components\TextInput::make('tes_sesi')
+                    ->label('Sesi Tes'),
+                Forms\Components\TextInput::make('tes_ruang')
+                    ->label('Ruang Tes'),
+                Forms\Components\DateTimePicker::make('tes_akademik_mulai')
+                    ->label('Tanggal Mulai Tes Akademik'),
+                Forms\Components\DateTimePicker::make('tes_akademik_selesai')
+                    ->label('Tanggal Selesai Tes Akademik'),
+                Forms\Components\DateTimePicker::make('tes_praktik_mulai')
+                    ->label('Tanggal Mulai Tes Praktik'),
+                Forms\Components\DateTimePicker::make('tes_praktik_selesai')
+                    ->label('Tanggal Selesai Tes Praktik'),
+
             ]);
     }
 
