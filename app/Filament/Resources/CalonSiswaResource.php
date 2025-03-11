@@ -220,7 +220,15 @@ class CalonSiswaResource extends Resource
                         // No KIP Calon Siswa
                         Forms\Components\TextInput::make('no_kip')
                             ->label('Nomor Kartu Indonesia Pintar')
-                            ->numeric(),
+                            ->unique()
+                            ->maxLength(6)
+                            ->minLength(6)
+                            ->validationMessages([
+                                'max' => 'KIP : Masukkan maksimal 6 Karakter.',
+                                'min' => 'KIP : Masukkan minimal 6 Karakter.',
+                                'unique' => 'KIP : Nomor ini sudah pernah di isi.',
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
                         Forms\Components\TextInput::make('siswa_telepon')
                             ->label('Nomor Telepon')
                             ->tel(),
@@ -571,8 +579,8 @@ class CalonSiswaResource extends Resource
                     ])
                     ->columns([
                         'sm' => '100%',
-                        'md' => 3,
-                        'lg' => 3,
+                        'md' => 2,
+                        'lg' => 4,
                     ]),
             ]);
     }

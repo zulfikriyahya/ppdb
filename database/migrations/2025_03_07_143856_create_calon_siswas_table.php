@@ -27,7 +27,7 @@ return new class extends Migration
             $table->enum('disabilitas', ['Non Disabilitas', 'Fisik', 'Penglihatan', 'Pendengaran', 'Kognitif', 'Mental', 'Lainnya']);
             $table->integer('tinggi_badan')->nullable();
             $table->integer('berat_badan')->nullable();
-            $table->integer('no_kip')->nullable();
+            $table->string('no_kip')->nullable();
             $table->string('siswa_telepon')->nullable();
             $table->string('siswa_alamat');
             $table->foreignId('siswa_negara_id')->constrained('negaras')->cascadeOnDelete()->cascadeOnUpdate();
