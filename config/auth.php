@@ -1,4 +1,5 @@
 <?php
+
 return [
     'defaults' => [
         'guard' => env('AUTH_GUARD', 'web'),

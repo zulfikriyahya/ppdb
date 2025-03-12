@@ -2,16 +2,14 @@
 
 namespace Database\Factories;
 
-use App\Models\Team;
-use App\Models\User;
-use Illuminate\Support\Str;
-use Laravel\Jetstream\Features;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class UserFactory extends Factory
 {
     protected static ?string $password;
+
     public function definition(): array
     {
         return [
@@ -23,9 +21,10 @@ class UserFactory extends Factory
             'avatar' => null,
         ];
     }
+
     public function unverified(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
         ]);
     }

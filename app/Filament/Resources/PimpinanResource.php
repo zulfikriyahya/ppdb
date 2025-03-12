@@ -2,19 +2,18 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\PimpinanResource\Pages;
+use App\Models\Pimpinan;
 use Carbon\Carbon;
 use Filament\Forms;
-use Filament\Tables;
-use App\Models\Pimpinan;
-use Filament\Forms\Form;
-use Filament\Tables\Table;
-use Filament\Resources\Resource;
-use Illuminate\Support\HtmlString;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use App\Filament\Resources\PimpinanResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\PimpinanResource\RelationManagers;
+use Illuminate\Support\HtmlString;
 
 class PimpinanResource extends Resource
 {
@@ -330,7 +329,7 @@ class PimpinanResource extends Resource
                         // Status
                         Forms\Components\Select::make('status')
                             ->label('Status')
-                            ->options(['Aktif' => 'Aktif', 'Nonaktif' => 'Nonaktif',])
+                            ->options(['Aktif' => 'Aktif', 'Nonaktif' => 'Nonaktif'])
                             ->required()
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
@@ -440,7 +439,7 @@ class PimpinanResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'Aktif' => 'success',
                         'Nonaktif' => 'gray'
                     }),
@@ -470,7 +469,7 @@ class PimpinanResource extends Resource
                     Tables\Actions\DeleteAction::make(),
                     Tables\Actions\ForceDeleteAction::make(),
                     Tables\Actions\RestoreAction::make(),
-                ])
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

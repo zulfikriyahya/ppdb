@@ -2,27 +2,25 @@
 
 namespace App\Providers\Filament;
 
-use Filament\Pages;
-use Filament\Panel;
-use Filament\Widgets;
-use Filament\PanelProvider;
-use Filament\Navigation\MenuItem;
-use Filament\Support\Colors\Color;
-use Illuminate\Support\HtmlString;
-use Filament\Support\Enums\MaxWidth;
 use App\Filament\Resources\UserResource;
-use Filament\Http\Middleware\Authenticate;
-use Illuminate\Session\Middleware\StartSession;
 use Devonab\FilamentEasyFooter\EasyFooterPlugin;
-use Illuminate\Cookie\Middleware\EncryptCookies;
+use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
-use Illuminate\Routing\Middleware\SubstituteBindings;
-use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Filament\Navigation\MenuItem;
+use Filament\Pages;
+use Filament\Panel;
+use Filament\PanelProvider;
+use Filament\Support\Colors\Color;
+use Filament\Support\Enums\MaxWidth;
+use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
-
+use Illuminate\Cookie\Middleware\EncryptCookies;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -50,7 +48,7 @@ class AdminPanelProvider extends PanelProvider
             ->userMenuItems([
                 MenuItem::make()
                     ->label('Pengguna')
-                    ->url(fn(): string => UserResource::getUrl())
+                    ->url(fn (): string => UserResource::getUrl())
                     ->icon('heroicon-o-identification'),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
@@ -88,7 +86,7 @@ class AdminPanelProvider extends PanelProvider
                         // ['title' => 'Kontak', 'url' => 'https://wa.me/6289612050291/?text=Hallo,%20PTSP%20MTs%20Negeri%201%20Pandeglang.'],
                         ['title' => 'Dibuat dan dikembangkan dengan ❤ oleh Yahya Zulfikri', 'url' => 'https://instagram.com/zulfikriyahya_'],
                     ])
-                    ->withBorder()
+                    ->withBorder(),
                 // ->hiddenFromPagesEnabled()
                 // ->hiddenFromPages(['admin/login', 'admin/forgot-password', 'admin/register', 'admin/email/verify']),
             ]);

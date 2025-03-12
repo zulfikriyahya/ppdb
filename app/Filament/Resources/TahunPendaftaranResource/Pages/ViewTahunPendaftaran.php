@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources\TahunPendaftaranResource\Pages;
 
+use App\Filament\Resources\TahunPendaftaranResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
-use App\Filament\Resources\TahunPendaftaranResource;
 
 class ViewTahunPendaftaran extends ViewRecord
 {

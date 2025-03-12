@@ -1,4 +1,5 @@
 <?php
+
 return [
     'name' => env('APP_NAME', 'PTSP MTs Negeri 1 Pandeglang'),
     'env' => env('APP_ENV', 'production'),

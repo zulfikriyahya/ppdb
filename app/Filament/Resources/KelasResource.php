@@ -2,19 +2,17 @@
 
 namespace App\Filament\Resources;
 
-use Filament\Forms;
-use Filament\Tables;
-use App\Models\Kelas;
-use Filament\Forms\Form;
-use Filament\Tables\Table;
-use Forms\Components\Select;
-use Filament\Resources\Resource;
-use Illuminate\Support\HtmlString;
-use Filament\Forms\Components\Section;
-use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\KelasResource\Pages;
+use App\Models\Kelas;
+use Filament\Forms;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\KelasResource\RelationManagers;
+use Illuminate\Support\HtmlString;
 
 class KelasResource extends Resource
 {
@@ -343,7 +341,7 @@ class KelasResource extends Resource
                         'sm' => '100%',
                         'md' => 3,
                         'lg' => 3,
-                    ])
+                    ]),
             ]);
     }
 
@@ -387,7 +385,7 @@ class KelasResource extends Resource
                     Tables\Actions\DeleteAction::make(),
                     Tables\Actions\ForceDeleteAction::make(),
                     Tables\Actions\RestoreAction::make(),
-                ])
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

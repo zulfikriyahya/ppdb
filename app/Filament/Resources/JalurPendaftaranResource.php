@@ -2,18 +2,17 @@
 
 namespace App\Filament\Resources;
 
-use Filament\Forms;
-use Filament\Tables;
-use Filament\Forms\Form;
-use Filament\Tables\Table;
+use App\Filament\Resources\JalurPendaftaranResource\Pages;
 use App\Models\JalurPendaftaran;
-use Filament\Resources\Resource;
-use Illuminate\Support\HtmlString;
+use Filament\Forms;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\JalurPendaftaranResource\Pages;
-use App\Filament\Resources\JalurPendaftaranResource\RelationManagers;
+use Illuminate\Support\HtmlString;
 
 class JalurPendaftaranResource extends Resource
 {
@@ -343,7 +342,7 @@ class JalurPendaftaranResource extends Resource
                         'lg' => 3,
                         'xl' => 3,
                         '2xl' => 3,
-                    ])
+                    ]),
             ]);
     }
 
@@ -388,7 +387,7 @@ class JalurPendaftaranResource extends Resource
                     Tables\Actions\DeleteAction::make(),
                     Tables\Actions\ForceDeleteAction::make(),
                     Tables\Actions\RestoreAction::make(),
-                ])
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

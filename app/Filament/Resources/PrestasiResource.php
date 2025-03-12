@@ -2,17 +2,16 @@
 
 namespace App\Filament\Resources;
 
-use Filament\Forms;
-use Filament\Tables;
-use App\Models\Prestasi;
-use Filament\Forms\Form;
-use Filament\Tables\Table;
-use Filament\Resources\Resource;
-use Filament\Forms\Components\Section;
-use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\PrestasiResource\Pages;
+use App\Models\Prestasi;
+use Filament\Forms;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\PrestasiResource\RelationManagers;
 
 class PrestasiResource extends Resource
 {
@@ -42,7 +41,7 @@ class PrestasiResource extends Resource
                             ->label('Jenis Prestasi')
                             ->options([
                                 'Hafalan Al-Quran' => 'Hafalan Al-Quran (Minimal 3 Juz)',
-                                'Olimpiade/Kejuaraan' => 'Olimpiade/Kejuaraan'
+                                'Olimpiade/Kejuaraan' => 'Olimpiade/Kejuaraan',
                             ])
                             ->required()
                             ->validationMessages([
@@ -60,18 +59,18 @@ class PrestasiResource extends Resource
                             ->options([
                                 'Nasional' => 'Nasional',
                                 'Provinsi' => 'Provinsi',
-                                'Kabupaten/Kota' => 'Kabupaten/Kota'
+                                'Kabupaten/Kota' => 'Kabupaten/Kota',
                             ])
-                            ->visible(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan')
-                            ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                            ->visible(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan')
+                            ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
                         Forms\Components\Select::make('kategori')
                             ->label('Kategori')
                             ->options([
                                 'Regu/Kelompok' => 'Regu/Kelompok',
-                                'Individu' => 'Individu'
+                                'Individu' => 'Individu',
                             ])
-                            ->visible(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan')
-                            ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                            ->visible(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan')
+                            ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
                         Forms\Components\Select::make('peringkat')
                             ->label('Peringkat')
                             ->options([
@@ -79,8 +78,8 @@ class PrestasiResource extends Resource
                                 '2' => '2',
                                 '3' => '3',
                             ])
-                            ->visible(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan')
-                            ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                            ->visible(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan')
+                            ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
                     ])
                     ->columns([
                         'sm' => '100%',
@@ -101,7 +100,7 @@ class PrestasiResource extends Resource
                 Tables\Columns\TextColumn::make('jenis')
                     ->label('Jenis Prestasi')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'Hafalan Al-Quran' => 'success',
                         'Olimpiade/Kejuaraan' => 'primary'
                     }),
@@ -140,7 +139,7 @@ class PrestasiResource extends Resource
                     Tables\Actions\DeleteAction::make(),
                     Tables\Actions\ForceDeleteAction::make(),
                     Tables\Actions\RestoreAction::make(),
-                ])
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

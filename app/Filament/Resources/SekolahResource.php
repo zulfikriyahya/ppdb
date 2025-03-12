@@ -2,25 +2,24 @@
 
 namespace App\Filament\Resources;
 
-use Filament\Forms;
-use Filament\Tables;
-use App\Models\Sekolah;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
-use App\Models\Provinsi;
-use Filament\Forms\Form;
+use App\Filament\Resources\SekolahResource\Pages;
 use App\Models\Kabupaten;
 use App\Models\Kecamatan;
 use App\Models\Kelurahan;
-use Filament\Tables\Table;
+use App\Models\Provinsi;
+use App\Models\Sekolah;
+use Filament\Forms;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Collection;
 use Illuminate\Support\HtmlString;
-use Filament\Forms\Components\Section;
-use Illuminate\Database\Eloquent\Builder;
-use App\Filament\Resources\SekolahResource\Pages;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\SekolahResource\RelationManagers;
 
 class SekolahResource extends Resource
 {
@@ -375,7 +374,7 @@ class SekolahResource extends Resource
                                         // Status
                                         Forms\Components\Select::make('status')
                                             ->label('Status')
-                                            ->options(['Aktif' => 'Aktif', 'Nonaktif' => 'Nonaktif',])
+                                            ->options(['Aktif' => 'Aktif', 'Nonaktif' => 'Nonaktif'])
                                             ->required()
                                             ->validationMessages([
                                                 'required' => 'Form ini wajib diisi.',
@@ -490,7 +489,7 @@ class SekolahResource extends Resource
                             }),
                         Forms\Components\Select::make('provinsi_id')
                             ->label('Provinsi')
-                            ->options(fn(Get $get): Collection => Provinsi::query()
+                            ->options(fn (Get $get): Collection => Provinsi::query()
                                 ->where('negara_id', $get('negara_id'))
                                 ->pluck('nama', 'id'))
                             ->required()
@@ -507,7 +506,7 @@ class SekolahResource extends Resource
                             }),
                         Forms\Components\Select::make('kabupaten_id')
                             ->label('Kabupaten')
-                            ->options(fn(Get $get): Collection => Kabupaten::query()
+                            ->options(fn (Get $get): Collection => Kabupaten::query()
                                 ->where('provinsi_id', $get('provinsi_id'))
                                 ->pluck('nama', 'id'))
                             ->required()
@@ -523,7 +522,7 @@ class SekolahResource extends Resource
                             }),
                         Forms\Components\Select::make('kecamatan_id')
                             ->label('Kecamatan')
-                            ->options(fn(Get $get): Collection => Kecamatan::query()
+                            ->options(fn (Get $get): Collection => Kecamatan::query()
                                 ->where('kabupaten_id', $get('kabupaten_id'))
                                 ->pluck('nama', 'id'))
                             ->required()
@@ -538,7 +537,7 @@ class SekolahResource extends Resource
                             }),
                         Forms\Components\Select::make('kelurahan_id')
                             ->label('Kelurahan')
-                            ->options(fn(Get $get): Collection => Kelurahan::query()
+                            ->options(fn (Get $get): Collection => Kelurahan::query()
                                 ->where('kecamatan_id', $get('kecamatan_id'))
                                 ->pluck('nama', 'id'))
                             ->required()
@@ -570,7 +569,7 @@ class SekolahResource extends Resource
                         'sm' => '100%',
                         'md' => 3,
                         'lg' => 3,
-                    ])
+                    ]),
             ]);
     }
 
@@ -655,7 +654,7 @@ class SekolahResource extends Resource
                     Tables\Actions\DeleteAction::make(),
                     Tables\Actions\ForceDeleteAction::make(),
                     Tables\Actions\RestoreAction::make(),
-                ])
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
