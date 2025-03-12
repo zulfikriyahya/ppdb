@@ -101,26 +101,32 @@ class CalonSiswaResource extends Resource
                                         Forms\Components\TextInput::make('nik')
                                             ->label('Nomor Induk Kependudukan (NIK)')
                                             ->required()
-                                            ->unique()
+                                            ->unique(ignoreRecord: true)
+                                            ->rule(fn($record) => $record === null ? 'unique:calon_siswas,nik' : 'unique:calon_siswas,nik,' . $record->id)
+                                            ->dehydrateStateUsing(fn($state) => $state ? $state : null)
+                                            // ->disabledOn('edit')
                                             ->maxLength(16)
                                             ->minLength(16)
                                             ->validationMessages([
-                                                'max' => 'NIK : Masukkan maksimal 16 Angka.',
-                                                'min' => 'NIK : Masukkan minimal 16 Angka.',
-                                                'unique' => 'NIK : Nomor ini sudah pernah di isi.',
+                                                'max' => 'NIK: Masukkan maksimal 16 Angka.',
+                                                'min' => 'NIK: Masukkan minimal 16 Angka.',
+                                                'unique' => 'NIK: Nomor ini sudah pernah di isi.',
                                                 'required' => 'Form ini wajib diisi.',
                                             ]),
                                         // NISN Calon Peserta Didik Baru
                                         Forms\Components\TextInput::make('nisn')
                                             ->label('Nomor Induk Siswa Nasional (NISN)')
                                             ->required()
-                                            ->unique()
+                                            ->unique(ignoreRecord: true)
+                                            ->rule(fn($record) => $record === null ? 'unique:calon_siswas,nisn' : 'unique:calon_siswas,nisn,' . $record->id)
+                                            ->dehydrateStateUsing(fn($state) => $state ? $state : null)
+                                            // ->disabledOn('edit')
                                             ->maxLength(10)
                                             ->minLength(10)
                                             ->validationMessages([
-                                                'max' => 'NISN : Masukkan maksimal 10 Angka.',
-                                                'min' => 'NISN : Masukkan minimal 10 Angka.',
-                                                'unique' => 'NISN : Nomor ini sudah pernah di isi.',
+                                                'max' => 'NISN: Masukkan maksimal 10 Angka.',
+                                                'min' => 'NISN: Masukkan minimal 10 Angka.',
+                                                'unique' => 'NISN: Nomor ini sudah pernah di isi.',
                                                 'required' => 'Form ini wajib diisi.',
                                             ]),
 
@@ -274,13 +280,16 @@ class CalonSiswaResource extends Resource
                                         // No KIP Calon Peserta Didik Baru
                                         Forms\Components\TextInput::make('no_kip')
                                             ->label('Nomor Kartu Indonesia Pintar')
-                                            ->unique()
+                                            ->unique(ignoreRecord: true)
+                                            ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_kip' : 'unique:calon_siswas,no_kip,' . $record->id)
+                                            ->dehydrateStateUsing(fn($state) => $state ? $state : null)
+                                            // ->disabledOn('edit')
                                             ->maxLength(6)
                                             ->minLength(6)
                                             ->validationMessages([
-                                                'max' => 'KIP : Masukkan maksimal 6 Karakter.',
-                                                'min' => 'KIP : Masukkan minimal 6 Karakter.',
-                                                'unique' => 'KIP : Nomor ini sudah pernah di isi.',
+                                                'max' => 'KIP: Masukkan maksimal 6 Karakter.',
+                                                'min' => 'KIP: Masukkan minimal 6 Karakter.',
+                                                'unique' => 'KIP: Nomor ini sudah pernah di isi.',
                                                 'required' => 'Form ini wajib diisi.',
                                             ]),
                                         Forms\Components\TextInput::make('siswa_telepon')
@@ -465,6 +474,7 @@ class CalonSiswaResource extends Resource
                                             ->fetchFileInformation(false)
                                             ->directory('assets/berkas')
                                             ->downloadable()
+                                            ->openable()
                                             ->maxSize(500)
                                             ->minSize(10)
                                             ->visibility('private')
@@ -485,6 +495,7 @@ class CalonSiswaResource extends Resource
                                             ->fetchFileInformation(false)
                                             ->directory('assets/berkas')
                                             ->downloadable()
+                                            ->openable()
                                             ->maxSize(500)
                                             ->minSize(10)
                                             ->visibility('private')
@@ -505,6 +516,7 @@ class CalonSiswaResource extends Resource
                                             ->fetchFileInformation(false)
                                             ->directory('assets/berkas')
                                             ->downloadable()
+                                            ->openable()
                                             ->maxSize(500)
                                             ->minSize(10)
                                             ->visibility('private')
@@ -525,6 +537,7 @@ class CalonSiswaResource extends Resource
                                             ->fetchFileInformation(false)
                                             ->directory('assets/berkas')
                                             ->downloadable()
+                                            ->openable()
                                             ->maxSize(500)
                                             ->minSize(10)
                                             ->visibility('private'),
@@ -541,6 +554,7 @@ class CalonSiswaResource extends Resource
                                             ->fetchFileInformation(false)
                                             ->directory('assets/berkas')
                                             ->downloadable()
+                                            ->openable()
                                             ->maxSize(500)
                                             ->minSize(10)
                                             ->visibility('private'),
@@ -557,6 +571,7 @@ class CalonSiswaResource extends Resource
                                             ->fetchFileInformation(false)
                                             ->directory('assets/berkas')
                                             ->downloadable()
+                                            ->openable()
                                             ->maxSize(500)
                                             ->minSize(10)
                                             ->visibility('private')
@@ -577,6 +592,7 @@ class CalonSiswaResource extends Resource
                                             ->fetchFileInformation(false)
                                             ->directory('assets/berkas')
                                             ->downloadable()
+                                            ->openable()
                                             ->maxSize(500)
                                             ->minSize(10)
                                             ->visibility('private')
@@ -597,6 +613,7 @@ class CalonSiswaResource extends Resource
                                             ->fetchFileInformation(false)
                                             ->directory('assets/berkas')
                                             ->downloadable()
+                                            ->openable()
                                             ->maxSize(500)
                                             ->minSize(10)
                                             ->visibility('private'),
