@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class CalonSiswa extends Model
 {
@@ -123,15 +123,15 @@ class CalonSiswa extends Model
         'wali_kelurahan_id' => 'integer',
         'sekolah_asal_id' => 'integer',
         'jalur_pendaftaran_id' => 'integer',
-        'prestasi_id' => 'array',
-        'berkas_prestasi' => 'array',
+        'prestasi_id' => 'integer',
+        'berkas_prestasi' => 'integer',
         'kelas_id' => 'integer',
         'tes_akademik_mulai' => 'datetime',
         'tes_akademik_selesai' => 'datetime',
         'tes_praktik_mulai' => 'datetime',
         'tes_praktik_selesai' => 'datetime',
-        'peminatan_ekstrakurikuler' => 'array',
-        'peminatan_pelajaran' => 'array',
+        // 'peminatan_ekstrakurikuler' => 'array',
+        // 'peminatan_pelajaran' => 'array',
     ];
 
     public function jalurPendaftaran(): BelongsTo

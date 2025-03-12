@@ -2,27 +2,27 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\CalonSiswaResource\Pages;
-use App\Models\CalonSiswa;
+use Filament\Forms;
+use Filament\Tables;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
+use App\Models\Provinsi;
+use Filament\Forms\Form;
 use App\Models\Kabupaten;
 use App\Models\Kecamatan;
 use App\Models\Kelurahan;
-use App\Models\Provinsi;
-use Filament\Facades\Filament;
-use Filament\Forms;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Tabs;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
-use Filament\Resources\Resource;
-use Filament\Support\Enums\IconPosition;
-use Filament\Tables;
+use App\Models\CalonSiswa;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Facades\Filament;
+use Filament\Resources\Resource;
 use Illuminate\Support\Collection;
+use Filament\Forms\Components\Tabs;
+use Filament\Forms\Components\Section;
+use Illuminate\Database\Eloquent\Model;
+use Filament\Support\Enums\IconPosition;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\CalonSiswaResource\Pages;
 
 class CalonSiswaResource extends Resource
 {
@@ -299,9 +299,9 @@ class CalonSiswaResource extends Resource
                                         Forms\Components\Select::make('prestasi_id')
                                             ->label('Prestasi')
                                             ->relationship('prestasi', 'nama')
-                                            ->multiple()
+                                            // ->multiple()
                                             ->preload()
-                                            ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->nama} | {$record->tingkat} | {$record->kategori} | {$record->peringkat}")
+                                            ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->nama} | {$record->tingkat} | {$record->kategori} | {$record->peringkat}")
                                             ->native(false),
 
                                         // Select::make('author_id')
@@ -329,9 +329,6 @@ class CalonSiswaResource extends Resource
                                                 'Olahraga Renang' => 'Olahraga Renang',
                                             ])
                                             // ->multiple()
-                                            ->validationMessages([
-                                                'required' => 'Form ini wajib diisi.',
-                                            ])
                                             // ->relationships('eksrakurikuler', 'nama')
                                             ->validationMessages([
                                                 'required' => 'Form ini wajib diisi.',
@@ -352,9 +349,7 @@ class CalonSiswaResource extends Resource
                                             // ->relationship('mataPelajaran', 'nama')
                                             ->validationMessages([
                                                 'required' => 'Form ini wajib diisi.',
-                                            ])
-                                        // ->multiple()
-                                        ,
+                                            ]),
                                     ]),
 
                                 Tabs\Tab::make('Alamat')
@@ -386,7 +381,7 @@ class CalonSiswaResource extends Resource
                                             }),
                                         Forms\Components\Select::make('siswa_provinsi_id')
                                             ->label('Provinsi')
-                                            ->options(fn (Get $get): Collection => Provinsi::query()
+                                            ->options(fn(Get $get): Collection => Provinsi::query()
                                                 ->where('negara_id', $get('siswa_negara_id'))
                                                 ->pluck('nama', 'id'))
                                             ->required()
@@ -403,7 +398,7 @@ class CalonSiswaResource extends Resource
                                             }),
                                         Forms\Components\Select::make('siswa_kabupaten_id')
                                             ->label('Kabupaten')
-                                            ->options(fn (Get $get): Collection => Kabupaten::query()
+                                            ->options(fn(Get $get): Collection => Kabupaten::query()
                                                 ->where('provinsi_id', $get('siswa_provinsi_id'))
                                                 ->pluck('nama', 'id'))
                                             ->required()
@@ -419,7 +414,7 @@ class CalonSiswaResource extends Resource
                                             }),
                                         Forms\Components\Select::make('siswa_kecamatan_id')
                                             ->label('Kecamatan')
-                                            ->options(fn (Get $get): Collection => Kecamatan::query()
+                                            ->options(fn(Get $get): Collection => Kecamatan::query()
                                                 ->where('kabupaten_id', $get('siswa_kabupaten_id'))
                                                 ->pluck('nama', 'id'))
                                             ->required()
@@ -434,7 +429,7 @@ class CalonSiswaResource extends Resource
                                             }),
                                         Forms\Components\Select::make('siswa_kelurahan_id')
                                             ->label('Kelurahan')
-                                            ->options(fn (Get $get): Collection => Kelurahan::query()
+                                            ->options(fn(Get $get): Collection => Kelurahan::query()
                                                 ->where('kecamatan_id', $get('siswa_kecamatan_id'))
                                                 ->pluck('nama', 'id'))
                                             ->required()
@@ -687,7 +682,7 @@ class CalonSiswaResource extends Resource
                                             }),
                                         Forms\Components\Select::make('ibu_provinsi_id')
                                             ->label('Provinsi')
-                                            ->options(fn (Get $get): Collection => Provinsi::query()
+                                            ->options(fn(Get $get): Collection => Provinsi::query()
                                                 ->where('negara_id', $get('ibu_negara_id'))
                                                 ->pluck('nama', 'id'))
                                             ->required()
@@ -704,7 +699,7 @@ class CalonSiswaResource extends Resource
                                             }),
                                         Forms\Components\Select::make('ibu_kabupaten_id')
                                             ->label('Kabupaten')
-                                            ->options(fn (Get $get): Collection => Kabupaten::query()
+                                            ->options(fn(Get $get): Collection => Kabupaten::query()
                                                 ->where('provinsi_id', $get('ibu_provinsi_id'))
                                                 ->pluck('nama', 'id'))
                                             ->required()
@@ -720,7 +715,7 @@ class CalonSiswaResource extends Resource
                                             }),
                                         Forms\Components\Select::make('ibu_kecamatan_id')
                                             ->label('Kecamatan')
-                                            ->options(fn (Get $get): Collection => Kecamatan::query()
+                                            ->options(fn(Get $get): Collection => Kecamatan::query()
                                                 ->where('kabupaten_id', $get('ibu_kabupaten_id'))
                                                 ->pluck('nama', 'id'))
                                             ->required()
@@ -735,7 +730,7 @@ class CalonSiswaResource extends Resource
                                             }),
                                         Forms\Components\Select::make('ibu_kelurahan_id')
                                             ->label('Kelurahan')
-                                            ->options(fn (Get $get): Collection => Kelurahan::query()
+                                            ->options(fn(Get $get): Collection => Kelurahan::query()
                                                 ->where('kecamatan_id', $get('ibu_kecamatan_id'))
                                                 ->pluck('nama', 'id'))
                                             ->required()
@@ -815,7 +810,7 @@ class CalonSiswaResource extends Resource
                                             }),
                                         Forms\Components\Select::make('ayah_provinsi_id')
                                             ->label('Provinsi')
-                                            ->options(fn (Get $get): Collection => Provinsi::query()
+                                            ->options(fn(Get $get): Collection => Provinsi::query()
                                                 ->where('negara_id', $get('ayah_negara_id'))
                                                 ->pluck('nama', 'id'))
                                             ->required()
@@ -832,7 +827,7 @@ class CalonSiswaResource extends Resource
                                             }),
                                         Forms\Components\Select::make('ayah_kabupaten_id')
                                             ->label('Kabupaten')
-                                            ->options(fn (Get $get): Collection => Kabupaten::query()
+                                            ->options(fn(Get $get): Collection => Kabupaten::query()
                                                 ->where('provinsi_id', $get('ayah_provinsi_id'))
                                                 ->pluck('nama', 'id'))
                                             ->required()
@@ -848,7 +843,7 @@ class CalonSiswaResource extends Resource
                                             }),
                                         Forms\Components\Select::make('ayah_kecamatan_id')
                                             ->label('Kecamatan')
-                                            ->options(fn (Get $get): Collection => Kecamatan::query()
+                                            ->options(fn(Get $get): Collection => Kecamatan::query()
                                                 ->where('kabupaten_id', $get('ayah_kabupaten_id'))
                                                 ->pluck('nama', 'id'))
                                             ->required()
@@ -863,7 +858,7 @@ class CalonSiswaResource extends Resource
                                             }),
                                         Forms\Components\Select::make('ayah_kelurahan_id')
                                             ->label('Kelurahan')
-                                            ->options(fn (Get $get): Collection => Kelurahan::query()
+                                            ->options(fn(Get $get): Collection => Kelurahan::query()
                                                 ->where('kecamatan_id', $get('ayah_kecamatan_id'))
                                                 ->pluck('nama', 'id'))
                                             ->required()
@@ -923,7 +918,7 @@ class CalonSiswaResource extends Resource
                                             }),
                                         Forms\Components\Select::make('wali_provinsi_id')
                                             ->label('Provinsi')
-                                            ->options(fn (Get $get): Collection => Provinsi::query()
+                                            ->options(fn(Get $get): Collection => Provinsi::query()
                                                 ->where('negara_id', $get('wali_negara_id'))
                                                 ->pluck('nama', 'id'))
                                             ->native(false)
@@ -936,7 +931,7 @@ class CalonSiswaResource extends Resource
                                             }),
                                         Forms\Components\Select::make('wali_kabupaten_id')
                                             ->label('Kabupaten')
-                                            ->options(fn (Get $get): Collection => Kabupaten::query()
+                                            ->options(fn(Get $get): Collection => Kabupaten::query()
                                                 ->where('provinsi_id', $get('wali_provinsi_id'))
                                                 ->pluck('nama', 'id'))
                                             ->native(false)
@@ -948,7 +943,7 @@ class CalonSiswaResource extends Resource
                                             }),
                                         Forms\Components\Select::make('wali_kecamatan_id')
                                             ->label('Kecamatan')
-                                            ->options(fn (Get $get): Collection => Kecamatan::query()
+                                            ->options(fn(Get $get): Collection => Kecamatan::query()
                                                 ->where('kabupaten_id', $get('wali_kabupaten_id'))
                                                 ->pluck('nama', 'id'))
                                             ->native(false)
@@ -959,7 +954,7 @@ class CalonSiswaResource extends Resource
                                             }),
                                         Forms\Components\Select::make('wali_kelurahan_id')
                                             ->label('Kelurahan')
-                                            ->options(fn (Get $get): Collection => Kelurahan::query()
+                                            ->options(fn(Get $get): Collection => Kelurahan::query()
                                                 ->where('kecamatan_id', $get('wali_kecamatan_id'))
                                                 ->pluck('nama', 'id'))
                                             ->native(false),
