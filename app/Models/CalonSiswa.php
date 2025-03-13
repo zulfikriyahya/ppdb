@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class CalonSiswa extends Model
 {
@@ -136,146 +136,154 @@ class CalonSiswa extends Model
 
     public function jalurPendaftaran(): BelongsTo
     {
-        return $this->belongsTo(JalurPendaftaran::class);
+        return $this->belongsTo(JalurPendaftaran::class, 'jalur_pendaftaran_id');
     }
 
+    // Negara
     public function negara(): BelongsTo
     {
-        return $this->belongsTo(Negara::class);
-    }
-
-    public function provinsi(): BelongsTo
-    {
-        return $this->belongsTo(Provinsi::class);
-    }
-
-    public function kabupaten(): BelongsTo
-    {
-        return $this->belongsTo(Kabupaten::class);
-    }
-
-    public function kecamatan(): BelongsTo
-    {
-        return $this->belongsTo(Kecamatan::class);
-    }
-
-    public function kelurahan(): BelongsTo
-    {
-        return $this->belongsTo(Kelurahan::class);
-    }
-
-    public function kelas(): BelongsTo
-    {
-        return $this->belongsTo(Kelas::class);
-    }
-
-    public function sekolahAsal(): BelongsTo
-    {
-        return $this->belongsTo(SekolahAsal::class);
-    }
-
-    public function prestasi(): BelongsTo
-    {
-        return $this->belongsTo(Prestasi::class);
+        return $this->belongsTo(Negara::class, 'negara_id');
     }
 
     public function siswaNegara(): BelongsTo
     {
-        return $this->belongsTo(Negara::class);
-    }
-
-    public function siswaProvinsi(): BelongsTo
-    {
-        return $this->belongsTo(Provinsi::class);
-    }
-
-    public function siswaKabupaten(): BelongsTo
-    {
-        return $this->belongsTo(Kabupaten::class);
-    }
-
-    public function siswaKecamatan(): BelongsTo
-    {
-        return $this->belongsTo(Kecamatan::class);
-    }
-
-    public function siswaKelurahan(): BelongsTo
-    {
-        return $this->belongsTo(Kelurahan::class);
+        return $this->belongsTo(Negara::class, 'siswa_negara_id');
     }
 
     public function ibuNegara(): BelongsTo
     {
-        return $this->belongsTo(Negara::class);
-    }
-
-    public function ibuProvinsi(): BelongsTo
-    {
-        return $this->belongsTo(Provinsi::class);
-    }
-
-    public function ibuKabupaten(): BelongsTo
-    {
-        return $this->belongsTo(Kabupaten::class);
-    }
-
-    public function ibuKecamatan(): BelongsTo
-    {
-        return $this->belongsTo(Kecamatan::class);
-    }
-
-    public function ibuKelurahan(): BelongsTo
-    {
-        return $this->belongsTo(Kelurahan::class);
+        return $this->belongsTo(Negara::class, 'ibu_negara_id');
     }
 
     public function ayahNegara(): BelongsTo
     {
-        return $this->belongsTo(Negara::class);
-    }
-
-    public function ayahProvinsi(): BelongsTo
-    {
-        return $this->belongsTo(Provinsi::class);
-    }
-
-    public function ayahKabupaten(): BelongsTo
-    {
-        return $this->belongsTo(Kabupaten::class);
-    }
-
-    public function ayahKecamatan(): BelongsTo
-    {
-        return $this->belongsTo(Kecamatan::class);
-    }
-
-    public function ayahKelurahan(): BelongsTo
-    {
-        return $this->belongsTo(Kelurahan::class);
+        return $this->belongsTo(Negara::class, 'ayah_negara_id');
     }
 
     public function waliNegara(): BelongsTo
     {
-        return $this->belongsTo(Negara::class);
+        return $this->belongsTo(Negara::class, 'wali_negara_id');
+    }
+
+    // Provinsi
+    public function provinsi(): BelongsTo
+    {
+        return $this->belongsTo(Provinsi::class, 'provinsi_id');
+    }
+
+    public function siswaProvinsi(): BelongsTo
+    {
+        return $this->belongsTo(Provinsi::class, 'siswa_provinsi_id');
+    }
+
+    public function ibuProvinsi(): BelongsTo
+    {
+        return $this->belongsTo(Provinsi::class, 'ibu_provinsi_id');
+    }
+
+    public function ayahProvinsi(): BelongsTo
+    {
+        return $this->belongsTo(Provinsi::class, 'ayah_provinsi_id');
     }
 
     public function waliProvinsi(): BelongsTo
     {
-        return $this->belongsTo(Provinsi::class);
+        return $this->belongsTo(Provinsi::class, 'wali_provinsi_id');
+    }
+
+    // Kabupaten
+
+    public function kabupaten(): BelongsTo
+    {
+        return $this->belongsTo(Kabupaten::class, 'kabupaten_id');
+    }
+
+    public function siswaKabupaten(): BelongsTo
+    {
+        return $this->belongsTo(Kabupaten::class, 'siswa_kabupaten_id');
+    }
+
+    public function ibuKabupaten(): BelongsTo
+    {
+        return $this->belongsTo(Kabupaten::class, 'ibu_kabupaten_id');
+    }
+
+    public function ayahKabupaten(): BelongsTo
+    {
+        return $this->belongsTo(Kabupaten::class, 'ayah_kabupaten_id');
     }
 
     public function waliKabupaten(): BelongsTo
     {
-        return $this->belongsTo(Kabupaten::class);
+        return $this->belongsTo(Kabupaten::class, 'wali_kabupaten_id');
+    }
+
+    // Kecamatan
+    public function kecamatan(): BelongsTo
+    {
+        return $this->belongsTo(Kecamatan::class, 'kecamatan_id');
+    }
+
+    public function siswaKecamatan(): BelongsTo
+    {
+        return $this->belongsTo(Kecamatan::class, 'siswa_kecamatan_id');
+    }
+
+    public function ibuKecamatan(): BelongsTo
+    {
+        return $this->belongsTo(Kecamatan::class, 'ibu_kecamatan_id');
+    }
+
+    public function ayahKecamatan(): BelongsTo
+    {
+        return $this->belongsTo(Kecamatan::class, 'ayah_kecamatan_id');
     }
 
     public function waliKecamatan(): BelongsTo
     {
-        return $this->belongsTo(Kecamatan::class);
+        return $this->belongsTo(Kecamatan::class, 'wali_kecamatan_id');
+    }
+
+    // Kelurahan
+    public function kelurahan(): BelongsTo
+    {
+        return $this->belongsTo(Kelurahan::class, 'kelurahan_id');
+    }
+
+    public function siswaKelurahan(): BelongsTo
+    {
+        return $this->belongsTo(Kelurahan::class, 'siswa_kelurahan_id');
+    }
+
+    public function ibuKelurahan(): BelongsTo
+    {
+        return $this->belongsTo(Kelurahan::class, 'ibu_kelurahan_id');
+    }
+
+    public function ayahKelurahan(): BelongsTo
+    {
+        return $this->belongsTo(Kelurahan::class, 'ayah_kelurahan_id');
     }
 
     public function waliKelurahan(): BelongsTo
     {
-        return $this->belongsTo(Kelurahan::class);
+        return $this->belongsTo(Kelurahan::class, 'wali_kelurahan_id');
+    }
+
+
+
+    public function kelas(): BelongsTo
+    {
+        return $this->belongsTo(Kelas::class, 'kelas_id');
+    }
+
+    public function sekolahAsal(): BelongsTo
+    {
+        return $this->belongsTo(SekolahAsal::class, 'sekolah_asal_id');
+    }
+
+    public function prestasi(): BelongsTo
+    {
+        return $this->belongsTo(Prestasi::class, 'prestasi_id');
     }
 }
