@@ -40,7 +40,7 @@ class UserResource extends Resource
                     ]),
                 Forms\Components\TextInput::make('email')
                     ->label('Email')
-                    ->helperText('Isi dengan email yang masih aktif')
+                    ->helperText('Isi dengan email yang masih aktif.')
                     ->email()
                     ->rule(fn($record) => $record === null ? 'unique:users,email' : 'unique:users,email,' . $record->id)
                     ->dehydrateStateUsing(fn($state) => $state ? $state : null)
@@ -57,14 +57,14 @@ class UserResource extends Resource
                     ->password()
                     ->required(fn($record) => $record === null)
                     ->dehydrateStateUsing(fn($state, $record) => $state ? bcrypt($state) : $record->password),
-                Forms\Components\FileUpload::make('avatar')
-                    ->label('Avatar')
-                    ->avatar()
-                    ->directory('upload/')
-                    ->preserveFilenames()
-                    ->minSize(10)
-                    ->maxSize(100)
-                    ->fetchFileInformation(false),
+                // Forms\Components\FileUpload::make('avatar')
+                //     ->label('Avatar')
+                //     ->avatar()
+                //     ->directory('upload/')
+                //     ->preserveFilenames()
+                //     ->minSize(10)
+                //     ->maxSize(100)
+                //     ->fetchFileInformation(false),
             ]);
     }
 
@@ -73,9 +73,9 @@ class UserResource extends Resource
         return $table
             // ->recordTitleAttribute('name')
             ->columns([
-                Tables\Columns\ImageColumn::make('avatar')
-                    ->circular()
-                    ->label('Avatar'),
+                // Tables\Columns\ImageColumn::make('avatar')
+                //     ->circular()
+                //     ->label('Avatar'),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nama Lengkap')
                     ->searchable(),

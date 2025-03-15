@@ -2,17 +2,17 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\KelasResource\Pages;
-use App\Models\Kelas;
 use Filament\Forms;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use App\Models\Kelas;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Resources\Resource;
 use Illuminate\Support\HtmlString;
+use Filament\Forms\Components\Section;
+use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\KelasResource\Pages;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class KelasResource extends Resource
 {
@@ -79,7 +79,11 @@ class KelasResource extends Resource
                                             ->required()
                                             ->validationMessages([
                                                 'required' => 'Form ini wajib diisi.',
+                                                'min' => 'Tahun Pendaftaran: Minimal 9 Karakter.',
+                                                'max' => 'Tahun Pendaftaran: Maksimal 9 Karakter.',
                                             ])
+                                            ->maxLength(9)
+                                            ->minLength(9)
                                             ->placeholder('Contoh: 2025/2026'),
                                         Forms\Components\TextInput::make('kuantitas')
                                             ->label('Kuota Maksimal Registrasi Akun')

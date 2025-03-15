@@ -62,6 +62,8 @@ class TahunPendaftaranResource extends Resource
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ])
+                            ->maxLength(9)
+                            ->minLength(9)
                             ->placeholder('Contoh: 2025/2026'),
 
                         TextInput::make('kuantitas')

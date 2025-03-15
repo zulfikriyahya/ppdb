@@ -49,6 +49,12 @@ class SekretarisResource extends Resource
                         // Nomor Indul Pegawai (NIP)
                         Forms\Components\TextInput::make('nip')
                             ->label('Nomor Induk Pegawai')
+                            ->validationMessages([
+                                'min' => 'NIP: Minimal 18 Karakter.',
+                                'max' => 'NIP: Maksimal 18 Karakter.',
+                            ])
+                            ->maxLength(18)
+                            ->minLength(18)
                             ->prefix('NIP'),
                         // Tahun Pendaftaran
                         Forms\Components\Select::make('tahun_pendaftaran_id')
@@ -68,7 +74,11 @@ class SekretarisResource extends Resource
                                             ->required()
                                             ->validationMessages([
                                                 'required' => 'Form ini wajib diisi.',
+                                                'min' => 'Tahun Pendaftaran: Minimal 9 Karakter.',
+                                                'max' => 'Tahun Pendaftaran: Maksimal 9 Karakter.',
                                             ])
+                                            ->maxLength(9)
+                                            ->minLength(9)
                                             ->placeholder('Contoh: 2025/2026'),
 
                                         Forms\Components\TextInput::make('kuantitas')

@@ -161,7 +161,6 @@ class CalonSiswaResource extends Resource
                                             ->label('Tahun Lulus')
                                             ->options(function () {
                                                 $tahun = range(date('Y'), date('Y') - 2);
-
                                                 return array_combine($tahun, $tahun);
                                             })
                                             ->required()

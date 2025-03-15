@@ -2,18 +2,18 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\KetuaResource\Pages;
-use App\Models\Ketua;
 use Filament\Forms;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use App\Models\Ketua;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Carbon;
+use Filament\Resources\Resource;
 use Illuminate\Support\HtmlString;
+use Filament\Forms\Components\Section;
+use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\KetuaResource\Pages;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class KetuaResource extends Resource
 {
@@ -49,6 +49,12 @@ class KetuaResource extends Resource
                         // Nomor Indul Pegawai (NIP)
                         Forms\Components\TextInput::make('nip')
                             ->label('Nomor Induk Pegawai')
+                            ->validationMessages([
+                                'min' => 'NIP: Minimal 18 Karakter.',
+                                'max' => 'NIP: Maksimal 18 Karakter.',
+                            ])
+                            ->maxLength(18)
+                            ->minLength(18)
                             ->prefix('NIP'),
                         // Tahun Pendaftaran
                         Forms\Components\Select::make('tahun_pendaftaran_id')
@@ -68,7 +74,11 @@ class KetuaResource extends Resource
                                             ->required()
                                             ->validationMessages([
                                                 'required' => 'Form ini wajib diisi.',
+                                                'min' => 'Tahun Pendaftaran: Minimal 9 Karakter.',
+                                                'max' => 'Tahun Pendaftaran: Maksimal 9 Karakter.',
                                             ])
+                                            ->maxLength(9)
+                                            ->minLength(9)
                                             ->placeholder('Contoh: 2025/2026'),
 
                                         Forms\Components\TextInput::make('kuantitas')
@@ -439,7 +449,7 @@ class KetuaResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'Aktif' => 'success',
                         'Nonaktif' => 'gray'
                     }),

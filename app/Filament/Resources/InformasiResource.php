@@ -2,15 +2,17 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\InformasiResource\Pages;
-use App\Models\Informasi;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Get;
+use Filament\Forms\Form;
+use App\Models\Informasi;
 use Filament\Tables\Table;
+use Filament\Resources\Resource;
+use Filament\Forms\Components\Section;
+use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\InformasiResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class InformasiResource extends Resource
@@ -33,48 +35,68 @@ class InformasiResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('judul')
-                    ->label('Judul')
-                    ->required()
-                    ->validationMessages([
-                        'required' => 'Form ini wajib diisi.',
+                // Section 
+                Section::make('')
+                    ->schema([
+                        Forms\Components\Select::make('tahun_pendaftaran_id')
+                            ->label('Tahun Pendaftaran')
+                            ->relationship('tahunPendaftaran', 'nama')
+                            ->required()
+                            ->live()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
+                            ->columnSpanFull(),
                     ]),
-                Forms\Components\TextArea::make('isi')
-                    ->label('Uraian')
-                    ->required()
-                    ->validationMessages([
-                        'required' => 'Form ini wajib diisi.',
-                    ]),
-                Forms\Components\FileUpload::make('gambar')
-                    ->label('Lampiran')
-                    ->maxSize('2048')
-                    ->minSize('10')
-                    ->downloadable(true)
-                    ->openable()
-                    ->deletable()
-                    ->fetchFileInformation(false)
-                    ->directory('assets/informasi')
-                    ->acceptedFileTypes(['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/pdf', 'image/png', 'image/jpeg', 'image/png', 'image/webp']),
-                Forms\Components\DateTimePicker::make('tanggal')
-                    ->label('Tanggal')
-                    ->default(now())
-                    ->required()
-                    ->validationMessages([
-                        'required' => 'Form ini wajib diisi.',
-                    ]),
-                Forms\Components\Select::make('tahun_pendaftaran_id')
-                    ->label('Tahun Pendaftaran')
-                    ->relationship('tahunPendaftaran', 'nama')
-                    ->required()
-                    ->validationMessages([
-                        'required' => 'Form ini wajib diisi.',
-                    ]),
-                Forms\Components\Select::make('status')
-                    ->label('Status')
-                    ->options(['Publish' => 'Publish', 'Draft' => 'Draft'])
-                    ->required()
-                    ->validationMessages([
-                        'required' => 'Form ini wajib diisi.',
+                // Section 
+                Section::make('')
+                    ->visible(fn($get) => $get('tahun_pendaftaran_id') !== null)
+                    ->schema([
+                        Forms\Components\TextInput::make('judul')
+                            ->label('Judul')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
+                        Forms\Components\Select::make('status')
+                            ->label('Status')
+                            ->options(['Publish' => 'Publish', 'Draft' => 'Draft'])
+                            ->required()
+                            ->live()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
+                        Forms\Components\RichEditor::make('isi')
+                            ->label('Uraian')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
+                        Forms\Components\FileUpload::make('gambar')
+                            ->label('Lampiran')
+                            ->maxSize('2048')
+                            ->minSize('10')
+                            ->downloadable(true)
+                            ->openable()
+                            ->deletable()
+                            ->fetchFileInformation(false)
+                            ->directory('assets/informasi')
+                            ->acceptedFileTypes(['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/pdf', 'image/png', 'image/jpeg', 'image/png', 'image/webp']),
+
+                        Forms\Components\DateTimePicker::make('tanggal')
+                            ->label('Tanggal')
+                            ->default(now())
+                            ->required()
+                            ->hidden(fn(Get $get) => $get('status') !== 'Publish')
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
+                            ->columnSpanFull(),
+                    ])
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => 2,
+                        'lg' => 2,
                     ]),
             ]);
     }
@@ -114,7 +136,7 @@ class InformasiResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'Publish' => 'success',
                         'Draft' => 'gray'
                     })
