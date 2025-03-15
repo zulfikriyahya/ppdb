@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\JurusanResource\Pages;
 
-use App\Filament\Resources\JurusanResource;
 use Filament\Resources\Pages\CreateRecord;
+use App\Filament\Resources\JurusanResource;
 
 class CreateJurusan extends CreateRecord
 {

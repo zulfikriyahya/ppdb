@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\JalurPendaftaranResource\Pages;
 
-use App\Filament\Resources\JalurPendaftaranResource;
 use Filament\Resources\Pages\CreateRecord;
+use App\Filament\Resources\JalurPendaftaranResource;
 
 class CreateJalurPendaftaran extends CreateRecord
 {

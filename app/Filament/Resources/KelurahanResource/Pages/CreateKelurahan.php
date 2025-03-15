@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\KelurahanResource\Pages;
 
-use App\Filament\Resources\KelurahanResource;
 use Filament\Resources\Pages\CreateRecord;
+use App\Filament\Resources\KelurahanResource;
 
 class CreateKelurahan extends CreateRecord
 {

@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\AnggotaResource\Pages;
 
-use App\Filament\Resources\AnggotaResource;
 use Filament\Resources\Pages\CreateRecord;
+use App\Filament\Resources\AnggotaResource;
 
 class CreateAnggota extends CreateRecord
 {

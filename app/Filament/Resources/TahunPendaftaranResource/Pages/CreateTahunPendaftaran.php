@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\TahunPendaftaranResource\Pages;
 
-use App\Filament\Resources\TahunPendaftaranResource;
 use Filament\Resources\Pages\CreateRecord;
+use App\Filament\Resources\TahunPendaftaranResource;
 
 class CreateTahunPendaftaran extends CreateRecord
 {
