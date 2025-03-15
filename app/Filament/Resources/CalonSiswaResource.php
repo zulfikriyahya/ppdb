@@ -63,8 +63,18 @@ class CalonSiswaResource extends Resource
                             ->live()
                             ->columnSpanFull(),
                         // Data Status Pendaftaran Calon Peserta Didik Baru
-                        Forms\Components\TextInput::make('status_pendaftaran')
+                        Forms\Components\Select::make('status_pendaftaran')
                             ->label('Status Pendaftaran')
+                            ->options([
+                                'Diproses' => 'Diproses',
+                                'Berkas Tidak Lengkap' => 'Berkas Tidak Lengkap',
+                                'Diverifikasi' => 'Diverifikasi',
+                                'Ditolak' => 'Ditolak',
+                                'Diterima' => 'Diterima',
+                                'Diterima Di Kelas Reguler' => 'Diterima Di Kelas Reguler',
+                                'Diterima Di Kelas Unggulan' => 'Diterima Di Kelas Unggulan'
+                            ])
+                            ->default('Diproses')
                             ->hidden(function () {
                                 return Filament::auth()->user()->email !== 'adm@mtsn1pandeglang.sch.id';
                             }), // Jika Email Bukan 'adm@mtsn1pandeglang.sch.id'

@@ -3,16 +3,34 @@
 namespace App\Filament\Resources;
 
 use Carbon\Carbon;
-use Filament\Forms;
-use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Models\TahunPendaftaran;
 use Filament\Resources\Resource;
 use Illuminate\Support\HtmlString;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Section;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\TextInput;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Forms\Components\DatePicker;
+use Filament\Tables\Actions\DeleteAction;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\RestoreBulkAction;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\TahunPendaftaranResource\Pages;
+use App\Filament\Resources\TahunPendaftaranResource\Pages\EditTahunPendaftaran;
+use App\Filament\Resources\TahunPendaftaranResource\Pages\ViewTahunPendaftaran;
+use App\Filament\Resources\TahunPendaftaranResource\Pages\ListTahunPendaftarans;
+use App\Filament\Resources\TahunPendaftaranResource\Pages\CreateTahunPendaftaran;
 
 class TahunPendaftaranResource extends Resource
 {
@@ -34,11 +52,11 @@ class TahunPendaftaranResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Tahun Pendaftaran')
+                Section::make('Tahun Pendaftaran')
                     ->collapsible()
                     ->description('Data Tahun Pendaftaran.')
                     ->schema([
-                        Forms\Components\TextInput::make('nama')
+                        TextInput::make('nama')
                             ->label('Tahun Pendaftaran')
                             ->required()
                             ->validationMessages([
@@ -46,7 +64,7 @@ class TahunPendaftaranResource extends Resource
                             ])
                             ->placeholder('Contoh: 2025/2026'),
 
-                        Forms\Components\TextInput::make('kuantitas')
+                        TextInput::make('kuantitas')
                             ->label('Kuota Maksimal Registrasi Akun')
                             ->required()
                             ->validationMessages([
@@ -55,7 +73,7 @@ class TahunPendaftaranResource extends Resource
                             ->helperText(new HtmlString('<small><i>Kuota maksimal pendaftar yang dapat membuat akun pendaftaran.<sup style="color:red">*</sup></i></small>'))
                             ->numeric()
                             ->postfix('Akun'),
-                        Forms\Components\Select::make('status')
+                        Select::make('status')
                             ->label('Status')
                             ->required()
                             ->validationMessages([
@@ -76,17 +94,17 @@ class TahunPendaftaranResource extends Resource
                         '2xl' => 3,
                     ]),
 
-                Forms\Components\Section::make('PPDB')
+                Section::make('PPDB')
                     ->collapsible()
-                    ->description('Tanggal Pelaksanaan PPDB')
+                    ->description('Tanggal Pelaksanaan PPDB.')
                     ->schema([
-                        Forms\Components\DatePicker::make('tanggal_ppdb_mulai')
+                        DatePicker::make('tanggal_ppdb_mulai')
                             ->label('Tanggal Mulai PPDB')
                             ->required()
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ]),
-                        Forms\Components\DatePicker::make('tanggal_ppdb_selesai')
+                        DatePicker::make('tanggal_ppdb_selesai')
                             ->label('Tanggal Selesai PPDB')
                             ->required()
                             ->validationMessages([
@@ -101,17 +119,17 @@ class TahunPendaftaranResource extends Resource
                         '2xl' => 2,
                     ]),
 
-                Forms\Components\Section::make('Pendaftaran Jalur Prestasi')
+                Section::make('Pendaftaran Jalur Prestasi')
                     ->collapsible()
                     ->description('Tanggal pendaftaran untuk jalur prestasi.')
                     ->schema([
-                        Forms\Components\DateTimePicker::make('tanggal_pendaftaran_jalur_prestasi_mulai')
+                        DateTimePicker::make('tanggal_pendaftaran_jalur_prestasi_mulai')
                             ->label('Tanggal Mulai Pendaftaran Jalur Prestasi')
                             ->required()
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ]),
-                        Forms\Components\DateTimePicker::make('tanggal_pendaftaran_jalur_prestasi_selesai')
+                        DateTimePicker::make('tanggal_pendaftaran_jalur_prestasi_selesai')
                             ->label('Tanggal Selesai Pendaftaran Jalur Prestasi')
                             ->required()
                             ->validationMessages([
@@ -126,17 +144,17 @@ class TahunPendaftaranResource extends Resource
                         '2xl' => 2,
                     ]),
 
-                Forms\Components\Section::make('Pengumuman Jalur Prestasi')
+                Section::make('Pengumuman Jalur Prestasi')
                     ->collapsible()
                     ->description('Tanggal pengumuman untuk jalur prestasi.')
                     ->schema([
-                        Forms\Components\DateTimePicker::make('tanggal_pengumuman_jalur_prestasi_mulai')
+                        DateTimePicker::make('tanggal_pengumuman_jalur_prestasi_mulai')
                             ->label('Tanggal Mulai Pengumuman Jalur Prestasi')
                             ->required()
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ]),
-                        Forms\Components\DateTimePicker::make('tanggal_pengumuman_jalur_prestasi_selesai')
+                        DateTimePicker::make('tanggal_pengumuman_jalur_prestasi_selesai')
                             ->label('Tanggal Selesai Pengumuman Jalur Prestasi')
                             ->required()
                             ->validationMessages([
@@ -151,17 +169,17 @@ class TahunPendaftaranResource extends Resource
                         '2xl' => 2,
                     ]),
 
-                Forms\Components\Section::make('Pendaftaran Jalur Reguler')
+                Section::make('Pendaftaran Jalur Reguler')
                     ->collapsible()
                     ->description('Tanggal pendaftaran untuk jalur reguler.')
                     ->schema([
-                        Forms\Components\DateTimePicker::make('tanggal_pendaftaran_jalur_reguler_mulai')
+                        DateTimePicker::make('tanggal_pendaftaran_jalur_reguler_mulai')
                             ->label('Tanggal Mulai Pendaftaran Jalur Reguler')
                             ->required()
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ]),
-                        Forms\Components\DateTimePicker::make('tanggal_pendaftaran_jalur_reguler_selesai')
+                        DateTimePicker::make('tanggal_pendaftaran_jalur_reguler_selesai')
                             ->label('Tanggal Selesai Pendaftaran Jalur Reguler')
                             ->required()
                             ->validationMessages([
@@ -176,17 +194,17 @@ class TahunPendaftaranResource extends Resource
                         '2xl' => 2,
                     ]),
 
-                Forms\Components\Section::make('Penerbitan Kartu Tes')
+                Section::make('Penerbitan Kartu Tes')
                     ->collapsible()
                     ->description('Tanggal penerbitan kartu tes untuk jalur prestasi dan jalur reguler.')
                     ->schema([
-                        Forms\Components\DateTimePicker::make('tanggal_penerbitan_kartu_tes_mulai')
+                        DateTimePicker::make('tanggal_penerbitan_kartu_tes_mulai')
                             ->label('Tanggal Mulai Penerbitan Kartu Tes')
                             ->required()
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ]),
-                        Forms\Components\DateTimePicker::make('tanggal_penerbitan_kartu_tes_selesai')
+                        DateTimePicker::make('tanggal_penerbitan_kartu_tes_selesai')
                             ->label('Tanggal Selesai Penerbitan Kartu Tes')
                             ->required()
                             ->validationMessages([
@@ -201,17 +219,17 @@ class TahunPendaftaranResource extends Resource
                         '2xl' => 2,
                     ]),
 
-                Forms\Components\Section::make('Tes Akademik')
+                Section::make('Tes Akademik')
                     ->collapsible()
                     ->description('Tanggal tes akademik untuk jalur prestasi dan jalur reguler.')
                     ->schema([
-                        Forms\Components\DateTimePicker::make('tanggal_tes_akademik_mulai')
+                        DateTimePicker::make('tanggal_tes_akademik_mulai')
                             ->label('Tanggal Mulai Tes Akademik')
                             ->required()
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ]),
-                        Forms\Components\DateTimePicker::make('tanggal_tes_akademik_selesai')
+                        DateTimePicker::make('tanggal_tes_akademik_selesai')
                             ->label('Tanggal Selesai Tes Akademik')
                             ->required()
                             ->validationMessages([
@@ -226,17 +244,17 @@ class TahunPendaftaranResource extends Resource
                         '2xl' => 2,
                     ]),
 
-                Forms\Components\Section::make('Tes Praktik')
+                Section::make('Tes Praktik')
                     ->collapsible()
                     ->description('Tanggal tes praktik untuk jalur prestasi dan jalur reguler.')
                     ->schema([
-                        Forms\Components\DateTimePicker::make('tanggal_tes_praktik_mulai')
+                        DateTimePicker::make('tanggal_tes_praktik_mulai')
                             ->label('Tanggal Mulai Tes Praktik')
                             ->required()
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ]),
-                        Forms\Components\DateTimePicker::make('tanggal_tes_praktik_selesai')
+                        DateTimePicker::make('tanggal_tes_praktik_selesai')
                             ->label('Tanggal Selesai Tes Praktik')
                             ->required()
                             ->validationMessages([
@@ -251,17 +269,17 @@ class TahunPendaftaranResource extends Resource
                         '2xl' => 2,
                     ]),
 
-                Forms\Components\Section::make('Pengumuman Jalur Reguler')
+                Section::make('Pengumuman Jalur Reguler')
                     ->collapsible()
                     ->description('Tanggal pengumuman untuk jalur reguler.')
                     ->schema([
-                        Forms\Components\DateTimePicker::make('tanggal_pengumuman_jalur_reguler_mulai')
+                        DateTimePicker::make('tanggal_pengumuman_jalur_reguler_mulai')
                             ->label('Tanggal Mulai Pengumuman Jalur Reguler')
                             ->required()
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ]),
-                        Forms\Components\DateTimePicker::make('tanggal_pengumuman_jalur_reguler_selesai')
+                        DateTimePicker::make('tanggal_pengumuman_jalur_reguler_selesai')
                             ->label('Tanggal Selesai Pengumuman Jalur Reguler')
                             ->required()
                             ->validationMessages([
@@ -276,17 +294,17 @@ class TahunPendaftaranResource extends Resource
                         '2xl' => 2,
                     ]),
 
-                Forms\Components\Section::make('Registrasi Berkas')
+                Section::make('Registrasi Berkas')
                     ->collapsible()
                     ->description('Tanggal registrasi berkas untuk jalur prestasi dan jalur reguler.')
                     ->schema([
-                        Forms\Components\DateTimePicker::make('tanggal_registrasi_berkas_mulai')
+                        DateTimePicker::make('tanggal_registrasi_berkas_mulai')
                             ->label('Tanggal Mulai Registrasi Berkas')
                             ->required()
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ]),
-                        Forms\Components\DateTimePicker::make('tanggal_registrasi_berkas_selesai')
+                        DateTimePicker::make('tanggal_registrasi_berkas_selesai')
                             ->label('Tanggal Selesai Registrasi Berkas')
                             ->required()
                             ->validationMessages([
@@ -308,11 +326,11 @@ class TahunPendaftaranResource extends Resource
         return $table
             // ->recordTitleAttribute('nama')
             ->columns([
-                Tables\Columns\TextColumn::make('nama')
+                TextColumn::make('nama')
                     ->label('Tahun Pendaftaran')
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('status')
+                TextColumn::make('status')
                     ->label('Status')
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
@@ -320,7 +338,7 @@ class TahunPendaftaranResource extends Resource
                         'Nonaktif' => 'gray'
                     }),
 
-                Tables\Columns\TextColumn::make('kuantitas')
+                TextColumn::make('kuantitas')
                     ->label('Kuota')
                     ->numeric()
                     ->suffix(' Pendaftar')
@@ -328,7 +346,7 @@ class TahunPendaftaranResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 // PPDB
-                Tables\Columns\TextColumn::make('tanggal_ppdb_mulai')
+                TextColumn::make('tanggal_ppdb_mulai')
                     ->label('Pendaftaran Jalur Prestasi')
                     ->date('d F Y')
                     ->description(
@@ -336,7 +354,7 @@ class TahunPendaftaranResource extends Resource
                     ),
 
                 // Pendaftaran Jalur Prestasi
-                Tables\Columns\TextColumn::make('tanggal_pendaftaran_jalur_prestasi_mulai')
+                TextColumn::make('tanggal_pendaftaran_jalur_prestasi_mulai')
                     ->label('Pendaftaran Jalur Prestasi')
                     ->dateTime('d F Y H:i:s')
                     ->description(
@@ -344,7 +362,7 @@ class TahunPendaftaranResource extends Resource
                     ),
 
                 // Pengumuman Jalur Prestasi
-                Tables\Columns\TextColumn::make('tanggal_pengumuman_jalur_prestasi_mulai')
+                TextColumn::make('tanggal_pengumuman_jalur_prestasi_mulai')
                     ->label('Pengumuman Jalur Prestasi')
                     ->dateTime('d F Y H:i:s')
                     ->description(
@@ -352,7 +370,7 @@ class TahunPendaftaranResource extends Resource
                     ),
 
                 // Pendaftaran Jalur Reguler
-                Tables\Columns\TextColumn::make('tanggal_pendaftaran_jalur_reguler_mulai')
+                TextColumn::make('tanggal_pendaftaran_jalur_reguler_mulai')
                     ->label('Pendaftaran Jalur Reguler')
                     ->dateTime('d F Y H:i:s')
                     ->description(
@@ -360,7 +378,7 @@ class TahunPendaftaranResource extends Resource
                     ),
 
                 // Penerbitan Kartu Tes
-                Tables\Columns\TextColumn::make('tanggal_penerbitan_kartu_tes_mulai')
+                TextColumn::make('tanggal_penerbitan_kartu_tes_mulai')
                     ->label('Penerbitan Kartu Tes')
                     ->dateTime('d F Y H:i:s')
                     ->description(
@@ -368,7 +386,7 @@ class TahunPendaftaranResource extends Resource
                     ),
 
                 // Tes Akademik
-                Tables\Columns\TextColumn::make('tanggal_tes_akademik_mulai')
+                TextColumn::make('tanggal_tes_akademik_mulai')
                     ->label('Tes Akademik')
                     ->dateTime('d F Y H:i:s')
                     ->description(
@@ -376,7 +394,7 @@ class TahunPendaftaranResource extends Resource
                     ),
 
                 // Tes Praktik
-                Tables\Columns\TextColumn::make('tanggal_tes_praktik_mulai')
+                TextColumn::make('tanggal_tes_praktik_mulai')
                     ->label('Tes Praktik')
                     ->dateTime('d F Y H:i:s')
                     ->description(
@@ -384,7 +402,7 @@ class TahunPendaftaranResource extends Resource
                     ),
 
                 // Pengumuman Jalur Reguler
-                Tables\Columns\TextColumn::make('tanggal_pengumuman_jalur_reguler_mulai')
+                TextColumn::make('tanggal_pengumuman_jalur_reguler_mulai')
                     ->label('Pengumuman Jalur Reguler')
                     ->dateTime('d F Y H:i:s')
                     ->description(
@@ -392,7 +410,7 @@ class TahunPendaftaranResource extends Resource
                     ),
 
                 // Registrasi Berkas
-                Tables\Columns\TextColumn::make('tanggal_registrasi_berkas_mulai')
+                TextColumn::make('tanggal_registrasi_berkas_mulai')
                     ->label('Registrasi Berkas')
                     ->dateTime('d F Y H:i:s')
                     ->description(
@@ -400,39 +418,39 @@ class TahunPendaftaranResource extends Resource
                     ),
 
                 // Timestamp
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label('Dibuat')
                     ->dateTime('d F Y H:i:s')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->label('Diubah')
                     ->dateTime('d F Y H:i:s')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('deleted_at')
+                TextColumn::make('deleted_at')
                     ->label('Dihapus')
                     ->dateTime('d F Y H:i:s')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\ActionGroup::make([
-                    Tables\Actions\ViewAction::make(),
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\DeleteAction::make(),
-                    Tables\Actions\ForceDeleteAction::make(),
-                    Tables\Actions\RestoreAction::make(),
+                ActionGroup::make([
+                    ViewAction::make(),
+                    EditAction::make(),
+                    DeleteAction::make(),
+                    ForceDeleteAction::make(),
+                    RestoreAction::make(),
                 ]),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ])
             ->paginated([5, 10, 25, 50, 100]);
@@ -448,10 +466,10 @@ class TahunPendaftaranResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListTahunPendaftarans::route('/'),
-            'create' => Pages\CreateTahunPendaftaran::route('/create'),
-            'view' => Pages\ViewTahunPendaftaran::route('/{record}'),
-            'edit' => Pages\EditTahunPendaftaran::route('/{record}/edit'),
+            'index' => ListTahunPendaftarans::route('/'),
+            'create' => CreateTahunPendaftaran::route('/create'),
+            'view' => ViewTahunPendaftaran::route('/{record}'),
+            'edit' => EditTahunPendaftaran::route('/{record}/edit'),
         ];
     }
 

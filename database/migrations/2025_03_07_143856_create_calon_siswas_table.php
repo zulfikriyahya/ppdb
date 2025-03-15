@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
@@ -88,7 +88,7 @@ return new class extends Migration
             $table->integer('bobot_nilai_praktik')->nullable();
             $table->integer('nilai_akademik')->nullable();
             $table->integer('nilai_praktik')->nullable();
-            $table->string('status_pendaftaran')->nullable();
+            $table->enum('status_pendaftaran', ['Diproses', 'Berkas Tidak Lengkap', 'Diverifikasi', 'Ditolak', 'Diterima', 'Diterima Di Kelas Reguler', 'Diterima Di Kelas Unggulan'])->default('Diproses')->nullable();
             $table->foreignId('kelas_id')->nullable()->constrained('kelas')->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('tes_sesi')->nullable();
             $table->string('tes_ruang')->nullable();

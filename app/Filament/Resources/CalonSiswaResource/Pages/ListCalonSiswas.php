@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources\CalonSiswaResource\Pages;
 
-use App\Filament\Resources\CalonSiswaResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use App\Filament\Resources\CalonSiswaResource;
 
 class ListCalonSiswas extends ListRecords
 {
