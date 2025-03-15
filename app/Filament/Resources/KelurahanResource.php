@@ -81,6 +81,7 @@ class KelurahanResource extends Resource
                     ->sortable(),
                 Tables\Columns\ImageColumn::make('kecamatan.kabupaten.provinsi.negara.bendera')
                     ->label('Bendera')
+                    ->defaultImageUrl('/img/bendera.png')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat')

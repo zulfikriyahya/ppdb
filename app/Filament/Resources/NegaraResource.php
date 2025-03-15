@@ -2,15 +2,16 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\NegaraResource\Pages;
-use App\Models\Negara;
 use Filament\Forms;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use App\Models\Negara;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Resources\Resource;
+use Filament\Forms\Components\Section;
+use Filament\Tables\Enums\FiltersLayout;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\NegaraResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class NegaraResource extends Resource
@@ -108,7 +109,10 @@ class NegaraResource extends Resource
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->striped()
+            ->filtersLayout(FiltersLayout::AboveContentCollapsible)
+            ->paginationPageOptions([10, 25, 50]);
     }
 
     public static function getRelations(): array

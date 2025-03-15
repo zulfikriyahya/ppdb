@@ -11,6 +11,7 @@ use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Illuminate\Support\HtmlString;
 use Filament\Forms\Components\Section;
+use Filament\Tables\Enums\FiltersLayout;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\AnggotaResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -486,7 +487,10 @@ class AnggotaResource extends Resource
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->striped()
+            ->filtersLayout(FiltersLayout::AboveContentCollapsible)
+            ->paginationPageOptions([10, 25, 50]);
     }
 
     public static function getRelations(): array

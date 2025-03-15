@@ -2,15 +2,16 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\KabupatenResource\Pages;
-use App\Models\Kabupaten;
 use Filament\Forms;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Forms\Form;
+use App\Models\Kabupaten;
 use Filament\Tables\Table;
+use Filament\Resources\Resource;
+use Filament\Forms\Components\Section;
+use Filament\Tables\Enums\FiltersLayout;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\KabupatenResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class KabupatenResource extends Resource
@@ -74,6 +75,7 @@ class KabupatenResource extends Resource
                     ->sortable(),
                 Tables\Columns\ImageColumn::make('provinsi.negara.bendera')
                     ->label('Bendera')
+                    ->defaultImageUrl('/img/bendera.png')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat')
@@ -109,7 +111,10 @@ class KabupatenResource extends Resource
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->striped()
+            ->filtersLayout(FiltersLayout::AboveContentCollapsible)
+            ->paginationPageOptions([10, 25, 50]);
     }
 
     public static function getRelations(): array

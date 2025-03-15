@@ -15,6 +15,7 @@ use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Enums\FiltersLayout;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Actions\DeleteAction;
 use Illuminate\Database\Eloquent\Builder;
@@ -455,7 +456,9 @@ class TahunPendaftaranResource extends Resource
                     RestoreBulkAction::make(),
                 ]),
             ])
-            ->paginated([5, 10, 25, 50, 100]);
+            ->striped()
+            ->filtersLayout(FiltersLayout::AboveContentCollapsible)
+            ->paginationPageOptions([10, 25, 50]);
     }
 
     public static function getRelations(): array

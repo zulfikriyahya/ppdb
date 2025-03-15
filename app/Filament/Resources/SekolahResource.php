@@ -17,6 +17,7 @@ use Filament\Resources\Resource;
 use Illuminate\Support\Collection;
 use Illuminate\Support\HtmlString;
 use Filament\Forms\Components\Section;
+use Filament\Tables\Enums\FiltersLayout;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\SekolahResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -665,7 +666,9 @@ class SekolahResource extends Resource
                     Tables\Actions\RestoreBulkAction::make(),
                 ]),
             ])
-            ->paginated([5, 10, 25, 50, 100]);
+            ->striped()
+            ->filtersLayout(FiltersLayout::AboveContentCollapsible)
+            ->paginationPageOptions([10, 25, 50]);
     }
 
     public static function getRelations(): array
