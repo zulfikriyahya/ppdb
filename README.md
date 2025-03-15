@@ -1,6 +1,6 @@
 # PPDB MTs Negeri 1 Pandeglang
 
-Sebuah aplikasi berbasis web untuk proses penerimaan siswa baru di MTs Negeri 1 Pandeglang, dibangun menggunakan framework Laravel 12.
+Sebuah aplikasi berbasis web untuk proses penerimaan siswa baru di MTs Negeri 1 Pandeglang, dibangun menggunakan framework Laravel 12 (FilamentPHP).
 
 ## Fitur
 
@@ -12,9 +12,10 @@ Sebuah aplikasi berbasis web untuk proses penerimaan siswa baru di MTs Negeri 1 
 
 ## Persyaratan
 
-- PHP >= 8.3
+- PHP >= 8.2
 - Composer
-- MySQL
+- Nodejs
+- MySQL/SQLite
 - Web server (Apache, Nginx, dll.)
 
 ## Instalasi
@@ -34,24 +35,39 @@ Sebuah aplikasi berbasis web untuk proses penerimaan siswa baru di MTs Negeri 1 
     composer install
     ```
 
-4. Salin file `.env.example` menjadi `.env` dan sesuaikan konfigurasi database:
+4. Install node_modules dependencies:
+    ```bash
+    npm install && npm run build
+    ```
+
+5. Salin file `.env.example` menjadi `.env` dan sesuaikan konfigurasi database:
     ```bash
     cp .env.example .env
     ```
 
-5. Generate application key:
+6. Generate application key:
     ```bash
     php artisan key:generate
     ```
 
-6. Migrasi dan seeder database:
+7. Migrasi dan seeder database:
     ```bash
-    php artisan migrate --seed
+    php artisan migrate --seed && php artisan migrate:fresh --seed
     ```
 
-7. Jalankan aplikasi:
+8. Jalankan tautan penyimpanan asset:
+    ```bash
+    php artisan storage:link
+    ```
+
+9. Jalankan aplikasi:
     ```bash
     php artisan serve
+    ```
+
+10. Jalankan Service Worker:
+    ```bash
+    php artisan queue:work --daemon
     ```
 
 Akses aplikasi melalui [http://localhost:8000](http://localhost:8000).
