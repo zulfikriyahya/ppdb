@@ -2,15 +2,15 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\KecamatanResource\Pages;
-use App\Models\Kecamatan;
 use Filament\Forms;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Forms\Form;
+use App\Models\Kecamatan;
 use Filament\Tables\Table;
+use Filament\Resources\Resource;
+use Filament\Forms\Components\Section;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\KecamatanResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class KecamatanResource extends Resource
@@ -61,7 +61,8 @@ class KecamatanResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            // ->recordTitleAttribute('nama')
+            // ->heading('Title')
+            // ->description('Subtitle disini.')
             ->columns([
                 Tables\Columns\TextColumn::make('nama')
                     ->label('Kecamatan')
@@ -112,7 +113,8 @@ class KecamatanResource extends Resource
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->paginated([5, 10, 25, 50, 100]);
     }
 
     public static function getRelations(): array

@@ -2,15 +2,15 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\ProvinsiResource\Pages;
-use App\Models\Provinsi;
 use Filament\Forms;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use App\Models\Provinsi;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Resources\Resource;
+use Filament\Forms\Components\Section;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\ProvinsiResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ProvinsiResource extends Resource
@@ -106,7 +106,8 @@ class ProvinsiResource extends Resource
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->paginated([5, 10, 25, 50, 100]);
     }
 
     public static function getRelations(): array

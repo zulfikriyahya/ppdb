@@ -9,6 +9,7 @@ use Filament\PanelProvider;
 use Filament\Navigation\MenuItem;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\MaxWidth;
+use Illuminate\Support\Facades\Auth;
 use App\Filament\Resources\UserResource;
 use Filament\Http\Middleware\Authenticate;
 use Illuminate\Session\Middleware\StartSession;
@@ -42,20 +43,19 @@ class AdminPanelProvider extends PanelProvider
             ->registration()
             // ->passwordReset()
             ->emailVerification()
-            ->profile()
             ->colors([
                 'primary' => Color::Cyan,
             ])
             ->userMenuItems([
                 MenuItem::make()
-                    ->label('Pengguna')
-                    ->url(fn(): string => UserResource::getUrl())
+                    ->label('Profile')
+                    ->url(fn(): string => UserResource::getUrl('edit', ['record' => Auth::user()->id])) // Arahkan ke halaman edit user yang sedang login
                     ->icon('heroicon-o-identification'),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                // Pages\Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([

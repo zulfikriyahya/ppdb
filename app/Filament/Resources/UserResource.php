@@ -2,14 +2,14 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\UserResource\Pages;
-use App\Models\User;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
+use App\Models\User;
 use Filament\Tables;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Resources\Resource;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\UserResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class UserResource extends Resource
@@ -42,8 +42,8 @@ class UserResource extends Resource
                     ->label('Email')
                     ->helperText('Isi dengan email yang masih aktif')
                     ->email()
-                    ->rule(fn ($record) => $record === null ? 'unique:users,email' : 'unique:users,email,'.$record->id)
-                    ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
+                    ->rule(fn($record) => $record === null ? 'unique:users,email' : 'unique:users,email,' . $record->id)
+                    ->dehydrateStateUsing(fn($state) => $state ? $state : null)
                     ->disabledOn('edit')
                     ->required()
                     ->validationMessages([
@@ -55,8 +55,8 @@ class UserResource extends Resource
                 Forms\Components\TextInput::make('password')
                     ->label('Password')
                     ->password()
-                    ->required(fn ($record) => $record === null)
-                    ->dehydrateStateUsing(fn ($state, $record) => $state ? bcrypt($state) : $record->password),
+                    ->required(fn($record) => $record === null)
+                    ->dehydrateStateUsing(fn($state, $record) => $state ? bcrypt($state) : $record->password),
                 Forms\Components\FileUpload::make('avatar')
                     ->label('Avatar')
                     ->avatar()
@@ -120,7 +120,8 @@ class UserResource extends Resource
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->paginated([5, 10, 25, 50, 100]);
     }
 
     public static function getRelations(): array

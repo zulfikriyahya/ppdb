@@ -37,54 +37,69 @@ class PrestasiResource extends Resource
                 Section::make('Prestasi')
                     ->collapsible()
                     ->schema([
-                        Forms\Components\Select::make('jenis')
-                            ->label('Jenis Prestasi')
-                            ->options([
-                                'Hafalan Al-Quran' => 'Hafalan Al-Quran (Minimal 3 Juz)',
-                                'Olimpiade/Kejuaraan' => 'Olimpiade/Kejuaraan',
+                        Section::make('')
+                            ->schema([
+                                Forms\Components\TextInput::make('nama')
+                                    ->label('Nama Prestasi')
+                                    ->required()
+                                    ->validationMessages([
+                                        'required' => 'Form ini wajib diisi.',
+                                    ]),
+                                Forms\Components\Select::make('jenis')
+                                    ->label('Jenis Prestasi')
+                                    ->options([
+                                        'Hafalan Al-Quran' => 'Hafalan Al-Quran (Minimal 3 Juz)',
+                                        'Olimpiade/Kejuaraan' => 'Olimpiade/Kejuaraan',
+                                    ])
+                                    ->required()
+                                    ->validationMessages([
+                                        'required' => 'Form ini wajib diisi.',
+                                    ])
+                                    ->live(),
                             ])
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ])
-                            ->live(),
-                        Forms\Components\TextInput::make('nama')
-                            ->label('Nama Prestasi')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
+                            ->columns([
+                                'sm' => '100%',
+                                'md' => 2,
+                                'lg' => 2,
                             ]),
-                        Forms\Components\Select::make('tingkat')
-                            ->label('Tingkat')
-                            ->options([
-                                'Nasional' => 'Nasional',
-                                'Provinsi' => 'Provinsi',
-                                'Kabupaten/Kota' => 'Kabupaten/Kota',
+
+                        Section::make('')
+                            ->schema([
+                                Forms\Components\Select::make('tingkat')
+                                    ->label('Tingkat')
+                                    ->options([
+                                        'Nasional' => 'Nasional',
+                                        'Provinsi' => 'Provinsi',
+                                        'Kabupaten/Kota' => 'Kabupaten/Kota',
+                                    ])
+                                    ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                Forms\Components\Select::make('kategori')
+                                    ->label('Kategori')
+                                    ->options([
+                                        'Regu/Kelompok' => 'Regu/Kelompok',
+                                        'Individu' => 'Individu',
+                                    ])
+                                    ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                Forms\Components\Select::make('peringkat')
+                                    ->label('Peringkat')
+                                    ->options([
+                                        '1' => '1',
+                                        '2' => '2',
+                                        '3' => '3',
+                                    ])
+                                    ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
                             ])
-                            ->visible(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan')
-                            ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
-                        Forms\Components\Select::make('kategori')
-                            ->label('Kategori')
-                            ->options([
-                                'Regu/Kelompok' => 'Regu/Kelompok',
-                                'Individu' => 'Individu',
+                            ->columns([
+                                'sm' => '100%',
+                                'md' => 3,
+                                'lg' => 3,
                             ])
-                            ->visible(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan')
-                            ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
-                        Forms\Components\Select::make('peringkat')
-                            ->label('Peringkat')
-                            ->options([
-                                '1' => '1',
-                                '2' => '2',
-                                '3' => '3',
-                            ])
-                            ->visible(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan')
-                            ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                            ->visible(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
                     ])
                     ->columns([
                         'sm' => '100%',
-                        'md' => 5,
-                        'lg' => 5,
+                        'md' => 3,
+                        'lg' => 3,
                     ]),
             ]);
     }
@@ -147,7 +162,8 @@ class PrestasiResource extends Resource
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->paginated([5, 10, 25, 50, 100]);
     }
 
     public static function getRelations(): array
