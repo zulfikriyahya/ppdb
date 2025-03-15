@@ -16,6 +16,7 @@ use Illuminate\Session\Middleware\StartSession;
 use Devonab\FilamentEasyFooter\EasyFooterPlugin;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Filament\Http\Middleware\AuthenticateSession;
+use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Andreia\FilamentNordTheme\FilamentNordThemePlugin;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
@@ -76,8 +77,9 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
+            ->theme(asset('css/filament/admin/theme.css'))
+            ->viteTheme('resources/css/filament/admin/theme.css')
             ->plugins([
-                FilamentNordThemePlugin::make(),
                 EasyFooterPlugin::make()
                     ->withFooterPosition('footer')
                     ->withLoadTime('Halaman ini dimuat dalam')
@@ -91,6 +93,10 @@ class AdminPanelProvider extends PanelProvider
                     ->withBorder(),
                 // ->hiddenFromPagesEnabled()
                 // ->hiddenFromPages(['admin/login', 'admin/forgot-password', 'admin/register', 'admin/email/verify']),
+
+                // Tema
+                // FilamentNordThemePlugin::make(),
+                AuthUIEnhancerPlugin::make()->formPanelPosition('right')->mobileFormPanelPosition('top')->formPanelWidth('40%')/* ->formPanelBackgroundColor(Color::Zinc, '300')*/->emptyPanelBackgroundImageUrl('/img/bendera.png')->showEmptyPanelOnMobile(false),
             ]);
     }
 }
