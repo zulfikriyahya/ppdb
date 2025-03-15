@@ -20,9 +20,9 @@ use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Section;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
+// use Torgodly\Html2Media\Actions\Html2MediaAction;
 use Filament\Support\Enums\IconPosition;
 use Illuminate\Database\Eloquent\Builder;
-// use Torgodly\Html2Media\Actions\Html2MediaAction;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\CalonSiswaResource\Pages;
 use Torgodly\Html2Media\Tables\Actions\Html2MediaAction;
@@ -66,8 +66,7 @@ class CalonSiswaResource extends Resource
                         Forms\Components\TextInput::make('status_pendaftaran')
                             ->label('Status Pendaftaran')
                             ->hidden(function () {
-                                $user = Filament::auth()->user();
-                                return $user->email !== 'adm@mtsn1pandeglang.sch.id';
+                                return Filament::auth()->user()->email !== 'adm@mtsn1pandeglang.sch.id';
                             }), // Jika Email Bukan 'adm@mtsn1pandeglang.sch.id'
                         // Data Kelas Pendaftaran Calon Peserta Didik Baru
                         Forms\Components\Select::make('kelas_id')
@@ -75,8 +74,7 @@ class CalonSiswaResource extends Resource
                             ->relationship('kelas', 'nama')
                             ->native(false)
                             ->hidden(function () {
-                                $user = Filament::auth()->user();
-                                return $user->email !== 'adm@mtsn1pandeglang.sch.id';
+                                return Filament::auth()->user()->email !== 'adm@mtsn1pandeglang.sch.id';
                             }), // Jika Email Bukan 'adm@mtsn1pandeglang.sch.id',
                     ])
                     ->columns(2),
@@ -1227,10 +1225,9 @@ class CalonSiswaResource extends Resource
 
                 // Section Data Tes
                 Section::make('Data Tes')
+                    ->visible(fn($get) => $get('jalur_pendaftaran') !== null)
                     ->hidden(function () {
-                        $user = Filament::auth()->user();
-
-                        return $user->email !== 'adm@mtsn1pandeglang.sch.id';
+                        return Filament::auth()->user()->email !== 'adm@mtsn1pandeglang.sch.id';
                     }) // Jika Email Bukan 'adm@mtsn1pandeglang.sch.id'
                     ->collapsible()
                     ->schema([
@@ -1632,6 +1629,7 @@ class CalonSiswaResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
             ])
