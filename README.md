@@ -65,7 +65,7 @@ Sebuah aplikasi berbasis web untuk proses penerimaan siswa baru di MTs Negeri 1 
     php artisan serve
     ```
 
-10. Jalankan Service Worker:
+10. Jalankan service:
     ```bash
     php artisan queue:work --daemon
     ```
