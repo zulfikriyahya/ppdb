@@ -52,7 +52,7 @@ Sebuah aplikasi berbasis web untuk proses penerimaan siswa baru di MTs Negeri 1 
 
 7. Migrasi dan seeder database:
     ```bash
-    php artisan migrate --seed && php artisan migrate:fresh --seed
+    php artisan migrate --seed
     ```
 
 8. Jalankan tautan penyimpanan asset:
