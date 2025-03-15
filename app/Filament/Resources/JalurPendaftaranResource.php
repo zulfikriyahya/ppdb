@@ -2,18 +2,18 @@
 
 namespace App\Filament\Resources;
 
-use Filament\Forms;
-use Filament\Tables;
-use Filament\Forms\Form;
-use Filament\Tables\Table;
+use App\Filament\Resources\JalurPendaftaranResource\Pages;
 use App\Models\JalurPendaftaran;
-use Filament\Resources\Resource;
-use Illuminate\Support\HtmlString;
+use Filament\Forms;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables;
 use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\JalurPendaftaranResource\Pages;
+use Illuminate\Support\HtmlString;
 
 class JalurPendaftaranResource extends Resource
 {

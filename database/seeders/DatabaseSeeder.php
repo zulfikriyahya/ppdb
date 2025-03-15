@@ -2,14 +2,14 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use App\Models\Negara;
-use App\Models\Provinsi;
 use App\Models\Kabupaten;
+// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\Kecamatan;
 use App\Models\Kelurahan;
+use App\Models\Negara;
+use App\Models\Provinsi;
 use App\Models\SekolahAsal;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder

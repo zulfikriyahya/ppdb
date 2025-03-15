@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CalonSiswa extends Model
 {
@@ -269,8 +269,6 @@ class CalonSiswa extends Model
     {
         return $this->belongsTo(Kelurahan::class, 'wali_kelurahan_id');
     }
-
-
 
     public function kelas(): BelongsTo
     {

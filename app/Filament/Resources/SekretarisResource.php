@@ -2,18 +2,18 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\SekretarisResource\Pages;
+use App\Models\Sekretaris;
 use Carbon\Carbon;
 use Filament\Forms;
-use Filament\Tables;
-use Filament\Forms\Form;
-use App\Models\Sekretaris;
-use Filament\Tables\Table;
-use Filament\Resources\Resource;
-use Illuminate\Support\HtmlString;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\SekretarisResource\Pages;
+use Illuminate\Support\HtmlString;
 
 class SekretarisResource extends Resource
 {
@@ -449,7 +449,7 @@ class SekretarisResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'Aktif' => 'success',
                         'Nonaktif' => 'gray'
                     }),
