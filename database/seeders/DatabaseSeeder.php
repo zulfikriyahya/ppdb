@@ -26,7 +26,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // TahunPendaftaran Seeder
-        TahunPendaftaran::create([
+        $dataTahunPendaftaran = [
             [
                 'id' => '1',
                 'nama' => '2025/2026',
@@ -99,7 +99,11 @@ class DatabaseSeeder extends Seeder
                 'kuantitas' => '5000',
                 'status' => 'Nonaktif',
             ],
-        ]);
+        ];
+
+        foreach ($dataTahunPendaftaran as $data) {
+            TahunPendaftaran::create($data);
+        }
 
         // JalurPendaftaran Seeder
         $dataJalurPendaftaran = [
