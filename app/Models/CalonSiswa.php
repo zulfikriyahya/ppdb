@@ -125,14 +125,13 @@ class CalonSiswa extends Model
         'sekolah_asal_id' => 'integer',
         'jalur_pendaftaran_id' => 'integer',
         'prestasi_id' => 'integer',
-        'berkas_prestasi' => 'array', // multiple
         'kelas_id' => 'integer',
         'tes_akademik_mulai' => 'datetime',
         'tes_akademik_selesai' => 'datetime',
         'tes_praktik_mulai' => 'datetime',
         'tes_praktik_selesai' => 'datetime',
-        'peminatan_ekstrakurikuler' => 'array', // multiple
-        'peminatan_pelajaran' => 'array', // multiple
+        // 'peminatan_ekstrakurikuler' => 'array', // multiple
+        // 'peminatan_pelajaran' => 'array', // multiple
     ];
 
     public function jalurPendaftaran(): BelongsTo
