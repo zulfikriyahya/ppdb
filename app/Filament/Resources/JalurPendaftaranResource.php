@@ -133,7 +133,7 @@ class JalurPendaftaranResource extends Resource
                                     ]),
                                 Forms\Components\Section::make('PPDB')
                                     ->collapsible()
-                                    ->description('Tanggal Pelaksanaan PPDB')
+                                    ->description('Tanggal Pelaksanaan PPDB.')
                                     ->schema([
                                         Forms\Components\DatePicker::make('tanggal_ppdb_mulai')
                                             ->label('Tanggal Mulai PPDB')

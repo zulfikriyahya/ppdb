@@ -103,7 +103,7 @@ class TahunPendaftaranResource extends Resource
                             ]),
                         Section::make('PPDB')
                             ->collapsible()
-                            ->description('Tanggal Pelaksanaan PPDB')
+                            ->description('Tanggal Pelaksanaan PPDB.')
                             ->schema([
                                 DatePicker::make('tanggal_ppdb_mulai')
                                     ->label('Tanggal Mulai PPDB')

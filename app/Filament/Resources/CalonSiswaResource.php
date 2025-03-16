@@ -64,7 +64,7 @@ class CalonSiswaResource extends Resource
                                     // Jalur Pendaftaran
                                     Forms\Components\Select::make('jalur_pendaftaran_id')
                                         ->label('Jalur Pendaftaran')
-                                        ->relationship('jalurPendaftaran', 'nama')
+                                        ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif')) // Menampilkan data jalurPendaftaran dengan kondisi statusnya aktif saja
                                         ->required()
                                         ->validationMessages([
                                             'required' => 'Form ini wajib diisi.',
