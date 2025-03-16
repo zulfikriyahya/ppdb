@@ -64,6 +64,7 @@ class DatabaseSeeder extends Seeder
                 'kuantitas' => '5000',
                 'status' => 'Nonaktif',
             ],
+
             // Tahun Pendaftaran 2023/2024
             [
                 'id' => '2',
@@ -101,6 +102,7 @@ class DatabaseSeeder extends Seeder
                 'kuantitas' => '5000',
                 'status' => 'Nonaktif',
             ],
+
             // Tahun Pendaftaran 2024/2025
             [
                 'id' => '3',
@@ -138,6 +140,7 @@ class DatabaseSeeder extends Seeder
                 'kuantitas' => '5000',
                 'status' => 'Nonaktif',
             ],
+
             // Tahun Pendaftaran 2025/2026
             [
                 'id' => '4',
@@ -173,7 +176,7 @@ class DatabaseSeeder extends Seeder
                 'tanggal_registrasi_berkas_mulai' => null,
                 'tanggal_registrasi_berkas_selesai' => null,
                 'kuantitas' => '5000',
-                'status' => 'Nonaktif',
+                'status' => 'Aktif',
             ],
         ];
 
