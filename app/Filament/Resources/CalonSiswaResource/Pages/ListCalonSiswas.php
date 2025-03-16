@@ -16,7 +16,8 @@ class ListCalonSiswas extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->visible(Auth::user()->email === 'adm@mtsn1pandeglang.sch.id'),
             Actions\ExportAction::make('Ekspor')
                 ->label('Ekspor')
                 ->icon('heroicon-m-cloud-arrow-down')
