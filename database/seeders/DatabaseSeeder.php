@@ -2,15 +2,18 @@
 
 namespace Database\Seeders;
 
-use App\Models\Kabupaten;
+use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Negara;
+use App\Models\Prestasi;
+use App\Models\Provinsi;
+use App\Models\Kabupaten;
 use App\Models\Kecamatan;
 use App\Models\Kelurahan;
-use App\Models\Negara;
-use App\Models\Provinsi;
 use App\Models\SekolahAsal;
-use App\Models\User;
 use Illuminate\Database\Seeder;
+use App\Models\JalurPendaftaran;
+use App\Models\TahunPendaftaran;
 
 class DatabaseSeeder extends Seeder
 {
@@ -21,6 +24,196 @@ class DatabaseSeeder extends Seeder
             'name' => 'Admin ADMISI',
             'email' => 'adm@mtsn1pandeglang.sch.id',
         ]);
+
+        // TahunPendaftaran Seeder
+        TahunPendaftaran::create([
+            'id' => '1',
+            'nama' => '2025/2026',
+            'tanggal_ppdb_mulai' => '2025-02-01',
+            'tanggal_ppdb_selesai' => '2025-05-31',
+            'tanggal_pendaftaran_jalur_prestasi_mulai' => null,
+            'tanggal_pendaftaran_jalur_prestasi_selesai' => null,
+            'tanggal_pengumuman_jalur_prestasi_mulai' => null,
+            'tanggal_pengumuman_jalur_prestasi_selesai' => null,
+            'tanggal_pendaftaran_jalur_reguler_mulai' => null,
+            'tanggal_pendaftaran_jalur_reguler_selesai' => null,
+            'tanggal_pengumuman_jalur_reguler_mulai' => null,
+            'tanggal_pengumuman_jalur_reguler_selesai' => null,
+            'tanggal_pendaftaran_jalur_afirmasi_mulai' => null,
+            'tanggal_pendaftaran_jalur_afirmasi_selesai' => null,
+            'tanggal_pengumuman_jalur_afirmasi_mulai' => null,
+            'tanggal_pengumuman_jalur_afirmasi_selesai' => null,
+            'tanggal_pendaftaran_jalur_zonasi_mulai' => null,
+            'tanggal_pendaftaran_jalur_zonasi_selesai' => null,
+            'tanggal_pengumuman_jalur_zonasi_mulai' => null,
+            'tanggal_pengumuman_jalur_zonasi_selesai' => null,
+            'tanggal_pendaftaran_jalur_mutasi_mulai' => null,
+            'tanggal_pendaftaran_jalur_mutasi_selesai' => null,
+            'tanggal_pengumuman_jalur_mutasi_mulai' => null,
+            'tanggal_pengumuman_jalur_mutasi_selesai' => null,
+            'tanggal_penerbitan_kartu_tes_mulai' => null,
+            'tanggal_penerbitan_kartu_tes_selesai' => null,
+            'tanggal_tes_akademik_mulai' => null,
+            'tanggal_tes_akademik_selesai' => null,
+            'tanggal_tes_praktik_mulai' => null,
+            'tanggal_tes_praktik_selesai' => null,
+            'tanggal_registrasi_berkas_mulai' => null,
+            'tanggal_registrasi_berkas_selesai' => null,
+            'kuantitas' => '5000',
+            'status' => 'Aktif',
+        ]);
+
+        // JalurPendaftaran Seeder
+        $dataJalurPendaftaran = [
+            [
+                'id' => '1',
+                'nama' => 'Prestasi',
+                'kuantitas' => '1000',
+                'status' => 'Aktif',
+                'tahun_pendaftaran_id' => 1,
+            ],
+            [
+                'id' => '2',
+                'nama' => 'Reguler',
+                'kuantitas' => '1000',
+                'status' => 'Aktif',
+                'tahun_pendaftaran_id' => 1,
+            ],
+            [
+                'id' => '3',
+                'nama' => 'Afirmasi',
+                'kuantitas' => '1000',
+                'status' => 'Nonaktif',
+                'tahun_pendaftaran_id' => 1,
+            ],
+            [
+                'id' => '4',
+                'nama' => 'Zonasi',
+                'kuantitas' => '1000',
+                'status' => 'Nonaktif',
+                'tahun_pendaftaran_id' => 1,
+            ],
+            [
+                'id' => '5',
+                'nama' => 'Mutasi',
+                'kuantitas' => '1000',
+                'status' => 'Nonaktif',
+                'tahun_pendaftaran_id' => 1,
+            ],
+        ];
+
+        foreach ($dataJalurPendaftaran as $data) {
+            JalurPendaftaran::create($data);
+        }
+
+        // Prestasi Seeder
+        $dataPrestasi = [
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'KSM', 'tingkat' => 'Nasional', 'kategori' => 'Individu', 'peringkat' => '1'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'KSM', 'tingkat' => 'Nasional', 'kategori' => 'Individu', 'peringkat' => '2'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'KSM', 'tingkat' => 'Nasional', 'kategori' => 'Individu', 'peringkat' => '3'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'OSN', 'tingkat' => 'Nasional', 'kategori' => 'Individu', 'peringkat' => '1'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'OSN', 'tingkat' => 'Nasional', 'kategori' => 'Individu', 'peringkat' => '2'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'OSN', 'tingkat' => 'Nasional', 'kategori' => 'Individu', 'peringkat' => '3'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'O2SN', 'tingkat' => 'Nasional', 'kategori' => 'Individu', 'peringkat' => '1'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'O2SN', 'tingkat' => 'Nasional', 'kategori' => 'Individu', 'peringkat' => '2'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'O2SN', 'tingkat' => 'Nasional', 'kategori' => 'Individu', 'peringkat' => '3'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'FLS2N', 'tingkat' => 'Nasional', 'kategori' => 'Individu', 'peringkat' => '1'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'FLS2N', 'tingkat' => 'Nasional', 'kategori' => 'Individu', 'peringkat' => '2'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'FLS2N', 'tingkat' => 'Nasional', 'kategori' => 'Individu', 'peringkat' => '3'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'KSM', 'tingkat' => 'Provinsi', 'kategori' => 'Individu', 'peringkat' => '1'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'KSM', 'tingkat' => 'Provinsi', 'kategori' => 'Individu', 'peringkat' => '2'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'KSM', 'tingkat' => 'Provinsi', 'kategori' => 'Individu', 'peringkat' => '3'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'OSN', 'tingkat' => 'Provinsi', 'kategori' => 'Individu', 'peringkat' => '1'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'OSN', 'tingkat' => 'Provinsi', 'kategori' => 'Individu', 'peringkat' => '2'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'OSN', 'tingkat' => 'Provinsi', 'kategori' => 'Individu', 'peringkat' => '3'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'O2SN', 'tingkat' => 'Provinsi', 'kategori' => 'Individu', 'peringkat' => '1'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'O2SN', 'tingkat' => 'Provinsi', 'kategori' => 'Individu', 'peringkat' => '2'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'O2SN', 'tingkat' => 'Provinsi', 'kategori' => 'Individu', 'peringkat' => '3'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'FLS2N', 'tingkat' => 'Provinsi', 'kategori' => 'Individu', 'peringkat' => '1'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'FLS2N', 'tingkat' => 'Provinsi', 'kategori' => 'Individu', 'peringkat' => '2'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'FLS2N', 'tingkat' => 'Provinsi', 'kategori' => 'Individu', 'peringkat' => '3'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'KSM', 'tingkat' => 'Kabupaten/Kota', 'kategori' => 'Individu', 'peringkat' => '1'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'KSM', 'tingkat' => 'Kabupaten/Kota', 'kategori' => 'Individu', 'peringkat' => '2'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'KSM', 'tingkat' => 'Kabupaten/Kota', 'kategori' => 'Individu', 'peringkat' => '3'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'OSN', 'tingkat' => 'Kabupaten/Kota', 'kategori' => 'Individu', 'peringkat' => '1'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'OSN', 'tingkat' => 'Kabupaten/Kota', 'kategori' => 'Individu', 'peringkat' => '2'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'OSN', 'tingkat' => 'Kabupaten/Kota', 'kategori' => 'Individu', 'peringkat' => '3'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'O2SN', 'tingkat' => 'Kabupaten/Kota', 'kategori' => 'Individu', 'peringkat' => '1'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'O2SN', 'tingkat' => 'Kabupaten/Kota', 'kategori' => 'Individu', 'peringkat' => '2'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'O2SN', 'tingkat' => 'Kabupaten/Kota', 'kategori' => 'Individu', 'peringkat' => '3'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'FLS2N', 'tingkat' => 'Kabupaten/Kota', 'kategori' => 'Individu', 'peringkat' => '1'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'FLS2N', 'tingkat' => 'Kabupaten/Kota', 'kategori' => 'Individu', 'peringkat' => '2'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'FLS2N', 'tingkat' => 'Kabupaten/Kota', 'kategori' => 'Individu', 'peringkat' => '3'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'KSM', 'tingkat' => 'Nasional', 'kategori' => 'Regu/Kelompok', 'peringkat' => '1'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'KSM', 'tingkat' => 'Nasional', 'kategori' => 'Regu/Kelompok', 'peringkat' => '2'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'KSM', 'tingkat' => 'Nasional', 'kategori' => 'Regu/Kelompok', 'peringkat' => '3'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'OSN', 'tingkat' => 'Nasional', 'kategori' => 'Regu/Kelompok', 'peringkat' => '1'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'OSN', 'tingkat' => 'Nasional', 'kategori' => 'Regu/Kelompok', 'peringkat' => '2'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'OSN', 'tingkat' => 'Nasional', 'kategori' => 'Regu/Kelompok', 'peringkat' => '3'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'O2SN', 'tingkat' => 'Nasional', 'kategori' => 'Regu/Kelompok', 'peringkat' => '1'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'O2SN', 'tingkat' => 'Nasional', 'kategori' => 'Regu/Kelompok', 'peringkat' => '2'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'O2SN', 'tingkat' => 'Nasional', 'kategori' => 'Regu/Kelompok', 'peringkat' => '3'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'FLS2N', 'tingkat' => 'Nasional', 'kategori' => 'Regu/Kelompok', 'peringkat' => '1'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'FLS2N', 'tingkat' => 'Nasional', 'kategori' => 'Regu/Kelompok', 'peringkat' => '2'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'FLS2N', 'tingkat' => 'Nasional', 'kategori' => 'Regu/Kelompok', 'peringkat' => '3'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'KSM', 'tingkat' => 'Provinsi', 'kategori' => 'Regu/Kelompok', 'peringkat' => '1'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'KSM', 'tingkat' => 'Provinsi', 'kategori' => 'Regu/Kelompok', 'peringkat' => '2'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'KSM', 'tingkat' => 'Provinsi', 'kategori' => 'Regu/Kelompok', 'peringkat' => '3'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'OSN', 'tingkat' => 'Provinsi', 'kategori' => 'Regu/Kelompok', 'peringkat' => '1'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'OSN', 'tingkat' => 'Provinsi', 'kategori' => 'Regu/Kelompok', 'peringkat' => '2'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'OSN', 'tingkat' => 'Provinsi', 'kategori' => 'Regu/Kelompok', 'peringkat' => '3'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'O2SN', 'tingkat' => 'Provinsi', 'kategori' => 'Regu/Kelompok', 'peringkat' => '1'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'O2SN', 'tingkat' => 'Provinsi', 'kategori' => 'Regu/Kelompok', 'peringkat' => '2'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'O2SN', 'tingkat' => 'Provinsi', 'kategori' => 'Regu/Kelompok', 'peringkat' => '3'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'FLS2N', 'tingkat' => 'Provinsi', 'kategori' => 'Regu/Kelompok', 'peringkat' => '1'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'FLS2N', 'tingkat' => 'Provinsi', 'kategori' => 'Regu/Kelompok', 'peringkat' => '2'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'FLS2N', 'tingkat' => 'Provinsi', 'kategori' => 'Regu/Kelompok', 'peringkat' => '3'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'KSM', 'tingkat' => 'Kabupaten/Kota', 'kategori' => 'Regu/Kelompok', 'peringkat' => '1'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'KSM', 'tingkat' => 'Kabupaten/Kota', 'kategori' => 'Regu/Kelompok', 'peringkat' => '2'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'KSM', 'tingkat' => 'Kabupaten/Kota', 'kategori' => 'Regu/Kelompok', 'peringkat' => '3'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'OSN', 'tingkat' => 'Kabupaten/Kota', 'kategori' => 'Regu/Kelompok', 'peringkat' => '1'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'OSN', 'tingkat' => 'Kabupaten/Kota', 'kategori' => 'Regu/Kelompok', 'peringkat' => '2'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'OSN', 'tingkat' => 'Kabupaten/Kota', 'kategori' => 'Regu/Kelompok', 'peringkat' => '3'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'O2SN', 'tingkat' => 'Kabupaten/Kota', 'kategori' => 'Regu/Kelompok', 'peringkat' => '1'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'O2SN', 'tingkat' => 'Kabupaten/Kota', 'kategori' => 'Regu/Kelompok', 'peringkat' => '2'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'O2SN', 'tingkat' => 'Kabupaten/Kota', 'kategori' => 'Regu/Kelompok', 'peringkat' => '3'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'FLS2N', 'tingkat' => 'Kabupaten/Kota', 'kategori' => 'Regu/Kelompok', 'peringkat' => '1'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'FLS2N', 'tingkat' => 'Kabupaten/Kota', 'kategori' => 'Regu/Kelompok', 'peringkat' => '2'],
+            ['jenis' => 'Olimpiade/Kejuaraan', 'nama' => 'FLS2N', 'tingkat' => 'Kabupaten/Kota', 'kategori' => 'Regu/Kelompok', 'peringkat' => '3'],
+            ['jenis' => 'Hafalan Al-Quran', 'nama' => 'Hafalan Al-Quran 1 Juz'],
+            ['jenis' => 'Hafalan Al-Quran', 'nama' => 'Hafalan Al-Quran 2 Juz'],
+            ['jenis' => 'Hafalan Al-Quran', 'nama' => 'Hafalan Al-Quran 3 Juz'],
+            ['jenis' => 'Hafalan Al-Quran', 'nama' => 'Hafalan Al-Quran 4 Juz'],
+            ['jenis' => 'Hafalan Al-Quran', 'nama' => 'Hafalan Al-Quran 5 Juz'],
+            ['jenis' => 'Hafalan Al-Quran', 'nama' => 'Hafalan Al-Quran 7 Juz'],
+            ['jenis' => 'Hafalan Al-Quran', 'nama' => 'Hafalan Al-Quran 8 Juz'],
+            ['jenis' => 'Hafalan Al-Quran', 'nama' => 'Hafalan Al-Quran 9 Juz'],
+            ['jenis' => 'Hafalan Al-Quran', 'nama' => 'Hafalan Al-Quran 10 Juz'],
+            ['jenis' => 'Hafalan Al-Quran', 'nama' => 'Hafalan Al-Quran 11 Juz'],
+            ['jenis' => 'Hafalan Al-Quran', 'nama' => 'Hafalan Al-Quran 12 Juz'],
+            ['jenis' => 'Hafalan Al-Quran', 'nama' => 'Hafalan Al-Quran 13 Juz'],
+            ['jenis' => 'Hafalan Al-Quran', 'nama' => 'Hafalan Al-Quran 14 Juz'],
+            ['jenis' => 'Hafalan Al-Quran', 'nama' => 'Hafalan Al-Quran 15 Juz'],
+            ['jenis' => 'Hafalan Al-Quran', 'nama' => 'Hafalan Al-Quran 16 Juz'],
+            ['jenis' => 'Hafalan Al-Quran', 'nama' => 'Hafalan Al-Quran 17 Juz'],
+            ['jenis' => 'Hafalan Al-Quran', 'nama' => 'Hafalan Al-Quran 18 Juz'],
+            ['jenis' => 'Hafalan Al-Quran', 'nama' => 'Hafalan Al-Quran 19 Juz'],
+            ['jenis' => 'Hafalan Al-Quran', 'nama' => 'Hafalan Al-Quran 20 Juz'],
+            ['jenis' => 'Hafalan Al-Quran', 'nama' => 'Hafalan Al-Quran 21 Juz'],
+            ['jenis' => 'Hafalan Al-Quran', 'nama' => 'Hafalan Al-Quran 22 Juz'],
+            ['jenis' => 'Hafalan Al-Quran', 'nama' => 'Hafalan Al-Quran 23 Juz'],
+            ['jenis' => 'Hafalan Al-Quran', 'nama' => 'Hafalan Al-Quran 24 Juz'],
+            ['jenis' => 'Hafalan Al-Quran', 'nama' => 'Hafalan Al-Quran 25 Juz'],
+            ['jenis' => 'Hafalan Al-Quran', 'nama' => 'Hafalan Al-Quran 26 Juz'],
+            ['jenis' => 'Hafalan Al-Quran', 'nama' => 'Hafalan Al-Quran 27 Juz'],
+            ['jenis' => 'Hafalan Al-Quran', 'nama' => 'Hafalan Al-Quran 28 Juz'],
+            ['jenis' => 'Hafalan Al-Quran', 'nama' => 'Hafalan Al-Quran 29 Juz'],
+            ['jenis' => 'Hafalan Al-Quran', 'nama' => 'Hafalan Al-Quran 30 Juz'],
+        ];
+
+        foreach ($dataPrestasi as $data) {
+            Prestasi::create($data);
+        }
 
         // Negara Seeder
         Negara::create([

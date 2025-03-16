@@ -40,10 +40,10 @@ return new class extends Migration
             $table->string('berkas_kk');
             $table->string('berkas_akta');
             $table->string('berkas_kip')->nullable();
-            $table->string('berkas_nisn')->nullable();
+            $table->string('berkas_nisn');
             $table->string('berkas_skbb');
             $table->string('berkas_skab');
-            $table->string('berkas_prestasi')->nullable();
+            $table->string('berkas_prestasi')->nullable(); // string
             $table->string('ibu_nama');
             $table->string('ibu_telepon')->nullable();
             $table->string('ibu_pekerjaan')->nullable();
@@ -77,8 +77,8 @@ return new class extends Migration
             $table->foreignId('sekolah_asal_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('jalur_pendaftaran_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('prestasi_id')->nullable()->constrained('prestasis')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->enum('peminatan_ekstrakurikuler', ['Pramuka', 'Paskibra', 'Kesehatan', 'Kebersihan', 'Kesenian', 'Kerohanian', 'Olahraga Footsal', 'Olahraga Bulu Tangkis', 'Olahraga Voli', 'Olahraga Renang']);
-            $table->enum('peminatan_pelajaran', ['IPA', 'IPS', 'Matematika', 'Bahasa Indonesia', 'Bahasa Arab', 'Bahasa Inggris', 'Lainnya']);
+            $table->string('peminatan_ekstrakurikuler'); // string
+            $table->string('peminatan_pelajaran'); // string
             $table->integer('nilai_ipa')->nullable();
             $table->integer('nilai_ips')->nullable();
             $table->integer('nilai_matematika')->nullable();

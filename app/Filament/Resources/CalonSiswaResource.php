@@ -164,7 +164,6 @@ class CalonSiswaResource extends Resource
                                                             'unique' => 'NISN: Nomor ini sudah pernah di isi.',
                                                             'required' => 'Form ini wajib diisi.',
                                                         ]),
-
                                                     // Tempat Lahir Calon Peserta Didik Baru
                                                     Forms\Components\TextInput::make('tempat_lahir')
                                                         ->label('Tempat Lahir')
@@ -505,7 +504,7 @@ class CalonSiswaResource extends Resource
                                                     Forms\Components\Select::make('prestasi_id')
                                                         ->label('Prestasi')
                                                         ->relationship('prestasi', 'nama')
-                                                        // ->multiple()
+                                                        // ->multiple() // array tipe data
                                                         ->preload()
                                                         ->createOptionForm([
                                                             // Prestasi
@@ -595,8 +594,8 @@ class CalonSiswaResource extends Resource
                                                             'Olahraga Voli' => 'Olahraga Voli',
                                                             'Olahraga Renang' => 'Olahraga Renang',
                                                         ])
-                                                        // ->multiple()
-                                                        // ->relationships('eksrakurikuler', 'nama')
+                                                        ->multiple() // Aktifkan multiple select
+
                                                         ->validationMessages([
                                                             'required' => 'Form ini wajib diisi.',
                                                         ]),
@@ -604,6 +603,8 @@ class CalonSiswaResource extends Resource
                                                     Forms\Components\Select::make('peminatan_pelajaran')
                                                         ->label('Peminatan Mata Pelajaran')
                                                         ->required()
+                                                        ->multiple() // array tipe data
+
                                                         ->options([
                                                             'IPA' => 'IPA',
                                                             'IPS' => 'IPS',
@@ -815,6 +816,10 @@ class CalonSiswaResource extends Resource
                                                         ->openable()
                                                         ->maxSize(500)
                                                         ->minSize(10)
+                                                        ->required()
+                                                        ->validationMessages([
+                                                            'required' => 'Form ini wajib diisi.',
+                                                        ])
                                                         ->visibility('private'),
                                                     // Berkas Surat Keterangan Berkelakuan Baik Calon Peserta Didik Baru
                                                     Forms\Components\FileUpload::make('berkas_skbb')
@@ -862,6 +867,7 @@ class CalonSiswaResource extends Resource
                                                     Forms\Components\FileUpload::make('berkas_prestasi')
                                                         ->label('Berkas Prestasi Siswa')
                                                         ->image()
+                                                        ->multiple() // array tipe data
                                                         ->imageEditor()
                                                         ->imageEditorAspectRatios([
                                                             null,
@@ -1477,9 +1483,24 @@ class CalonSiswaResource extends Resource
                 Tables\Columns\TextColumn::make('berkas_skab')
                     ->label('SKAB')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('berkas_prestasi')
-                    ->label('Bukti Prestasi')
-                    ->searchable(),
+                // Tables\Columns\TextColumn::make('berkas_prestasi')
+                //     ->label('Bukti Prestasi')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('berkas_prestasi')
+                //     ->label('Bukti Prestasi')
+                //     ->searchable()
+                //     ->getStateUsing(function ($record) {
+                //         // Decode JSON menjadi array
+                //         $berkasPrestasi = json_decode($record->berkas_prestasi, true);
+
+                //         // Pastikan nilai tidak kosong atau null
+                //         if (!is_array($berkasPrestasi) || empty($berkasPrestasi)) {
+                //             return 'Tidak ada bukti prestasi';
+                //         }
+
+                //         // Gabungkan nilai array menjadi string yang dipisahkan koma
+                //         return implode(', ', $berkasPrestasi);
+                //     }),
                 Tables\Columns\TextColumn::make('ibu_nama')
                     ->label('Nama Ibu')
                     ->searchable(),
@@ -1579,12 +1600,43 @@ class CalonSiswaResource extends Resource
                 Tables\Columns\TextColumn::make('prestasi.nama')
                     ->label('Nama Prestasi')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('peminatan_ekstrakurikuler')
-                    ->label('Peminatan Ekstrakurikuler')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('peminatan_pelajaran')
-                    ->label('Peminatan Pelajaran')
-                    ->searchable(),
+                // Tables\Columns\TextColumn::make('peminatan_ekstrakurikuler')
+                //     ->label('Peminatan Ekstrakurikuler')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('peminatan_pelajaran')
+                //     ->label('Peminatan Pelajaran')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('peminatan_ekstrakurikuler')
+                //     ->label('Peminatan Ekstrakurikuler')
+                //     ->searchable()
+                //     ->getStateUsing(function ($record) {
+                //         // Decode JSON menjadi array
+                //         $peminatanEkstrakurikuler = json_decode($record->peminatan_ekstrakurikuler, true);
+
+                //         // Pastikan nilai tidak kosong atau null
+                //         if (!is_array($peminatanEkstrakurikuler) || empty($peminatanEkstrakurikuler)) {
+                //             return 'Tidak ada peminatan';
+                //         }
+
+                //         // Gabungkan nilai array menjadi string, dipisahkan koma
+                //         return implode(', ', $peminatanEkstrakurikuler);
+                //     }),
+                // Tables\Columns\TextColumn::make('peminatan_pelajaran')
+                //     ->label('Peminatan Pelajaran')
+                //     ->searchable()
+                //     ->getStateUsing(function ($record) {
+                //         // Decode JSON menjadi array
+                //         $peminatanPelajaran = json_decode($record->peminatan_pelajaran, true);
+
+                //         // Pastikan nilai tidak kosong atau null
+                //         if (!is_array($peminatanPelajaran) || empty($peminatanPelajaran)) {
+                //             return 'Tidak ada peminatan';
+                //         }
+
+                //         // Gabungkan nilai array menjadi string, dipisahkan koma
+                //         return implode(', ', $peminatanPelajaran);
+                //     }),
+
                 Tables\Columns\TextColumn::make('nilai_ipa')
                     ->label('Nilai IPA')
                     ->numeric()
