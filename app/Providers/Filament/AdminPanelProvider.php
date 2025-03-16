@@ -2,28 +2,30 @@
 
 namespace App\Providers\Filament;
 
-use Andreia\FilamentNordTheme\FilamentNordThemePlugin;
-use App\Filament\Resources\UserResource;
-use Devonab\FilamentEasyFooter\EasyFooterPlugin;
-use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
-use Filament\Http\Middleware\Authenticate;
-use Filament\Http\Middleware\AuthenticateSession;
-use Filament\Http\Middleware\DisableBladeIconComponents;
-use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Navigation\MenuItem;
 use Filament\Pages;
 use Filament\Panel;
+use Filament\Widgets;
 use Filament\PanelProvider;
+use Filament\Navigation\MenuItem;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\MaxWidth;
-use Filament\Widgets;
-use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
-use Illuminate\Cookie\Middleware\EncryptCookies;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
-use Illuminate\Routing\Middleware\SubstituteBindings;
-use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Auth;
+use App\Filament\Pages\Auth\LoginCustom;
+use App\Filament\Resources\UserResource;
+use Filament\Http\Middleware\Authenticate;
+use App\Filament\Pages\Auth\RegisterCustom;
+use Illuminate\Session\Middleware\StartSession;
+use Devonab\FilamentEasyFooter\EasyFooterPlugin;
+use Illuminate\Cookie\Middleware\EncryptCookies;
+use Filament\Http\Middleware\AuthenticateSession;
+use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
+use Illuminate\Routing\Middleware\SubstituteBindings;
+use Andreia\FilamentNordTheme\FilamentNordThemePlugin;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Filament\Http\Middleware\DisableBladeIconComponents;
+use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -40,8 +42,10 @@ class AdminPanelProvider extends PanelProvider
             ->topNavigation()
             ->id('admin')
             ->path('admin')
-            ->login()
-            ->registration()
+            // ->login()
+            ->login(LoginCustom::class)
+            // ->registration()
+            ->registration(RegisterCustom::class)
             // ->passwordReset()
             ->emailVerification()
             ->colors([
@@ -50,7 +54,7 @@ class AdminPanelProvider extends PanelProvider
             ->userMenuItems([
                 MenuItem::make()
                     ->label('Profile')
-                    ->url(fn (): string => UserResource::getUrl('edit', ['record' => Auth::user()->id])) // Arahkan ke halaman edit user yang sedang login
+                    ->url(fn(): string => UserResource::getUrl('edit', ['record' => Auth::user()->id])) // Arahkan ke halaman edit user yang sedang login
                     ->icon('heroicon-o-identification'),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
@@ -96,7 +100,7 @@ class AdminPanelProvider extends PanelProvider
 
                 // Tema
                 // FilamentNordThemePlugin::make(),
-                AuthUIEnhancerPlugin::make()->formPanelPosition('right')->mobileFormPanelPosition('top')->formPanelWidth('40%')/* ->formPanelBackgroundColor(Color::Zinc, '300') */ ->emptyPanelBackgroundImageUrl('/img/bendera.png')->showEmptyPanelOnMobile(false),
+                AuthUIEnhancerPlugin::make()->formPanelPosition('right')->mobileFormPanelPosition('top')->formPanelWidth('40%')/* ->formPanelBackgroundColor(Color::Zinc, '300') */->emptyPanelBackgroundImageUrl('/img/bendera.png')->showEmptyPanelOnMobile(false),
             ]);
     }
 }

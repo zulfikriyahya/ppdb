@@ -2,15 +2,15 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\UserResource\Pages;
-use App\Models\User;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
+use App\Models\User;
 use Filament\Tables;
-use Filament\Tables\Enums\FiltersLayout;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Resources\Resource;
+use Filament\Tables\Enums\FiltersLayout;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\UserResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class UserResource extends Resource
@@ -39,12 +39,27 @@ class UserResource extends Resource
                     ->validationMessages([
                         'required' => 'Form ini wajib diisi.',
                     ]),
+                Forms\Components\TextInput::make('username')
+                    ->label('Nomor Induk Siswa Nasional (NISN)')
+                    ->required()
+                    ->unique(ignoreRecord: true)
+                    ->rule(fn($record) => $record === null ? 'unique:users,username' : 'unique:users,username,' . $record->id)
+                    ->dehydrateStateUsing(fn($state) => $state ? $state : null)
+                    ->maxLength(10)
+                    ->minLength(10)
+                    ->disabledOn('edit')
+                    ->validationMessages([
+                        'max' => 'NISN: Masukkan maksimal 10 Angka.',
+                        'min' => 'NISN: Masukkan minimal 10 Angka.',
+                        'unique' => 'NISN: Nomor ini sudah pernah di isi.',
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
                 Forms\Components\TextInput::make('email')
                     ->label('Email')
                     ->helperText('Isi dengan email yang masih aktif.')
                     ->email()
-                    ->rule(fn ($record) => $record === null ? 'unique:users,email' : 'unique:users,email,'.$record->id)
-                    ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
+                    ->rule(fn($record) => $record === null ? 'unique:users,email' : 'unique:users,email,' . $record->id)
+                    ->dehydrateStateUsing(fn($state) => $state ? $state : null)
                     ->disabledOn('edit')
                     ->required()
                     ->validationMessages([
@@ -56,16 +71,8 @@ class UserResource extends Resource
                 Forms\Components\TextInput::make('password')
                     ->label('Password')
                     ->password()
-                    ->required(fn ($record) => $record === null)
-                    ->dehydrateStateUsing(fn ($state, $record) => $state ? bcrypt($state) : $record->password),
-                // Forms\Components\FileUpload::make('avatar')
-                //     ->label('Avatar')
-                //     ->avatar()
-                //     ->directory('upload/')
-                //     ->preserveFilenames()
-                //     ->minSize(10)
-                //     ->maxSize(100)
-                //     ->fetchFileInformation(false),
+                    ->required(fn($record) => $record === null)
+                    ->dehydrateStateUsing(fn($state, $record) => $state ? bcrypt($state) : $record->password),
             ]);
     }
 
@@ -74,9 +81,6 @@ class UserResource extends Resource
         return $table
             // ->recordTitleAttribute('name')
             ->columns([
-                // Tables\Columns\ImageColumn::make('avatar')
-                //     ->circular()
-                //     ->label('Avatar'),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nama Lengkap')
                     ->searchable(),
