@@ -71,6 +71,7 @@ class CalonSiswaResource extends Resource
                                         ])
                                         ->native(false)
                                         ->live()
+                                        ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->nama} | {$record->tahunPendaftaran->nama}")
                                         ->columnSpanFull(),
                                     // Data Status Pendaftaran Calon Peserta Didik Baru
                                     Forms\Components\Select::make('status_pendaftaran')
