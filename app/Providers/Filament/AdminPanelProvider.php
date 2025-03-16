@@ -46,7 +46,7 @@ class AdminPanelProvider extends PanelProvider
             ->login(LoginCustom::class)
             // ->registration()
             ->registration(RegisterCustom::class)
-            // ->passwordReset()
+            ->passwordReset()
             ->emailVerification()
             ->colors([
                 'primary' => Color::Cyan,
