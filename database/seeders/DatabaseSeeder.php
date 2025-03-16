@@ -302,14 +302,14 @@ class DatabaseSeeder extends Seeder
                 'id' => '16',
                 'nama' => 'Prestasi',
                 'kuantitas' => '1000',
-                'status' => 'Nonaktif',
+                'status' => 'Aktif',
                 'tahun_pendaftaran_id' => 4,
             ],
             [
                 'id' => '17',
                 'nama' => 'Reguler',
                 'kuantitas' => '1000',
-                'status' => 'Nonaktif',
+                'status' => 'Aktif',
                 'tahun_pendaftaran_id' => 4,
             ],
             [
