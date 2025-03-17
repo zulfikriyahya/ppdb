@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\CalonSiswaResource\Pages;
 
-use Filament\Resources\Pages\CreateRecord;
 use App\Filament\Resources\CalonSiswaResource;
+use Filament\Resources\Pages\CreateRecord;
 
 class CreateCalonSiswa extends CreateRecord
 {

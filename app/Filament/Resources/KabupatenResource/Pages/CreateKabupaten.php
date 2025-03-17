@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\KabupatenResource\Pages;
 
-use Filament\Resources\Pages\CreateRecord;
 use App\Filament\Resources\KabupatenResource;
+use Filament\Resources\Pages\CreateRecord;
 
 class CreateKabupaten extends CreateRecord
 {

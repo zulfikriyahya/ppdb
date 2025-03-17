@@ -19,6 +19,7 @@ use Devonab\FilamentEasyFooter\EasyFooterPlugin;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Filament\Http\Middleware\AuthenticateSession;
 use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
+use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Andreia\FilamentNordTheme\FilamentNordThemePlugin;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
@@ -32,31 +33,30 @@ class AdminPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->default()
-            ->spa()
             // ->brandLogo(fn() => view('logo'))
             // ->brandLogoHeight('1.25rem')
             ->maxContentWidth(MaxWidth::Full)
             ->unsavedChangesAlerts()
             ->databaseNotifications()
             ->topNavigation()
-            ->id('admin')
-            ->path('admin')
-            // ->login()
             ->login(LoginCustom::class)
-            // ->registration()
             ->registration(RegisterCustom::class)
-            ->passwordReset()
-            ->emailVerification()
+            ->id('admin')
+            ->profile()
+            ->path('admin')
             ->colors([
                 'primary' => Color::Cyan,
             ])
-            ->userMenuItems([
-                MenuItem::make()
-                    ->label('Profile')
-                    ->url(fn(): string => UserResource::getUrl('edit', ['record' => Auth::user()->id])) // Arahkan ke halaman edit user yang sedang login
-                    ->icon('heroicon-o-identification'),
-            ])
+            // ->userMenuItems([
+            //     MenuItem::make()
+            //         ->label('Profile')
+            //         ->url(fn(): string => UserResource::getUrl('edit', ['record' => Auth::user()->id])) // Arahkan ke halaman edit user yang sedang login
+            //         ->icon('heroicon-o-identification'),
+            // ])
+            ->default()
+            ->spa()
+            ->passwordReset()
+            ->emailVerification()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
@@ -84,6 +84,22 @@ class AdminPanelProvider extends PanelProvider
             ->theme(asset('css/filament/admin/theme.css'))
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->plugins([
+                FilamentShieldPlugin::make()
+                    ->gridColumns([
+                        'default' => 1,
+                        'sm' => 2,
+                        'lg' => 3,
+                    ])
+                    ->sectionColumnSpan(1)
+                    ->checkboxListColumns([
+                        'default' => 1,
+                        'sm' => 2,
+                        'lg' => 4,
+                    ])
+                    ->resourceCheckboxListColumns([
+                        'default' => 1,
+                        'sm' => 2,
+                    ]),
                 EasyFooterPlugin::make()
                     ->withFooterPosition('footer')
                     ->withLoadTime('Halaman ini dimuat dalam')

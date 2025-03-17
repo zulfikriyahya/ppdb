@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\SekolahAsalResource\Pages;
 
-use Filament\Resources\Pages\CreateRecord;
 use App\Filament\Resources\SekolahAsalResource;
+use Filament\Resources\Pages\CreateRecord;
 
 class CreateSekolahAsal extends CreateRecord
 {

@@ -2,16 +2,16 @@
 
 namespace App\Filament\Resources;
 
-use Filament\Forms;
-use Filament\Tables;
-use App\Models\Prestasi;
-use Filament\Forms\Form;
-use Filament\Tables\Table;
-use Filament\Resources\Resource;
-use Filament\Forms\Components\Section;
-use Filament\Tables\Enums\FiltersLayout;
-use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\PrestasiResource\Pages;
+use App\Models\Prestasi;
+use Filament\Forms;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class PrestasiResource extends Resource
@@ -73,14 +73,14 @@ class PrestasiResource extends Resource
                                         'Provinsi' => 'Provinsi',
                                         'Kabupaten/Kota' => 'Kabupaten/Kota',
                                     ])
-                                    ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                    ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
                                 Forms\Components\Select::make('kategori')
                                     ->label('Kategori')
                                     ->options([
                                         'Regu/Kelompok' => 'Regu/Kelompok',
                                         'Individu' => 'Individu',
                                     ])
-                                    ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                    ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
                                 Forms\Components\Select::make('peringkat')
                                     ->label('Peringkat')
                                     ->options([
@@ -88,14 +88,14 @@ class PrestasiResource extends Resource
                                         '2' => '2',
                                         '3' => '3',
                                     ])
-                                    ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                    ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
                             ])
                             ->columns([
                                 'sm' => '100%',
                                 'md' => 3,
                                 'lg' => 3,
                             ])
-                            ->visible(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                            ->visible(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
                     ])
                     ->columns([
                         'sm' => '100%',
@@ -116,7 +116,7 @@ class PrestasiResource extends Resource
                 Tables\Columns\TextColumn::make('jenis')
                     ->label('Jenis Prestasi')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'Hafalan Al-Quran' => 'success',
                         'Olimpiade/Kejuaraan' => 'primary'
                     }),

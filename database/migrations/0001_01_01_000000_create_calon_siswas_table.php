@@ -14,7 +14,8 @@ return new class extends Migration
             $table->string('nama');
             $table->string('nik');
             $table->string('kk');
-            $table->string('nisn');
+            // Tabel Calon Siswa
+            $table->string('nisn')->unique()->nullable()->index();
             $table->string('tempat_lahir');
             $table->date('tanggal_lahir');
             $table->date('tahun_lulus');

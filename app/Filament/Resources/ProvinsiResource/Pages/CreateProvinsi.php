@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\ProvinsiResource\Pages;
 
-use Filament\Resources\Pages\CreateRecord;
 use App\Filament\Resources\ProvinsiResource;
+use Filament\Resources\Pages\CreateRecord;
 
 class CreateProvinsi extends CreateRecord
 {

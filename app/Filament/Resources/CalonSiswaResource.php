@@ -30,6 +30,7 @@ use Filament\Support\Enums\IconPosition;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Enums\ActionsPosition;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\CalonSiswaResource\Pages;
 use Torgodly\Html2Media\Tables\Actions\Html2MediaAction;
@@ -857,8 +858,6 @@ class CalonSiswaResource extends Resource
                                 ]),
                         ]),
 
-
-
                     Wizard\Step::make('Data Orang Tua')
                         // ->description('Review your basket')
                         ->schema([
@@ -1217,7 +1216,6 @@ class CalonSiswaResource extends Resource
                                     'lg' => 3,
                                 ]),
                         ]),
-
 
                     Wizard\Step::make('Data Tes')
                         ->hidden(function () {
@@ -1699,11 +1697,11 @@ class CalonSiswaResource extends Resource
                         'Diterima Di Kelas Reguler' => 'Diterima Di Kelas Reguler',
                         'Diterima Di Kelas Unggulan' => 'Diterima Di Kelas Unggulan',
                     ])
-                    ->visible(Auth::user()->email === 'adm@mtsn1pandeglang.sch.id')
+                    ->visible(Auth::user()->email === 'adm@mtsn1pandeglang.sch.id'),
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
-                    Tables\Actions\ViewAction::make(),
+                    // Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
                     Tables\Actions\ForceDeleteAction::make(),
@@ -1725,8 +1723,9 @@ class CalonSiswaResource extends Resource
                         ->enableLinks() // Enable links in PDF
                         ->margin([10, 20, 10, 20]) // Set custom margins
                         ->content(fn($record) => view('formulir', ['record' => $record])), // Set content
-                ]),
-            ])
+                ])
+                    ->visible(Auth::user()->username === 'administrator'),
+            ], ActionsPosition::BeforeColumns)
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
@@ -1734,34 +1733,52 @@ class CalonSiswaResource extends Resource
                     Tables\Actions\RestoreBulkAction::make(),
                     Tables\Actions\ExportBulkAction::make()
                         ->exporter(CalonSiswa::class),
-                ]),
-
-                BulkAction::make('set_status_pendaftaran')
-                    ->label('Set Status Pendaftaran')
-                    ->icon('heroicon-o-building-storefront')
-                    ->color('success')
-                    ->requiresConfirmation()
-                    ->form([
-                        Select::make('status_pendaftaran')
-                            ->label('Status')
-                            ->options([
-                                'Diproses' => 'Diproses',
-                                'Berkas Tidak Lengkap' => 'Berkas Tidak Lengkap',
-                                'Diverifikasi' => 'Diverifikasi',
-                                'Ditolak' => 'Ditolak',
-                                'Diterima' => 'Diterima',
-                                'Diterima Di Kelas Reguler' => 'Diterima Di Kelas Reguler',
-                                'Diterima Di Kelas Unggulan' => 'Diterima Di Kelas Unggulan',
-                            ])
-                            ->required(),
-                    ])
-                    ->action(function (Collection $records, array $data) {
-                        $records->each(function ($record) use ($data) {
-                            CalonSiswa::where('id', $record->id)->update([
-                                'status_pendaftaran' => $data['status_pendaftaran'],
-                            ]);
-                        });
-                    }),
+                    BulkAction::make('set_status_pendaftaran')
+                        ->label('Set Status Pendaftaran')
+                        ->icon('heroicon-o-building-storefront')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->form([
+                            Select::make('status_pendaftaran')
+                                ->label('Status')
+                                ->options([
+                                    'Diproses' => 'Diproses',
+                                    'Berkas Tidak Lengkap' => 'Berkas Tidak Lengkap',
+                                    'Diverifikasi' => 'Diverifikasi',
+                                    'Ditolak' => 'Ditolak',
+                                    'Diterima' => 'Diterima',
+                                    'Diterima Di Kelas Reguler' => 'Diterima Di Kelas Reguler',
+                                    'Diterima Di Kelas Unggulan' => 'Diterima Di Kelas Unggulan',
+                                ])
+                                ->required(),
+                        ])
+                        ->action(function (Collection $records, array $data) {
+                            $records->each(function ($record) use ($data) {
+                                CalonSiswa::where('id', $record->id)->update([
+                                    'status_pendaftaran' => $data['status_pendaftaran'],
+                                ]);
+                            });
+                        }),
+                    BulkAction::make('set_kelas')
+                        ->label('Set Kelas')
+                        ->icon('heroicon-o-building-storefront')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->form([
+                            Select::make('kelas_id')
+                                ->label('Kelas')
+                                ->relationship('kelas', 'nama')
+                                ->required(),
+                        ])
+                        ->action(function (Collection $records, array $data) {
+                            $records->each(function ($record) use ($data) {
+                                CalonSiswa::where('id', $record->id)->update([
+                                    'kelas_id' => $data['kelas_id'],
+                                ]);
+                            });
+                        }),
+                ])
+                    ->visible(Auth::user()->username === 'administrator'),
 
             ])
             ->striped()
@@ -1775,13 +1792,24 @@ class CalonSiswaResource extends Resource
             //
         ];
     }
-
     public static function getPages(): array
+
     {
+        // if (Auth::check()) {
+        //     $user = Auth::user()->username === 'adminisrator';
+        //     // $siswa = CalonSiswa::where('nisn', $user->username)->first();
+        //     // if ($siswa && $user->username === 'administrator') {
+        //     if ($user) {
+        //         return [
+        //             'index' => Pages\ListCalonSiswas::route('/'),
+        //             'create' => Pages\CreateCalonSiswa::route('/create'),
+        //             'edit' => Pages\EditCalonSiswa::route('/{record}/edit'),
+        //         ];
+        //     }
+        // }
         return [
             'index' => Pages\ListCalonSiswas::route('/'),
             'create' => Pages\CreateCalonSiswa::route('/create'),
-            'view' => Pages\ViewCalonSiswa::route('/{record}'),
             'edit' => Pages\EditCalonSiswa::route('/{record}/edit'),
         ];
     }

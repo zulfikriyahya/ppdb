@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\PimpinanResource\Pages;
 
-use Filament\Resources\Pages\CreateRecord;
 use App\Filament\Resources\PimpinanResource;
+use Filament\Resources\Pages\CreateRecord;
 
 class CreatePimpinan extends CreateRecord
 {

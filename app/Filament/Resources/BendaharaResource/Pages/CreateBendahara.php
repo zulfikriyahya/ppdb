@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\BendaharaResource\Pages;
 
-use Filament\Resources\Pages\CreateRecord;
 use App\Filament\Resources\BendaharaResource;
+use Filament\Resources\Pages\CreateRecord;
 
 class CreateBendahara extends CreateRecord
 {

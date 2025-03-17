@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\KecamatanResource\Pages;
 
-use Filament\Resources\Pages\CreateRecord;
 use App\Filament\Resources\KecamatanResource;
+use Filament\Resources\Pages\CreateRecord;
 
 class CreateKecamatan extends CreateRecord
 {

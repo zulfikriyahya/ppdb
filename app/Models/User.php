@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Filament\Panel;
+use Illuminate\Support\Facades\Auth;
+use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Notifications\Notifiable;
 use Filament\Models\Contracts\FilamentUser;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -12,12 +14,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
-    use HasFactory, Notifiable, SoftDeletes;
-
-    public function canAccessPanel(Panel $panel): bool
-    {
-        return true;
-    }
+    use HasFactory, HasRoles, Notifiable, SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -41,5 +38,10 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return true;
     }
 }

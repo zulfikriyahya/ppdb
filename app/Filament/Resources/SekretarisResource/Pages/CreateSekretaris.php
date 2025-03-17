@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\SekretarisResource\Pages;
 
-use Filament\Resources\Pages\CreateRecord;
 use App\Filament\Resources\SekretarisResource;
+use Filament\Resources\Pages\CreateRecord;
 
 class CreateSekretaris extends CreateRecord
 {

@@ -9,6 +9,7 @@
         "php": "^8.2",
         "andreia/filament-nord-theme": "^1.0",
         "barryvdh/laravel-dompdf": "^3.1",
+        "bezhansalleh/filament-shield": "^3.3",
         "devonab/filament-easy-footer": "^1.1",
         "diogogpinto/filament-auth-ui-enhancer": "^1.0",
         "filament/filament": "^3.3",

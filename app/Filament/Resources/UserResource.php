@@ -25,7 +25,7 @@ class UserResource extends Resource
 
     protected static ?int $navigationSort = 4;
 
-    protected static bool $shouldRegisterNavigation = false;
+    protected static bool $shouldRegisterNavigation = true;
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
 
@@ -45,9 +45,9 @@ class UserResource extends Resource
                     ->unique(ignoreRecord: true)
                     ->rule(fn($record) => $record === null ? 'unique:users,username' : 'unique:users,username,' . $record->id)
                     ->dehydrateStateUsing(fn($state) => $state ? $state : null)
-                    ->maxLength(10)
-                    ->minLength(10)
-                    ->disabledOn('edit')
+                    // ->maxLength(10)
+                    // ->minLength(10)
+                    // ->disabledOn('edit')
                     ->validationMessages([
                         'max' => 'NISN: Masukkan maksimal 10 Angka.',
                         'min' => 'NISN: Masukkan minimal 10 Angka.',
@@ -73,6 +73,13 @@ class UserResource extends Resource
                     ->password()
                     ->required(fn($record) => $record === null)
                     ->dehydrateStateUsing(fn($state, $record) => $state ? bcrypt($state) : $record->password),
+                // Using Select Component
+                Forms\Components\Select::make('roles')
+                    ->relationship('roles', 'name')
+                    ->multiple()
+                    ->preload()
+                    ->default('ppdb')
+                    ->searchable(),
             ]);
     }
 
@@ -91,6 +98,11 @@ class UserResource extends Resource
                     ->label('Diverifikasi')
                     ->dateTime()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('roles')
+                    ->label('Peran')
+                    ->badge()
+                    ->sortable(),
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat')
                     ->dateTime()

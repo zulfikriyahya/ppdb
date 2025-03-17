@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TahunPendaftaran extends Model
 {
@@ -40,7 +40,6 @@ class TahunPendaftaran extends Model
         'tanggal_pendaftaran_jalur_mutasi_selesai',
         'tanggal_pengumuman_jalur_mutasi_mulai',
         'tanggal_pengumuman_jalur_mutasi_selesai',
-
 
         'tanggal_penerbitan_kartu_tes_mulai',
         'tanggal_penerbitan_kartu_tes_selesai',

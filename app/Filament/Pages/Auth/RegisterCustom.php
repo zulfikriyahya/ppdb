@@ -2,32 +2,12 @@
 
 namespace App\Filament\Pages\Auth;
 
-use Exception;
-use Filament\Forms\Form;
-use Filament\Pages\Page;
-use Filament\Actions\Action;
-use Filament\Facades\Filament;
-use Filament\Pages\SimplePage;
-use Filament\Actions\ActionGroup;
-use Filament\Pages\Auth\Register;
-use Illuminate\Auth\SessionGuard;
-use Filament\Events\Auth\Registered;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Database\Eloquent\Model;
+use DiogoGPinto\AuthUIEnhancer\Pages\Auth\Concerns\HasCustomLayout;
 use Filament\Forms\Components\Component;
 use Filament\Forms\Components\TextInput;
-use Filament\Notifications\Notification;
-use Illuminate\Auth\EloquentUserProvider;
+use Filament\Pages\Auth\Register;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
-use Illuminate\Contracts\Support\Htmlable;
-use Filament\Notifications\Auth\VerifyEmail;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
-use DanHarrin\LivewireRateLimiting\WithRateLimiting;
-use Filament\Pages\Concerns\InteractsWithFormActions;
-use Filament\Pages\Concerns\CanUseDatabaseTransactions;
-use Filament\Http\Responses\Auth\Contracts\RegistrationResponse;
-use DiogoGPinto\AuthUIEnhancer\Pages\Auth\Concerns\HasCustomLayout;
-use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 
 class RegisterCustom extends Register
 {
@@ -73,7 +53,7 @@ class RegisterCustom extends Register
             ->revealable(filament()->arePasswordsRevealable())
             ->required()
             ->rule(Password::default())
-            ->dehydrateStateUsing(fn($state) => Hash::make($state))
+            ->dehydrateStateUsing(fn ($state) => Hash::make($state))
             ->same('passwordConfirmation')
             ->validationMessages([
                 'same' => 'Password: Password tidak sesuai dengan isian password konfirmasi.',
