@@ -20,10 +20,10 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     protected $fillable = [
         'name',
         'username',
+        'status',
         'email',
         'email_verified_at',
         'password',
-        'avatar',
     ];
 
     protected $hidden = [

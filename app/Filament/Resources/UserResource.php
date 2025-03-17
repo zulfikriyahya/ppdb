@@ -2,13 +2,16 @@
 
 namespace App\Filament\Resources;
 
+use Carbon\Carbon;
 use Filament\Forms;
 use App\Models\User;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Illuminate\Support\Facades\DB;
 use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Columns\ToggleColumn;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\UserResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -39,6 +42,7 @@ class UserResource extends Resource
                     ->validationMessages([
                         'required' => 'Form ini wajib diisi.',
                     ]),
+
                 Forms\Components\TextInput::make('username')
                     ->label('Nomor Induk Siswa Nasional (NISN)')
                     ->required()
@@ -68,6 +72,19 @@ class UserResource extends Resource
                 Forms\Components\DateTimePicker::make('email_verified_at')
                     ->label('Diverifikasi')
                     ->default(now()),
+
+                Forms\Components\Select::make('status')
+                    ->label('Status')
+                    ->required()
+                    ->options([
+                        'Aktif' => 'Aktif',
+                        'Nonaktif' => 'Nonaktif',
+                    ])
+                    ->default('Aktif')
+                    ->validationMessages([
+                        'required' => 'Form ini wajib diisi.',
+                    ]),
+
                 Forms\Components\TextInput::make('password')
                     ->label('Password')
                     ->password()
@@ -75,10 +92,10 @@ class UserResource extends Resource
                     ->dehydrateStateUsing(fn($state, $record) => $state ? bcrypt($state) : $record->password),
                 // Using Select Component
                 Forms\Components\Select::make('roles')
+                    ->label('Peran')
                     ->relationship('roles', 'name')
                     ->multiple()
                     ->preload()
-                    ->default('ppdb')
                     ->searchable(),
             ]);
     }
@@ -96,13 +113,25 @@ class UserResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email_verified_at')
                     ->label('Diverifikasi')
-                    ->dateTime()
+                    ->dateTime('d F Y H:i:s')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('roles')
                     ->label('Peran')
+                    ->formatStateUsing(fn($state) => $state->pluck('name')->join(', '))
                     ->badge()
                     ->sortable(),
-
+                Tables\Columns\TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'Aktif' => 'success',
+                        'Nonaktif' => 'gray',
+                    })
+                    ->icon(fn(string $state): string => match ($state) {
+                        'Aktif' => 'heroicon-o-check-circle',
+                        'Nonaktif' => 'heroicon-o-x-mark'
+                    })
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat')
                     ->dateTime()
@@ -124,7 +153,7 @@ class UserResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
-                    Tables\Actions\ViewAction::make(),
+                    // Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
                     Tables\Actions\ForceDeleteAction::make(),
@@ -155,8 +184,8 @@ class UserResource extends Resource
         return [
             'index' => Pages\ListUsers::route('/'),
             'create' => Pages\CreateUser::route('/create'),
-            'view' => Pages\ViewUser::route('/{record}'),
-            'edit' => Pages\EditUser::route('/{record}/edit'),
+            // 'view' => Pages\ViewUser::route('/{record}'),
+            // 'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
     }
 

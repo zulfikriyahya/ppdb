@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('nik');
             $table->string('kk');
             // Tabel Calon Siswa
-            $table->string('nisn')->unique();
+            $table->string('nisn', 10)->unique();
             $table->foreign('nisn')->references('username')->on('users')->onUpdate('cascade');
             $table->string('tempat_lahir');
             $table->date('tanggal_lahir');

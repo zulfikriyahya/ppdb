@@ -11,19 +11,25 @@ use App\Models\Kabupaten;
 use App\Models\Kecamatan;
 use App\Models\Kelurahan;
 use App\Models\SekolahAsal;
+use Illuminate\Support\Str;
 use Illuminate\Database\Seeder;
 use App\Models\JalurPendaftaran;
 use App\Models\TahunPendaftaran;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
         // User Seeder
-        User::factory()->create([
+        User::create([
             'name' => 'Administrator',
             'username' => 'administrator',
+            'status' => 'Aktif',
             'email' => 'adm@mtsn1pandeglang.sch.id',
+            'email_verified_at' => now(),
+            'password' => Hash::make('password'),
+            'remember_token' => Str::random(10),
         ]);
 
         // TahunPendaftaran Seeder

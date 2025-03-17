@@ -2,14 +2,20 @@
 
 namespace App\Filament\Pages\Auth;
 
+use Filament\Forms\Get;
 use Filament\Pages\Page;
 use Filament\Pages\Auth\EditProfile;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Filament\Forms\Components\Component;
 use Filament\Forms\Components\TextInput;
+use Illuminate\Validation\Rules\Password;
 use DiogoGPinto\AuthUIEnhancer\Pages\Auth\Concerns\HasCustomLayout;
 
 class EditProfileCustom extends EditProfile
 {
+    use HasCustomLayout;
+
     protected function getForms(): array
     {
         return [
@@ -29,12 +35,23 @@ class EditProfileCustom extends EditProfile
             ),
         ];
     }
+
+    protected function getNameFormComponent(): Component
+    {
+        return TextInput::make('name')
+            ->label(__('Nama Lengkap'))
+            ->required()
+            ->maxLength(100)
+            ->autofocus();
+    }
+
     protected function getUsernameFormComponent(): Component
     {
         return TextInput::make('username')
-            ->label(__('Nomor Induk Siswa Nasional(NISN)'))
+            ->label(__('Nomor Induk Siswa Nasional (NISN)'))
             ->required()
             ->unique()
+            ->visible(Auth::user()->username !== 'administrator')
             ->minLength(10)
             ->maxLength(10)
             ->validationMessages([
@@ -43,5 +60,50 @@ class EditProfileCustom extends EditProfile
                 'unique' => 'NISN: Nomor ini sudah pernah di isi.',
                 'required' => 'Form ini wajib diisi.',
             ]);
+    }
+
+    protected function getEmailFormComponent(): Component
+    {
+        return TextInput::make('email')
+            ->label(__('Email'))
+            ->email()
+            ->required()
+            ->maxLength(50)
+            ->validationMessages([
+                'max' => 'Email: Masukkan maksimal 50 Karakter.',
+                'unique' => 'Email: Email ini sudah pernah di isi.',
+                'required' => 'Form ini wajib diisi.',
+            ])
+            ->unique(ignoreRecord: true);
+    }
+
+    protected function getPasswordFormComponent(): Component
+    {
+        return TextInput::make('password')
+            ->label(__('Password'))
+            ->password()
+            ->revealable(filament()->arePasswordsRevealable())
+            ->rule(Password::default())
+            ->autocomplete('new-password')
+            ->dehydrated(fn($state): bool => filled($state))
+            ->dehydrateStateUsing(fn($state): string => Hash::make($state))
+            ->live(debounce: 500)
+            ->same('passwordConfirmation')
+            ->validationMessages([
+                'same' => 'Password: Password tidak sesuai dengan isian password konfirmasi.',
+                'min' => 'Password: Masukkan minimal 8 karakter alfanumerik.',
+                'required' => 'Form ini wajib diisi.',
+            ]);
+    }
+
+    protected function getPasswordConfirmationFormComponent(): Component
+    {
+        return TextInput::make('passwordConfirmation')
+            ->label(__('Ulangi Password'))
+            ->password()
+            ->revealable(filament()->arePasswordsRevealable())
+            ->required()
+            ->visible(fn(Get $get): bool => filled($get('password')))
+            ->dehydrated(false);
     }
 }

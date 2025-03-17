@@ -2,12 +2,12 @@
 
 namespace App\Filament\Pages\Auth;
 
-use DiogoGPinto\AuthUIEnhancer\Pages\Auth\Concerns\HasCustomLayout;
-use Filament\Forms\Components\Component;
-use Filament\Forms\Components\TextInput;
 use Filament\Pages\Auth\Register;
 use Illuminate\Support\Facades\Hash;
+use Filament\Forms\Components\Component;
+use Filament\Forms\Components\TextInput;
 use Illuminate\Validation\Rules\Password;
+use DiogoGPinto\AuthUIEnhancer\Pages\Auth\Concerns\HasCustomLayout;
 
 class RegisterCustom extends Register
 {
@@ -30,47 +30,13 @@ class RegisterCustom extends Register
         ];
     }
 
-    protected function getEmailFormComponent(): Component
+    protected function getNameFormComponent(): Component
     {
-        return TextInput::make('email')
-            ->label(__('filament-panels::pages/auth/register.form.email.label'))
-            ->email()
+        return TextInput::make('name')
+            ->label(__('Nama Lengkap'))
             ->required()
-            ->maxLength(50)
-            ->validationMessages([
-                'max' => 'NISN: Masukkan maksimal 50 Karakter.',
-                'unique' => 'Email: Email ini sudah pernah di isi.',
-                'required' => 'Form ini wajib diisi.',
-            ])
-            ->unique($this->getUserModel());
-    }
-
-    protected function getPasswordFormComponent(): Component
-    {
-        return TextInput::make('password')
-            ->label(__('filament-panels::pages/auth/register.form.password.label'))
-            ->password()
-            ->revealable(filament()->arePasswordsRevealable())
-            ->required()
-            ->rule(Password::default())
-            ->dehydrateStateUsing(fn ($state) => Hash::make($state))
-            ->same('passwordConfirmation')
-            ->validationMessages([
-                'same' => 'Password: Password tidak sesuai dengan isian password konfirmasi.',
-                'min' => 'Password: Masukkan minimal 8 karakter alfanumerik.',
-                'required' => 'Form ini wajib diisi.',
-            ])
-            ->validationAttribute(__('filament-panels::pages/auth/register.form.password.validation_attribute'));
-    }
-
-    protected function getPasswordConfirmationFormComponent(): Component
-    {
-        return TextInput::make('passwordConfirmation')
-            ->label(__('filament-panels::pages/auth/register.form.password_confirmation.label'))
-            ->password()
-            ->revealable(filament()->arePasswordsRevealable())
-            ->required()
-            ->dehydrated(false);
+            ->maxLength(100)
+            ->autofocus();
     }
 
     protected function getUsernameFormComponent(): Component
@@ -87,5 +53,48 @@ class RegisterCustom extends Register
                 'required' => 'Form ini wajib diisi.',
             ])
             ->unique($this->getUserModel());
+    }
+
+    protected function getEmailFormComponent(): Component
+    {
+        return TextInput::make('email')
+            ->label(__('Email'))
+            ->email()
+            ->required()
+            ->maxLength(50)
+            ->validationMessages([
+                'max' => 'Email: Masukkan maksimal 50 Karakter.',
+                'unique' => 'Email: Email ini sudah pernah di isi.',
+                'required' => 'Form ini wajib diisi.',
+            ])
+            ->unique($this->getUserModel());
+    }
+
+    protected function getPasswordFormComponent(): Component
+    {
+        return TextInput::make('password')
+            ->label(__('Password'))
+            ->password()
+            ->revealable(filament()->arePasswordsRevealable())
+            ->required()
+            ->rule(Password::default())
+            ->dehydrateStateUsing(fn($state) => Hash::make($state))
+            ->same('passwordConfirmation')
+            ->validationMessages([
+                'same' => 'Password: Password tidak sesuai dengan isian password konfirmasi.',
+                'min' => 'Password: Masukkan minimal 8 karakter alfanumerik.',
+                'required' => 'Form ini wajib diisi.',
+            ])
+            ->validationAttribute(__('filament-panels::pages/auth/register.form.password.validation_attribute'));
+    }
+
+    protected function getPasswordConfirmationFormComponent(): Component
+    {
+        return TextInput::make('passwordConfirmation')
+            ->label(__('Ulangi Password'))
+            ->password()
+            ->revealable(filament()->arePasswordsRevealable())
+            ->required()
+            ->dehydrated(false);
     }
 }

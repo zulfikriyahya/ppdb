@@ -12,7 +12,8 @@ return new class extends Migration
             $table->id();
             $table->string('name', 50);
             // Tabel User
-            $table->string('username')->unique()->index();
+            $table->string('username', 20)->unique()->index();
+            $table->enum('status', ['Aktif', 'Nonaktif'])->default('Aktif');
             $table->string('email', 50)->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
