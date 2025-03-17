@@ -1331,70 +1331,94 @@ class CalonSiswaResource extends Resource
         return $table
             // ->recordTitleAttribute('nama')
             ->columns([
+                Tables\Columns\TextColumn::make('status_pendaftaran')
+                    ->label('Status Pendaftaran')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('kelas.nama')
+                    ->label('Kelas')
+                    ->numeric()
+                    ->sortable(),
+
                 Tables\Columns\TextColumn::make('nama')
                     ->label('Nama Lengkap')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('nik')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('NIK')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('kk')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('KK')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('nisn')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('NISN')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('tempat_lahir')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Tempat Lahir')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('tanggal_lahir')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Tanggal Lahir')
                     ->date()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('tahun_lulus')
                     ->label('Tahun Lulus')
-                    ->date()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('jenis_kelamin')
                     ->label('Jenis Kelamin')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('golongan_darah')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Golongan Darah')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('agama')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Agama')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('anak_ke')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Anak Ke')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('jumlah_saudara')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Jumlah Saudara')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('tinggal_bersama')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Tinggal Bersama')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('jarak_ke_sekolah')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Jarak Ke Sekolah')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('disabilitas')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Disabilitas')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('tinggi_badan')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Tinggi Badan')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('berat_badan')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Berat Badan')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('no_kip')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Nomor KIP')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('siswa_telepon')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Telepon')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('siswa_alamat')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Alamat')
                     ->wrap()
                     ->words(10)
@@ -1408,253 +1432,306 @@ class CalonSiswaResource extends Resource
                     })
                     ->searchable(),
                 Tables\Columns\TextColumn::make('siswaKelurahan.nama')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Kelurahan')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('siswaKecamatan.nama')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Kecamatan')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('siswaKabupaten.nama')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Kabupaten')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('siswaProvinsi.nama')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Provinsi')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('siswaNegara.nama')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Negara')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('berkas_foto')
+
+                // Berkas
+                Tables\Columns\ImageColumn::make('berkas_foto')
                     ->label('Foto')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('berkas_kk')
+                Tables\Columns\ImageColumn::make('berkas_kk')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('KK')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('berkas_akta')
+                Tables\Columns\ImageColumn::make('berkas_akta')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Akta')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('berkas_kip')
+                Tables\Columns\ImageColumn::make('berkas_kip')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('KIP')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('berkas_nisn')
+                Tables\Columns\ImageColumn::make('berkas_nisn')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('NISN')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('berkas_skbb')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('SKBB')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('berkas_skab')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('SKAB')
                     ->searchable(),
-                // Tables\Columns\TextColumn::make('berkas_prestasi')
-                //     ->label('Bukti Prestasi')
-                //     ->searchable(),
-                // Tables\Columns\TextColumn::make('berkas_prestasi')
-                //     ->label('Bukti Prestasi')
-                //     ->searchable()
-                //     ->getStateUsing(function ($record) {
-                //         // Decode JSON menjadi array
-                //         $berkasPrestasi = json_decode($record->berkas_prestasi, true);
+                Tables\Columns\TextColumn::make('berkas_prestasi')
+                    ->visible(Auth::user()->username === 'administrator')
+                    ->label('Bukti Prestasi')
+                    ->searchable(),
 
-                //         // Pastikan nilai tidak kosong atau null
-                //         if (!is_array($berkasPrestasi) || empty($berkasPrestasi)) {
-                //             return 'Tidak ada bukti prestasi';
-                //         }
-
-                //         // Gabungkan nilai array menjadi string yang dipisahkan koma
-                //         return implode(', ', $berkasPrestasi);
-                //     }),
+                // Ibu
                 Tables\Columns\TextColumn::make('ibu_nama')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Nama Ibu')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('ibu_telepon')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Telepon Ibu')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('ibu_pekerjaan')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Pekerjaan Ibu')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('ibu_status')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Status Ibu')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('ibu_alamat')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Alamat Ibu')
+                    ->wrap()
+                    ->words(10)
+                    ->tooltip(function (TextColumn $column): ?string {
+                        $state = $column->getState();
+                        if (strlen($state) <= $column->getCharacterLimit()) {
+                            return null;
+                        }
+
+                        return $state;
+                    })
                     ->searchable(),
-                Tables\Columns\TextColumn::make('ibuNegara.nama')
-                    ->label('Negara')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('ibuProvinsi.nama')
-                    ->label('Provinsi')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('ibuKabupaten.nama')
-                    ->label('Kabupaten')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('ibuKecamatan.nama')
-                    ->label('Kecamatan')
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('ibuKelurahan.nama')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Kelurahan')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('ibuKecamatan.nama')
+                    ->visible(Auth::user()->username === 'administrator')
+                    ->label('Kecamatan')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('ibuKabupaten.nama')
+                    ->visible(Auth::user()->username === 'administrator')
+                    ->label('Kabupaten')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('ibuProvinsi.nama')
+                    ->visible(Auth::user()->username === 'administrator')
+                    ->label('Provinsi')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('ibuNegara.nama')
+                    ->visible(Auth::user()->username === 'administrator')
+                    ->label('Negara')
+                    ->sortable(),
+
+
+                // Ayah
                 Tables\Columns\TextColumn::make('ayah_nama')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Nama Ayah')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('ayah_telepon')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Telepon Ayah')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('ayah_pekerjaan')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Pekerjaan Ayah')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('ayah_status')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Status Ayah')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('ayah_alamat')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Alamat Ayah')
+                    ->wrap()
+                    ->words(10)
+                    ->tooltip(function (TextColumn $column): ?string {
+                        $state = $column->getState();
+                        if (strlen($state) <= $column->getCharacterLimit()) {
+                            return null;
+                        }
+
+                        return $state;
+                    })
                     ->searchable(),
-                Tables\Columns\TextColumn::make('ayahNegara.nama')
-                    ->label('Negara')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('ayahProvinsi.nama')
-                    ->label('Provinsi')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('ayahKabupaten.nama')
-                    ->label('Kabupaten')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('ayahKecamatan.nama')
-                    ->label('Kecamatan')
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('ayahKelurahan.nama')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Kelurahan')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('ayahKecamatan.nama')
+                    ->visible(Auth::user()->username === 'administrator')
+                    ->label('Kecamatan')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('ayahKabupaten.nama')
+                    ->visible(Auth::user()->username === 'administrator')
+                    ->label('Kabupaten')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('ayahProvinsi.nama')
+                    ->visible(Auth::user()->username === 'administrator')
+                    ->label('Provinsi')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('ayahNegara.nama')
+                    ->visible(Auth::user()->username === 'administrator')
+                    ->label('Negara')
+                    ->sortable(),
+
+
+                // Wali
                 Tables\Columns\TextColumn::make('wali_nama')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Nama Wali')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('wali_telepon')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Telepon Wali')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('wali_pekerjaan')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Pekerjaan Wali')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('wali_status')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Status Wali')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('wali_alamat')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Alamat Wali')
+                    ->wrap()
+                    ->words(10)
+                    ->tooltip(function (TextColumn $column): ?string {
+                        $state = $column->getState();
+                        if (strlen($state) <= $column->getCharacterLimit()) {
+                            return null;
+                        }
+
+                        return $state;
+                    })
                     ->searchable(),
-                Tables\Columns\TextColumn::make('waliNegara.nama')
-                    ->label('Negara')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('waliProvinsi.nama')
-                    ->label('Provinsi')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('waliKabupaten.nama')
-                    ->label('Kabupaten')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('waliKecamatan.nama')
-                    ->label('Kecamatan')
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('waliKelurahan.nama')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Kelurahan')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('waliKecamatan.nama')
+                    ->visible(Auth::user()->username === 'administrator')
+                    ->label('Kecamatan')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('waliKabupaten.nama')
+                    ->visible(Auth::user()->username === 'administrator')
+                    ->label('Kabupaten')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('waliProvinsi.nama')
+                    ->visible(Auth::user()->username === 'administrator')
+                    ->label('Provinsi')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('waliNegara.nama')
+                    ->visible(Auth::user()->username === 'administrator')
+                    ->label('Negara')
+                    ->sortable(),
+
+
                 Tables\Columns\TextColumn::make('sekolahAsal.nama')
                     ->label('Sekolah Asal')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('jalurPendaftaran.nama')
                     ->label('Jalur Pendaftaran')
                     ->sortable(),
+
+
                 Tables\Columns\TextColumn::make('prestasi.nama')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Nama Prestasi')
                     ->sortable(),
-                // Tables\Columns\TextColumn::make('peminatan_ekstrakurikuler')
-                //     ->label('Peminatan Ekstrakurikuler')
-                //     ->searchable(),
-                // Tables\Columns\TextColumn::make('peminatan_pelajaran')
-                //     ->label('Peminatan Pelajaran')
-                //     ->searchable(),
-                // Tables\Columns\TextColumn::make('peminatan_ekstrakurikuler')
-                //     ->label('Peminatan Ekstrakurikuler')
-                //     ->searchable()
-                //     ->getStateUsing(function ($record) {
-                //         // Decode JSON menjadi array
-                //         $peminatanEkstrakurikuler = json_decode($record->peminatan_ekstrakurikuler, true);
-
-                //         // Pastikan nilai tidak kosong atau null
-                //         if (!is_array($peminatanEkstrakurikuler) || empty($peminatanEkstrakurikuler)) {
-                //             return 'Tidak ada peminatan';
-                //         }
-
-                //         // Gabungkan nilai array menjadi string, dipisahkan koma
-                //         return implode(', ', $peminatanEkstrakurikuler);
-                //     }),
-                // Tables\Columns\TextColumn::make('peminatan_pelajaran')
-                //     ->label('Peminatan Pelajaran')
-                //     ->searchable()
-                //     ->getStateUsing(function ($record) {
-                //         // Decode JSON menjadi array
-                //         $peminatanPelajaran = json_decode($record->peminatan_pelajaran, true);
-
-                //         // Pastikan nilai tidak kosong atau null
-                //         if (!is_array($peminatanPelajaran) || empty($peminatanPelajaran)) {
-                //             return 'Tidak ada peminatan';
-                //         }
-
-                //         // Gabungkan nilai array menjadi string, dipisahkan koma
-                //         return implode(', ', $peminatanPelajaran);
-                //     }),
+                Tables\Columns\TextColumn::make('peminatan_ekstrakurikuler')
+                    ->visible(Auth::user()->username === 'administrator')
+                    ->label('Peminatan Ekstrakurikuler')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('peminatan_pelajaran')
+                    ->visible(Auth::user()->username === 'administrator')
+                    ->label('Peminatan Pelajaran')
+                    ->searchable(),
 
                 Tables\Columns\TextColumn::make('nilai_ipa')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Nilai IPA')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('nilai_ips')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Nilai IPS')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('nilai_matematika')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Nilai Matematika')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('nilai_indonesia')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Nilai Bahasa Indonesia')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('nilai_inggris')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Nilai Bahasa Inggris')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('nilai_arab')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Nilai Bahasa Arab')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('bobot_nilai_akademik')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Bobot Nilai Akademik')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('bobot_nilai_praktik')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Bobot Nilai Praktik')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('nilai_akademik')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Nilai Akademik')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('nilai_praktik')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Nilai Praktik')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('status_pendaftaran')
-                    ->label('Status Pendaftaran')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('kelas.nama')
-                    ->label('Kelas')
-                    ->numeric()
-                    ->sortable(),
+
+
+
                 Tables\Columns\TextColumn::make('tes_sesi')
                     ->label('Sesi Tes')
+                    ->sortable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('tes_ruang')
                     ->label('Ruang Tes')
+                    ->sortable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('tes_akademik_mulai')
                     ->label('Mulai Tes Akademik')
                     ->dateTime()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('tes_akademik_selesai')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Selesai Tes Akademik')
                     ->dateTime()
                     ->sortable(),
@@ -1663,9 +1740,12 @@ class CalonSiswaResource extends Resource
                     ->dateTime()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('tes_praktik_selesai')
+                    ->visible(Auth::user()->username === 'administrator')
                     ->label('Selesai Tes Praktik')
                     ->dateTime()
                     ->sortable(),
+
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat')
                     ->dateTime()

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('nisn')->unique()->nullable()->index();
             $table->string('tempat_lahir');
             $table->date('tanggal_lahir');
-            $table->date('tahun_lulus');
+            $table->string('tahun_lulus');
             $table->enum('jenis_kelamin', ['Pria', 'Wanita']);
             $table->enum('golongan_darah', ['A-', 'A+', 'B-', 'B+', 'AB-', 'AB+', 'O+', 'O-']);
             $table->enum('agama', ['Islam', 'Kristen Katholik', 'Kristen Protestan', 'Hindu', 'Buddha', 'Konghucu']);
