@@ -1863,7 +1863,7 @@ class CalonSiswaResource extends Resource
                         ->form([
                             Select::make('jalur_pendaftaran')
                                 ->label('Jalur Pendaftaran')
-                                ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif')) // Menampilkan data jalurPendaftaran dengan kondisi statusnya aktif saja
+                                ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
                                 ->required(),
                         ])
                         ->action(function (Collection $records, array $data) {
