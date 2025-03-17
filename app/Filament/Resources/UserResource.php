@@ -15,6 +15,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Actions\RestoreAction;
 use Filament\Tables\Filters\TrashedFilter;
@@ -155,6 +156,10 @@ class UserResource extends Resource
             ])
             ->filters([
                 TrashedFilter::make(),
+                SelectFilter::make('role')
+                    ->label('Peran')
+                    ->relationship('roles', 'name')
+                    ->visible(Auth::user()->username === 'administrator'),
             ])
             ->actions([
                 ActionGroup::make([
@@ -162,7 +167,12 @@ class UserResource extends Resource
                     DeleteAction::make(),
                     ForceDeleteAction::make(),
                     RestoreAction::make(),
-                ]),
+                ])
+                    ->hidden(function ($record) {
+                        if ($record->username === 'administrator') {
+                            return $record;
+                        }
+                    }),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
