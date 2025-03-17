@@ -134,6 +134,12 @@ class CalonSiswa extends Model
         return $this->belongsTo(JalurPendaftaran::class, 'jalur_pendaftaran_id');
     }
 
+    // Users
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
     // Negara
     public function negara(): BelongsTo
     {

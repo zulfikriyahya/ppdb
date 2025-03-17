@@ -34,6 +34,7 @@ class EditProfileCustom extends EditProfile
         return TextInput::make('username')
             ->label(__('Nomor Induk Siswa Nasional(NISN)'))
             ->required()
+            ->unique()
             ->minLength(10)
             ->maxLength(10)
             ->validationMessages([

@@ -12,8 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('name', 50);
             // Tabel User
-            $table->string('username')->unique()->nullable();
-            // $table->foreign('username')->references('nisn')->on('calon_siswas')->onUpdate('cascade');
+            $table->string('username')->unique()->index();
             $table->string('email', 50)->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
