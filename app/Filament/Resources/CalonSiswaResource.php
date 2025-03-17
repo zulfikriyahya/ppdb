@@ -149,6 +149,7 @@ class CalonSiswaResource extends Resource
                                             Forms\Components\TextInput::make('nisn')
                                                 ->label('Nomor Induk Siswa Nasional (NISN)')
                                                 ->required()
+                                                ->disabledOn('create')
                                                 ->reactive()
                                                 ->afterStateHydrated(function (TextInput $component, $state) {
                                                     $component->state($state);
@@ -1392,10 +1393,6 @@ class CalonSiswaResource extends Resource
                         'Diterima Di Kelas Unggulan' => 'heroicon-o-shield-check',
                     })
                     ->sortable(),
-                Tables\Columns\TextColumn::make('kelas.nama')
-                    ->label('Kelas')
-                    ->numeric()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('nama')
                     ->label('Nama Lengkap')
                     ->searchable(),
@@ -1418,7 +1415,7 @@ class CalonSiswaResource extends Resource
                 Tables\Columns\TextColumn::make('tanggal_lahir')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Tanggal Lahir')
-                    ->date()
+                    ->date('d F Y H:i:s')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('tahun_lulus')
                     ->label('Tahun Lulus')
@@ -1766,9 +1763,6 @@ class CalonSiswaResource extends Resource
                     ->label('Nilai Praktik')
                     ->numeric()
                     ->sortable(),
-
-
-
                 Tables\Columns\TextColumn::make('tes_sesi')
                     ->label('Sesi Tes')
                     ->sortable()
@@ -1785,19 +1779,24 @@ class CalonSiswaResource extends Resource
                     ->label('Tes Praktik')
                     ->date('d F Y H:i:s')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('kelas.nama')
+                    ->label('Kelas')
+                    ->badge()
+                    ->icon('heroicon-o-building-storefront')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat')
-                    ->dateTime()
+                    ->date('d F Y H:i:s')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('Diubah')
-                    ->dateTime()
+                    ->date('d F Y H:i:s')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('deleted_at')
                     ->label('Dihapus')
-                    ->dateTime()
+                    ->date('d F Y H:i:s')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])

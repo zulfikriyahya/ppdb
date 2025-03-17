@@ -2,18 +2,18 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\InformasiResource\Pages;
-use App\Models\Informasi;
 use Filament\Forms;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Forms\Get;
+use Filament\Forms\Form;
+use App\Models\Informasi;
+use Filament\Tables\Table;
+use Filament\Resources\Resource;
+use Filament\Forms\Components\Section;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\FiltersLayout;
-use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\InformasiResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class InformasiResource extends Resource
@@ -41,7 +41,7 @@ class InformasiResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('tahun_pendaftaran_id')
                             ->label('Tahun Pendaftaran')
-                            ->relationship('tahunPendaftaran', 'nama')
+                            ->relationship('tahunPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
                             ->required()
                             ->live()
                             ->validationMessages([
@@ -51,7 +51,7 @@ class InformasiResource extends Resource
                     ]),
                 // Section
                 Section::make('')
-                    ->visible(fn ($get) => $get('tahun_pendaftaran_id') !== null)
+                    ->visible(fn($get) => $get('tahun_pendaftaran_id') !== null)
                     ->schema([
                         Forms\Components\TextInput::make('judul')
                             ->label('Judul')
@@ -88,7 +88,7 @@ class InformasiResource extends Resource
                             ->label('Tanggal')
                             ->default(now())
                             ->required()
-                            ->hidden(fn (Get $get) => $get('status') !== 'Publish')
+                            ->hidden(fn(Get $get) => $get('status') !== 'Publish')
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ])
@@ -137,7 +137,7 @@ class InformasiResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'Publish' => 'success',
                         'Draft' => 'gray'
                     })
