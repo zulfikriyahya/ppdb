@@ -44,7 +44,7 @@ class ListCalonSiswas extends ListRecords
             // Buat Formulir
             CreateAction::make()
                 ->label("Buat Formulir")
-                ->icon('heroicon-m-check-badge')
+                ->icon('heroicon-m-plus')
                 // ->url($urlCreate)
                 ->color('primary')
                 ->hidden(Auth::user()->username === 'administrator' || $calonSiswa !== null)
@@ -53,7 +53,7 @@ class ListCalonSiswas extends ListRecords
             // Edit Formulir
             Action::make('buat_formulir_pendaftaran')
                 ->label("Ubah Formulir")
-                ->icon('heroicon-m-check-badge')
+                ->icon('heroicon-m-pencil-square')
                 ->url($urlEdit)
                 ->color('success')
                 ->hidden(Auth::user()->username === 'administrator' || $calonSiswa === null)

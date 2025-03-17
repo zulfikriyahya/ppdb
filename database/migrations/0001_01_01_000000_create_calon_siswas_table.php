@@ -94,10 +94,8 @@ return new class extends Migration
             $table->foreignId('kelas_id')->nullable()->constrained('kelas')->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('tes_sesi')->nullable();
             $table->string('tes_ruang')->nullable();
-            $table->dateTime('tes_akademik_mulai')->nullable();
-            $table->dateTime('tes_akademik_selesai')->nullable();
-            $table->dateTime('tes_praktik_mulai')->nullable();
-            $table->dateTime('tes_praktik_selesai')->nullable();
+            $table->dateTime('tes_akademik')->nullable();
+            $table->dateTime('tes_praktik')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

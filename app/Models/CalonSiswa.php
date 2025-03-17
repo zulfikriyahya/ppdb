@@ -92,10 +92,8 @@ class CalonSiswa extends Model
         'kelas_id',
         'tes_sesi',
         'tes_ruang',
-        'tes_akademik_mulai',
-        'tes_akademik_selesai',
-        'tes_praktik_mulai',
-        'tes_praktik_selesai',
+        'tes_akademik',
+        'tes_praktik',
     ];
 
     protected $casts = [
@@ -125,10 +123,8 @@ class CalonSiswa extends Model
         'jalur_pendaftaran_id' => 'integer',
         'prestasi_id' => 'integer',
         'kelas_id' => 'integer',
-        'tes_akademik_mulai' => 'datetime',
-        'tes_akademik_selesai' => 'datetime',
-        'tes_praktik_mulai' => 'datetime',
-        'tes_praktik_selesai' => 'datetime',
+        'tes_akademik' => 'datetime',
+        'tes_praktik' => 'datetime',
         // 'peminatan_ekstrakurikuler' => 'array', // multiple
         // 'peminatan_pelajaran' => 'array', // multiple
     ];

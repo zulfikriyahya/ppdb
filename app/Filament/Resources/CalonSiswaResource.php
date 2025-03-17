@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Get;
@@ -19,8 +20,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\HtmlString;
 use Filament\Forms\Components\Tabs;
 use Illuminate\Support\Facades\Auth;
-use Filament\Forms\Components\Select;
 // use Torgodly\Html2Media\Actions\Html2MediaAction;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Wizard;
 use Filament\Forms\Components\Section;
 use Filament\Tables\Actions\BulkAction;
@@ -1243,14 +1244,10 @@ class CalonSiswaResource extends Resource
                                                         ->label('Sesi Tes'),
                                                     Forms\Components\TextInput::make('tes_ruang')
                                                         ->label('Ruang Tes'),
-                                                    Forms\Components\DateTimePicker::make('tes_akademik_mulai')
-                                                        ->label('Tanggal Mulai Tes Akademik'),
-                                                    Forms\Components\DateTimePicker::make('tes_akademik_selesai')
-                                                        ->label('Tanggal Selesai Tes Akademik'),
-                                                    Forms\Components\DateTimePicker::make('tes_praktik_mulai')
-                                                        ->label('Tanggal Mulai Tes Praktik'),
-                                                    Forms\Components\DateTimePicker::make('tes_praktik_selesai')
-                                                        ->label('Tanggal Selesai Tes Praktik'),
+                                                    Forms\Components\DateTimePicker::make('tes_akademik')
+                                                        ->label('Tanggal Tes Akademik'),
+                                                    Forms\Components\DateTimePicker::make('tes_praktik')
+                                                        ->label('Tanggal Tes Praktik'),
                                                 ]),
                                         ])
                                         ->columns([
@@ -1331,14 +1328,54 @@ class CalonSiswaResource extends Resource
         return $table
             // ->recordTitleAttribute('nama')
             ->columns([
+                Tables\Columns\ImageColumn::make('berkas_foto')
+                    ->label('Foto')
+                    ->circular()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('jalurPendaftaran.nama')
+                    ->label('Jalur Pendaftaran')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'Reguler' => 'success',
+                        'Prestasi' => 'primary',
+                        'Afirmasi' => 'warning',
+                        'Zonasi' => 'danger',
+                        'Mutasi' => 'info',
+                    })
+                    ->icon(fn(string $state): string => match ($state) {
+                        'Reguler' => 'heroicon-o-sparkles',
+                        'Prestasi' => 'heroicon-o-trophy',
+                        'Afirmasi' => 'heroicon-o-gift',
+                        'Zonasi' => 'heroicon-o-map',
+                        'Mutasi' => 'heroicon-o-arrows-right-left',
+                    })
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('status_pendaftaran')
                     ->label('Status Pendaftaran')
-                    ->searchable(),
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'Diproses' => 'warning',
+                        'Diverifikasi' => 'success',
+                        'Berkas Tidak Lengkap' => 'warning',
+                        'Ditolak' => 'danger',
+                        'Diterima' => 'success',
+                        'Diterima Di Kelas Reguler' => 'success',
+                        'Diterima Di Kelas Unggulan' => 'primary',
+                    })
+                    ->icon(fn(string $state): string => match ($state) {
+                        'Diproses' => 'heroicon-o-arrow-path',
+                        'Diverifikasi' => 'heroicon-o-clipboard-document-check',
+                        'Berkas Tidak Lengkap' => 'heroicon-o-document-minus',
+                        'Ditolak' => 'heroicon-o-no-symbol',
+                        'Diterima' => 'heroicon-o-check-circle',
+                        'Diterima Di Kelas Reguler' => 'heroicon-o-shield-check',
+                        'Diterima Di Kelas Unggulan' => 'heroicon-o-shield-check',
+                    })
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('kelas.nama')
                     ->label('Kelas')
                     ->numeric()
                     ->sortable(),
-
                 Tables\Columns\TextColumn::make('nama')
                     ->label('Nama Lengkap')
                     ->searchable(),
@@ -1427,7 +1464,6 @@ class CalonSiswaResource extends Resource
                         if (strlen($state) <= $column->getCharacterLimit()) {
                             return null;
                         }
-
                         return $state;
                     })
                     ->searchable(),
@@ -1453,9 +1489,6 @@ class CalonSiswaResource extends Resource
                     ->sortable(),
 
                 // Berkas
-                Tables\Columns\ImageColumn::make('berkas_foto')
-                    ->label('Foto')
-                    ->searchable(),
                 Tables\Columns\ImageColumn::make('berkas_kk')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('KK')
@@ -1647,9 +1680,7 @@ class CalonSiswaResource extends Resource
                 Tables\Columns\TextColumn::make('sekolahAsal.nama')
                     ->label('Sekolah Asal')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('jalurPendaftaran.nama')
-                    ->label('Jalur Pendaftaran')
-                    ->sortable(),
+
 
 
                 Tables\Columns\TextColumn::make('prestasi.nama')
@@ -1726,26 +1757,14 @@ class CalonSiswaResource extends Resource
                     ->label('Ruang Tes')
                     ->sortable()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('tes_akademik_mulai')
-                    ->label('Mulai Tes Akademik')
-                    ->dateTime()
+                Tables\Columns\TextColumn::make('tes_akademik')
+                    ->label('Tes Akademik')
+                    ->date('d F Y H:i:s')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('tes_akademik_selesai')
-                    ->visible(Auth::user()->username === 'administrator')
-                    ->label('Selesai Tes Akademik')
-                    ->dateTime()
+                Tables\Columns\TextColumn::make('tes_praktik')
+                    ->label('Tes Praktik')
+                    ->date('d F Y H:i:s')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('tes_praktik_mulai')
-                    ->label('Mulai Tes Praktik')
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('tes_praktik_selesai')
-                    ->visible(Auth::user()->username === 'administrator')
-                    ->label('Selesai Tes Praktik')
-                    ->dateTime()
-                    ->sortable(),
-
-
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat')
                     ->dateTime()
@@ -1765,7 +1784,7 @@ class CalonSiswaResource extends Resource
 
             ->filters([
                 Tables\Filters\TrashedFilter::make()
-                    ->visible(Auth::user()->email === 'adm@mtsn1pandeglang.sch.id'),
+                    ->visible(Auth::user()->username === 'administrator'),
                 SelectFilter::make('status_pendaftaran')
                     ->label('Status Pendaftaran')
                     ->options([
@@ -1777,7 +1796,11 @@ class CalonSiswaResource extends Resource
                         'Diterima Di Kelas Reguler' => 'Diterima Di Kelas Reguler',
                         'Diterima Di Kelas Unggulan' => 'Diterima Di Kelas Unggulan',
                     ])
-                    ->visible(Auth::user()->email === 'adm@mtsn1pandeglang.sch.id'),
+                    ->visible(Auth::user()->username === 'administrator'),
+                SelectFilter::make('jalur_pendaftaran')
+                    ->label('Jalur Pendaftaran')
+                    ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif')) // Menampilkan data jalurPendaftaran dengan kondisi statusnya aktif saja
+                    ->visible(Auth::user()->username === 'administrator'),
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
@@ -1811,12 +1834,31 @@ class CalonSiswaResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
-                    Tables\Actions\ExportBulkAction::make()
-                        ->exporter(CalonSiswa::class),
+                    Tables\Actions\ExportBulkAction::make(),
+
+                    BulkAction::make('set_jalur_pendaftaran')
+                        ->label('Set Jalur Pendaftaran')
+                        ->icon('heroicon-o-sparkles')
+                        ->color('primary')
+                        ->requiresConfirmation()
+                        ->form([
+                            Select::make('jalur_pendaftaran')
+                                ->label('Jalur Pendaftaran')
+                                ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif')) // Menampilkan data jalurPendaftaran dengan kondisi statusnya aktif saja
+                                ->required(),
+                        ])
+                        ->action(function (Collection $records, array $data) {
+                            $records->each(function ($record) use ($data) {
+                                CalonSiswa::where('id', $record->id)->update([
+                                    'jalur_pendaftaran_id' => $data['jalur_pendaftaran'],
+                                ]);
+                            });
+                        }),
+
                     BulkAction::make('set_status_pendaftaran')
                         ->label('Set Status Pendaftaran')
-                        ->icon('heroicon-o-building-storefront')
-                        ->color('success')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('primary')
                         ->requiresConfirmation()
                         ->form([
                             Select::make('status_pendaftaran')
@@ -1839,10 +1881,11 @@ class CalonSiswaResource extends Resource
                                 ]);
                             });
                         }),
+
                     BulkAction::make('set_kelas')
                         ->label('Set Kelas')
                         ->icon('heroicon-o-building-storefront')
-                        ->color('success')
+                        ->color('primary')
                         ->requiresConfirmation()
                         ->form([
                             Select::make('kelas_id')
