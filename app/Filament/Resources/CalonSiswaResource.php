@@ -27,6 +27,7 @@ use Filament\Forms\Components\Section;
 use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
+use Filament\Forms\Components\TextInput;
 use Filament\Support\Enums\IconPosition;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
@@ -76,6 +77,7 @@ class CalonSiswaResource extends Resource
                                             'Diterima Di Kelas Reguler' => 'Diterima Di Kelas Reguler',
                                             'Diterima Di Kelas Unggulan' => 'Diterima Di Kelas Unggulan',
                                         ])
+                                        ->native(false)
                                         ->default('Diproses'),
                                     // Data Kelas Pendaftaran Calon Peserta Didik Baru
                                     Forms\Components\Select::make('kelas_id')
@@ -109,6 +111,11 @@ class CalonSiswaResource extends Resource
                                             Forms\Components\TextInput::make('nama')
                                                 ->label('Nama Lengkap')
                                                 ->required()
+                                                ->afterStateHydrated(function (TextInput $component, $state) {
+                                                    $component->state($state);
+                                                    $component->disabled();
+                                                })
+                                                ->default(fn() => Auth::user()->name)
                                                 ->validationMessages([
                                                     'required' => 'Form ini wajib diisi.',
                                                 ]),
@@ -142,10 +149,15 @@ class CalonSiswaResource extends Resource
                                             Forms\Components\TextInput::make('nisn')
                                                 ->label('Nomor Induk Siswa Nasional (NISN)')
                                                 ->required()
+                                                ->reactive()
+                                                ->afterStateHydrated(function (TextInput $component, $state) {
+                                                    $component->state($state);
+                                                    $component->disabled();
+                                                })
+                                                ->default(fn() => Auth::user()->username)
                                                 ->unique(ignoreRecord: true)
                                                 ->rule(fn($record) => $record === null ? 'unique:calon_siswas,nisn' : 'unique:calon_siswas,nisn,' . $record->id)
                                                 ->dehydrateStateUsing(fn($state) => $state ? $state : null)
-                                                // ->disabledOn('edit')
                                                 ->maxLength(10)
                                                 ->minLength(10)
                                                 ->validationMessages([
@@ -347,12 +359,15 @@ class CalonSiswaResource extends Resource
                                                                 ->label('Nomor Statistik Sekolah'),
                                                             Forms\Components\Select::make('jenjang')
                                                                 ->label('Jenjang')
+                                                                ->native(false)
                                                                 ->options(['PAUD' => 'PAUD', 'TK' => 'TK', 'SD' => 'SD', 'MI' => 'MI', 'SMP' => 'SMP', 'MTS' => 'MTS', 'SMA' => 'SMA', 'SMK' => 'SMK', 'MA' => 'MA']),
                                                             Forms\Components\Select::make('status')
                                                                 ->label('Status')
+                                                                ->native(false)
                                                                 ->options(['NEGERI' => 'NEGERI', 'SWASTA' => 'SWASTA']),
                                                             Forms\Components\Select::make('akreditasi')
                                                                 ->label('Akreditasi')
+                                                                ->native(false)
                                                                 ->options(['A' => 'A', 'B' => 'B', 'C' => 'C', 'D' => 'D']),
                                                             Forms\Components\FileUpload::make('logo')
                                                                 ->label('Logo')
@@ -517,6 +532,7 @@ class CalonSiswaResource extends Resource
                                                                             'Olimpiade/Kejuaraan' => 'Olimpiade/Kejuaraan',
                                                                         ])
                                                                         ->required()
+                                                                        ->native(false)
                                                                         ->validationMessages([
                                                                             'required' => 'Form ini wajib diisi.',
                                                                         ])
@@ -532,6 +548,7 @@ class CalonSiswaResource extends Resource
                                                                 ->schema([
                                                                     Forms\Components\Select::make('tingkat')
                                                                         ->label('Tingkat')
+                                                                        ->native(false)
                                                                         ->options([
                                                                             'Nasional' => 'Nasional',
                                                                             'Provinsi' => 'Provinsi',
@@ -540,6 +557,7 @@ class CalonSiswaResource extends Resource
                                                                         ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
                                                                     Forms\Components\Select::make('kategori')
                                                                         ->label('Kategori')
+                                                                        ->native(false)
                                                                         ->options([
                                                                             'Regu/Kelompok' => 'Regu/Kelompok',
                                                                             'Individu' => 'Individu',
@@ -573,6 +591,7 @@ class CalonSiswaResource extends Resource
                                             Forms\Components\Select::make('peminatan_ekstrakurikuler')
                                                 ->label('Peminatan Ekstrakurikuler')
                                                 ->required()
+                                                ->native(false)
                                                 ->options([
                                                     'Pramuka' => 'Pramuka',
                                                     'Paskibra' => 'Paskibra',
@@ -594,6 +613,7 @@ class CalonSiswaResource extends Resource
                                             Forms\Components\Select::make('peminatan_pelajaran')
                                                 ->label('Peminatan Mata Pelajaran')
                                                 ->required()
+                                                ->native(false)
                                                 // ->multiple() // array tipe data
 
                                                 ->options([

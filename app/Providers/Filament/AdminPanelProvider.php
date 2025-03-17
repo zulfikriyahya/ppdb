@@ -14,6 +14,7 @@ use App\Filament\Pages\Auth\LoginCustom;
 use App\Filament\Resources\UserResource;
 use Filament\Http\Middleware\Authenticate;
 use App\Filament\Pages\Auth\RegisterCustom;
+use App\Filament\Pages\Auth\EditProfileCustom;
 use Illuminate\Session\Middleware\StartSession;
 use Devonab\FilamentEasyFooter\EasyFooterPlugin;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -42,7 +43,7 @@ class AdminPanelProvider extends PanelProvider
             ->login(LoginCustom::class)
             ->registration(RegisterCustom::class)
             ->id('admin')
-            ->profile()
+            ->profile(EditProfileCustom::class)
             ->path('admin')
             ->colors([
                 'primary' => Color::Cyan,
