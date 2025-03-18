@@ -2,24 +2,24 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\SekolahAsalResource\Pages;
+use Filament\Forms;
+use Filament\Tables;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
+use App\Models\Provinsi;
+use Filament\Forms\Form;
 use App\Models\Kabupaten;
 use App\Models\Kecamatan;
 use App\Models\Kelurahan;
-use App\Models\Provinsi;
-use App\Models\SekolahAsal;
-use Filament\Forms;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
-use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Table;
+use App\Models\SekolahAsal;
+use Filament\Resources\Resource;
+use Illuminate\Support\Collection;
+use Filament\Forms\Components\Section;
+use Filament\Tables\Enums\FiltersLayout;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Collection;
+use App\Filament\Resources\SekolahAsalResource\Pages;
 
 class SekolahAsalResource extends Resource
 {
@@ -51,17 +51,37 @@ class SekolahAsalResource extends Resource
                                 'required' => 'Form ini wajib diisi.',
                             ]),
                         Forms\Components\TextInput::make('npsn')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->label('Nomor Pokok Sekolah Nasional'),
                         Forms\Components\TextInput::make('nss')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->label('Nomor Statistik Sekolah'),
                         Forms\Components\Select::make('jenjang')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->label('Jenjang')
                             ->options(['PAUD' => 'PAUD', 'TK' => 'TK', 'SD' => 'SD', 'MI' => 'MI', 'SMP' => 'SMP', 'MTS' => 'MTS', 'SMA' => 'SMA', 'SMK' => 'SMK', 'MA' => 'MA']),
                         Forms\Components\Select::make('status')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->label('Status')
                             ->options(['NEGERI' => 'NEGERI', 'SWASTA' => 'SWASTA']),
                         Forms\Components\Select::make('akreditasi')
                             ->label('Akreditasi')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->options(['A' => 'A', 'B' => 'B', 'C' => 'C', 'D' => 'D']),
                         Forms\Components\FileUpload::make('logo')
                             ->label('Logo')
@@ -117,7 +137,7 @@ class SekolahAsalResource extends Resource
                             }),
                         Forms\Components\Select::make('provinsi_id')
                             ->label('Provinsi')
-                            ->options(fn (Get $get): Collection => Provinsi::query()
+                            ->options(fn(Get $get): Collection => Provinsi::query()
                                 ->where('negara_id', $get('negara_id'))
                                 ->pluck('nama', 'id'))
                             ->required()
@@ -134,7 +154,7 @@ class SekolahAsalResource extends Resource
                             }),
                         Forms\Components\Select::make('kabupaten_id')
                             ->label('Kabupaten')
-                            ->options(fn (Get $get): Collection => Kabupaten::query()
+                            ->options(fn(Get $get): Collection => Kabupaten::query()
                                 ->where('provinsi_id', $get('provinsi_id'))
                                 ->pluck('nama', 'id'))
                             ->required()
@@ -150,7 +170,7 @@ class SekolahAsalResource extends Resource
                             }),
                         Forms\Components\Select::make('kecamatan_id')
                             ->label('Kecamatan')
-                            ->options(fn (Get $get): Collection => Kecamatan::query()
+                            ->options(fn(Get $get): Collection => Kecamatan::query()
                                 ->where('kabupaten_id', $get('kabupaten_id'))
                                 ->pluck('nama', 'id'))
                             ->required()
@@ -165,7 +185,7 @@ class SekolahAsalResource extends Resource
                             }),
                         Forms\Components\Select::make('kelurahan_id')
                             ->label('Kelurahan')
-                            ->options(fn (Get $get): Collection => Kelurahan::query()
+                            ->options(fn(Get $get): Collection => Kelurahan::query()
                                 ->where('kecamatan_id', $get('kecamatan_id'))
                                 ->pluck('nama', 'id'))
                             ->required()
@@ -185,11 +205,23 @@ class SekolahAsalResource extends Resource
                     ->collapsible()
                     ->schema([
                         Forms\Components\TextInput::make('website')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->label('Website'),
                         Forms\Components\TextInput::make('telepon')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->label('Telepon')
                             ->tel(),
                         Forms\Components\TextInput::make('email')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->label('Email')
                             ->email(),
                     ])

@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
@@ -12,20 +12,20 @@ return new class extends Migration
         Schema::create('sekolahs', function (Blueprint $table) {
             $table->id();
             $table->string('nama');
-            $table->string('npsn')->nullable();
-            $table->string('nss')->nullable();
-            $table->string('logo')->nullable();
+            $table->string('npsn');
+            $table->string('nss');
+            $table->string('logo');
             $table->foreignId('pimpinan_id')->constrained('pimpinans')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->enum('akreditasi', ['A', 'B', 'C', 'D'])->nullable();
+            $table->enum('akreditasi', ['A', 'B', 'C', 'D']);
             $table->string('alamat');
             $table->foreignId('negara_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('provinsi_id')->constrained('provinsis')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('kabupaten_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('kecamatan_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('kelurahan_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
-            $table->string('website')->nullable();
-            $table->string('telepon')->nullable();
-            $table->string('email')->nullable();
+            $table->string('website');
+            $table->string('telepon');
+            $table->string('email');
             $table->timestamps();
             $table->softDeletes();
         });
