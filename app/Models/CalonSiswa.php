@@ -98,6 +98,16 @@ class CalonSiswa extends Model
         'tes_ruang',
         'tes_akademik',
         'tes_praktik',
+        'ibu_pekerjaan',
+        'ibu_penghasilan',
+        'ibu_pendidikan',
+        'ayah_pekerjaan',
+        'ayah_penghasilan',
+        'ayah_pendidikan',
+        'wali_pekerjaan',
+        'wali_penghasilan',
+        'wali_pendidikan',
+        'kepemilikan_rumah',
     ];
 
     protected $casts = [

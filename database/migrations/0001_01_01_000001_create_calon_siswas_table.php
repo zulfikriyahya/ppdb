@@ -52,7 +52,9 @@ return new class extends Migration
             $table->string('ibu_nama');
             $table->string('ibu_nik');
             $table->string('ibu_telepon')->nullable();
-            $table->string('ibu_pekerjaan')->nullable();
+            $table->string('ibu_pekerjaan');
+            $table->string('ibu_penghasilan');
+            $table->string('ibu_pendidikan');
             $table->enum('ibu_status', ['Hidup', 'Meninggal']);
             $table->string('ibu_alamat');
             $table->foreignId('ibu_negara_id')->constrained('negaras')->cascadeOnDelete()->cascadeOnUpdate();
@@ -63,8 +65,11 @@ return new class extends Migration
             $table->string('ayah_nama');
             $table->string('ayah_nik');
             $table->string('ayah_telepon')->nullable();
-            $table->string('ayah_pekerjaan')->nullable();
+            $table->string('ayah_pekerjaan');
+            $table->string('ayah_penghasilan');
+            $table->string('ayah_pendidikan');
             $table->enum('ayah_status', ['Hidup', 'Meninggal']);
+            $table->string('kepemilikan_rumah');
             $table->string('ayah_alamat');
             $table->foreignId('ayah_negara_id')->constrained('negaras')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('ayah_provinsi_id')->constrained('provinsis')->cascadeOnDelete()->cascadeOnUpdate();
@@ -75,6 +80,8 @@ return new class extends Migration
             $table->string('nik_nama')->nullable();
             $table->string('wali_telepon')->nullable();
             $table->string('wali_pekerjaan')->nullable();
+            $table->string('wali_penghasilan')->nullable();
+            $table->string('wali_pendidikan')->nullable();
             $table->enum('wali_status', ['Hidup', 'Meninggal'])->nullable();
             $table->string('wali_alamat')->nullable();
             $table->foreignId('wali_negara_id')->nullable()->constrained('negaras')->cascadeOnDelete()->cascadeOnUpdate();
