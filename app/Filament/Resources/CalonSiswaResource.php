@@ -321,13 +321,40 @@ class CalonSiswaResource extends Resource
                                                 ->unique(ignoreRecord: true)
                                                 ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_kip' : 'unique:calon_siswas,no_kip,' . $record->id)
                                                 ->dehydrateStateUsing(fn($state) => $state ? $state : null)
-                                                // ->disabledOn('edit')
                                                 ->maxLength(6)
                                                 ->minLength(6)
                                                 ->validationMessages([
                                                     'max' => 'KIP: Masukkan maksimal 6 Karakter.',
                                                     'min' => 'KIP: Masukkan minimal 6 Karakter.',
                                                     'unique' => 'KIP: Nomor ini sudah pernah di isi.',
+                                                ]),
+                                            // No KIP Calon Peserta Didik Baru
+                                            Forms\Components\TextInput::make('no_kks')
+                                                ->label('Nomor Kartu Keluarga Sejahtera')
+                                                ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Keluarga Sejahtera (KKS).<sup style="color:red">*</sup></i></small>'))
+                                                ->unique(ignoreRecord: true)
+                                                ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_kks' : 'unique:calon_siswas,no_kks,' . $record->id)
+                                                ->dehydrateStateUsing(fn($state) => $state ? $state : null)
+                                                ->maxLength(16)
+                                                ->minLength(16)
+                                                ->validationMessages([
+                                                    'max' => 'KKS: Masukkan maksimal 16 Karakter.',
+                                                    'min' => 'KKS: Masukkan minimal 16 Karakter.',
+                                                    'unique' => 'KKS: Nomor ini sudah pernah di isi.',
+                                                ]),
+                                            // No KIP Calon Peserta Didik Baru
+                                            Forms\Components\TextInput::make('no_pkh')
+                                                ->label('Nomor Kartu Program Keluarga Harapan')
+                                                ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Program Keluarga Harapan (PKH).<sup style="color:red">*</sup></i></small>'))
+                                                ->unique(ignoreRecord: true)
+                                                ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_pkh' : 'unique:calon_siswas,no_pkh,' . $record->id)
+                                                ->dehydrateStateUsing(fn($state) => $state ? $state : null)
+                                                ->maxLength(16)
+                                                ->minLength(16)
+                                                ->validationMessages([
+                                                    'max' => 'PKH: Masukkan maksimal 16 Karakter.',
+                                                    'min' => 'PKH: Masukkan minimal 16 Karakter.',
+                                                    'unique' => 'PKH: Nomor ini sudah pernah di isi.',
                                                 ]),
                                             Forms\Components\TextInput::make('siswa_telepon')
                                                 ->label('Nomor Telepon')
@@ -621,44 +648,20 @@ class CalonSiswaResource extends Resource
                                                 ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->nama} | {$record->tingkat} | {$record->kategori} | {$record->peringkat}")
                                                 ->native(false),
                                             // Data Peminatan Ekstrakurikuler Calon Peserta Didik Baru
-                                            Forms\Components\Select::make('peminatan_ekstrakurikuler')
+                                            Forms\Components\Select::make('ekstrakurikuler_id')
                                                 ->label('Peminatan Ekstrakurikuler')
                                                 ->required()
                                                 ->native(false)
-                                                ->options([
-                                                    'Pramuka' => 'Pramuka',
-                                                    'Paskibra' => 'Paskibra',
-                                                    'Kesehatan' => 'Kesehatan',
-                                                    'Kerohanian' => 'Kerohanian',
-                                                    'Kesenian' => 'Kesenian',
-                                                    'Kebersihan' => 'Kebersihan',
-                                                    'Olahraga Footsal' => 'Olahraga Footsal',
-                                                    'Olahraga Bulu Tangkis' => 'Olahraga Bulu Tangkis',
-                                                    'Olahraga Voli' => 'Olahraga Voli',
-                                                    'Olahraga Renang' => 'Olahraga Renang',
-                                                ])
-                                                // ->multiple() // Aktifkan multiple select
-
+                                                ->relationship('ekstrakurikuler', 'nama')
                                                 ->validationMessages([
                                                     'required' => 'Form ini wajib diisi.',
                                                 ]),
                                             // Data Peminatan Pelajaran Calon Peserta Didik Baru
-                                            Forms\Components\Select::make('peminatan_pelajaran')
+                                            Forms\Components\Select::make('mata_pelajaran_id')
                                                 ->label('Peminatan Mata Pelajaran')
                                                 ->required()
                                                 ->native(false)
-                                                // ->multiple() // array tipe data
-
-                                                ->options([
-                                                    'IPA' => 'IPA',
-                                                    'IPS' => 'IPS',
-                                                    'Matematika' => 'Matematika',
-                                                    'Bahasa Indonesia' => 'Bahasa Indonesia',
-                                                    'Bahasa Inggris' => 'Bahasa Inggris',
-                                                    'Bahasa Arab' => 'Bahasa Arab',
-                                                    'Lainnya' => 'Lainnya',
-                                                ])
-                                                // ->relationship('mataPelajaran', 'nama')
+                                                ->relationship('mataPelajaran', 'nama')
                                                 ->validationMessages([
                                                     'required' => 'Form ini wajib diisi.',
                                                 ]),
@@ -834,6 +837,42 @@ class CalonSiswaResource extends Resource
                                                 ])
                                                 ->fetchFileInformation(false)
                                                 ->directory(fn($get) => 'berkas/kip/' . $get('nisn')) // Dinamis berdasarkan NISN
+                                                ->downloadable()
+                                                ->openable()
+                                                ->maxSize(500)
+                                                ->minSize(10)
+                                                ->visibility('private'),
+                                            // Berkas KKS Calon Peserta Didik Baru
+                                            Forms\Components\FileUpload::make('berkas_kks')
+                                                ->label('Kartu Keluarga Sejahtera')
+                                                ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Keluarga Sejahtera (KKS).<sup style="color:red">*</sup></i></small>'))
+                                                ->image()
+                                                ->imageEditor()
+                                                ->imageEditorAspectRatios([
+                                                    null,
+                                                    '1:1' => '1:1',
+                                                    '3:4' => '3:4',
+                                                ])
+                                                ->fetchFileInformation(false)
+                                                ->directory(fn($get) => 'berkas/kks/' . $get('nisn')) // Dinamis berdasarkan NISN
+                                                ->downloadable()
+                                                ->openable()
+                                                ->maxSize(500)
+                                                ->minSize(10)
+                                                ->visibility('private'),
+                                            // Berkas PKH Calon Peserta Didik Baru
+                                            Forms\Components\FileUpload::make('berkas_pkh')
+                                                ->label('Kartu Program Keluarga Harapan')
+                                                ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Program Keluarga Harapan (PKH).<sup style="color:red">*</sup></i></small>'))
+                                                ->image()
+                                                ->imageEditor()
+                                                ->imageEditorAspectRatios([
+                                                    null,
+                                                    '1:1' => '1:1',
+                                                    '3:4' => '3:4',
+                                                ])
+                                                ->fetchFileInformation(false)
+                                                ->directory(fn($get) => 'berkas/pkh/' . $get('nisn')) // Dinamis berdasarkan NISN
                                                 ->downloadable()
                                                 ->openable()
                                                 ->maxSize(500)
@@ -1499,6 +1538,14 @@ class CalonSiswaResource extends Resource
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Nomor KIP')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('no_kks')
+                    ->visible(Auth::user()->username === 'administrator')
+                    ->label('Nomor KKS')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('no_pkh')
+                    ->visible(Auth::user()->username === 'administrator')
+                    ->label('Nomor PKH')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('siswa_telepon')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Telepon')
@@ -1736,11 +1783,11 @@ class CalonSiswaResource extends Resource
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Nama Prestasi')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('peminatan_ekstrakurikuler')
+                Tables\Columns\TextColumn::make('ekstrakurikuler.nama')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Peminatan Ekstrakurikuler')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('peminatan_pelajaran')
+                Tables\Columns\TextColumn::make('mataPelajaran.nama')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Peminatan Pelajaran')
                     ->searchable(),

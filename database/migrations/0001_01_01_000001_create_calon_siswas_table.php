@@ -31,6 +31,8 @@ return new class extends Migration
             $table->integer('tinggi_badan')->nullable();
             $table->integer('berat_badan')->nullable();
             $table->string('no_kip')->nullable();
+            $table->string('no_kks')->nullable();
+            $table->string('no_pkh')->nullable();
             $table->string('siswa_telepon')->nullable();
             $table->string('siswa_alamat');
             $table->foreignId('siswa_negara_id')->constrained('negaras')->cascadeOnDelete()->cascadeOnUpdate();
@@ -42,11 +44,14 @@ return new class extends Migration
             $table->string('berkas_kk');
             $table->string('berkas_akta');
             $table->string('berkas_kip')->nullable();
+            $table->string('berkas_kks')->nullable();
+            $table->string('berkas_pkh')->nullable();
             $table->string('berkas_nisn');
             $table->string('berkas_skbb');
             $table->string('berkas_skab');
             $table->string('berkas_prestasi')->nullable(); // string
             $table->string('ibu_nama');
+            $table->string('ibu_nik');
             $table->string('ibu_telepon')->nullable();
             $table->string('ibu_pekerjaan')->nullable();
             $table->enum('ibu_status', ['Hidup', 'Meninggal']);
@@ -57,6 +62,7 @@ return new class extends Migration
             $table->foreignId('ibu_kecamatan_id')->constrained('kecamatans')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('ibu_kelurahan_id')->constrained('kelurahans')->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('ayah_nama');
+            $table->string('ayah_nik');
             $table->string('ayah_telepon')->nullable();
             $table->string('ayah_pekerjaan')->nullable();
             $table->enum('ayah_status', ['Hidup', 'Meninggal']);
@@ -67,6 +73,7 @@ return new class extends Migration
             $table->foreignId('ayah_kecamatan_id')->constrained('kecamatans')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('ayah_kelurahan_id')->constrained('kelurahans')->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('wali_nama')->nullable();
+            $table->string('nik_nama')->nullable();
             $table->string('wali_telepon')->nullable();
             $table->string('wali_pekerjaan')->nullable();
             $table->enum('wali_status', ['Hidup', 'Meninggal'])->nullable();
@@ -79,8 +86,8 @@ return new class extends Migration
             $table->foreignId('sekolah_asal_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('jalur_pendaftaran_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('prestasi_id')->nullable()->constrained('prestasis')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->string('peminatan_ekstrakurikuler'); // string
-            $table->string('peminatan_pelajaran'); // string
+            $table->foreignId('ekstrakurikuler_id')->constrained('ekstrakurikulers')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId('mata_pelajaran_id')->constrained('mata_pelajarans')->cascadeOnDelete()->cascadeOnUpdate();
             $table->integer('nilai_ipa')->nullable();
             $table->integer('nilai_ips')->nullable();
             $table->integer('nilai_matematika')->nullable();

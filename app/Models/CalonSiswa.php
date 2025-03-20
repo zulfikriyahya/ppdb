@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Ekstrakurikuler;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -41,6 +42,8 @@ class CalonSiswa extends Model
         'berkas_kk',
         'berkas_akta',
         'berkas_kip',
+        'berkas_kks',
+        'berkas_pkh',
         'berkas_nisn',
         'berkas_skbb',
         'berkas_skab',
@@ -78,8 +81,8 @@ class CalonSiswa extends Model
         'sekolah_asal_id',
         'jalur_pendaftaran_id',
         'prestasi_id',
-        'peminatan_ekstrakurikuler',
-        'peminatan_pelajaran',
+        'ekstrakurikuler_id',
+        'mata_pelajaran_id',
         'nilai_ipa',
         'nilai_ips',
         'nilai_bind',
@@ -125,8 +128,10 @@ class CalonSiswa extends Model
         'kelas_id' => 'integer',
         'tes_akademik' => 'datetime',
         'tes_praktik' => 'datetime',
-        // 'peminatan_ekstrakurikuler' => 'array', // multiple
-        // 'peminatan_pelajaran' => 'array', // multiple
+        'mata_pelajaran_id' => 'integer',
+        'ekstrakurikuler_id' => 'integer',
+        'berkas_prestasi' => 'array',
+
     ];
 
     public function jalurPendaftaran(): BelongsTo
@@ -149,6 +154,15 @@ class CalonSiswa extends Model
     public function siswaNegara(): BelongsTo
     {
         return $this->belongsTo(Negara::class, 'siswa_negara_id');
+    }
+
+    public function ekstrakurikuler(): BelongsTo
+    {
+        return $this->belongsTo(Ekstrakurikuler::class, 'ekstrakurikuler_id');
+    }
+    public function mataPelajaran(): BelongsTo
+    {
+        return $this->belongsTo(Ekstrakurikuler::class, 'ekstrakurikuler_id');
     }
 
     public function ibuNegara(): BelongsTo
