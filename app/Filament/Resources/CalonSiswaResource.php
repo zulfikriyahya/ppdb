@@ -645,12 +645,15 @@ class CalonSiswaResource extends Resource
                                                             'lg' => 3,
                                                         ]),
                                                 ])
-                                                ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->nama} | {$record->tingkat} | {$record->kategori} | {$record->peringkat}")
+                                                ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->jenis} | {$record->nama} | {$record->tingkat} | {$record->kategori} | {$record->peringkat}")
+                                                ->searchable()
                                                 ->native(false),
                                             // Data Peminatan Ekstrakurikuler Calon Peserta Didik Baru
                                             Forms\Components\Select::make('ekstrakurikuler_id')
                                                 ->label('Peminatan Ekstrakurikuler')
                                                 ->required()
+                                                ->searchable()
+                                                ->preload()
                                                 ->native(false)
                                                 ->relationship('ekstrakurikuler', 'nama')
                                                 ->validationMessages([
@@ -659,6 +662,8 @@ class CalonSiswaResource extends Resource
                                             // Data Peminatan Pelajaran Calon Peserta Didik Baru
                                             Forms\Components\Select::make('mata_pelajaran_id')
                                                 ->label('Peminatan Mata Pelajaran')
+                                                ->searchable()
+                                                ->preload()
                                                 ->required()
                                                 ->native(false)
                                                 ->relationship('mataPelajaran', 'nama')
@@ -968,6 +973,16 @@ class CalonSiswaResource extends Resource
                                                 ->validationMessages([
                                                     'required' => 'Form ini wajib diisi.',
                                                 ]),
+                                            Forms\Components\TextInput::make('ibuu_nik')
+                                                ->label('NIK Ibu Kandung')
+                                                ->required()
+                                                ->maxLength(16)
+                                                ->minlength(16)
+                                                ->validationMessages([
+                                                    'required' => 'Form ini wajib diisi.',
+                                                    'max' => 'NIK: Masukkan maksimal 16 Angka.',
+                                                    'min' => 'NIK: Masukkan minimal 16 Angka.',
+                                                ]),
                                             Forms\Components\TextInput::make('ibu_telepon')
                                                 ->label('Nomor Telepon')
                                                 ->tel()
@@ -1097,6 +1112,16 @@ class CalonSiswaResource extends Resource
                                                 ->validationMessages([
                                                     'required' => 'Form ini wajib diisi.',
                                                 ]),
+                                            Forms\Components\TextInput::make('ayah_nik')
+                                                ->label('NIK Ayah Kandung')
+                                                ->required()
+                                                ->maxLength(16)
+                                                ->minlength(16)
+                                                ->validationMessages([
+                                                    'required' => 'Form ini wajib diisi.',
+                                                    'max' => 'NIK: Masukkan maksimal 16 Angka.',
+                                                    'min' => 'NIK: Masukkan minimal 16 Angka.',
+                                                ]),
                                             Forms\Components\TextInput::make('ayah_telepon')
                                                 ->label('Nomor Telepon')
                                                 ->tel()
@@ -1222,6 +1247,15 @@ class CalonSiswaResource extends Resource
                                             // Biodata Wali Calon Peserta Didik Baru
                                             Forms\Components\TextInput::make('wali_nama')
                                                 ->label('Nama Lengkap Wali'),
+                                            Forms\Components\TextInput::make('wali_nik')
+                                                ->label('NIK Ayah Kandung')
+                                                ->maxLength(16)
+                                                ->minlength(16)
+                                                ->validationMessages([
+                                                    'required' => 'Form ini wajib diisi.',
+                                                    'max' => 'NIK: Masukkan maksimal 16 Angka.',
+                                                    'min' => 'NIK: Masukkan minimal 16 Angka.',
+                                                ]),
                                             Forms\Components\TextInput::make('wali_telepon')
                                                 ->label('Nomor Telepon')
                                                 ->tel(),

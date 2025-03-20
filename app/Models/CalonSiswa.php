@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\SiswaPrestasi;
 use App\Models\Ekstrakurikuler;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -80,7 +81,7 @@ class CalonSiswa extends Model
         'wali_kelurahan_id',
         'sekolah_asal_id',
         'jalur_pendaftaran_id',
-        'prestasi_id',
+        'siswa_prestasi_id',
         'ekstrakurikuler_id',
         'mata_pelajaran_id',
         'nilai_ipa',
