@@ -91,6 +91,7 @@ class UserResource extends Resource
                         Select::make('status')
                             ->label('Status')
                             ->required()
+                            ->native(false)
                             ->options([
                                 'Aktif' => 'Aktif',
                                 'Nonaktif' => 'Nonaktif',
@@ -179,7 +180,7 @@ class UserResource extends Resource
                     DeleteBulkAction::make(),
                     ForceDeleteBulkAction::make(),
                     RestoreBulkAction::make(),
-                ]),
+                ])
             ])
             ->striped()
             ->filtersLayout(FiltersLayout::AboveContentCollapsible)

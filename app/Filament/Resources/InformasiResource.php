@@ -37,12 +37,13 @@ class InformasiResource extends Resource
         return $form
             ->schema([
                 // Section
-                Section::make('')
+                Section::make()
                     ->schema([
                         Forms\Components\Select::make('tahun_pendaftaran_id')
                             ->label('Tahun Pendaftaran')
                             ->relationship('tahunPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
                             ->required()
+                            ->native(false)
                             ->live()
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
@@ -50,18 +51,23 @@ class InformasiResource extends Resource
                             ->columnSpanFull(),
                     ]),
                 // Section
-                Section::make('')
+                Section::make()
                     ->visible(fn($get) => $get('tahun_pendaftaran_id') !== null)
                     ->schema([
                         Forms\Components\TextInput::make('judul')
                             ->label('Judul')
                             ->required()
+                            ->minLength(5)
+                            ->maxLength(30)
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
+                                'min' => 'Masukkan maksimal 30 karakter.',
+                                'max' => 'Masukkan maksimal 30 karakter.',
                             ]),
                         Forms\Components\Select::make('status')
                             ->label('Status')
                             ->options(['Publish' => 'Publish', 'Draft' => 'Draft'])
+                            ->native(false)
                             ->required()
                             ->live()
                             ->validationMessages([
@@ -105,7 +111,6 @@ class InformasiResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            // ->recordTitleAttribute('nama')
             ->columns([
                 Tables\Columns\TextColumn::make('judul')
                     ->label('Judul')

@@ -117,7 +117,16 @@ class AdminPanelProvider extends PanelProvider
 
                 // Tema
                 // FilamentNordThemePlugin::make(),
-                AuthUIEnhancerPlugin::make()->formPanelPosition('right')->mobileFormPanelPosition('top')->formPanelWidth('40%')/* ->formPanelBackgroundColor(Color::Zinc, '300') */->emptyPanelBackgroundImageUrl('/img/bendera.png')->showEmptyPanelOnMobile(false),
+                AuthUIEnhancerPlugin::make()
+                    ->formPanelPosition('right')
+                    // ->mobileFormPanelPosition('top')
+                    // ->emptyPanelView('view')
+                    ->formPanelWidth('35%')
+                    ->formPanelBackgroundColor(Color::hex('#010101'))
+                    ->emptyPanelBackgroundImageUrl('/img/wallpaper.png')
+                    ->emptyPanelBackgroundColor(Color::hex('#010101'))
+                    // ->emptyPanelBackgroundImageOpacity('80%')
+                    ->showEmptyPanelOnMobile(false),
             ]);
     }
 }

@@ -149,12 +149,12 @@ class CalonSiswaResource extends Resource
                                             Forms\Components\TextInput::make('nisn')
                                                 ->label('Nomor Induk Siswa Nasional (NISN)')
                                                 ->required()
-                                                ->disabledOn('create')
+                                                // ->disabledOn('create')
                                                 ->reactive()
-                                                ->afterStateHydrated(function (TextInput $component, $state) {
-                                                    $component->state($state);
-                                                    $component->disabled();
-                                                })
+                                                // ->afterStateHydrated(function (TextInput $component, $state) {
+                                                //     $component->state($state);
+                                                //     $component->disabled();
+                                                // })
                                                 ->default(fn() => Auth::user()->username)
                                                 ->unique(ignoreRecord: true)
                                                 ->rule(fn($record) => $record === null ? 'unique:calon_siswas,nisn' : 'unique:calon_siswas,nisn,' . $record->id)
@@ -355,19 +355,39 @@ class CalonSiswaResource extends Resource
                                                                     'required' => 'Form ini wajib diisi.',
                                                                 ]),
                                                             Forms\Components\TextInput::make('npsn')
+                                                                ->required()
+                                                                ->validationMessages([
+                                                                    'required' => 'Form ini wajib diisi.',
+                                                                ])
                                                                 ->label('Nomor Pokok Sekolah Nasional'),
                                                             Forms\Components\TextInput::make('nss')
-                                                                ->label('Nomor Statistik Sekolah'),
+                                                                ->required()
+                                                                ->validationMessages([
+                                                                    'required' => 'Form ini wajib diisi.',
+                                                                ])
+                                                                ->label('Nomor Statistik Sekolah/Madrasah'),
                                                             Forms\Components\Select::make('jenjang')
                                                                 ->label('Jenjang')
+                                                                ->required()
+                                                                ->validationMessages([
+                                                                    'required' => 'Form ini wajib diisi.',
+                                                                ])
                                                                 ->native(false)
                                                                 ->options(['PAUD' => 'PAUD', 'TK' => 'TK', 'SD' => 'SD', 'MI' => 'MI', 'SMP' => 'SMP', 'MTS' => 'MTS', 'SMA' => 'SMA', 'SMK' => 'SMK', 'MA' => 'MA']),
                                                             Forms\Components\Select::make('status')
                                                                 ->label('Status')
+                                                                ->required()
+                                                                ->validationMessages([
+                                                                    'required' => 'Form ini wajib diisi.',
+                                                                ])
                                                                 ->native(false)
                                                                 ->options(['NEGERI' => 'NEGERI', 'SWASTA' => 'SWASTA']),
                                                             Forms\Components\Select::make('akreditasi')
                                                                 ->label('Akreditasi')
+                                                                ->required()
+                                                                ->validationMessages([
+                                                                    'required' => 'Form ini wajib diisi.',
+                                                                ])
                                                                 ->native(false)
                                                                 ->options(['A' => 'A', 'B' => 'B', 'C' => 'C', 'D' => 'D']),
                                                             Forms\Components\FileUpload::make('logo')
@@ -492,11 +512,23 @@ class CalonSiswaResource extends Resource
                                                         ->collapsible()
                                                         ->schema([
                                                             Forms\Components\TextInput::make('website')
+                                                                ->required()
+                                                                ->validationMessages([
+                                                                    'required' => 'Form ini wajib diisi.',
+                                                                ])
                                                                 ->label('Website'),
                                                             Forms\Components\TextInput::make('telepon')
+                                                                ->required()
+                                                                ->validationMessages([
+                                                                    'required' => 'Form ini wajib diisi.',
+                                                                ])
                                                                 ->label('Telepon')
                                                                 ->tel(),
                                                             Forms\Components\TextInput::make('email')
+                                                                ->required()
+                                                                ->validationMessages([
+                                                                    'required' => 'Form ini wajib diisi.',
+                                                                ])
                                                                 ->label('Email')
                                                                 ->email(),
                                                         ])
