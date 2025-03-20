@@ -127,6 +127,7 @@ class CalonSiswaResource extends Resource
                                                 ->rule(fn($record) => $record === null ? 'unique:calon_siswas,nik' : 'unique:calon_siswas,nik,' . $record->id)
                                                 ->dehydrateStateUsing(fn($state) => $state ? $state : null)
                                                 ->maxLength(16)
+                                                ->numeric()
                                                 ->minLength(16)
                                                 ->validationMessages([
                                                     'max' => 'NIK: Masukkan maksimal 16 Angka.',
@@ -139,6 +140,8 @@ class CalonSiswaResource extends Resource
                                                 ->label('Nomor Kartu Keluarga (KK)')
                                                 ->required()
                                                 ->maxLength(16)
+                                                ->numeric()
+
                                                 ->minLength(16)
                                                 ->validationMessages([
                                                     'max' => 'KK: Masukkan maksimal 16 Angka.',
@@ -149,16 +152,17 @@ class CalonSiswaResource extends Resource
                                             Forms\Components\TextInput::make('nisn')
                                                 ->label('Nomor Induk Siswa Nasional (NISN)')
                                                 ->required()
-                                                // ->disabledOn('create')
+                                                ->disabledOn('create')
                                                 ->reactive()
-                                                // ->afterStateHydrated(function (TextInput $component, $state) {
-                                                //     $component->state($state);
-                                                //     $component->disabled();
-                                                // })
+                                                ->afterStateHydrated(function (TextInput $component, $state) {
+                                                    $component->state($state);
+                                                    $component->disabled();
+                                                })
                                                 ->default(fn() => Auth::user()->username)
                                                 ->unique(ignoreRecord: true)
                                                 ->rule(fn($record) => $record === null ? 'unique:calon_siswas,nisn' : 'unique:calon_siswas,nisn,' . $record->id)
                                                 ->dehydrateStateUsing(fn($state) => $state ? $state : null)
+                                                ->numeric()
                                                 ->maxLength(10)
                                                 ->minLength(10)
                                                 ->validationMessages([
@@ -279,8 +283,10 @@ class CalonSiswaResource extends Resource
                                                     '0 - 1 Km' => '0 - 1 Km',
                                                     '1 - 5 Km' => '1 - 5 Km',
                                                     '5 - 10 Km' => '5 - 10 Km',
-                                                    '10 - 50 Km' => '10 - 50 Km',
-                                                    '50 - 100 Km' => '50 - 100 Km',
+                                                    '10 - 15 Km' => '10 - 15 Km',
+                                                    '15 - 20 Km' => '15 - 20 Km',
+                                                    '20 - 25 Km' => '20 - 25 Km',
+                                                    '25 - 30 Km' => '25 - 30 Km',
                                                 ])
                                                 ->required()
                                                 ->validationMessages([
@@ -335,11 +341,11 @@ class CalonSiswaResource extends Resource
                                                 ->unique(ignoreRecord: true)
                                                 ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_kks' : 'unique:calon_siswas,no_kks,' . $record->id)
                                                 ->dehydrateStateUsing(fn($state) => $state ? $state : null)
-                                                ->maxLength(16)
-                                                ->minLength(16)
+                                                ->maxLength(6)
+                                                ->minLength(6)
                                                 ->validationMessages([
-                                                    'max' => 'KKS: Masukkan maksimal 16 Karakter.',
-                                                    'min' => 'KKS: Masukkan minimal 16 Karakter.',
+                                                    'max' => 'KKS: Masukkan maksimal 6 Karakter.',
+                                                    'min' => 'KKS: Masukkan minimal 6 Karakter.',
                                                     'unique' => 'KKS: Nomor ini sudah pernah di isi.',
                                                 ]),
                                             // No KIP Calon Peserta Didik Baru
@@ -349,11 +355,11 @@ class CalonSiswaResource extends Resource
                                                 ->unique(ignoreRecord: true)
                                                 ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_pkh' : 'unique:calon_siswas,no_pkh,' . $record->id)
                                                 ->dehydrateStateUsing(fn($state) => $state ? $state : null)
-                                                ->maxLength(16)
-                                                ->minLength(16)
+                                                ->maxLength(6)
+                                                ->minLength(6)
                                                 ->validationMessages([
-                                                    'max' => 'PKH: Masukkan maksimal 16 Karakter.',
-                                                    'min' => 'PKH: Masukkan minimal 16 Karakter.',
+                                                    'max' => 'PKH: Masukkan maksimal 6 Karakter.',
+                                                    'min' => 'PKH: Masukkan minimal 6 Karakter.',
                                                     'unique' => 'PKH: Nomor ini sudah pernah di isi.',
                                                 ]),
                                             Forms\Components\TextInput::make('siswa_telepon')
@@ -973,11 +979,12 @@ class CalonSiswaResource extends Resource
                                                 ->validationMessages([
                                                     'required' => 'Form ini wajib diisi.',
                                                 ]),
-                                            Forms\Components\TextInput::make('ibuu_nik')
+                                            Forms\Components\TextInput::make('ibu_nik')
                                                 ->label('NIK Ibu Kandung')
                                                 ->required()
                                                 ->maxLength(16)
                                                 ->minlength(16)
+                                                ->numeric()
                                                 ->validationMessages([
                                                     'required' => 'Form ini wajib diisi.',
                                                     'max' => 'NIK: Masukkan maksimal 16 Angka.',
@@ -1116,6 +1123,7 @@ class CalonSiswaResource extends Resource
                                                 ->label('NIK Ayah Kandung')
                                                 ->required()
                                                 ->maxLength(16)
+                                                ->numeric()
                                                 ->minlength(16)
                                                 ->validationMessages([
                                                     'required' => 'Form ini wajib diisi.',
@@ -1249,6 +1257,7 @@ class CalonSiswaResource extends Resource
                                                 ->label('Nama Lengkap Wali'),
                                             Forms\Components\TextInput::make('wali_nik')
                                                 ->label('NIK Ayah Kandung')
+                                                ->numeric()
                                                 ->maxLength(16)
                                                 ->minlength(16)
                                                 ->validationMessages([

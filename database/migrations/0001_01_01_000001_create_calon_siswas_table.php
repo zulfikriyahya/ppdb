@@ -14,7 +14,6 @@ return new class extends Migration
             $table->string('nama');
             $table->string('nik');
             $table->string('kk');
-            // Tabel Calon Siswa
             $table->string('nisn', 10)->unique();
             $table->foreign('nisn')->references('username')->on('users')->onUpdate('cascade');
             $table->string('tempat_lahir');
@@ -26,7 +25,7 @@ return new class extends Migration
             $table->integer('anak_ke');
             $table->integer('jumlah_saudara');
             $table->enum('tinggal_bersama', ['Orang Tua', 'Saudara', 'Panti Asuhan', 'Kost', 'Lainnya']);
-            $table->enum('jarak_ke_sekolah', ['0 - 1 Km', '1 - 5 Km', '5 - 10 Km', '10 - 50 Km', '50 - 100 Km']);
+            $table->enum('jarak_ke_sekolah', ['0 - 1 Km', '1 - 5 Km', '5 - 10 Km', '10 - 15 Km', '15 - 20 Km', '20 - 25 Km', '25 - 30 Km']);
             $table->enum('disabilitas', ['Non Disabilitas', 'Fisik', 'Penglihatan', 'Pendengaran', 'Kognitif', 'Mental', 'Lainnya']);
             $table->integer('tinggi_badan')->nullable();
             $table->integer('berat_badan')->nullable();
@@ -49,7 +48,7 @@ return new class extends Migration
             $table->string('berkas_nisn');
             $table->string('berkas_skbb');
             $table->string('berkas_skab');
-            $table->string('berkas_prestasi')->nullable(); // string
+            $table->string('berkas_prestasi')->nullable();
             $table->string('ibu_nama');
             $table->string('ibu_nik');
             $table->string('ibu_telepon')->nullable();

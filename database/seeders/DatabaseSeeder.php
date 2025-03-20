@@ -6894,10 +6894,11 @@ class DatabaseSeeder extends Seeder
             ['nama' => 'Bahasa Indonesia'],
             ['nama' => 'Bahasa Inggris'],
             ['nama' => 'Bahasa Bahasa Arab'],
-            ['nama' => 'Bahasa Matematika'],
-            ['nama' => 'Bahasa PPkn'],
-            ['nama' => 'Bahasa IPS'],
-            ['nama' => 'Bahasa IPA'],
+            ['nama' => 'Matematika'],
+            ['nama' => 'IPA'],
+            ['nama' => 'IPS'],
+            ['nama' => 'PPKn'],
+            ['nama' => 'PJOK'],
         ];
 
         foreach ($dataMataPelajaran as $data) {
@@ -6911,7 +6912,7 @@ class DatabaseSeeder extends Seeder
             ['nama' => 'Olahraga'],
             ['nama' => 'Seni'],
             ['nama' => 'Kesenian'],
-            ['nama' => 'Rohani'],
+            ['nama' => 'Kerohanian'],
         ];
 
         foreach ($dataEkstrakurikuler as $data) {

@@ -6,6 +6,7 @@ use Filament\Pages;
 use Filament\Panel;
 use Filament\Widgets;
 use Filament\PanelProvider;
+use Filament\Enums\ThemeMode;
 use Filament\Navigation\MenuItem;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\MaxWidth;
@@ -39,6 +40,9 @@ class AdminPanelProvider extends PanelProvider
             ->maxContentWidth(MaxWidth::Full)
             ->unsavedChangesAlerts()
             ->databaseNotifications()
+            // ->defaultThemeMode(ThemeMode::Light)
+            ->brandLogo(asset('/img/brand.png'))
+            ->brandLogoHeight('2rem')
             ->topNavigation()
             ->login(LoginCustom::class)
             ->registration(RegisterCustom::class)

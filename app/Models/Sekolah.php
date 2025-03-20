@@ -17,6 +17,7 @@ class Sekolah extends Model
         'npsn',
         'nss',
         'logo',
+        'logo_institusi',
         'pimpinan_id',
         'akreditasi',
         'alamat',

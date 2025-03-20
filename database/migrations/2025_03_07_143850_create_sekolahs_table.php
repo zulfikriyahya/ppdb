@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string('npsn');
             $table->string('nss');
             $table->string('logo');
+            $table->string('logo_institusi')->nullable();
             $table->foreignId('pimpinan_id')->constrained('pimpinans')->cascadeOnDelete()->cascadeOnUpdate();
             $table->enum('akreditasi', ['A', 'B', 'C', 'D']);
             $table->string('alamat');

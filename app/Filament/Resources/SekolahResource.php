@@ -81,6 +81,20 @@ class SekolahResource extends Resource
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ]),
+                        Forms\Components\FileUpload::make('logo_institusi')
+                            ->label('Logo Institusi')
+                            ->image()
+                            ->imageEditor()
+                            ->imageEditorAspectRatios([
+                                null,
+                                '1:1' => '1:1',
+                            ])
+                            ->fetchFileInformation(false)
+                            ->directory('assets/institusi')
+                            ->downloadable()
+                            ->maxSize(500)
+                            ->minSize(10)
+                            ->visibility('private'),
                         Forms\Components\Select::make('pimpinan_id')
                             ->label('Kepala Instansi')
                             ->relationship('pimpinan', 'nama')
@@ -211,6 +225,19 @@ class SekolahResource extends Resource
                         'md' => 3,
                         'lg' => 3,
                     ]),
+
+                // Surat
+                Section::make('Surat')
+                    ->collapsible()
+                    ->schema([
+                        Forms\Components\TextInput::make('no_surat')
+                            ->label('Nomor Surat SKL'),
+                        // ])
+                        // ->columns([
+                        //     'sm' => '100%',
+                        //     'md' => 3,
+                        //     'lg' => 3,
+                    ]),
             ]);
     }
 
@@ -268,6 +295,9 @@ class SekolahResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
                     ->label('Email')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('nomor_surat')
+                    ->label('Nomor Surat')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat')
