@@ -29,9 +29,9 @@ return new class extends Migration
             $table->enum('disabilitas', ['Non Disabilitas', 'Fisik', 'Penglihatan', 'Pendengaran', 'Kognitif', 'Mental', 'Lainnya']);
             $table->integer('tinggi_badan')->nullable();
             $table->integer('berat_badan')->nullable();
-            $table->string('no_kip')->nullable();
-            $table->string('no_kks')->nullable();
-            $table->string('no_pkh')->nullable();
+            $table->string('no_kip')->unique()->nullable();
+            $table->string('no_kks')->unique()->nullable();
+            $table->string('no_pkh')->unique()->nullable();
             $table->string('siswa_telepon')->nullable();
             $table->string('siswa_alamat');
             $table->foreignId('siswa_negara_id')->constrained('negaras')->cascadeOnDelete()->cascadeOnUpdate();
@@ -77,7 +77,7 @@ return new class extends Migration
             $table->foreignId('ayah_kecamatan_id')->constrained('kecamatans')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('ayah_kelurahan_id')->constrained('kelurahans')->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('wali_nama')->nullable();
-            $table->string('nik_nama')->nullable();
+            $table->string('wali_nik')->nullable();
             $table->string('wali_telepon')->nullable();
             $table->string('wali_pekerjaan')->nullable();
             $table->string('wali_penghasilan')->nullable();

@@ -20,7 +20,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\HtmlString;
 use Filament\Forms\Components\Tabs;
 use Illuminate\Support\Facades\Auth;
-// use Torgodly\Html2Media\Actions\Html2MediaAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Wizard;
 use Filament\Forms\Components\Section;
@@ -86,7 +85,7 @@ class CalonSiswaResource extends Resource
                                 ])
                                 ->hidden(function () {
                                     return Filament::auth()->user()->username !== 'administrator';
-                                }) // Jika username Bukan 'administrator'
+                                })
                                 ->columns(2),
 
                             Tabs::make('Biodata')
@@ -110,10 +109,12 @@ class CalonSiswaResource extends Resource
                                             Forms\Components\TextInput::make('nama')
                                                 ->label('Nama Lengkap')
                                                 ->required()
-                                                ->afterStateHydrated(function (TextInput $component, $state) {
-                                                    $component->state($state);
-                                                    $component->disabled();
-                                                })
+                                                // ->disabledOn('create')
+                                                ->reactive()
+                                                // ->afterStateHydrated(function (TextInput $component, $state) {
+                                                //     $component->state($state);
+                                                //     $component->disabled();
+                                                // })
                                                 ->default(fn() => Auth::user()->name)
                                                 ->validationMessages([
                                                     'required' => 'Form ini wajib diisi.',
@@ -125,12 +126,12 @@ class CalonSiswaResource extends Resource
                                                 ->unique(ignoreRecord: true)
                                                 ->rule(fn($record) => $record === null ? 'unique:calon_siswas,nik' : 'unique:calon_siswas,nik,' . $record->id)
                                                 ->dehydrateStateUsing(fn($state) => $state ? $state : null)
-                                                ->maxLength(16)
                                                 ->numeric()
+                                                ->maxLength(16)
                                                 ->minLength(16)
                                                 ->validationMessages([
-                                                    'max' => 'NIK: Masukkan maksimal 16 Angka.',
-                                                    'min' => 'NIK: Masukkan minimal 16 Angka.',
+                                                    'max_digits' => 'NIK: Masukkan maksimal 16 Angka.',
+                                                    'min_digits' => 'NIK: Masukkan minimal 16 Angka.',
                                                     'unique' => 'NIK: Nomor ini sudah pernah di isi.',
                                                     'required' => 'Form ini wajib diisi.',
                                                 ]),
@@ -140,23 +141,18 @@ class CalonSiswaResource extends Resource
                                                 ->required()
                                                 ->maxLength(16)
                                                 ->numeric()
-
                                                 ->minLength(16)
                                                 ->validationMessages([
-                                                    'max' => 'KK: Masukkan maksimal 16 Angka.',
-                                                    'min' => 'KK: Masukkan minimal 16 Angka.',
+                                                    'max_digits' => 'NIK: Masukkan maksimal 16 Angka.',
+                                                    'min_digits' => 'NIK: Masukkan minimal 16 Angka.',
                                                     'required' => 'Form ini wajib diisi.',
                                                 ]),
                                             // NISN Calon Peserta Didik Baru
                                             Forms\Components\TextInput::make('nisn')
                                                 ->label('Nomor Induk Siswa Nasional (NISN)')
                                                 ->required()
-                                                ->disabledOn('create')
+                                                // ->disabledOn('create')
                                                 ->reactive()
-                                                ->afterStateHydrated(function (TextInput $component, $state) {
-                                                    $component->state($state);
-                                                    $component->disabled();
-                                                })
                                                 ->default(fn() => Auth::user()->username)
                                                 ->unique(ignoreRecord: true)
                                                 ->rule(fn($record) => $record === null ? 'unique:calon_siswas,nisn' : 'unique:calon_siswas,nisn,' . $record->id)
@@ -985,9 +981,10 @@ class CalonSiswaResource extends Resource
                                                 ->numeric()
                                                 ->validationMessages([
                                                     'required' => 'Form ini wajib diisi.',
-                                                    'max' => 'NIK: Masukkan maksimal 16 Angka.',
-                                                    'min' => 'NIK: Masukkan minimal 16 Angka.',
+                                                    'max_digits' => 'NIK: Masukkan maksimal 16 Angka.',
+                                                    'min_digits' => 'NIK: Masukkan minimal 16 Angka.',
                                                 ]),
+
                                             Forms\Components\TextInput::make('ibu_telepon')
                                                 ->label('Nomor Telepon')
                                                 ->tel()
@@ -1006,6 +1003,23 @@ class CalonSiswaResource extends Resource
                                                     'Wirausaha' => 'Wirausaha',
                                                     'Wiraswasta' => 'Wiraswasta',
                                                     'Buruh' => 'Buruh',
+                                                ])
+                                                ->required()
+                                                ->validationMessages([
+                                                    'required' => 'Form ini wajib diisi.',
+                                                ])
+                                                ->native(false),
+
+                                            Forms\Components\Select::make('ibu_penghasilan')
+                                                ->label('Penghasilan Bulanan')
+                                                ->options([
+                                                    'Kurang dari Rp. 500.000' => 'Kurang dari Rp. 500.000',
+                                                    'Rp. 500.000 - Rp. 1.000.000' => 'Rp. 500.000 - Rp. 1.000.000',
+                                                    'Rp. 1.000.001 - Rp. 2.000.000' => 'Rp. 1.000.001 - Rp. 2.000.000',
+                                                    'Rp. 2.000.001 - Rp. 3.000.000' => 'Rp. 2.000.001 - Rp. 3.000.000',
+                                                    'Rp. 3.000.001 - Rp. 4.000.000' => 'Rp. 3.000.001 - Rp. 4.000.000',
+                                                    'Rp. 4.000.001 - Rp. 5.000.000' => 'Rp. 4.000.001 - Rp. 5.000.000',
+                                                    'Lebih dari Rp. 5.000.000' => 'Lebih dari Rp. 5.000.000',
                                                 ])
                                                 ->required()
                                                 ->validationMessages([
@@ -1162,8 +1176,8 @@ class CalonSiswaResource extends Resource
                                                 ->minlength(16)
                                                 ->validationMessages([
                                                     'required' => 'Form ini wajib diisi.',
-                                                    'max' => 'NIK: Masukkan maksimal 16 Angka.',
-                                                    'min' => 'NIK: Masukkan minimal 16 Angka.',
+                                                    'max_digits' => 'NIK: Masukkan maksimal 16 Angka.',
+                                                    'min_digits' => 'NIK: Masukkan minimal 16 Angka.',
                                                 ]),
                                             Forms\Components\TextInput::make('ayah_telepon')
                                                 ->label('Nomor Telepon')
@@ -1183,6 +1197,23 @@ class CalonSiswaResource extends Resource
                                                     'Wirausaha' => 'Wirausaha',
                                                     'Wiraswasta' => 'Wiraswasta',
                                                     'Buruh' => 'Buruh',
+                                                ])
+                                                ->required()
+                                                ->validationMessages([
+                                                    'required' => 'Form ini wajib diisi.',
+                                                ])
+                                                ->native(false),
+
+                                            Forms\Components\Select::make('ayah_penghasilan')
+                                                ->label('Penghasilan Bulanan')
+                                                ->options([
+                                                    'Kurang dari Rp. 500.000' => 'Kurang dari Rp. 500.000',
+                                                    'Rp. 500.000 - Rp. 1.000.000' => 'Rp. 500.000 - Rp. 1.000.000',
+                                                    'Rp. 1.000.001 - Rp. 2.000.000' => 'Rp. 1.000.001 - Rp. 2.000.000',
+                                                    'Rp. 2.000.001 - Rp. 3.000.000' => 'Rp. 2.000.001 - Rp. 3.000.000',
+                                                    'Rp. 3.000.001 - Rp. 4.000.000' => 'Rp. 3.000.001 - Rp. 4.000.000',
+                                                    'Rp. 4.000.001 - Rp. 5.000.000' => 'Rp. 4.000.001 - Rp. 5.000.000',
+                                                    'Lebih dari Rp. 5.000.000' => 'Lebih dari Rp. 5.000.000',
                                                 ])
                                                 ->required()
                                                 ->validationMessages([
@@ -1328,14 +1359,13 @@ class CalonSiswaResource extends Resource
                                             Forms\Components\TextInput::make('wali_nama')
                                                 ->label('Nama Lengkap Wali'),
                                             Forms\Components\TextInput::make('wali_nik')
-                                                ->label('NIK Ayah Kandung')
+                                                ->label('NIK Wali')
                                                 ->numeric()
                                                 ->maxLength(16)
                                                 ->minlength(16)
                                                 ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                    'max' => 'NIK: Masukkan maksimal 16 Angka.',
-                                                    'min' => 'NIK: Masukkan minimal 16 Angka.',
+                                                    'max_digits' => 'NIK: Masukkan maksimal 16 Angka.',
+                                                    'min_digits' => 'NIK: Masukkan minimal 16 Angka.',
                                                 ]),
                                             Forms\Components\TextInput::make('wali_telepon')
                                                 ->label('Nomor Telepon')
@@ -1351,6 +1381,36 @@ class CalonSiswaResource extends Resource
                                                     'Wirausaha' => 'Wirausaha',
                                                     'Wiraswasta' => 'Wiraswasta',
                                                     'Buruh' => 'Buruh',
+                                                ])
+                                                ->native(false),
+
+                                            Forms\Components\Select::make('wali_penghasilan')
+                                                ->label('Penghasilan Bulanan')
+                                                ->options([
+                                                    'Kurang dari Rp. 500.000' => 'Kurang dari Rp. 500.000',
+                                                    'Rp. 500.000 - Rp. 1.000.000' => 'Rp. 500.000 - Rp. 1.000.000',
+                                                    'Rp. 1.000.001 - Rp. 2.000.000' => 'Rp. 1.000.001 - Rp. 2.000.000',
+                                                    'Rp. 2.000.001 - Rp. 3.000.000' => 'Rp. 2.000.001 - Rp. 3.000.000',
+                                                    'Rp. 3.000.001 - Rp. 4.000.000' => 'Rp. 3.000.001 - Rp. 4.000.000',
+                                                    'Rp. 4.000.001 - Rp. 5.000.000' => 'Rp. 4.000.001 - Rp. 5.000.000',
+                                                    'Lebih dari Rp. 5.000.000' => 'Lebih dari Rp. 5.000.000',
+                                                ])
+                                                ->native(false),
+
+                                            Forms\Components\Select::make('wali_pendidikan')
+                                                ->label('Pendidikan')
+                                                ->options([
+                                                    'Tidak Sekolah' => 'Tidak Sekolah',
+                                                    'SD/MI Sederajat' => 'SD/MI Sederajat',
+                                                    'SMP/MTS Sederajat' => 'SMP/MTS Sederajat',
+                                                    'SMA/SMK/MA Sederajat' => 'SMA/SMK/MA Sederajat',
+                                                    'D1' => 'D1',
+                                                    'D2' => 'D2',
+                                                    'D3' => 'D3',
+                                                    'D4' => 'D4',
+                                                    'S1' => 'S1',
+                                                    'S2' => 'S2',
+                                                    'S3' => 'S3',
                                                 ])
                                                 ->native(false),
                                             Forms\Components\Select::make('wali_status')
@@ -1459,14 +1519,14 @@ class CalonSiswaResource extends Resource
                     Wizard\Step::make('Data Tes')
                         ->hidden(function () {
                             return Filament::auth()->user()->username !== 'administrator';
-                        }) // Jika username Bukan 'administrator'
+                        })
                         ->schema([
                             // Section Data Tes
                             Section::make('Data Tes')
                                 ->visible(fn($get) => $get('jalur_pendaftaran_id') !== null)
                                 ->hidden(function () {
                                     return Filament::auth()->user()->username !== 'administrator';
-                                }) // Jika username Bukan 'administrator'
+                                })
                                 // ->collapsible()
                                 ->schema([
                                     // Tab Cetak Kartu Calon Peserta Didik Baru
@@ -1554,11 +1614,6 @@ class CalonSiswaResource extends Resource
                                     'md' => '100%',
                                     'lg' => 2,
                                 ]),
-                        ]),
-
-                    Wizard\Step::make('Preview Formulir')
-                        ->schema([
-                            // 
                         ]),
                 ])
                     ->columnSpanFull(),
@@ -1883,22 +1938,7 @@ class CalonSiswaResource extends Resource
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Pekerjaan Wali')
                     ->searchable(),
-                Forms\Components\Select::make('wali_pendidikan')
-                    ->label('Pendidikan')
-                    ->options([
-                        'Tidak Sekolah' => 'Tidak Sekolah',
-                        'SD/MI Sederajat' => 'SD/MI Sederajat',
-                        'SMP/MTS Sederajat' => 'SMP/MTS Sederajat',
-                        'SMA/SMK/MA Sederajat' => 'SMA/SMK/MA Sederajat',
-                        'D1' => 'D1',
-                        'D2' => 'D2',
-                        'D3' => 'D3',
-                        'D4' => 'D4',
-                        'S1' => 'S1',
-                        'S2' => 'S2',
-                        'S3' => 'S3',
-                    ])
-                    ->native(false),
+
                 Tables\Columns\TextColumn::make('wali_status')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Status Wali')

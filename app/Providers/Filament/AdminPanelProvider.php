@@ -42,7 +42,7 @@ class AdminPanelProvider extends PanelProvider
             ->databaseNotifications()
             // ->defaultThemeMode(ThemeMode::Light)
             ->brandLogo(asset('/img/brand.png'))
-            ->brandLogoHeight('2rem')
+            ->brandLogoHeight('2.6rem')
             ->topNavigation()
             ->login(LoginCustom::class)
             ->registration(RegisterCustom::class)
@@ -105,31 +105,22 @@ class AdminPanelProvider extends PanelProvider
                         'default' => 1,
                         'sm' => 2,
                     ]),
+
                 EasyFooterPlugin::make()
                     ->withFooterPosition('footer')
                     ->withLoadTime('Halaman ini dimuat dalam')
                     ->withLinks([
-                        // ['title' => 'Official Website', 'url' => 'https://www.mtsn1pandeglang.sch.id/'],
-                        // ['title' => 'Kebijakan Privasi', 'url' => 'https://www.mtsn1pandeglang.sch.id/kebijakan-privasi/'],
-                        // ['title' => 'Tentang Kami', 'url' => 'https://www.mtsn1pandeglang.sch.id/about/'],
-                        // ['title' => 'Kontak', 'url' => 'https://wa.me/6289612050291/?text=Hallo,%20PTSP%20MTs%20Negeri%201%20Pandeglang.'],
                         ['title' => 'Dibuat dan dikembangkan dengan ❤ oleh Yahya Zulfikri', 'url' => 'https://instagram.com/zulfikriyahya_'],
                     ])
                     ->withBorder(),
-                // ->hiddenFromPagesEnabled()
-                // ->hiddenFromPages(['admin/login', 'admin/forgot-password', 'admin/register', 'admin/email/verify']),
 
-                // Tema
-                // FilamentNordThemePlugin::make(),
+                // Pastikan variabel tema hanya digunakan pada bagian yang relevan
                 AuthUIEnhancerPlugin::make()
-                    ->formPanelPosition('right')
-                    // ->mobileFormPanelPosition('top')
-                    // ->emptyPanelView('view')
+                    ->formPanelPosition('left')
                     ->formPanelWidth('35%')
                     ->formPanelBackgroundColor(Color::hex('#010101'))
                     ->emptyPanelBackgroundImageUrl('/img/wallpaper.png')
                     ->emptyPanelBackgroundColor(Color::hex('#010101'))
-                    // ->emptyPanelBackgroundImageOpacity('80%')
                     ->showEmptyPanelOnMobile(false),
             ]);
     }
