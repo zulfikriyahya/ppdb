@@ -12,6 +12,8 @@ use App\Models\Kecamatan;
 use App\Models\Kelurahan;
 use App\Models\SekolahAsal;
 use Illuminate\Support\Str;
+use App\Models\MataPelajaran;
+use App\Models\Ekstrakurikuler;
 use Illuminate\Database\Seeder;
 use App\Models\JalurPendaftaran;
 use App\Models\TahunPendaftaran;
@@ -6885,6 +6887,35 @@ class DatabaseSeeder extends Seeder
 
         foreach ($dataInstansiLain as $data) {
             SekolahAsal::create($data);
+        }
+
+        // Mata Pelajaran Seeder
+        $dataMataPelajaran = [
+            ['nama' => 'Bahasa Indonesia'],
+            ['nama' => 'Bahasa Inggris'],
+            ['nama' => 'Bahasa Bahasa Arab'],
+            ['nama' => 'Bahasa Matematika'],
+            ['nama' => 'Bahasa PPkn'],
+            ['nama' => 'Bahasa IPS'],
+            ['nama' => 'Bahasa IPA'],
+        ];
+
+        foreach ($dataMataPelajaran as $data) {
+            MataPelajaran::create($data);
+        }
+
+        // Ekstrakurikuler Seeder
+        $dataEkstrakurikuler = [
+            ['nama' => 'Pramuka'],
+            ['nama' => 'Paskibra'],
+            ['nama' => 'Olahraga'],
+            ['nama' => 'Seni'],
+            ['nama' => 'Kesenian'],
+            ['nama' => 'Rohani'],
+        ];
+
+        foreach ($dataEkstrakurikuler as $data) {
+            Ekstrakurikuler::create($data);
         }
     }
 }

@@ -26,6 +26,7 @@ return new class extends Migration
             $table->string('website');
             $table->string('telepon');
             $table->string('email');
+            $table->string('nomor_surat');
             $table->timestamps();
             $table->softDeletes();
         });
