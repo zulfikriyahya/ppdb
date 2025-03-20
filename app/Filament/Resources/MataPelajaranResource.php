@@ -18,7 +18,15 @@ use App\Filament\Resources\MataPelajaranResource\RelationManagers;
 class MataPelajaranResource extends Resource
 {
     protected static ?string $model = MataPelajaran::class;
+    protected static ?string $navigationLabel = 'Mata Pelajaran';
 
+    protected static ?string $label = 'Mata Pelajaran';
+
+    protected static ?string $navigationGroup = 'Referensi';
+
+    protected static ?int $navigationSort = 10;
+
+    protected static bool $shouldRegisterNavigation = true;
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form

@@ -160,9 +160,10 @@ class CalonSiswa extends Model
     {
         return $this->belongsTo(Ekstrakurikuler::class, 'ekstrakurikuler_id');
     }
+
     public function mataPelajaran(): BelongsTo
     {
-        return $this->belongsTo(Ekstrakurikuler::class, 'ekstrakurikuler_id');
+        return $this->belongsTo(MataPelajaran::class, 'mata_pelajaran_id');
     }
 
     public function ibuNegara(): BelongsTo

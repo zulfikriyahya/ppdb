@@ -18,7 +18,15 @@ use App\Filament\Resources\EkstrakurikulerResource\RelationManagers;
 class EkstrakurikulerResource extends Resource
 {
     protected static ?string $model = Ekstrakurikuler::class;
+    protected static ?string $navigationLabel = 'Ekstrakurikuler';
 
+    protected static ?string $label = 'Ekstrakurikuler';
+
+    protected static ?string $navigationGroup = 'Referensi';
+
+    protected static ?int $navigationSort = 11;
+
+    protected static bool $shouldRegisterNavigation = true;
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form
