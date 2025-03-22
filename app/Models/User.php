@@ -2,18 +2,18 @@
 
 namespace App\Models;
 
-use Filament\Panel;
-use Spatie\Permission\Traits\HasRoles;
-use Filament\Models\Contracts\HasAvatar;
-use Illuminate\Notifications\Notifiable;
 use Filament\Models\Contracts\FilamentUser;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Filament\Models\Contracts\HasAvatar;
+use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements FilamentUser, MustVerifyEmail, HasAvatar
+class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerifyEmail
 {
     use HasFactory, HasRoles, Notifiable, SoftDeletes;
 

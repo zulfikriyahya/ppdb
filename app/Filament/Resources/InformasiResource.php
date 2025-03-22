@@ -2,18 +2,32 @@
 
 namespace App\Filament\Resources;
 
-use Filament\Forms;
-use Filament\Tables;
-use Filament\Forms\Get;
-use Filament\Forms\Form;
+use App\Filament\Resources\InformasiResource\Pages;
 use App\Models\Informasi;
-use Filament\Tables\Table;
-use Filament\Resources\Resource;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Resources\Resource;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
+use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Actions\RestoreBulkAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use App\Filament\Resources\InformasiResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class InformasiResource extends Resource
@@ -36,12 +50,11 @@ class InformasiResource extends Resource
     {
         return $form
             ->schema([
-                // Section
                 Section::make()
                     ->schema([
-                        Forms\Components\Select::make('tahun_pendaftaran_id')
+                        Select::make('tahun_pendaftaran_id')
                             ->label('Tahun Pendaftaran')
-                            ->relationship('tahunPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
+                            ->relationship('tahunPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif'))
                             ->required()
                             ->native(false)
                             ->live()
@@ -50,11 +63,10 @@ class InformasiResource extends Resource
                             ])
                             ->columnSpanFull(),
                     ]),
-                // Section
                 Section::make()
-                    ->visible(fn($get) => $get('tahun_pendaftaran_id') !== null)
+                    ->visible(fn ($get) => $get('tahun_pendaftaran_id') !== null)
                     ->schema([
-                        Forms\Components\TextInput::make('judul')
+                        TextInput::make('judul')
                             ->label('Judul')
                             ->required()
                             ->minLength(5)
@@ -64,7 +76,7 @@ class InformasiResource extends Resource
                                 'min' => 'Masukkan maksimal 30 karakter.',
                                 'max' => 'Masukkan maksimal 30 karakter.',
                             ]),
-                        Forms\Components\Select::make('status')
+                        Select::make('status')
                             ->label('Status')
                             ->options(['Publish' => 'Publish', 'Draft' => 'Draft'])
                             ->native(false)
@@ -73,13 +85,13 @@ class InformasiResource extends Resource
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ]),
-                        Forms\Components\RichEditor::make('isi')
+                        RichEditor::make('isi')
                             ->label('Uraian')
                             ->required()
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ]),
-                        Forms\Components\FileUpload::make('gambar')
+                        FileUpload::make('gambar')
                             ->label('Lampiran')
                             ->maxSize('2048')
                             ->minSize('10')
@@ -90,11 +102,11 @@ class InformasiResource extends Resource
                             ->directory('assets/informasi')
                             ->acceptedFileTypes(['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/pdf', 'image/png', 'image/jpeg', 'image/png', 'image/webp']),
 
-                        Forms\Components\DateTimePicker::make('tanggal')
+                        DateTimePicker::make('tanggal')
                             ->label('Tanggal')
                             ->default(now())
                             ->required()
-                            ->hidden(fn(Get $get) => $get('status') !== 'Publish')
+                            ->hidden(fn (Get $get) => $get('status') !== 'Publish')
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ])
@@ -112,10 +124,10 @@ class InformasiResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('judul')
+                TextColumn::make('judul')
                     ->label('Judul')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('isi')
+                TextColumn::make('isi')
                     ->label('Uraian')
                     ->wrap()
                     ->words(5)
@@ -128,58 +140,58 @@ class InformasiResource extends Resource
                         return $state;
                     })
                     ->searchable(),
-                Tables\Columns\TextColumn::make('gambar')
+                TextColumn::make('gambar')
                     ->label('Lampiran')
                     ->url('#')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('tanggal')
+                TextColumn::make('tanggal')
                     ->label('Tanggal')
                     ->dateTime()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('tahunPendaftaran.nama')
+                TextColumn::make('tahunPendaftaran.nama')
                     ->label('Tahun Pendaftaran')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('status')
+                TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'Publish' => 'success',
                         'Draft' => 'gray'
                     })
                     ->searchable(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label('Dibuat')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->label('Diubah')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('deleted_at')
+                TextColumn::make('deleted_at')
                     ->label('Dihapus')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\ActionGroup::make([
-                    Tables\Actions\ViewAction::make(),
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\DeleteAction::make(),
-                    Tables\Actions\ForceDeleteAction::make(),
-                    Tables\Actions\RestoreAction::make(),
+                ActionGroup::make([
+                    ViewAction::make(),
+                    EditAction::make(),
+                    DeleteAction::make(),
+                    ForceDeleteAction::make(),
+                    RestoreAction::make(),
                 ]),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ])
             ->striped()

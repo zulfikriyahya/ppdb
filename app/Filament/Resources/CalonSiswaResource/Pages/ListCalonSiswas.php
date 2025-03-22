@@ -2,20 +2,15 @@
 
 namespace App\Filament\Resources\CalonSiswaResource\Pages;
 
-use Filament\Actions;
-use App\Models\CalonSiswa;
-use Filament\Actions\Action;
-use Blueprint\Contracts\Model;
-use GuzzleHttp\Promise\Create;
-use Filament\Actions\ViewAction;
-use Filament\Actions\CreateAction;
-use Filament\Actions\ExportAction;
-use Filament\Support\Colors\Color;
-use Illuminate\Support\Facades\Auth;
-use Filament\Resources\Pages\ListRecords;
 use App\Filament\Exports\CalonSiswaExporter;
 use App\Filament\Resources\CalonSiswaResource;
-use Torgodly\Html2Media\Actions\Html2MediaAction;
+use App\Models\CalonSiswa;
+use Filament\Actions\Action;
+use Filament\Actions\CreateAction;
+use Filament\Actions\ExportAction;
+use Filament\Resources\Pages\ListRecords;
+use Filament\Support\Colors\Color;
+use Illuminate\Support\Facades\Auth;
 
 class ListCalonSiswas extends ListRecords
 {
@@ -32,13 +27,14 @@ class ListCalonSiswas extends ListRecords
                 $urlView = "/formulir/{$calonSiswa->id}";
                 $urlEdit = "/formulir/{$calonSiswa->id}/edit";
             } else {
-                false;
+
             }
         }
+
         return [
             // Daftar Sekarang
             CreateAction::make()
-                ->label("Daftar Sekarang")
+                ->label('Daftar Sekarang')
                 ->icon('heroicon-m-plus')
                 ->outlined()
                 ->color('primary')
@@ -73,7 +69,7 @@ class ListCalonSiswas extends ListRecords
                 ->color('success')
                 ->exporter(CalonSiswaExporter::class)
                 ->chunkSize(250)
-                ->visible(fn(): string => CalonSiswa::count() > 0 && Auth::user()->username === 'administrator'),
+                ->visible(fn (): string => CalonSiswa::count() > 0 && Auth::user()->username === 'administrator'),
         ];
     }
 }

@@ -2,22 +2,22 @@
 
 namespace App\Filament\Resources;
 
-use Filament\Forms;
-use Filament\Tables;
-use Filament\Forms\Form;
-use Filament\Tables\Table;
+use App\Filament\Resources\MataPelajaranResource\Pages;
 use App\Models\MataPelajaran;
-use Filament\Resources\Resource;
+use Filament\Forms;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables;
 use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\MataPelajaranResource\Pages;
-use App\Filament\Resources\MataPelajaranResource\RelationManagers;
 
 class MataPelajaranResource extends Resource
 {
     protected static ?string $model = MataPelajaran::class;
+
     protected static ?string $navigationLabel = 'Mata Pelajaran';
 
     protected static ?string $label = 'Mata Pelajaran';
@@ -27,6 +27,7 @@ class MataPelajaranResource extends Resource
     protected static ?int $navigationSort = 10;
 
     protected static bool $shouldRegisterNavigation = true;
+
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form
@@ -39,7 +40,7 @@ class MataPelajaranResource extends Resource
                             ->label('Mata Pelajaran')
                             ->required()
                             ->maxLength(255),
-                    ])
+                    ]),
             ]);
     }
 

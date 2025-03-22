@@ -2,12 +2,12 @@
 
 namespace App\Filament\Pages\Auth;
 
-use Filament\Pages\Auth\Register;
-use Illuminate\Support\Facades\Hash;
+use DiogoGPinto\AuthUIEnhancer\Pages\Auth\Concerns\HasCustomLayout;
 use Filament\Forms\Components\Component;
 use Filament\Forms\Components\TextInput;
+use Filament\Pages\Auth\Register;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
-use DiogoGPinto\AuthUIEnhancer\Pages\Auth\Concerns\HasCustomLayout;
 
 class RegisterCustom extends Register
 {
@@ -78,7 +78,7 @@ class RegisterCustom extends Register
             ->revealable(filament()->arePasswordsRevealable())
             ->required()
             ->rule(Password::default())
-            ->dehydrateStateUsing(fn($state) => Hash::make($state))
+            ->dehydrateStateUsing(fn ($state) => Hash::make($state))
             ->same('passwordConfirmation')
             ->validationMessages([
                 'same' => 'Password: Password tidak sesuai dengan isian password konfirmasi.',

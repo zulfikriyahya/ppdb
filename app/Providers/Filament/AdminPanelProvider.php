@@ -2,34 +2,32 @@
 
 namespace App\Providers\Filament;
 
-use Filament\Pages;
-use Filament\Panel;
-use App\Models\User;
-use Filament\Widgets;
-use Filament\PanelProvider;
-use Filament\Enums\ThemeMode;
-use Filament\Navigation\MenuItem;
-use Filament\Support\Colors\Color;
-use Filament\Support\Enums\MaxWidth;
-use Illuminate\Support\Facades\Auth;
-use App\Filament\Pages\Auth\LoginCustom;
-use App\Filament\Resources\UserResource;
-use Filament\Http\Middleware\Authenticate;
-use App\Filament\Pages\Auth\RegisterCustom;
 use App\Filament\Pages\Auth\EditProfileCustom;
-use Illuminate\Session\Middleware\StartSession;
-use Devonab\FilamentEasyFooter\EasyFooterPlugin;
-use Illuminate\Cookie\Middleware\EncryptCookies;
-use Filament\Http\Middleware\AuthenticateSession;
-use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
+use App\Filament\Pages\Auth\LoginCustom;
+use App\Filament\Pages\Auth\RegisterCustom;
+use App\Filament\Resources\UserResource;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
-use Illuminate\Routing\Middleware\SubstituteBindings;
-use Andreia\FilamentNordTheme\FilamentNordThemePlugin;
-use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Devonab\FilamentEasyFooter\EasyFooterPlugin;
+use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
+use Filament\Enums\ThemeMode;
+use Filament\Http\Middleware\Authenticate;
+use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Filament\Navigation\MenuItem;
+use Filament\Pages;
+use Filament\Panel;
+use Filament\PanelProvider;
+use Filament\Support\Colors\Color;
+use Filament\Support\Enums\MaxWidth;
+use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Cookie\Middleware\EncryptCookies;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -56,9 +54,9 @@ class AdminPanelProvider extends PanelProvider
             ->userMenuItems([
                 MenuItem::make()
                     ->label('Verifikasi Pengguna')
-                    ->url(fn(): string => UserResource::getUrl())
+                    ->url(fn (): string => UserResource::getUrl())
                     ->icon('heroicon-o-identification')
-                    ->visible(fn() => Auth::user()->username === 'administrator'),
+                    ->visible(fn () => Auth::user()->username === 'administrator'),
             ])
             ->default()
             ->spa()

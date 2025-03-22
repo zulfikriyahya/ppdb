@@ -2,24 +2,24 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
+use App\Models\Ekstrakurikuler;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use App\Models\Kelas;
-use App\Models\Negara;
+use App\Models\JalurPendaftaran;
 use App\Models\Jurusan;
-use App\Models\Prestasi;
-use App\Models\Provinsi;
 use App\Models\Kabupaten;
 use App\Models\Kecamatan;
+use App\Models\Kelas;
 use App\Models\Kelurahan;
-use App\Models\SekolahAsal;
-use Illuminate\Support\Str;
 use App\Models\MataPelajaran;
-use App\Models\Ekstrakurikuler;
-use Illuminate\Database\Seeder;
-use App\Models\JalurPendaftaran;
+use App\Models\Negara;
+use App\Models\Prestasi;
+use App\Models\Provinsi;
+use App\Models\SekolahAsal;
 use App\Models\TahunPendaftaran;
+use App\Models\User;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {

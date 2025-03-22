@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\MataPelajaranResource\Pages;
 
 use App\Filament\Resources\MataPelajaranResource;
-use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateMataPelajaran extends CreateRecord
