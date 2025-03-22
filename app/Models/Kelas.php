@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Kelas extends Model
 {
@@ -15,13 +15,13 @@ class Kelas extends Model
     protected $fillable = [
         'nama',
         'jurusan_id',
-        'tahun_pendaftaran_id',
+        // 'tahun_pendaftaran_id',
     ];
 
     protected $casts = [
         'id' => 'integer',
         'jurusan_id' => 'integer',
-        'tahun_pendaftaran_id' => 'integer',
+        // 'tahun_pendaftaran_id' => 'integer',
     ];
 
     public function calonSiswas(): HasMany

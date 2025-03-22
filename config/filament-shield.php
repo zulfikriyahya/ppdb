@@ -28,7 +28,7 @@ return [
 
     'panel_user' => [
         'enabled' => true,
-        'name' => 'ppdb',
+        'name' => 'panel_user',
     ],
 
     'permission_prefixes' => [

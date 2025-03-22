@@ -145,6 +145,15 @@ class CalonSiswa extends Model
         'mata_pelajaran_id' => 'integer',
         'ekstrakurikuler_id' => 'integer',
         'berkas_prestasi' => 'array',
+        // 'nik' => 'hashed',
+        // 'kk' => 'hashed',
+        // 'ibu_nik' => 'hashed',
+        // 'ayah_nik' => 'hashed',
+        // 'wali_nik' => 'hashed',
+        // 'siswa_telepon' => 'hashed',
+        // 'ibu_telepon' => 'hashed',
+        // 'ayah_telepon' => 'hashed',
+        // 'wali_telepon' => 'hashed',
 
     ];
 

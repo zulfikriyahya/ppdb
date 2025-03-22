@@ -82,12 +82,14 @@ class UserResource extends Resource
                         DateTimePicker::make('email_verified_at')
                             ->label('Diverifikasi')
                             ->default(now()),
+
                         Select::make('roles')
                             ->label('Peran')
                             ->relationship('roles', 'name')
                             ->multiple()
                             ->preload()
                             ->searchable(),
+
                         Select::make('status')
                             ->label('Status')
                             ->required()
@@ -122,6 +124,7 @@ class UserResource extends Resource
                     ->label('Diverifikasi')
                     ->dateTime('d F Y H:i:s')
                     ->sortable(),
+
                 TextColumn::make('roles')
                     ->label('Peran')
                     ->formatStateUsing(fn($state) => $state->pluck('name')->join(', '))

@@ -4,7 +4,9 @@ namespace Database\Seeders;
 
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Kelas;
 use App\Models\Negara;
+use App\Models\Jurusan;
 use App\Models\Prestasi;
 use App\Models\Provinsi;
 use App\Models\Kabupaten;
@@ -6917,6 +6919,35 @@ class DatabaseSeeder extends Seeder
 
         foreach ($dataEkstrakurikuler as $data) {
             Ekstrakurikuler::create($data);
+        }
+
+        // Jurusan Seeder
+        $dataJurusan = [
+            ['id' => '1', 'nama' => 'Unggulan'],
+            ['id' => '2', 'nama' => 'Reguler'],
+        ];
+
+        foreach ($dataJurusan as $data) {
+            Jurusan::create($data);
+        }
+
+        // Kelas Seeder
+        $dataKelas = [
+            ['nama' => '7A', 'jurusan_id' => '1'],
+            ['nama' => '7B', 'jurusan_id' => '1'],
+            ['nama' => '7C', 'jurusan_id' => '1'],
+            ['nama' => '7D', 'jurusan_id' => '1'],
+            ['nama' => '7E', 'jurusan_id' => '1'],
+            ['nama' => '7F', 'jurusan_id' => '2'],
+            ['nama' => '7G', 'jurusan_id' => '2'],
+            ['nama' => '7H', 'jurusan_id' => '2'],
+            ['nama' => '7I', 'jurusan_id' => '2'],
+            ['nama' => '7J', 'jurusan_id' => '2'],
+            ['nama' => '7K', 'jurusan_id' => '2'],
+        ];
+
+        foreach ($dataKelas as $data) {
+            Kelas::create($data);
         }
     }
 }
