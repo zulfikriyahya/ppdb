@@ -40,16 +40,14 @@ class ViewCalonSiswa extends ViewRecord
 
             // Kartu Tes
             Html2MediaAction::make('cetak_kartu_tes')
-                ->hidden(
-                    Auth::user()->username === 'administrator' || $calonSiswa === null || ($calonSiswa->status_pendaftaran !== 'Diproses' && $calonSiswa->status_pendaftaran !== 'Berkas Tidak Lengkap')
-                )
+                ->hidden(Auth::user()->username === 'administrator')
                 ->label('Kartu Tes')
                 ->outlined()
                 ->icon('heroicon-o-printer')
                 ->scale(2)
                 ->print() // Enable print option
                 // ->preview() // Enable preview option
-                ->filename('formulir.pdf') // Custom file name
+                ->filename('Kartu Tes.pdf') // Custom file name
                 ->savePdf() // Enable save as PDF option
                 ->requiresConfirmation() // Show confirmation modal
                 // ->pagebreak('section', ['css', 'legacy'])
@@ -57,7 +55,7 @@ class ViewCalonSiswa extends ViewRecord
                 ->format('a4', 'mm') // A4 format with mm units
                 ->enableLinks() // Enable links in PDF
                 ->margin([10, 20, 10, 20]) // Set custom margins
-                ->content(fn($record) => view('formulir', ['record' => $record])), // Set content
+                ->content(fn($record) => view('kartu-tes', ['record' => $record])), // Set content
 
 
             // SKL
@@ -77,7 +75,7 @@ class ViewCalonSiswa extends ViewRecord
                 ->format('a4', 'mm') // A4 format with mm units
                 ->enableLinks() // Enable links in PDF
                 ->margin([10, 20, 10, 20]) // Set custom margins
-                ->content(fn($record) => view('formulir', ['record' => $record])), // Set content
+                ->content(fn($record) => view('skl', ['record' => $record])), // Set content
 
             // Pakta Integritas
             Html2MediaAction::make('cetak_pakta_integritas')
@@ -96,7 +94,7 @@ class ViewCalonSiswa extends ViewRecord
                 ->format('a4', 'mm') // A4 format with mm units
                 ->enableLinks() // Enable links in PDF
                 ->margin([10, 20, 10, 20]) // Set custom margins
-                ->content(fn($record) => view('formulir', ['record' => $record])), // Set content
+                ->content(fn($record) => view('pakta-integritas', ['record' => $record])), // Set content
 
         ];
     }

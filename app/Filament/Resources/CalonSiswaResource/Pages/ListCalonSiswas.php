@@ -29,8 +29,8 @@ class ListCalonSiswas extends ListRecords
             $urlEdit = '';
 
             if ($calonSiswa) {
-                $urlView = "/calon-siswas/{$calonSiswa->id}";
-                $urlEdit = "/calon-siswas/{$calonSiswa->id}/edit";
+                $urlView = "/formulir/{$calonSiswa->id}";
+                $urlEdit = "/formulir/{$calonSiswa->id}/edit";
             } else {
                 false;
             }

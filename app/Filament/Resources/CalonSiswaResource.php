@@ -49,6 +49,8 @@ class CalonSiswaResource extends Resource
 
     protected static ?string $label = 'Formulir Pendaftaran';
 
+    protected static ?string $slug = 'formulir';
+
     protected static ?string $navigationGroup = 'Formulir';
 
     protected static ?int $navigationSort = 1;
