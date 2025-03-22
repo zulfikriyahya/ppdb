@@ -371,22 +371,20 @@ class CreateCalonSiswa extends CreateRecord
                                                         ->validationMessages([
                                                             'required' => 'Form ini wajib diisi.',
                                                         ])
-                                                        ->label('Nomor Statistik Sekolah/Madrasah'),
+                                                        ->label('Nomor Statistik Sekolah'),
                                                     Select::make('jenjang')
-                                                        ->label('Jenjang')
                                                         ->required()
                                                         ->validationMessages([
                                                             'required' => 'Form ini wajib diisi.',
                                                         ])
-                                                        ->native(false)
+                                                        ->label('Jenjang')
                                                         ->options(['PAUD' => 'PAUD', 'TK' => 'TK', 'SD' => 'SD', 'MI' => 'MI', 'SMP' => 'SMP', 'MTS' => 'MTS', 'SMA' => 'SMA', 'SMK' => 'SMK', 'MA' => 'MA']),
                                                     Select::make('status')
-                                                        ->label('Status')
                                                         ->required()
                                                         ->validationMessages([
                                                             'required' => 'Form ini wajib diisi.',
                                                         ])
-                                                        ->native(false)
+                                                        ->label('Status')
                                                         ->options(['NEGERI' => 'NEGERI', 'SWASTA' => 'SWASTA']),
                                                     Select::make('akreditasi')
                                                         ->label('Akreditasi')
@@ -394,7 +392,6 @@ class CreateCalonSiswa extends CreateRecord
                                                         ->validationMessages([
                                                             'required' => 'Form ini wajib diisi.',
                                                         ])
-                                                        ->native(false)
                                                         ->options(['A' => 'A', 'B' => 'B', 'C' => 'C', 'D' => 'D']),
                                                     FileUpload::make('logo')
                                                         ->label('Logo')
@@ -418,20 +415,14 @@ class CreateCalonSiswa extends CreateRecord
                                                 ])
                                                 ->columns([
                                                     'sm' => '100%',
-                                                    'md' => 2,
-                                                    'lg' => 4,
+                                                    'md' => 3,
+                                                    'lg' => 6,
                                                 ]),
 
                                             // Alamat
                                             Section::make('Alamat')
                                                 ->collapsible()
                                                 ->schema([
-                                                    TextInput::make('alamat')
-                                                        ->label('Alamat')
-                                                        ->required()
-                                                        ->validationMessages([
-                                                            'required' => 'Form ini wajib diisi.',
-                                                        ]),
                                                     Select::make('negara_id')
                                                         ->label('Negara')
                                                         ->relationship('negara', 'nama')
@@ -506,6 +497,13 @@ class CreateCalonSiswa extends CreateRecord
                                                             'required' => 'Form ini wajib diisi.',
                                                         ])
                                                         ->native(false),
+                                                    TextInput::make('alamat')
+                                                        ->label('Jalan/Kampung/Dusun')
+                                                        ->required()
+                                                        ->placeholder('KP KEBON CAU RT 001 RW 005')
+                                                        ->validationMessages([
+                                                            'required' => 'Form ini wajib diisi.',
+                                                        ]),
                                                 ])
                                                 ->columns([
                                                     'sm' => '100%',

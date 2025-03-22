@@ -401,23 +401,20 @@ class CalonSiswaResource extends Resource
                                                                 ->validationMessages([
                                                                     'required' => 'Form ini wajib diisi.',
                                                                 ])
-                                                                ->label('Nomor Statistik Sekolah/Madrasah'),
+                                                                ->label('Nomor Statistik Sekolah'),
                                                             Forms\Components\Select::make('jenjang')
+                                                                ->required()
+                                                                ->validationMessages([
+                                                                    'required' => 'Form ini wajib diisi.',
+                                                                ])
                                                                 ->label('Jenjang')
-                                                                ->required()
-                                                                ->validationMessages([
-                                                                    'required' => 'Form ini wajib diisi.',
-                                                                ])
-                                                                ->native(false)
-                                                                // ->options(['PAUD' => 'PAUD', 'TK' => 'TK', 'SD' => 'SD', 'MI' => 'MI', 'SMP' => 'SMP', 'MTS' => 'MTS', 'SMA' => 'SMA', 'SMK' => 'SMK', 'MA' => 'MA']),
-                                                                ->options(['SD' => 'SD', 'MI' => 'MI']),
+                                                                ->options(['PAUD' => 'PAUD', 'TK' => 'TK', 'SD' => 'SD', 'MI' => 'MI', 'SMP' => 'SMP', 'MTS' => 'MTS', 'SMA' => 'SMA', 'SMK' => 'SMK', 'MA' => 'MA']),
                                                             Forms\Components\Select::make('status')
-                                                                ->label('Status')
                                                                 ->required()
                                                                 ->validationMessages([
                                                                     'required' => 'Form ini wajib diisi.',
                                                                 ])
-                                                                ->native(false)
+                                                                ->label('Status')
                                                                 ->options(['NEGERI' => 'NEGERI', 'SWASTA' => 'SWASTA']),
                                                             Forms\Components\Select::make('akreditasi')
                                                                 ->label('Akreditasi')
@@ -425,7 +422,6 @@ class CalonSiswaResource extends Resource
                                                                 ->validationMessages([
                                                                     'required' => 'Form ini wajib diisi.',
                                                                 ])
-                                                                ->native(false)
                                                                 ->options(['A' => 'A', 'B' => 'B', 'C' => 'C', 'D' => 'D']),
                                                             Forms\Components\FileUpload::make('logo')
                                                                 ->label('Logo')
@@ -449,8 +445,8 @@ class CalonSiswaResource extends Resource
                                                         ])
                                                         ->columns([
                                                             'sm' => '100%',
-                                                            'md' => 2,
-                                                            'lg' => 4,
+                                                            'md' => 3,
+                                                            'lg' => 6,
                                                         ]),
 
                                                     // Alamat
