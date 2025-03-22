@@ -2,10 +2,10 @@
 
 namespace App\Filament\Resources\CalonSiswaResource\Pages;
 
-use App\Filament\Resources\CalonSiswaResource;
 use App\Models\CalonSiswa;
-use Filament\Resources\Pages\ViewRecord;
 use Illuminate\Support\Facades\Auth;
+use Filament\Resources\Pages\ViewRecord;
+use App\Filament\Resources\CalonSiswaResource;
 use Torgodly\Html2Media\Actions\Html2MediaAction;
 
 class ViewCalonSiswa extends ViewRecord
@@ -14,10 +14,6 @@ class ViewCalonSiswa extends ViewRecord
 
     protected function getHeaderActions(): array
     {
-        if (Auth::check()) {
-            $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
-        }
-
         return [
             // Formulir
             Html2MediaAction::make('cetak_formulir')
@@ -35,7 +31,7 @@ class ViewCalonSiswa extends ViewRecord
                 ->format('a4', 'mm') // A4 format with mm units
                 ->enableLinks() // Enable links in PDF
                 ->margin([10, 20, 10, 20]) // Set custom margins
-                ->content(fn ($record) => view('formulir', ['record' => $record])), // Set content
+                ->content(fn($record) => view('formulir', ['record' => $record])), // Set content
 
             // Kartu Tes
             Html2MediaAction::make('cetak_kartu_tes')
@@ -54,7 +50,7 @@ class ViewCalonSiswa extends ViewRecord
                 ->format('a4', 'mm') // A4 format with mm units
                 ->enableLinks() // Enable links in PDF
                 ->margin([10, 20, 10, 20]) // Set custom margins
-                ->content(fn ($record) => view('kartu-tes', ['record' => $record])), // Set content
+                ->content(fn($record) => view('kartu-tes', ['record' => $record])), // Set content
 
             // SKL
             Html2MediaAction::make('cetak_skl')
@@ -73,7 +69,7 @@ class ViewCalonSiswa extends ViewRecord
                 ->format('a4', 'mm') // A4 format with mm units
                 ->enableLinks() // Enable links in PDF
                 ->margin([10, 20, 10, 20]) // Set custom margins
-                ->content(fn ($record) => view('skl', ['record' => $record])), // Set content
+                ->content(fn($record) => view('skl', ['record' => $record])), // Set content
 
             // Pakta Integritas
             Html2MediaAction::make('cetak_pakta_integritas')
@@ -92,7 +88,7 @@ class ViewCalonSiswa extends ViewRecord
                 ->format('a4', 'mm') // A4 format with mm units
                 ->enableLinks() // Enable links in PDF
                 ->margin([10, 20, 10, 20]) // Set custom margins
-                ->content(fn ($record) => view('pakta-integritas', ['record' => $record])), // Set content
+                ->content(fn($record) => view('pakta-integritas', ['record' => $record])), // Set content
 
         ];
     }
