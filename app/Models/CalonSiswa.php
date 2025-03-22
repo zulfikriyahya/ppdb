@@ -114,7 +114,7 @@ class CalonSiswa extends Model
     ];
 
     protected $casts = [
-        'id' => 'integer',
+        // 'id' => 'integer',
         'tanggal_lahir' => 'date',
         'siswa_negara_id' => 'integer',
         'siswa_provinsi_id' => 'integer',
