@@ -10,6 +10,7 @@ use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
+use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
@@ -197,7 +198,25 @@ class UserResource extends Resource
                     DeleteBulkAction::make(),
                     ForceDeleteBulkAction::make(),
                     RestoreBulkAction::make(),
-                ])
+                ]),
+                // BulkAction::make('set_kelas')
+                //     ->label('Set Kelas')
+                //     ->icon('heroicon-o-building-storefront')
+                //     ->color('primary')
+                //     ->requiresConfirmation()
+                //     ->form([
+                //         Select::make('kelas_id')
+                //             ->label('Kelas')
+                //             ->relationship('kelas', 'nama')
+                //             ->required(),
+                //     ])
+                //     ->action(function (Collection $records, array $data) {
+                //         $records->each(function ($record) use ($data) {
+                //             User::where('id', $record->id)->update([
+                //                 'roles' => $data['kelas_id'],
+                //             ]);
+                //         });
+                //     }),
             ])
             ->striped()
             ->filtersLayout(FiltersLayout::AboveContentCollapsible)

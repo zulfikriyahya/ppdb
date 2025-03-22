@@ -56,4 +56,13 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Has
     {
         return $this->avatar;
     }
+
+    protected static function booted()
+    {
+        static::created(function ($user) {
+            // Tetapkan role default
+            $defaultRole = 'calon-siswa'; // Sesuaikan dengan nama role yang ada di database
+            $user->assignRole($defaultRole);
+        });
+    }
 }

@@ -48,7 +48,7 @@ class AdminPanelProvider extends PanelProvider
             ->login(LoginCustom::class)
             ->registration(RegisterCustom::class)
             ->id('admin')
-            ->profile(EditProfileCustom::class)
+            ->profile(EditProfileCustom::class, isSimple: false)
             ->path('')
             ->colors([
                 'primary' => Color::Cyan,

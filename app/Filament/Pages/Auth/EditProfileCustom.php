@@ -15,7 +15,7 @@ use DiogoGPinto\AuthUIEnhancer\Pages\Auth\Concerns\HasCustomLayout;
 
 class EditProfileCustom extends EditProfile
 {
-    use HasCustomLayout;
+    // use HasCustomLayout;
 
     protected function getForms(): array
     {
