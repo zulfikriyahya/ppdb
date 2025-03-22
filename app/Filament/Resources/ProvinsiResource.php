@@ -4,11 +4,9 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProvinsiResource\Pages;
 use App\Models\Provinsi;
-use Filament\Forms;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Tables;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -37,13 +35,13 @@ class ProvinsiResource extends Resource
                 Section::make('Provinsi')
                     ->collapsible()
                     ->schema([
-                        Forms\Components\TextInput::make('nama')
+                        TextInput::make('nama')
                             ->label('Provinsi')
                             ->required()
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ]),
-                        Forms\Components\Select::make('negara_id')
+                        Select::make('negara_id')
                             ->label('Negara')
                             ->relationship('negara', 'nama')
                             ->required()
@@ -62,51 +60,50 @@ class ProvinsiResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            // ->recordTitleAttribute('nama')
             ->columns([
-                Tables\Columns\TextColumn::make('nama')
+                TextColumn::make('nama')
                     ->label('Provinsi')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('negara.nama')
+                TextColumn::make('negara.nama')
                     ->label('Negara')
                     ->sortable(),
-                Tables\Columns\ImageColumn::make('negara.bendera')
+                ImageColumn::make('negara.bendera')
                     ->label('Bendera')
                     ->defaultImageUrl('/img/bendera.png')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label('Dibuat')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->label('Diubah')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('deleted_at')
+                TextColumn::make('deleted_at')
                     ->label('Dihapus')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\ActionGroup::make([
-                    Tables\Actions\ViewAction::make(),
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\DeleteAction::make(),
-                    Tables\Actions\ForceDeleteAction::make(),
-                    Tables\Actions\RestoreAction::make(),
+                ActionGroup::make([
+                    ViewAction::make(),
+                    EditAction::make(),
+                    DeleteAction::make(),
+                    ForceDeleteAction::make(),
+                    RestoreAction::make(),
                 ]),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ])
             ->striped()

@@ -356,7 +356,6 @@ class TahunPendaftaranResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            // ->recordTitleAttribute('nama')
             ->columns([
                 TextColumn::make('nama')
                     ->label('Tahun Pendaftaran')
@@ -377,7 +376,6 @@ class TahunPendaftaranResource extends Resource
                     ->badge()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                // PPDB
                 TextColumn::make('tanggal_ppdb_mulai')
                     ->label('Pendaftaran Jalur Prestasi')
                     ->date('d F Y')
@@ -385,7 +383,6 @@ class TahunPendaftaranResource extends Resource
                         fn (TahunPendaftaran $record) => $record->tanggal_ppdb_selesai ? 'Hingga: '.Carbon::parse($record->tanggal_ppdb_selesai)->translatedFormat('d F Y') : 'Hingga: (Sekarang)'
                     ),
 
-                // Pendaftaran Jalur Prestasi
                 TextColumn::make('tanggal_pendaftaran_jalur_prestasi_mulai')
                     ->label('Pendaftaran Jalur Prestasi')
                     ->dateTime('d F Y H:i:s')
@@ -393,7 +390,6 @@ class TahunPendaftaranResource extends Resource
                         fn (TahunPendaftaran $record) => $record->tanggal_pendaftaran_jalur_prestasi_selesai ? 'Hingga: '.Carbon::parse($record->tanggal_pendaftaran_jalur_prestasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
                     ),
 
-                // Pengumuman Jalur Prestasi
                 TextColumn::make('tanggal_pengumuman_jalur_prestasi_mulai')
                     ->label('Pengumuman Jalur Prestasi')
                     ->dateTime('d F Y H:i:s')
@@ -401,7 +397,6 @@ class TahunPendaftaranResource extends Resource
                         fn (TahunPendaftaran $record) => $record->tanggal_pengumuman_jalur_prestasi_selesai ? 'Hingga: '.Carbon::parse($record->tanggal_pengumuman_jalur_prestasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
                     ),
 
-                // Pendaftaran Jalur Reguler
                 TextColumn::make('tanggal_pendaftaran_jalur_reguler_mulai')
                     ->label('Pendaftaran Jalur Reguler')
                     ->dateTime('d F Y H:i:s')
@@ -409,7 +404,6 @@ class TahunPendaftaranResource extends Resource
                         fn (TahunPendaftaran $record) => $record->tanggal_pendaftaran_jalur_reguler_selesai ? 'Hingga: '.Carbon::parse($record->tanggal_pendaftaran_jalur_reguler_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
                     ),
 
-                // Pengumuman Jalur Reguler
                 TextColumn::make('tanggal_pengumuman_jalur_reguler_mulai')
                     ->label('Pengumuman Jalur Reguler')
                     ->dateTime('d F Y H:i:s')
@@ -417,7 +411,6 @@ class TahunPendaftaranResource extends Resource
                         fn (TahunPendaftaran $record) => $record->tanggal_pengumuman_jalur_reguler_selesai ? 'Hingga: '.Carbon::parse($record->tanggal_pengumuman_jalur_reguler_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
                     ),
 
-                // Pendaftaran Jalur Afirmasi
                 TextColumn::make('tanggal_pendaftaran_jalur_afirmasi_mulai')
                     ->label('Pendaftaran Jalur Afirmasi')
                     ->dateTime('d F Y H:i:s')
@@ -425,7 +418,6 @@ class TahunPendaftaranResource extends Resource
                         fn (TahunPendaftaran $record) => $record->tanggal_pendaftaran_jalur_afirmasi_selesai ? 'Hingga: '.Carbon::parse($record->tanggal_pendaftaran_jalur_afirmasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
                     ),
 
-                // Pengumuman Jalur Afirmasi
                 TextColumn::make('tanggal_pengumuman_jalur_afirmasi_mulai')
                     ->label('Pengumuman Jalur Afirmasi')
                     ->dateTime('d F Y H:i:s')
@@ -433,7 +425,6 @@ class TahunPendaftaranResource extends Resource
                         fn (TahunPendaftaran $record) => $record->tanggal_pengumuman_jalur_afirmasi_selesai ? 'Hingga: '.Carbon::parse($record->tanggal_pengumuman_jalur_afirmasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
                     ),
 
-                // Pendaftaran Jalur Zonasi
                 TextColumn::make('tanggal_pendaftaran_jalur_zonasi_mulai')
                     ->label('Pendaftaran Jalur Zonasi')
                     ->dateTime('d F Y H:i:s')
@@ -441,7 +432,6 @@ class TahunPendaftaranResource extends Resource
                         fn (TahunPendaftaran $record) => $record->tanggal_pendaftaran_jalur_zonasi_selesai ? 'Hingga: '.Carbon::parse($record->tanggal_pendaftaran_jalur_zonasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
                     ),
 
-                // Pengumuman Jalur Zonasi
                 TextColumn::make('tanggal_pengumuman_jalur_zonasi_mulai')
                     ->label('Pengumuman Jalur Zonasi')
                     ->dateTime('d F Y H:i:s')
@@ -449,7 +439,6 @@ class TahunPendaftaranResource extends Resource
                         fn (TahunPendaftaran $record) => $record->tanggal_pengumuman_jalur_zonasi_selesai ? 'Hingga: '.Carbon::parse($record->tanggal_pengumuman_jalur_zonasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
                     ),
 
-                // Pendaftaran Jalur Mutasi
                 TextColumn::make('tanggal_pendaftaran_jalur_mutasi_mulai')
                     ->label('Pendaftaran Jalur Mutasi')
                     ->dateTime('d F Y H:i:s')
@@ -457,7 +446,6 @@ class TahunPendaftaranResource extends Resource
                         fn (TahunPendaftaran $record) => $record->tanggal_pendaftaran_jalur_mutasi_selesai ? 'Hingga: '.Carbon::parse($record->tanggal_pendaftaran_jalur_mutasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
                     ),
 
-                // Pengumuman Jalur Mutasi
                 TextColumn::make('tanggal_pengumuman_jalur_mutasi_mulai')
                     ->label('Pengumuman Jalur Mutasi')
                     ->dateTime('d F Y H:i:s')
@@ -465,7 +453,6 @@ class TahunPendaftaranResource extends Resource
                         fn (TahunPendaftaran $record) => $record->tanggal_pengumuman_jalur_mutasi_selesai ? 'Hingga: '.Carbon::parse($record->tanggal_pengumuman_jalur_mutasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
                     ),
 
-                // Penerbitan Kartu Tes
                 TextColumn::make('tanggal_penerbitan_kartu_tes_mulai')
                     ->label('Penerbitan Kartu Tes')
                     ->dateTime('d F Y H:i:s')
@@ -473,7 +460,6 @@ class TahunPendaftaranResource extends Resource
                         fn (TahunPendaftaran $record) => $record->tanggal_penerbitan_kartu_tes_selesai ? 'Hingga: '.Carbon::parse($record->tanggal_penerbitan_kartu_tes_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
                     ),
 
-                // Tes Akademik
                 TextColumn::make('tanggal_tes_akademik_mulai')
                     ->label('Tes Akademik')
                     ->dateTime('d F Y H:i:s')
@@ -481,7 +467,6 @@ class TahunPendaftaranResource extends Resource
                         fn (TahunPendaftaran $record) => $record->tanggal_tes_akademik_selesai ? 'Hingga: '.Carbon::parse($record->tanggal_tes_akademik_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
                     ),
 
-                // Tes Praktik
                 TextColumn::make('tanggal_tes_praktik_mulai')
                     ->label('Tes Praktik')
                     ->dateTime('d F Y H:i:s')
@@ -489,7 +474,6 @@ class TahunPendaftaranResource extends Resource
                         fn (TahunPendaftaran $record) => $record->tanggal_tes_praktik_selesai ? 'Hingga: '.Carbon::parse($record->tanggal_tes_praktik_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
                     ),
 
-                // Registrasi Berkas
                 TextColumn::make('tanggal_registrasi_berkas_mulai')
                     ->label('Registrasi Berkas')
                     ->dateTime('d F Y H:i:s')
@@ -497,7 +481,6 @@ class TahunPendaftaranResource extends Resource
                         fn (TahunPendaftaran $record) => $record->tanggal_registrasi_berkas_selesai ? 'Hingga: '.Carbon::parse($record->tanggal_registrasi_berkas_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
                     ),
 
-                // Timestamp
                 TextColumn::make('created_at')
                     ->label('Dibuat')
                     ->dateTime('d F Y H:i:s')

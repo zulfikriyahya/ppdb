@@ -13,7 +13,6 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\DeleteBulkAction;
@@ -64,7 +63,6 @@ class UserResource extends Resource
                         TextInput::make('username')
                             ->label('Nomor Induk Siswa Nasional (NISN)')
                             ->required()
-                            // ->hidden(Auth::user()->username === 'administrator')
                             ->unique(ignoreRecord: true)
                             ->rule(fn ($record) => $record === null ? 'unique:users,username' : 'unique:users,username,'.$record->id)
                             ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
@@ -207,24 +205,6 @@ class UserResource extends Resource
                     ForceDeleteBulkAction::make(),
                     RestoreBulkAction::make(),
                 ]),
-                // BulkAction::make('set_kelas')
-                //     ->label('Set Kelas')
-                //     ->icon('heroicon-o-building-storefront')
-                //     ->color('primary')
-                //     ->requiresConfirmation()
-                //     ->form([
-                //         Select::make('kelas_id')
-                //             ->label('Kelas')
-                //             ->relationship('kelas', 'nama')
-                //             ->required(),
-                //     ])
-                //     ->action(function (Collection $records, array $data) {
-                //         $records->each(function ($record) use ($data) {
-                //             User::where('id', $record->id)->update([
-                //                 'roles' => $data['kelas_id'],
-                //             ]);
-                //         });
-                //     }),
             ])
             ->striped()
             ->filtersLayout(FiltersLayout::AboveContentCollapsible)

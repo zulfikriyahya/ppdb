@@ -4,11 +4,9 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\PimpinanResource\Pages;
 use App\Models\Pimpinan;
-use Filament\Forms;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Tables;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -34,19 +32,16 @@ class PimpinanResource extends Resource
     {
         return $form
             ->schema([
-                // Biodata
                 Section::make('Biodata')
                     ->collapsible()
                     ->schema([
-                        // Nama Lengkap
-                        Forms\Components\TextInput::make('nama')
+                        TextInput::make('nama')
                             ->label('Nama Lengkap')
                             ->required()
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ]),
-                        // Nomor Indul Pegawai (NIP)
-                        Forms\Components\TextInput::make('nip')
+                        TextInput::make('nip')
                             ->label('Nomor Induk Pegawai')
                             ->validationMessages([
                                 'min' => 'NIP: Minimal 18 Karakter.',
@@ -55,16 +50,14 @@ class PimpinanResource extends Resource
                             ->maxLength(18)
                             ->minLength(18)
                             ->prefix('NIP'),
-                        // Tahun Pendaftaran
-                        Forms\Components\Select::make('tahun_pendaftaran_id')
+                        Select::make('tahun_pendaftaran_id')
                             ->label('Tahun Pendaftaran')
                             ->relationship('tahunPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif'))
                             ->required()
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ]),
-                        // Status
-                        Forms\Components\Select::make('status')
+                        Select::make('status')
                             ->label('Status')
                             ->options(['Aktif' => 'Aktif', 'Nonaktif' => 'Nonaktif'])
                             ->required()
@@ -78,12 +71,10 @@ class PimpinanResource extends Resource
                         'lg' => 4,
                     ]),
 
-                // Berkas
                 Section::make('Berkas')
                     ->collapsed()
                     ->schema([
-                        // Foto
-                        Forms\Components\FileUpload::make('berkas_foto')
+                        FileUpload::make('berkas_foto')
                             ->label('Foto')
                             ->image()
                             ->imageEditor()
@@ -102,8 +93,7 @@ class PimpinanResource extends Resource
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ]),
-                        // Tanda Tangan Elektronik
-                        Forms\Components\FileUpload::make('berkas_tte')
+                        FileUpload::make('berkas_tte')
                             ->label('Tanda Tangan Elektronik')
                             ->image()
                             ->imageEditor()
@@ -121,8 +111,7 @@ class PimpinanResource extends Resource
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ]),
-                        // Surat Tugas/Surat Keputusan
-                        Forms\Components\FileUpload::make('berkas_sk')
+                        FileUpload::make('berkas_sk')
                             ->label('Surat Tugas/Surat Keputusan')
                             ->fetchFileInformation(false)
                             ->directory('assets/pimpinan')
@@ -149,62 +138,62 @@ class PimpinanResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('berkas_foto')
+                ImageColumn::make('berkas_foto')
                     ->label('Foto')
                     ->circular()
                     ->defaultImageUrl('/img/avatar.png'),
-                Tables\Columns\TextColumn::make('nama')
+                TextColumn::make('nama')
                     ->label('Nama Lengkap')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('nip')
+                TextColumn::make('nip')
                     ->label('NIP')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('tahunPendaftaran.nama')
+                TextColumn::make('tahunPendaftaran.nama')
                     ->label('Tahun Pendaftaran')
                     ->searchable(),
-                Tables\Columns\ImageColumn::make('berkas_tte')
+                ImageColumn::make('berkas_tte')
                     ->label('TTE')
                     ->defaultImageUrl('/img/tte.png'),
-                Tables\Columns\TextColumn::make('status')
+                TextColumn::make('status')
                     ->label('Status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'Aktif' => 'success',
                         'Nonaktif' => 'gray'
                     }),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label('Dibuat')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->label('Diubah')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('deleted_at')
+                TextColumn::make('deleted_at')
                     ->label('Dihapus')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\ActionGroup::make([
-                    Tables\Actions\ViewAction::make(),
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\DeleteAction::make(),
-                    Tables\Actions\ForceDeleteAction::make(),
-                    Tables\Actions\RestoreAction::make(),
+                ActionGroup::make([
+                    ViewAction::make(),
+                    EditAction::make(),
+                    DeleteAction::make(),
+                    ForceDeleteAction::make(),
+                    RestoreAction::make(),
                 ]),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ])
             ->striped()
