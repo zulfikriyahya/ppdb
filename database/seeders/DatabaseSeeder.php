@@ -2,24 +2,24 @@
 
 namespace Database\Seeders;
 
-use App\Models\Ekstrakurikuler;
+use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use App\Models\JalurPendaftaran;
-use App\Models\Jurusan;
-use App\Models\Kabupaten;
-use App\Models\Kecamatan;
 use App\Models\Kelas;
-use App\Models\Kelurahan;
-use App\Models\MataPelajaran;
 use App\Models\Negara;
+use App\Models\Jurusan;
 use App\Models\Prestasi;
 use App\Models\Provinsi;
+use App\Models\Kabupaten;
+use App\Models\Kecamatan;
+use App\Models\Kelurahan;
 use App\Models\SekolahAsal;
-use App\Models\TahunPendaftaran;
-use App\Models\User;
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use App\Models\MataPelajaran;
+use App\Models\Ekstrakurikuler;
+use Illuminate\Database\Seeder;
+use App\Models\JalurPendaftaran;
+use App\Models\TahunPendaftaran;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -38,123 +38,9 @@ class DatabaseSeeder extends Seeder
 
         // TahunPendaftaran Seeder
         $dataTahunPendaftaran = [
-            // Tahun Pendaftaran 2022/2023
-            [
-                'id' => '1',
-                'nama' => '2022/2023',
-                'tanggal_ppdb_mulai' => '2022-02-01',
-                'tanggal_ppdb_selesai' => '2022-05-31',
-                'tanggal_pendaftaran_jalur_prestasi_mulai' => null,
-                'tanggal_pendaftaran_jalur_prestasi_selesai' => null,
-                'tanggal_pengumuman_jalur_prestasi_mulai' => null,
-                'tanggal_pengumuman_jalur_prestasi_selesai' => null,
-                'tanggal_pendaftaran_jalur_reguler_mulai' => null,
-                'tanggal_pendaftaran_jalur_reguler_selesai' => null,
-                'tanggal_pengumuman_jalur_reguler_mulai' => null,
-                'tanggal_pengumuman_jalur_reguler_selesai' => null,
-                'tanggal_pendaftaran_jalur_afirmasi_mulai' => null,
-                'tanggal_pendaftaran_jalur_afirmasi_selesai' => null,
-                'tanggal_pengumuman_jalur_afirmasi_mulai' => null,
-                'tanggal_pengumuman_jalur_afirmasi_selesai' => null,
-                'tanggal_pendaftaran_jalur_zonasi_mulai' => null,
-                'tanggal_pendaftaran_jalur_zonasi_selesai' => null,
-                'tanggal_pengumuman_jalur_zonasi_mulai' => null,
-                'tanggal_pengumuman_jalur_zonasi_selesai' => null,
-                'tanggal_pendaftaran_jalur_mutasi_mulai' => null,
-                'tanggal_pendaftaran_jalur_mutasi_selesai' => null,
-                'tanggal_pengumuman_jalur_mutasi_mulai' => null,
-                'tanggal_pengumuman_jalur_mutasi_selesai' => null,
-                'tanggal_penerbitan_kartu_tes_mulai' => null,
-                'tanggal_penerbitan_kartu_tes_selesai' => null,
-                'tanggal_tes_akademik_mulai' => null,
-                'tanggal_tes_akademik_selesai' => null,
-                'tanggal_tes_praktik_mulai' => null,
-                'tanggal_tes_praktik_selesai' => null,
-                'tanggal_registrasi_berkas_mulai' => null,
-                'tanggal_registrasi_berkas_selesai' => null,
-                'kuantitas' => '5000',
-                'status' => 'Nonaktif',
-            ],
-
-            // Tahun Pendaftaran 2023/2024
-            [
-                'id' => '2',
-                'nama' => '2023/2024',
-                'tanggal_ppdb_mulai' => '2023-02-01',
-                'tanggal_ppdb_selesai' => '2023-05-31',
-                'tanggal_pendaftaran_jalur_prestasi_mulai' => null,
-                'tanggal_pendaftaran_jalur_prestasi_selesai' => null,
-                'tanggal_pengumuman_jalur_prestasi_mulai' => null,
-                'tanggal_pengumuman_jalur_prestasi_selesai' => null,
-                'tanggal_pendaftaran_jalur_reguler_mulai' => null,
-                'tanggal_pendaftaran_jalur_reguler_selesai' => null,
-                'tanggal_pengumuman_jalur_reguler_mulai' => null,
-                'tanggal_pengumuman_jalur_reguler_selesai' => null,
-                'tanggal_pendaftaran_jalur_afirmasi_mulai' => null,
-                'tanggal_pendaftaran_jalur_afirmasi_selesai' => null,
-                'tanggal_pengumuman_jalur_afirmasi_mulai' => null,
-                'tanggal_pengumuman_jalur_afirmasi_selesai' => null,
-                'tanggal_pendaftaran_jalur_zonasi_mulai' => null,
-                'tanggal_pendaftaran_jalur_zonasi_selesai' => null,
-                'tanggal_pengumuman_jalur_zonasi_mulai' => null,
-                'tanggal_pengumuman_jalur_zonasi_selesai' => null,
-                'tanggal_pendaftaran_jalur_mutasi_mulai' => null,
-                'tanggal_pendaftaran_jalur_mutasi_selesai' => null,
-                'tanggal_pengumuman_jalur_mutasi_mulai' => null,
-                'tanggal_pengumuman_jalur_mutasi_selesai' => null,
-                'tanggal_penerbitan_kartu_tes_mulai' => null,
-                'tanggal_penerbitan_kartu_tes_selesai' => null,
-                'tanggal_tes_akademik_mulai' => null,
-                'tanggal_tes_akademik_selesai' => null,
-                'tanggal_tes_praktik_mulai' => null,
-                'tanggal_tes_praktik_selesai' => null,
-                'tanggal_registrasi_berkas_mulai' => null,
-                'tanggal_registrasi_berkas_selesai' => null,
-                'kuantitas' => '5000',
-                'status' => 'Nonaktif',
-            ],
-
-            // Tahun Pendaftaran 2024/2025
-            [
-                'id' => '3',
-                'nama' => '2024/2025',
-                'tanggal_ppdb_mulai' => '2024-02-01',
-                'tanggal_ppdb_selesai' => '2024-05-31',
-                'tanggal_pendaftaran_jalur_prestasi_mulai' => null,
-                'tanggal_pendaftaran_jalur_prestasi_selesai' => null,
-                'tanggal_pengumuman_jalur_prestasi_mulai' => null,
-                'tanggal_pengumuman_jalur_prestasi_selesai' => null,
-                'tanggal_pendaftaran_jalur_reguler_mulai' => null,
-                'tanggal_pendaftaran_jalur_reguler_selesai' => null,
-                'tanggal_pengumuman_jalur_reguler_mulai' => null,
-                'tanggal_pengumuman_jalur_reguler_selesai' => null,
-                'tanggal_pendaftaran_jalur_afirmasi_mulai' => null,
-                'tanggal_pendaftaran_jalur_afirmasi_selesai' => null,
-                'tanggal_pengumuman_jalur_afirmasi_mulai' => null,
-                'tanggal_pengumuman_jalur_afirmasi_selesai' => null,
-                'tanggal_pendaftaran_jalur_zonasi_mulai' => null,
-                'tanggal_pendaftaran_jalur_zonasi_selesai' => null,
-                'tanggal_pengumuman_jalur_zonasi_mulai' => null,
-                'tanggal_pengumuman_jalur_zonasi_selesai' => null,
-                'tanggal_pendaftaran_jalur_mutasi_mulai' => null,
-                'tanggal_pendaftaran_jalur_mutasi_selesai' => null,
-                'tanggal_pengumuman_jalur_mutasi_mulai' => null,
-                'tanggal_pengumuman_jalur_mutasi_selesai' => null,
-                'tanggal_penerbitan_kartu_tes_mulai' => null,
-                'tanggal_penerbitan_kartu_tes_selesai' => null,
-                'tanggal_tes_akademik_mulai' => null,
-                'tanggal_tes_akademik_selesai' => null,
-                'tanggal_tes_praktik_mulai' => null,
-                'tanggal_tes_praktik_selesai' => null,
-                'tanggal_registrasi_berkas_mulai' => null,
-                'tanggal_registrasi_berkas_selesai' => null,
-                'kuantitas' => '5000',
-                'status' => 'Nonaktif',
-            ],
-
             // Tahun Pendaftaran 2025/2026
             [
-                'id' => '4',
+                'id' => '1',
                 'nama' => '2025/2026',
                 'tanggal_ppdb_mulai' => '2025-02-01',
                 'tanggal_ppdb_selesai' => '2025-05-31',
@@ -197,152 +83,36 @@ class DatabaseSeeder extends Seeder
 
         // JalurPendaftaran Seeder
         $dataJalurPendaftaran = [
-            // Tahun Pendaftaran 2022/2023
-            [
-                'id' => '1',
-                'nama' => 'Prestasi',
-                'kuantitas' => '1000',
-                'status' => 'Nonaktif',
-                'tahun_pendaftaran_id' => 1,
-            ],
-            [
-                'id' => '2',
-                'nama' => 'Reguler',
-                'kuantitas' => '1000',
-                'status' => 'Nonaktif',
-                'tahun_pendaftaran_id' => 1,
-            ],
-            [
-                'id' => '3',
-                'nama' => 'Afirmasi',
-                'kuantitas' => '1000',
-                'status' => 'Nonaktif',
-                'tahun_pendaftaran_id' => 1,
-            ],
-            [
-                'id' => '4',
-                'nama' => 'Zonasi',
-                'kuantitas' => '1000',
-                'status' => 'Nonaktif',
-                'tahun_pendaftaran_id' => 1,
-            ],
-            [
-                'id' => '5',
-                'nama' => 'Mutasi',
-                'kuantitas' => '1000',
-                'status' => 'Nonaktif',
-                'tahun_pendaftaran_id' => 1,
-            ],
-
-            // Tahun Pendaftaran 2023/2024
-            [
-                'id' => '6',
-                'nama' => 'Prestasi',
-                'kuantitas' => '1000',
-                'status' => 'Nonaktif',
-                'tahun_pendaftaran_id' => 2,
-            ],
-            [
-                'id' => '7',
-                'nama' => 'Reguler',
-                'kuantitas' => '1000',
-                'status' => 'Nonaktif',
-                'tahun_pendaftaran_id' => 2,
-            ],
-            [
-                'id' => '8',
-                'nama' => 'Afirmasi',
-                'kuantitas' => '1000',
-                'status' => 'Nonaktif',
-                'tahun_pendaftaran_id' => 2,
-            ],
-            [
-                'id' => '9',
-                'nama' => 'Zonasi',
-                'kuantitas' => '1000',
-                'status' => 'Nonaktif',
-                'tahun_pendaftaran_id' => 2,
-            ],
-            [
-                'id' => '10',
-                'nama' => 'Mutasi',
-                'kuantitas' => '1000',
-                'status' => 'Nonaktif',
-                'tahun_pendaftaran_id' => 2,
-            ],
-
-            // Tahun Pendaftaran 2024/2025
-            [
-                'id' => '11',
-                'nama' => 'Prestasi',
-                'kuantitas' => '1000',
-                'status' => 'Nonaktif',
-                'tahun_pendaftaran_id' => 3,
-            ],
-            [
-                'id' => '12',
-                'nama' => 'Reguler',
-                'kuantitas' => '1000',
-                'status' => 'Nonaktif',
-                'tahun_pendaftaran_id' => 3,
-            ],
-            [
-                'id' => '13',
-                'nama' => 'Afirmasi',
-                'kuantitas' => '1000',
-                'status' => 'Nonaktif',
-                'tahun_pendaftaran_id' => 3,
-            ],
-            [
-                'id' => '14',
-                'nama' => 'Zonasi',
-                'kuantitas' => '1000',
-                'status' => 'Nonaktif',
-                'tahun_pendaftaran_id' => 3,
-            ],
-            [
-                'id' => '15',
-                'nama' => 'Mutasi',
-                'kuantitas' => '1000',
-                'status' => 'Nonaktif',
-                'tahun_pendaftaran_id' => 3,
-            ],
-
             // Tahun Pendaftaran 2025/2026
             [
-                'id' => '16',
                 'nama' => 'Prestasi',
                 'kuantitas' => '1000',
                 'status' => 'Aktif',
-                'tahun_pendaftaran_id' => 4,
+                'tahun_pendaftaran_id' => 1,
             ],
             [
-                'id' => '17',
                 'nama' => 'Reguler',
                 'kuantitas' => '1000',
                 'status' => 'Aktif',
-                'tahun_pendaftaran_id' => 4,
+                'tahun_pendaftaran_id' => 1,
             ],
             [
-                'id' => '18',
                 'nama' => 'Afirmasi',
                 'kuantitas' => '1000',
                 'status' => 'Nonaktif',
-                'tahun_pendaftaran_id' => 4,
+                'tahun_pendaftaran_id' => 1,
             ],
             [
-                'id' => '19',
                 'nama' => 'Zonasi',
                 'kuantitas' => '1000',
                 'status' => 'Nonaktif',
-                'tahun_pendaftaran_id' => 4,
+                'tahun_pendaftaran_id' => 1,
             ],
             [
-                'id' => '20',
                 'nama' => 'Mutasi',
                 'kuantitas' => '1000',
                 'status' => 'Nonaktif',
-                'tahun_pendaftaran_id' => 4,
+                'tahun_pendaftaran_id' => 1,
             ],
         ];
 
@@ -6901,6 +6671,8 @@ class DatabaseSeeder extends Seeder
             ['nama' => 'IPS'],
             ['nama' => 'PPKn'],
             ['nama' => 'PJOK'],
+            ['nama' => 'Seni Budaya'],
+            ['nama' => 'Prakarya'],
         ];
 
         foreach ($dataMataPelajaran as $data) {
@@ -6912,8 +6684,8 @@ class DatabaseSeeder extends Seeder
             ['nama' => 'Pramuka'],
             ['nama' => 'Paskibra'],
             ['nama' => 'Olahraga'],
-            ['nama' => 'Seni'],
             ['nama' => 'Kesenian'],
+            ['nama' => 'Kesehatan'],
             ['nama' => 'Kerohanian'],
         ];
 

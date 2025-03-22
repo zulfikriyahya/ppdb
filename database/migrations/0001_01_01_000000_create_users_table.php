@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name', 50);
-            $table->string('username', 20)->unique()->index();
+            $table->string('username', 13)->unique()->index();
             $table->enum('status', ['Aktif', 'Nonaktif'])->default('Aktif');
             $table->string('email', 50)->unique();
             $table->timestamp('email_verified_at')->nullable();

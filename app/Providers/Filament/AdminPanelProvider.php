@@ -2,44 +2,41 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Pages\Auth\EditProfileCustom;
-use App\Filament\Pages\Auth\LoginCustom;
-use App\Filament\Pages\Auth\RegisterCustom;
-use App\Filament\Resources\UserResource;
-use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
-use Devonab\FilamentEasyFooter\EasyFooterPlugin;
-use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
-use Filament\Enums\ThemeMode;
-use Filament\Http\Middleware\Authenticate;
-use Filament\Http\Middleware\AuthenticateSession;
-use Filament\Http\Middleware\DisableBladeIconComponents;
-use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Navigation\MenuItem;
 use Filament\Pages;
 use Filament\Panel;
+use Filament\Widgets;
 use Filament\PanelProvider;
+use Filament\Enums\ThemeMode;
+use Filament\Navigation\MenuItem;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\MaxWidth;
-use Filament\Widgets;
-use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
-use Illuminate\Cookie\Middleware\EncryptCookies;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
-use Illuminate\Routing\Middleware\SubstituteBindings;
-use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Auth;
+use App\Filament\Pages\Auth\LoginCustom;
+use App\Filament\Resources\UserResource;
+use Filament\Http\Middleware\Authenticate;
+use App\Filament\Pages\Auth\RegisterCustom;
+use App\Filament\Pages\Auth\EditProfileCustom;
+use Illuminate\Session\Middleware\StartSession;
+use Devonab\FilamentEasyFooter\EasyFooterPlugin;
+use Illuminate\Cookie\Middleware\EncryptCookies;
+use Filament\Http\Middleware\AuthenticateSession;
+use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
+use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Filament\Http\Middleware\DisableBladeIconComponents;
+use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
         return $panel
-            // ->brandLogo(fn() => view('logo'))
-            // ->brandLogoHeight('1.25rem')
             ->maxContentWidth(MaxWidth::Full)
             ->unsavedChangesAlerts()
             ->databaseNotifications()
-            // ->defaultThemeMode(ThemeMode::Light)
             ->brandLogo(asset('/img/brand.png'))
             ->brandLogoHeight('2.6rem')
             ->topNavigation()
@@ -53,10 +50,10 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->userMenuItems([
                 MenuItem::make()
-                    ->label('Verifikasi Pengguna')
-                    ->url(fn (): string => UserResource::getUrl())
+                    ->label('Manajemen Pengguna')
+                    ->url(fn(): string => UserResource::getUrl())
                     ->icon('heroicon-o-identification')
-                    ->visible(fn () => Auth::user()->username === 'administrator'),
+                    ->visible(fn() => Auth::user()->username === 'administrator'),
             ])
             ->default()
             ->spa()
@@ -69,8 +66,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                // Widgets\AccountWidget::class,
-                // Widgets\FilamentInfoWidget::class,
+                Widgets\AccountWidget::class,
+                Widgets\FilamentInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -114,7 +111,6 @@ class AdminPanelProvider extends PanelProvider
                     ])
                     ->withBorder(),
 
-                // Pastikan variabel tema hanya digunakan pada bagian yang relevan
                 AuthUIEnhancerPlugin::make()
                     ->formPanelPosition('left')
                     ->formPanelWidth('35%')
