@@ -60,12 +60,17 @@ Sebuah aplikasi berbasis web untuk proses penerimaan siswa baru di MTs Negeri 1 
     php artisan storage:link
     ```
 
-9. Jalankan aplikasi:
+9. Jalankan shield super admin:
+    ```bash
+    php artisan shield:super-admin
+    ```
+
+10. Jalankan aplikasi:
     ```bash
     php artisan serve
     ```
 
-10. Jalankan service:
+11. Jalankan service:
     ```bash
     php artisan queue:work --daemon
     ```
