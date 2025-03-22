@@ -8,12 +8,27 @@ use App\Models\Kecamatan;
 use App\Models\Kelurahan;
 use App\Models\Provinsi;
 use App\Models\SekolahAsal;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Resources\Resource;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
+use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Actions\RestoreBulkAction;
+use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -107,7 +122,6 @@ class SekolahAsalResource extends Resource
                         'lg' => 3,
                     ]),
 
-                // Alamat
                 Section::make('Alamat')
                     ->collapsible()
                     ->schema([
@@ -199,7 +213,6 @@ class SekolahAsalResource extends Resource
                         'lg' => 3,
                     ]),
 
-                // Kontak
                 Section::make('Kontak')
                     ->collapsible()
                     ->schema([
@@ -235,7 +248,6 @@ class SekolahAsalResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            // ->recordTitleAttribute('nama')
             ->columns([
                 TextColumn::make('nama')
                     ->label('Nama Instansi')
