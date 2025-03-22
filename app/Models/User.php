@@ -16,7 +16,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
-    use HasFactory, HasRoles, Notifiable, SoftDeletes, HasUuids;
+    use HasFactory, HasRoles, Notifiable, SoftDeletes;
 
     protected $fillable = [
         'name',

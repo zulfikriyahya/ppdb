@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::disableForeignKeyConstraints();
         Schema::create('calon_siswas', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('nama');
             $table->string('nik');
             $table->string('kk');
