@@ -30,9 +30,11 @@ use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
 use Filament\Support\Enums\IconPosition;
 use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Enums\ActionsPosition;
+use App\Filament\Exports\CalonSiswaExporter;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\CalonSiswaResource\Pages;
 use Torgodly\Html2Media\Tables\Actions\Html2MediaAction;
@@ -111,7 +113,7 @@ class CalonSiswaResource extends Resource
                                             Forms\Components\TextInput::make('nama')
                                                 ->label('Nama Lengkap')
                                                 ->required()
-                                                // ->disabledOn('create')
+                                                ->disabledOn('edit')
                                                 ->reactive()
                                                 // ->afterStateHydrated(function (TextInput $component, $state) {
                                                 //     $component->state($state);
@@ -153,7 +155,7 @@ class CalonSiswaResource extends Resource
                                             Forms\Components\TextInput::make('nisn')
                                                 ->label('Nomor Induk Siswa Nasional (NISN)')
                                                 ->required()
-                                                // ->disabledOn('create')
+                                                ->disabledOn('edit')
                                                 ->reactive()
                                                 ->default(fn() => Auth::user()->username)
                                                 ->unique(ignoreRecord: true)
@@ -2211,10 +2213,19 @@ class CalonSiswaResource extends Resource
             ->actions([
                 Tables\Actions\ActionGroup::make([
                     // Tables\Actions\ViewAction::make(),
-                    // Tables\Actions\EditAction::make(),
+                    Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
                     Tables\Actions\ForceDeleteAction::make(),
                     Tables\Actions\RestoreAction::make(),
+
+                    // Export
+                    ExportAction::make('Ekspor')
+                        ->label('Ekspor')
+                        ->icon('heroicon-m-cloud-arrow-down')
+                        ->color('success')
+                        ->exporter(CalonSiswaExporter::class)
+                        ->chunkSize(250)
+                        ->visible(fn(): string => CalonSiswa::count() > 0 && Auth::user()->username === 'administrator'),
 
                     // Action Print
                     Html2MediaAction::make('formulir')
@@ -2240,7 +2251,12 @@ class CalonSiswaResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
-                    Tables\Actions\ExportBulkAction::make(),
+                    Tables\Actions\ExportBulkAction::make()
+                        ->label('Ekspor')
+                        ->icon('heroicon-m-cloud-arrow-down')
+                        ->color('success')
+                        ->exporter(CalonSiswaExporter::class)
+                        ->chunkSize(250),
 
                     BulkAction::make('set_jalur_pendaftaran')
                         ->label('Set Jalur Pendaftaran')
@@ -2326,7 +2342,8 @@ class CalonSiswaResource extends Resource
     {
         if (Auth::user() && Auth::user()->username !== 'administrator') {
             return [
-                'index' => Pages\ListCalonSiswas::route('/'),
+                // 'index' => Pages\ListCalonSiswas::route('/'),
+                'create' => Pages\CreateCalonSiswa::route('/create'),
             ];
         }
         return [

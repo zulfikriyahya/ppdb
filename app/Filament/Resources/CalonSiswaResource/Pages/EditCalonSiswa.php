@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources\CalonSiswaResource\Pages;
 
-use App\Filament\Resources\CalonSiswaResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
+use App\Filament\Resources\CalonSiswaResource;
 
 class EditCalonSiswa extends EditRecord
 {
@@ -13,10 +13,10 @@ class EditCalonSiswa extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\ViewAction::make(),
-            Actions\DeleteAction::make(),
-            Actions\ForceDeleteAction::make(),
-            Actions\RestoreAction::make(),
+            // Actions\ViewAction::make(),
+            // Actions\DeleteAction::make(),
+            // Actions\ForceDeleteAction::make(),
+            // Actions\RestoreAction::make(),
         ];
     }
 }

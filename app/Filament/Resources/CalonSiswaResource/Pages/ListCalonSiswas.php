@@ -5,6 +5,7 @@ namespace App\Filament\Resources\CalonSiswaResource\Pages;
 use Filament\Actions;
 use App\Models\CalonSiswa;
 use Filament\Actions\Action;
+use GuzzleHttp\Promise\Create;
 use Filament\Actions\ViewAction;
 use Filament\Actions\CreateAction;
 use Filament\Actions\ExportAction;
@@ -23,8 +24,8 @@ class ListCalonSiswas extends ListRecords
         if (Auth::check()) {
             $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
             $urlCreate = '';
-            $urlEdit = '';
             $urlView = '';
+            $urlEdit = '';
             $urlCetakFormulir = '';
             $urlCetakKartuTes = '';
             $urlCetakPaktaIntegritas = '';
@@ -44,11 +45,11 @@ class ListCalonSiswas extends ListRecords
             }
         }
         return [
-            // Buat Formulir
-            Action::make('buat_formulir_pendaftaran')
-                ->label("Buat Formulir")
+            // Daftar Sekarang
+            CreateAction::make()
+                ->label("Daftar Sekarang")
                 ->icon('heroicon-m-plus')
-                ->url($urlCreate)
+                // ->url($urlCreate)
                 ->color('primary')
                 ->hidden(Auth::user()->username === 'administrator' || $calonSiswa !== null)
                 ->successRedirectUrl('/calon-siswas'),

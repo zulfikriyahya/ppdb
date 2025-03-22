@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources\CalonSiswaResource\Pages;
 
-use App\Filament\Resources\CalonSiswaResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
+use App\Filament\Resources\CalonSiswaResource;
 
 class ViewCalonSiswa extends ViewRecord
 {
@@ -13,7 +13,7 @@ class ViewCalonSiswa extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\EditAction::make(),
+            // Actions\EditAction::make(),
         ];
     }
 }
