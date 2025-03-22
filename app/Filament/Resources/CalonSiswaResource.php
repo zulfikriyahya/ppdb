@@ -23,6 +23,7 @@ use Filament\Tables\Grouping\Group;
 use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Wizard;
+use Illuminate\Support\Facades\Blade;
 use Filament\Forms\Components\Section;
 use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Columns\TextColumn;
@@ -80,6 +81,7 @@ class CalonSiswaResource extends Resource
                                             'Diterima Di Kelas Unggulan' => 'Diterima Di Kelas Unggulan',
                                         ])
                                         ->native(false)
+                                        ->live()
                                         ->default('Diproses'),
                                     // Data Kelas Pendaftaran Calon Peserta Didik Baru
                                     Forms\Components\Select::make('kelas_id')
@@ -1620,6 +1622,14 @@ class CalonSiswaResource extends Resource
                                 ]),
                         ]),
                 ])
+                    // ->submitAction(new HtmlString(Blade::render(<<<BLADE
+                    //     <x-filament::button
+                    //         type="submit"
+                    //         size="sm"
+                    //     >
+                    //         Kirim Formulir
+                    //     </x-filament::button>
+                    // BLADE)))
                     ->columnSpanFull(),
             ]);
     }
