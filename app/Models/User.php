@@ -3,18 +3,17 @@
 namespace App\Models;
 
 use Filament\Panel;
-use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Traits\HasRoles;
+use Filament\Models\Contracts\HasAvatar;
 use Illuminate\Notifications\Notifiable;
 use Filament\Models\Contracts\FilamentUser;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class User extends Authenticatable implements FilamentUser, MustVerifyEmail
+class User extends Authenticatable implements FilamentUser, MustVerifyEmail, HasAvatar
 {
     use HasFactory, HasRoles, Notifiable, SoftDeletes;
 
@@ -25,6 +24,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'email',
         'email_verified_at',
         'password',
+        'avatar',
     ];
 
     protected $hidden = [
@@ -50,5 +50,10 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function calonSiswas(): HasMany
     {
         return $this->hasMany(CalonSiswa::class);
+    }
+
+    public function getFilamentAvatarUrl(): ?string
+    {
+        return $this->avatar;
     }
 }

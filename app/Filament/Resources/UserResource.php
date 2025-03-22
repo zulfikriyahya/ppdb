@@ -13,7 +13,9 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Enums\FiltersLayout;
+use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
@@ -102,6 +104,12 @@ class UserResource extends Resource
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ]),
+                        FileUpload::make('avatar')
+                            ->label('Avatar')
+                            ->avatar()
+                            ->minSize(5)
+                            ->maxSize(100)
+                            ->directory('assets/avatar')
                     ])
                     ->columns([
                         'sm' => '100%',
@@ -114,6 +122,10 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
+                ImageColumn::make('avatar')
+                    ->label('Avatar')
+                    ->circular()
+                    ->defaultImageUrl('/img/avatar.png'),
                 TextColumn::make('name')
                     ->label('Nama Lengkap')
                     ->searchable(),

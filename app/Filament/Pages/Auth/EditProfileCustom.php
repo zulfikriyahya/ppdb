@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Filament\Forms\Components\Component;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\FileUpload;
 use Illuminate\Validation\Rules\Password;
 use DiogoGPinto\AuthUIEnhancer\Pages\Auth\Concerns\HasCustomLayout;
 
@@ -34,6 +35,12 @@ class EditProfileCustom extends EditProfile
                     ->inlineLabel(! static::isSimple()),
             ),
         ];
+    }
+
+    protected function getAvatarFormComponent(): Component
+    {
+        return FileUpload::make('avatar')
+            ->label(__('Avatar'));
     }
 
     protected function getNameFormComponent(): Component
