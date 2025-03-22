@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use Filament\Pages;
 use Filament\Panel;
+use App\Models\User;
 use Filament\Widgets;
 use Filament\PanelProvider;
 use Filament\Enums\ThemeMode;
@@ -52,12 +53,13 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Cyan,
             ])
-            // ->userMenuItems([
-            //     MenuItem::make()
-            //         ->label('Profile')
-            //         ->url(fn(): string => UserResource::getUrl('edit', ['record' => Auth::user()->id])) // Arahkan ke halaman edit user yang sedang login
-            //         ->icon('heroicon-o-identification'),
-            // ])
+            ->userMenuItems([
+                MenuItem::make()
+                    ->label('Verifikasi Pengguna')
+                    ->url(fn(): string => UserResource::getUrl())
+                    ->icon('heroicon-o-identification'),
+                // ->visible(Auth::user()->username === 'administrator'),
+            ])
             ->default()
             ->spa()
             ->passwordReset()

@@ -1639,12 +1639,6 @@ class CalonSiswaResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            // ->recordTitleAttribute('nama')
-            // ->groups([
-            // 'status_pendaftaran',
-            // 'kelas_id',
-            // 'jalur_pendaftaran_id.status',
-            // ])
             ->groups([
                 Group::make('jalurPendaftaran.nama')
                     ->label('Jalur Pendaftaran'),
@@ -1653,7 +1647,6 @@ class CalonSiswaResource extends Resource
                 Group::make('kelas.nama')
                     ->label('Kelas'),
             ])
-            // ->defaultGroup('status_pendaftaran')
             ->columns([
                 Tables\Columns\ImageColumn::make('berkas_foto')
                     ->label('Foto')

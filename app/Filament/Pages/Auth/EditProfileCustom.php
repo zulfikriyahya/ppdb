@@ -23,6 +23,7 @@ class EditProfileCustom extends EditProfile
             'form' => $this->form(
                 $this->makeForm()
                     ->schema([
+                        $this->getAvatarFormComponent(),
                         $this->getNameFormComponent(),
                         $this->getUsernameFormComponent(),
                         $this->getEmailFormComponent(),
@@ -40,7 +41,12 @@ class EditProfileCustom extends EditProfile
     protected function getAvatarFormComponent(): Component
     {
         return FileUpload::make('avatar')
-            ->label(__('Avatar'));
+            ->label(__('Avatar'))
+            ->image()
+            ->minSize(5)
+            ->maxSize(100)
+            ->visibility('private')
+            ->directory('assets/avatar');
     }
 
     protected function getNameFormComponent(): Component

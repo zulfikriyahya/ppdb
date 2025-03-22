@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Models\User;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Select;
@@ -38,7 +39,7 @@ class UserResource extends Resource
     protected static ?string $label = 'Pengguna';
     protected static ?string $navigationGroup = 'Referensi';
     protected static ?int $navigationSort = 9;
-    protected static bool $shouldRegisterNavigation = true;
+    protected static bool $shouldRegisterNavigation = false;
     protected static ?string $navigationIcon = 'heroicon-o-users';
     public static function form(Form $form): Form
     {
@@ -55,7 +56,7 @@ class UserResource extends Resource
                         TextInput::make('username')
                             ->label('Nomor Induk Siswa Nasional (NISN)')
                             ->required()
-                            ->hidden(Auth::user()->username === 'administrator')
+                            // ->hidden(Auth::user()->username === 'administrator')
                             ->unique(ignoreRecord: true)
                             ->rule(fn($record) => $record === null ? 'unique:users,username' : 'unique:users,username,' . $record->id)
                             ->dehydrateStateUsing(fn($state) => $state ? $state : null)
@@ -106,9 +107,10 @@ class UserResource extends Resource
                             ]),
                         FileUpload::make('avatar')
                             ->label('Avatar')
-                            ->avatar()
+                            ->image()
                             ->minSize(5)
                             ->maxSize(100)
+                            ->visibility('private')
                             ->directory('assets/avatar')
                     ])
                     ->columns([
@@ -137,9 +139,9 @@ class UserResource extends Resource
                     ->dateTime('d F Y H:i:s')
                     ->sortable(),
 
-                TextColumn::make('roles')
+                TextColumn::make('roles.name')
                     ->label('Peran')
-                    ->formatStateUsing(fn($state) => $state->pluck('name')->join(', '))
+                    ->formatStateUsing(fn(string $state): string => Str::headline($state))
                     ->badge()
                     ->sortable(),
                 TextColumn::make('status')
