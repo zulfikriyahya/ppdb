@@ -409,7 +409,8 @@ class CalonSiswaResource extends Resource
                                                                     'required' => 'Form ini wajib diisi.',
                                                                 ])
                                                                 ->native(false)
-                                                                ->options(['PAUD' => 'PAUD', 'TK' => 'TK', 'SD' => 'SD', 'MI' => 'MI', 'SMP' => 'SMP', 'MTS' => 'MTS', 'SMA' => 'SMA', 'SMK' => 'SMK', 'MA' => 'MA']),
+                                                                // ->options(['PAUD' => 'PAUD', 'TK' => 'TK', 'SD' => 'SD', 'MI' => 'MI', 'SMP' => 'SMP', 'MTS' => 'MTS', 'SMA' => 'SMA', 'SMK' => 'SMK', 'MA' => 'MA']),
+                                                                ->options(['SD' => 'SD', 'MI' => 'MI']),
                                                             Forms\Components\Select::make('status')
                                                                 ->label('Status')
                                                                 ->required()
@@ -456,12 +457,7 @@ class CalonSiswaResource extends Resource
                                                     Section::make('Alamat')
                                                         ->collapsible()
                                                         ->schema([
-                                                            Forms\Components\TextInput::make('alamat')
-                                                                ->label('Alamat')
-                                                                ->required()
-                                                                ->validationMessages([
-                                                                    'required' => 'Form ini wajib diisi.',
-                                                                ]),
+
                                                             Forms\Components\Select::make('negara_id')
                                                                 ->label('Negara')
                                                                 ->relationship('negara', 'nama')
@@ -536,6 +532,13 @@ class CalonSiswaResource extends Resource
                                                                     'required' => 'Form ini wajib diisi.',
                                                                 ])
                                                                 ->native(false),
+                                                            Forms\Components\TextInput::make('alamat')
+                                                                ->label('Jalan/Kampung/Dusun')
+                                                                ->required()
+                                                                ->placeholder('KP KEBON CAU RT 001 RW 005')
+                                                                ->validationMessages([
+                                                                    'required' => 'Form ini wajib diisi.',
+                                                                ]),
                                                         ])
                                                         ->columns([
                                                             'sm' => '100%',

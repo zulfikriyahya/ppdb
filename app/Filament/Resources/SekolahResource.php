@@ -120,12 +120,6 @@ class SekolahResource extends Resource
                 Section::make('Alamat')
                     ->collapsible()
                     ->schema([
-                        Forms\Components\TextInput::make('alamat')
-                            ->label('Alamat')
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
                         Forms\Components\Select::make('negara_id')
                             ->label('Negara')
                             ->relationship('negara', 'nama')
@@ -200,6 +194,13 @@ class SekolahResource extends Resource
                                 'required' => 'Form ini wajib diisi.',
                             ])
                             ->native(false),
+                        Forms\Components\TextInput::make('alamat')
+                            ->label('Jalan/Kampung/Dusun')
+                            ->required()
+                            ->placeholder('KP KEBON CAU RT 001 RW 005')
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
                     ])
                     ->columns([
                         'sm' => '100%',

@@ -57,8 +57,8 @@ class AdminPanelProvider extends PanelProvider
                 MenuItem::make()
                     ->label('Verifikasi Pengguna')
                     ->url(fn(): string => UserResource::getUrl())
-                    ->icon('heroicon-o-identification'),
-                // ->visible(Auth::user()->username === 'administrator'),
+                    ->icon('heroicon-o-identification')
+                    ->visible(fn() => Auth::user()->username === 'administrator'),
             ])
             ->default()
             ->spa()
