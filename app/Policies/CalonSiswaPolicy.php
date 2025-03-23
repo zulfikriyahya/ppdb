@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\CalonSiswa;
 use App\Models\User;
+use App\Models\CalonSiswa;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class CalonSiswaPolicy
