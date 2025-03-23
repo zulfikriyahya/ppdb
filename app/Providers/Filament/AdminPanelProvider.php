@@ -82,7 +82,7 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogoHeight('2.6rem')
             ->topNavigation()
             ->login(LoginCustom::class)
-            ->registration($registerClass) // tambahkan logika pengecekan tanggal untuk ppdb seperti skrip terdahulu
+            ->registration($registerClass)
             ->id('admin')
             ->profile(EditProfileCustom::class)
             ->path('')
