@@ -2,16 +2,15 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class RoleSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        //
+        Role::create(
+            ['name' => 'calon-siswa', 'guard_name' => 'web'],
+            ['name' => 'panitia', 'guard_name' => 'web'],
+        );
     }
 }
