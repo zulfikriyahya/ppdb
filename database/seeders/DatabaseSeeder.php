@@ -8,20 +8,28 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Role
-        // User Seeder
-        // TahunPendaftaran Seeder
-        // JalurPendaftaran Seeder
-        // Prestasi Seeder
-        // Negara Seeder
-        // Provinsi Seeder
-        // Kabupaten Seeder
-        // Kecamatan Seeder
-        // Kelurahan Seeder
-        // Sekolah Asal Seeder
-        // Mata Pelajaran Seeder
-        // Ekstrakurikuler Seeder
-        // Jurusan Seeder
-        // Kelas Seeder
+        $this->call([
+            RoleSeeder::class,
+            UserSeeder::class,
+            TahunPendaftaranSeeder::class,
+            JalurPendaftaranSeeder::class,
+            PrestasiSeeder::class,
+            NegaraSeeder::class,
+            ProvinsiSeeder::class,
+            KabupatenSeeder::class,
+            KecamatanSeeder::class,
+            KelurahanSeeder::class,
+            SekolahAsalSeeder::class,
+            MataPelajaranSeeder::class,
+            EkstrakurikulerSeeder::class,
+            JurusanSeeder::class,
+            KelasSeeder::class,
+            // PimpianSeeder::class,
+            // KetuaSeeder::class,
+            // SekretarisSeeder::class,
+            // BendaharaSeeder::class,
+            // AnggotaSeeder::class,
+            // SekolahSeeder::class,
+        ]);
     }
 }
