@@ -10,7 +10,15 @@ class PimpinanSeeder extends Seeder
     public function run(): void
     {
         $dataPimpinan = [
-            //
+            [
+                'nama' => 'H. Eman Sulaiman, S.Ag., M.Pd.',
+                'nip' => '',
+                'tahun_pendaftaran_id' => '1',
+                'berkas_foto' => '/img/avatar.png',
+                'berkas_tte' => '/img/tte.png',
+                'berkas_sk' => '/img/logo.png',
+                'status' => 'Aktif',
+            ],
         ];
 
         foreach ($dataPimpinan as $data) {
