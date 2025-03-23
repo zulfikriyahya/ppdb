@@ -24,12 +24,12 @@ class DatabaseSeeder extends Seeder
             EkstrakurikulerSeeder::class,
             JurusanSeeder::class,
             KelasSeeder::class,
-            // PimpianSeeder::class,
-            // KetuaSeeder::class,
-            // SekretarisSeeder::class,
-            // BendaharaSeeder::class,
-            // AnggotaSeeder::class,
-            // SekolahSeeder::class,
+            PimpinanSeeder::class,
+            KetuaSeeder::class,
+            SekretarisSeeder::class,
+            BendaharaSeeder::class,
+            AnggotaSeeder::class,
+            SekolahSeeder::class,
         ]);
     }
 }
