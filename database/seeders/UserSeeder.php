@@ -23,7 +23,7 @@ class UserSeeder extends Seeder
             ],
             [
                 'name' => 'Pupung Purnamasari, S.Pd.I.',
-                'username' => 'panitia',
+                'username' => 'pupung',
                 'status' => 'Aktif',
                 'email' => 'ppupung@gmail.com',
                 'email_verified_at' => now(),
@@ -32,7 +32,7 @@ class UserSeeder extends Seeder
             ],
             [
                 'name' => 'Aris Nurdiansyah, S.Pd.',
-                'username' => 'nurdiansyah',
+                'username' => 'diansyah',
                 'status' => 'Aktif',
                 'email' => 'diansyah@gmail.com',
                 'email_verified_at' => now(),
