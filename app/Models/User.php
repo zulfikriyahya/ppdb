@@ -61,7 +61,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     {
         static::created(function ($user) {
             // Tetapkan role default
-            $defaultRole = 'calon-siswa'; // Sesuaikan dengan nama role yang ada di database
+            $defaultRole = 'peserta'; // Sesuaikan dengan nama role yang ada di database
             $user->assignRole($defaultRole);
         });
     }

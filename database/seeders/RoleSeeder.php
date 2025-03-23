@@ -9,15 +9,20 @@ class RoleSeeder extends Seeder
 {
     public function run(): void
     {
-        Role::create(
+
+        $dataRole = [
             [
                 'name' => 'panitia',
                 'guard_name' => 'web',
             ],
             [
-                'name' => 'calon-siswa',
+                'name' => 'peserta',
                 'guard_name' => 'web',
             ],
-        );
+        ];
+
+        foreach ($dataRole as $data) {
+            Role::create($data);
+        }
     }
 }
