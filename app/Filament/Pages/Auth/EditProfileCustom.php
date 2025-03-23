@@ -14,7 +14,7 @@ use Illuminate\Validation\Rules\Password;
 
 class EditProfileCustom extends EditProfile
 {
-    // use HasCustomLayout;
+    use HasCustomLayout;
 
     protected function getForms(): array
     {

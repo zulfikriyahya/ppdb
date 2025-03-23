@@ -62,11 +62,12 @@ class UserResource extends Resource
                             ]),
                         TextInput::make('username')
                             ->label('Nomor Induk Siswa Nasional (NISN)')
-                            ->required()
+                            // ->required()
                             ->unique(ignoreRecord: true)
                             ->rule(fn ($record) => $record === null ? 'unique:users,username' : 'unique:users,username,'.$record->id)
                             ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
-                            ->maxLength(10)->minLength(10)
+                            // ->maxLength(10)
+                            // ->minLength(10)
                             ->validationMessages([
                                 'max' => 'NISN: Masukkan maksimal 10 Angka.',
                                 'min' => 'NISN: Masukkan minimal 10 Angka.',

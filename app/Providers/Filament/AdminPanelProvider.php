@@ -42,7 +42,7 @@ class AdminPanelProvider extends PanelProvider
             ->login(LoginCustom::class)
             ->registration(RegisterCustom::class)
             ->id('admin')
-            ->profile(EditProfileCustom::class, isSimple: false)
+            ->profile(EditProfileCustom::class)
             ->path('')
             ->colors([
                 'primary' => Color::Cyan,
@@ -112,7 +112,7 @@ class AdminPanelProvider extends PanelProvider
 
                 AuthUIEnhancerPlugin::make()
                     ->formPanelPosition('left')
-                    ->formPanelWidth('35%')
+                    ->formPanelWidth('50%')
                     ->formPanelBackgroundColor(Color::hex('#010101'))
                     ->emptyPanelBackgroundImageUrl('/img/wallpaper.png')
                     ->emptyPanelBackgroundColor(Color::hex('#010101'))
