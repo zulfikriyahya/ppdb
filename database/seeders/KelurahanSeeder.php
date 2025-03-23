@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Kelurahan;
 use Illuminate\Database\Seeder;
 
 class KelurahanSeeder extends Seeder

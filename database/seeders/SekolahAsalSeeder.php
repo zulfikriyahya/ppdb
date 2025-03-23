@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\SekolahAsal;
 use Illuminate\Database\Seeder;
 
 class SekolahAsalSeeder extends Seeder

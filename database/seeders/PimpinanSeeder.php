@@ -2,15 +2,19 @@
 
 namespace Database\Seeders;
 
+use App\Models\Pimpinan;
 use Illuminate\Database\Seeder;
 
 class PimpinanSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        //
+        $dataPimpinan = [
+            //
+        ];
+
+        foreach ($dataPimpinan as $data) {
+            Pimpinan::create($data);
+        }
     }
 }

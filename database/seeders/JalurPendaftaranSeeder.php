@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\JalurPendaftaran;
 use Illuminate\Database\Seeder;
 
 class JalurPendaftaranSeeder extends Seeder

@@ -2,15 +2,19 @@
 
 namespace Database\Seeders;
 
+use App\Models\Sekretaris;
 use Illuminate\Database\Seeder;
 
 class SekretarisSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        //
+        $dataSekretaris = [
+            //
+        ];
+
+        foreach ($dataSekretaris as $data) {
+            Sekretaris::create($data);
+        }
     }
 }

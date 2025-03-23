@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Provinsi;
 use Illuminate\Database\Seeder;
 
 class ProvinsiSeeder extends Seeder

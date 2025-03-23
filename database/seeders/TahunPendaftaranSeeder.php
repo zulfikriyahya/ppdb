@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\TahunPendaftaran;
 use Illuminate\Database\Seeder;
 
 class TahunPendaftaranSeeder extends Seeder

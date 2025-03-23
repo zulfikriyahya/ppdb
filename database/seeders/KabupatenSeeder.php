@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Kabupaten;
 use Illuminate\Database\Seeder;
 
 class KabupatenSeeder extends Seeder

@@ -2,15 +2,19 @@
 
 namespace Database\Seeders;
 
+use App\Models\Anggota;
 use Illuminate\Database\Seeder;
 
 class AnggotaSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        //
+        $dataAnggota = [
+            //
+        ];
+
+        foreach ($dataAnggota as $data) {
+            Anggota::create($data);
+        }
     }
 }
