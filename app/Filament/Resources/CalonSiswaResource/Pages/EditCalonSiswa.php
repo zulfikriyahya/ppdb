@@ -2,30 +2,38 @@
 
 namespace App\Filament\Resources\CalonSiswaResource\Pages;
 
-use App\Filament\Resources\CalonSiswaResource;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
+use App\Models\Provinsi;
 use App\Models\Kabupaten;
 use App\Models\Kecamatan;
 use App\Models\Kelurahan;
-use App\Models\Provinsi;
 use Filament\Facades\Filament;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Tabs;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Wizard;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
-use Filament\Resources\Pages\EditRecord;
-use Filament\Resources\Pages\EditRecord\Concerns\HasWizard;
-use Filament\Support\Enums\IconPosition;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\HtmlString;
-
+use Filament\Forms\Components\Tabs;
+use Illuminate\Support\Facades\Auth;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Wizard;
+use Filament\Forms\Components\Section;
+use Illuminate\Database\Eloquent\Model;
+use Filament\Forms\Components\TextInput;
+use Filament\Resources\Pages\EditRecord;
+use Filament\Support\Enums\IconPosition;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Wizard\Step;
+use Filament\Forms\Components\DateTimePicker;
+use App\Filament\Resources\CalonSiswaResource;
+use Filament\Resources\Pages\EditRecord\Concerns\HasWizard;
+// ->submitAction(new HtmlString(Blade::render(<<<BLADE
+    //                 //     <x-filament::button
+    //                 //         type="submit"
+    //                 //         size="sm"
+    //                 //     >
+    //                 //         Kirim Formulir
+    //                 //     </x-filament::button>
+    //                 // BLADE)))
 class EditCalonSiswa extends EditRecord
 {
     protected static string $resource = CalonSiswaResource::class;
@@ -35,7 +43,7 @@ class EditCalonSiswa extends EditRecord
     protected function getSteps(): array
     {
         return [
-            Wizard\Step::make('Data Calon Siswa')
+            Step::make('Data Calon Siswa')
                 ->schema([
                     // Section Formulir
                     Section::make('Formulir Pendaftaran')
@@ -90,10 +98,7 @@ class EditCalonSiswa extends EditRecord
                                         ->required()
                                         ->disabledOn('edit')
                                         ->reactive()
-                                        // ->afterStateHydrated(function (TextInput $component, $state) {
-                                        //     $component->state($state);
-                                        //     $component->disabled();
-                                        // })
+                                        ->dehydrated()
                                         ->default(fn () => Auth::user()->name)
                                         ->validationMessages([
                                             'required' => 'Form ini wajib diisi.',
@@ -935,7 +940,7 @@ class EditCalonSiswa extends EditRecord
                         ]),
                 ]),
 
-            Wizard\Step::make('Data Orang Tua')
+            Step::make('Data Orang Tua')
                 ->schema([
                     // Tab Ibu
                     Tabs::make('Data Ibu Kandung')
@@ -955,7 +960,7 @@ class EditCalonSiswa extends EditRecord
                                         ->label('NIK Ibu Kandung')
                                         ->required()
                                         ->maxLength(16)
-                                        ->minlength(16)
+                                        ->minLength(16)
                                         ->numeric()
                                         ->validationMessages([
                                             'required' => 'Form ini wajib diisi.',
@@ -1151,7 +1156,7 @@ class EditCalonSiswa extends EditRecord
                                         ->required()
                                         ->maxLength(16)
                                         ->numeric()
-                                        ->minlength(16)
+                                        ->minLength(16)
                                         ->validationMessages([
                                             'required' => 'Form ini wajib diisi.',
                                             'max_digits' => 'NIK: Masukkan maksimal 16 Angka.',
@@ -1340,7 +1345,7 @@ class EditCalonSiswa extends EditRecord
                                         ->label('NIK Wali')
                                         ->numeric()
                                         ->maxLength(16)
-                                        ->minlength(16)
+                                        ->minLength(16)
                                         ->validationMessages([
                                             'max_digits' => 'NIK: Masukkan maksimal 16 Angka.',
                                             'min_digits' => 'NIK: Masukkan minimal 16 Angka.',
@@ -1494,19 +1499,19 @@ class EditCalonSiswa extends EditRecord
                         ]),
                 ]),
 
-            Wizard\Step::make('Data Tes')
+            Step::make('Data Tes')
                 ->hidden(function () {
                     return Filament::auth()->user()->username !== 'administrator';
                 })
                 ->schema([
                     // Section Data Tes
-                    Section::make('Data Tes')
-                        ->visible(fn ($get) => $get('jalur_pendaftaran_id') !== null)
-                        ->hidden(function () {
-                            return Filament::auth()->user()->username !== 'administrator';
-                        })
-                        // ->collapsible()
-                        ->schema([
+                    // Section::make('Data Tes')
+                    //     ->visible(fn ($get) => $get('jalur_pendaftaran_id') !== null)
+                    //     ->hidden(function () {
+                    //         return Filament::auth()->user()->username !== 'administrator';
+                    //     })
+                    //     ->collapsible()
+                    //     ->schema([
                             // Tab Cetak Kartu Calon Peserta Didik Baru
                             Tabs::make('Data Kartu Tes')
                                 ->tabs([
@@ -1586,15 +1591,14 @@ class EditCalonSiswa extends EditRecord
                                     'md' => 2,
                                     'lg' => 2,
                                 ]),
-                        ])
-                        ->columns([
-                            'sm' => '100%',
-                            'md' => '100%',
-                            'lg' => 2,
-                        ]),
+                        // ])
+                        // ->columns([
+                        //     'sm' => '100%',
+                        //     'md' => '100%',
+                        //     'lg' => 2,
+                        // ]),
                 ])
                 ->columnSpanFull(),
-
         ];
     }
 }

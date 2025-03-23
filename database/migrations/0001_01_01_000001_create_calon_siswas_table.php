@@ -12,7 +12,7 @@ return new class extends Migration
         Schema::create('calon_siswas', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('nama');
-            $table->string('nik');
+            $table->string('nik')->unique();
             $table->string('kk');
             $table->string('nisn', 10)->unique();
             $table->foreign('nisn')->references('username')->on('users')->onUpdate('cascade');

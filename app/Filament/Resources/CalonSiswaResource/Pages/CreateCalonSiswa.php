@@ -88,12 +88,10 @@ class CreateCalonSiswa extends CreateRecord
                                     TextInput::make('nama')
                                         ->label('Nama Lengkap')
                                         ->required()
-                                        ->disabledOn('edit')
                                         ->reactive()
-                                        // ->afterStateHydrated(function (TextInput $component, $state) {
-                                        //     $component->state($state);
-                                        //     $component->disabled();
-                                        // })
+                                        ->disabledOn('create')
+                                        ->reactive()
+                                        ->dehydrated()
                                         ->default(fn () => Auth::user()->name)
                                         ->validationMessages([
                                             'required' => 'Form ini wajib diisi.',
@@ -132,6 +130,7 @@ class CreateCalonSiswa extends CreateRecord
                                         ->required()
                                         ->disabledOn('create')
                                         ->reactive()
+                                        ->dehydrated()
                                         ->default(fn () => Auth::user()->username)
                                         ->unique(ignoreRecord: true)
                                         ->rule(fn ($record) => $record === null ? 'unique:calon_siswas,nisn' : 'unique:calon_siswas,nisn,'.$record->id)
@@ -955,7 +954,7 @@ class CreateCalonSiswa extends CreateRecord
                                         ->label('NIK Ibu Kandung')
                                         ->required()
                                         ->maxLength(16)
-                                        ->minlength(16)
+                                        ->minLength(16)
                                         ->numeric()
                                         ->validationMessages([
                                             'required' => 'Form ini wajib diisi.',
@@ -1151,7 +1150,7 @@ class CreateCalonSiswa extends CreateRecord
                                         ->required()
                                         ->maxLength(16)
                                         ->numeric()
-                                        ->minlength(16)
+                                        ->minLength(16)
                                         ->validationMessages([
                                             'required' => 'Form ini wajib diisi.',
                                             'max_digits' => 'NIK: Masukkan maksimal 16 Angka.',
@@ -1340,7 +1339,7 @@ class CreateCalonSiswa extends CreateRecord
                                         ->label('NIK Wali')
                                         ->numeric()
                                         ->maxLength(16)
-                                        ->minlength(16)
+                                        ->minLength(16)
                                         ->validationMessages([
                                             'max_digits' => 'NIK: Masukkan maksimal 16 Angka.',
                                             'min_digits' => 'NIK: Masukkan minimal 16 Angka.',
