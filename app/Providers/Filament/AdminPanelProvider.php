@@ -87,7 +87,7 @@ class AdminPanelProvider extends PanelProvider
             ->profile(EditProfileCustom::class)
             ->path('')
             ->colors([
-                'primary' => Color::Cyan,
+                'primary' => Color::Green,
             ])
             ->userMenuItems([
                 MenuItem::make()
