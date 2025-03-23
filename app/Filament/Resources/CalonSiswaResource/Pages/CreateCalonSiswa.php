@@ -19,6 +19,7 @@ use Filament\Forms\Components\Wizard;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Resources\Pages\CreateRecord;
+use Filament\Resources\Pages\CreateRecord\Concerns\HasWizard;
 use Filament\Support\Enums\IconPosition;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -27,9 +28,9 @@ use Illuminate\Support\HtmlString;
 
 class CreateCalonSiswa extends CreateRecord
 {
-    use CreateRecord\Concerns\HasWizard;
-
     protected static string $resource = CalonSiswaResource::class;
+
+    use HasWizard;
 
     protected function getSteps(): array
     {
@@ -129,7 +130,7 @@ class CreateCalonSiswa extends CreateRecord
                                     TextInput::make('nisn')
                                         ->label('Nomor Induk Siswa Nasional (NISN)')
                                         ->required()
-                                        ->disabledOn('edit')
+                                        ->disabledOn('create')
                                         ->reactive()
                                         ->default(fn () => Auth::user()->username)
                                         ->unique(ignoreRecord: true)

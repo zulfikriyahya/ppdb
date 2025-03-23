@@ -12,11 +12,11 @@ class RoleSeeder extends Seeder
         Role::create(
             [
                 'name' => 'panitia',
-                'guard_name' => 'web'
+                'guard_name' => 'web',
             ],
             [
                 'name' => 'calon-siswa',
-                'guard_name' => 'web'
+                'guard_name' => 'web',
             ],
         );
     }
