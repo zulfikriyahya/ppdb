@@ -14,8 +14,8 @@ class TahunPendaftaranSeeder extends Seeder
             [
                 'id' => '1',
                 'nama' => '2025/2026',
-                'tanggal_ppdb_mulai' => '2025-02-01',
-                'tanggal_ppdb_selesai' => '2025-05-31',
+                'tanggal_ppdb_mulai' => '2025-04-28 00:00:00',
+                'tanggal_ppdb_selesai' => '2025-05-10 23:59:59',
                 'tanggal_pendaftaran_jalur_prestasi_mulai' => null,
                 'tanggal_pendaftaran_jalur_prestasi_selesai' => null,
                 'tanggal_pengumuman_jalur_prestasi_mulai' => null,
