@@ -18,7 +18,7 @@ class UserSeeder extends Seeder
                 'status' => 'Aktif',
                 'email' => 'adm@mtsn1pandeglang.sch.id',
                 'email_verified_at' => now(),
-                'password' => Hash::make('password'),
+                'password' => Hash::make('P@ndegl@ng_14012000*'),
                 'remember_token' => Str::random(10),
             ],
             [
