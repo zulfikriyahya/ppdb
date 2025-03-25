@@ -1,35 +1,3 @@
-<body>
-
-    <table border="1" width="100%">
-        <tr>
-            <td width="120px" height="120px" align="center">
-                logo institusi
-            </td>
-            <td align="center">
-                <b> AGAMA REPUBLIK INDONESIA </b> <br>
-                <b> KANTOR KEMENTERIAN AGAMA KABUPATEN PANDEGLANG </b> <br>
-                <b> MADRASAH TSANAWIYAH NEGERI 1 PANDEGLANG </b> <br>
-                <span> Jl. Raya Labuan Km. 5,7 Desa Palurahan Kecamatan Kaduhejo Kabupaten Pandeglang - Banten </span>
-                <br>
-                <span> Website: www.mtsn1pandeglang.sch.id Surel: adm@mtsn1pandeglang.sch.id
-                </span> <br>
-            </td>
-            <td width="120px" height="120px" align="center">
-                logo instansi
-            </td>
-        </tr>
-    </table>
-
-</body>
-
-
-
-
-
-
-
-
-
 {{ $record->nama ?? '' }}
 {{ $record->nik ?? '' }}
 {{ $record->nisn ?? '' }}

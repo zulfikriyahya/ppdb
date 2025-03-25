@@ -144,15 +144,15 @@ class CalonSiswaExporter extends Exporter
                 ->label('Status'),
             ExportColumn::make('ibu_alamat')
                 ->label('Alamat Ibu'),
-            ExportColumn::make('ibuKelurahan.id')
+            ExportColumn::make('ibuKelurahan.nama')
                 ->label('Kelurahan/Desa'),
-            ExportColumn::make('ibuKecamatan.id')
+            ExportColumn::make('ibuKecamatan.nama')
                 ->label('Kecamatan'),
-            ExportColumn::make('ibuKabupaten.id')
+            ExportColumn::make('ibuKabupaten.nama')
                 ->label('Kabupaten/Kota'),
-            ExportColumn::make('ibuProvinsi.id')
+            ExportColumn::make('ibuProvinsi.nama')
                 ->label('Provinsi'),
-            ExportColumn::make('ibuNegara.id')
+            ExportColumn::make('ibuNegara.nama')
                 ->label('Negara'),
 
             // Data Ayah
