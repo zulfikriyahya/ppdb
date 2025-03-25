@@ -2,22 +2,22 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\JalurPendaftaranResource\Pages;
-use App\Models\JalurPendaftaran;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Enums\FiltersLayout;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Models\JalurPendaftaran;
+use Filament\Resources\Resource;
 use Illuminate\Support\HtmlString;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Section;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\TextInput;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Forms\Components\DatePicker;
+use Illuminate\Database\Eloquent\Builder;
+use Filament\Forms\Components\DateTimePicker;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\JalurPendaftaranResource\Pages;
 
 class JalurPendaftaranResource extends Resource
 {
@@ -79,7 +79,7 @@ class JalurPendaftaranResource extends Resource
 
                         Select::make('tahun_pendaftaran_id')
                             ->label('Tahun Pendaftaran')
-                            ->relationship('tahunPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif'))
+                            ->relationship('tahunPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
                             ->required()
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
@@ -129,182 +129,22 @@ class JalurPendaftaranResource extends Resource
                                         'xl' => 3,
                                         '2xl' => 3,
                                     ]),
-                                Section::make('PPDB')
+                                Section::make('Daftar Akun')
                                     ->collapsible()
-                                    ->description('Tanggal Pelaksanaan PPDB.')
+                                    ->description('Tanggal Daftar Akun PPDB.')
                                     ->schema([
                                         DatePicker::make('tanggal_ppdb_mulai')
-                                            ->label('Tanggal Mulai PPDB')
+                                            ->label('Tanggal Mulai Daftar Akun PPDB')
                                             ->required()
                                             ->validationMessages([
                                                 'required' => 'Form ini wajib diisi.',
                                             ]),
                                         DatePicker::make('tanggal_ppdb_selesai')
-                                            ->label('Tanggal Selesai PPDB')
+                                            ->label('Tanggal Selesai Daftar Akun PPDB')
                                             ->required()
                                             ->validationMessages([
                                                 'required' => 'Form ini wajib diisi.',
                                             ]),
-                                    ])
-                                    ->columns([
-                                        'sm' => '100%',
-                                        'md' => 2,
-                                        'lg' => 2,
-                                        'xl' => 2,
-                                        '2xl' => 2,
-                                    ]),
-                                Section::make('Pendaftaran Jalur Prestasi')
-                                    ->collapsed()
-                                    ->description('Tanggal pendaftaran untuk jalur prestasi.')
-                                    ->schema([
-                                        DateTimePicker::make('tanggal_pendaftaran_jalur_prestasi_mulai')
-                                            ->label('Tanggal Mulai Pendaftaran Jalur Prestasi'),
-                                        DateTimePicker::make('tanggal_pendaftaran_jalur_prestasi_selesai')
-                                            ->label('Tanggal Selesai Pendaftaran Jalur Prestasi'),
-                                    ])
-                                    ->columns([
-                                        'sm' => '100%',
-                                        'md' => 2,
-                                        'lg' => 2,
-                                        'xl' => 2,
-                                        '2xl' => 2,
-                                    ]),
-                                Section::make('Pengumuman Jalur Prestasi')
-                                    ->collapsed()
-                                    ->description('Tanggal pengumuman untuk jalur prestasi.')
-                                    ->schema([
-                                        DateTimePicker::make('tanggal_pengumuman_jalur_prestasi_mulai')
-                                            ->label('Tanggal Mulai Pengumuman Jalur Prestasi'),
-                                        DateTimePicker::make('tanggal_pengumuman_jalur_prestasi_selesai')
-                                            ->label('Tanggal Selesai Pengumuman Jalur Prestasi'),
-                                    ])
-                                    ->columns([
-                                        'sm' => '100%',
-                                        'md' => 2,
-                                        'lg' => 2,
-                                        'xl' => 2,
-                                        '2xl' => 2,
-                                    ]),
-                                Section::make('Pendaftaran Jalur Reguler')
-                                    ->collapsed()
-                                    ->description('Tanggal pendaftaran untuk jalur reguler.')
-                                    ->schema([
-                                        DateTimePicker::make('tanggal_pendaftaran_jalur_reguler_mulai')
-                                            ->label('Tanggal Mulai Pendaftaran Jalur Reguler'),
-                                        DateTimePicker::make('tanggal_pendaftaran_jalur_reguler_selesai')
-                                            ->label('Tanggal Selesai Pendaftaran Jalur Reguler'),
-                                    ])
-                                    ->columns([
-                                        'sm' => '100%',
-                                        'md' => 2,
-                                        'lg' => 2,
-                                        'xl' => 2,
-                                        '2xl' => 2,
-                                    ]),
-                                Section::make('Pengumuman Jalur Reguler')
-                                    ->collapsed()
-                                    ->description('Tanggal pengumuman untuk jalur reguler.')
-                                    ->schema([
-                                        DateTimePicker::make('tanggal_pengumuman_jalur_reguler_mulai')
-                                            ->label('Tanggal Mulai Pengumuman Jalur Reguler'),
-                                        DateTimePicker::make('tanggal_pengumuman_jalur_reguler_selesai')
-                                            ->label('Tanggal Selesai Pengumuman Jalur Reguler'),
-                                    ])
-                                    ->columns([
-                                        'sm' => '100%',
-                                        'md' => 2,
-                                        'lg' => 2,
-                                        'xl' => 2,
-                                        '2xl' => 2,
-                                    ]),
-                                Section::make('Pendaftaran Jalur Afirmasi')
-                                    ->collapsed()
-                                    ->description('Tanggal pendaftaran untuk jalur Afirmasi.')
-                                    ->schema([
-                                        DateTimePicker::make('tanggal_pendaftaran_jalur_afirmasi_mulai')
-                                            ->label('Tanggal Mulai Pendaftaran Jalur Afirmasi'),
-                                        DateTimePicker::make('tanggal_pendaftaran_jalur_afirmasi_selesai')
-                                            ->label('Tanggal Selesai Pendaftaran Jalur Afirmasi'),
-                                    ])
-                                    ->columns([
-                                        'sm' => '100%',
-                                        'md' => 2,
-                                        'lg' => 2,
-                                        'xl' => 2,
-                                        '2xl' => 2,
-                                    ]),
-                                Section::make('Pengumuman Jalur Afirmasi')
-                                    ->collapsed()
-                                    ->description('Tanggal pengumuman untuk jalur Afirmasi.')
-                                    ->schema([
-                                        DateTimePicker::make('tanggal_pengumuman_jalur_afirmasi_mulai')
-                                            ->label('Tanggal Mulai Pengumuman Jalur Afirmasi'),
-                                        DateTimePicker::make('tanggal_pengumuman_jalur_afirmasi_selesai')
-                                            ->label('Tanggal Selesai Pengumuman Jalur Afirmasi'),
-                                    ])
-                                    ->columns([
-                                        'sm' => '100%',
-                                        'md' => 2,
-                                        'lg' => 2,
-                                        'xl' => 2,
-                                        '2xl' => 2,
-                                    ]),
-                                Section::make('Pendaftaran Jalur Zonasi')
-                                    ->collapsed()
-                                    ->description('Tanggal pendaftaran untuk jalur Zonasi.')
-                                    ->schema([
-                                        DateTimePicker::make('tanggal_pendaftaran_jalur_zonasi_mulai')
-                                            ->label('Tanggal Mulai Pendaftaran Jalur Zonasi'),
-                                        DateTimePicker::make('tanggal_pendaftaran_jalur_zonasi_selesai')
-                                            ->label('Tanggal Selesai Pendaftaran Jalur Zonasi'),
-                                    ])
-                                    ->columns([
-                                        'sm' => '100%',
-                                        'md' => 2,
-                                        'lg' => 2,
-                                        'xl' => 2,
-                                        '2xl' => 2,
-                                    ]),
-                                Section::make('Pengumuman Jalur Zonasi')
-                                    ->collapsed()
-                                    ->description('Tanggal pengumuman untuk jalur Zonasi.')
-                                    ->schema([
-                                        DateTimePicker::make('tanggal_pengumuman_jalur_zonasi_mulai')
-                                            ->label('Tanggal Mulai Pengumuman Jalur Zonasi'),
-                                        DateTimePicker::make('tanggal_pengumuman_jalur_zonasi_selesai')
-                                            ->label('Tanggal Selesai Pengumuman Jalur Zonasi'),
-                                    ])
-                                    ->columns([
-                                        'sm' => '100%',
-                                        'md' => 2,
-                                        'lg' => 2,
-                                        'xl' => 2,
-                                        '2xl' => 2,
-                                    ]),
-                                Section::make('Pendaftaran Jalur Mutasi')
-                                    ->collapsed()
-                                    ->description('Tanggal pendaftaran untuk jalur Mutasi.')
-                                    ->schema([
-                                        DateTimePicker::make('tanggal_pendaftaran_jalur_mutasi_mulai')
-                                            ->label('Tanggal Mulai Pendaftaran Jalur Mutasi'),
-                                        DateTimePicker::make('tanggal_pendaftaran_jalur_mutasi_selesai')
-                                            ->label('Tanggal Selesai Pendaftaran Jalur Mutasi'),
-                                    ])
-                                    ->columns([
-                                        'sm' => '100%',
-                                        'md' => 2,
-                                        'lg' => 2,
-                                        'xl' => 2,
-                                        '2xl' => 2,
-                                    ]),
-                                Section::make('Pengumuman Jalur Mutasi')
-                                    ->collapsed()
-                                    ->description('Tanggal pengumuman untuk jalur Mutasi.')
-                                    ->schema([
-                                        DateTimePicker::make('tanggal_pengumuman_jalur_mutasi_mulai')
-                                            ->label('Tanggal Mulai Pengumuman Jalur Mutasi'),
-                                        DateTimePicker::make('tanggal_pengumuman_jalur_mutasi_selesai')
-                                            ->label('Tanggal Selesai Pengumuman Jalur Mutasi'),
                                     ])
                                     ->columns([
                                         'sm' => '100%',
@@ -314,45 +154,21 @@ class JalurPendaftaranResource extends Resource
                                         '2xl' => 2,
                                     ]),
                                 Section::make('Penerbitan Kartu Tes')
-                                    ->collapsed()
+                                    ->collapsible()
                                     ->description('Tanggal penerbitan kartu tes.')
                                     ->schema([
                                         DateTimePicker::make('tanggal_penerbitan_kartu_tes_mulai')
-                                            ->label('Tanggal Mulai Penerbitan Kartu Tes'),
+                                            ->label('Tanggal Mulai Penerbitan Kartu Tes')
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
                                         DateTimePicker::make('tanggal_penerbitan_kartu_tes_selesai')
-                                            ->label('Tanggal Selesai Penerbitan Kartu Tes'),
-                                    ])
-                                    ->columns([
-                                        'sm' => '100%',
-                                        'md' => 2,
-                                        'lg' => 2,
-                                        'xl' => 2,
-                                        '2xl' => 2,
-                                    ]),
-                                Section::make('Tes Akademik')
-                                    ->collapsed()
-                                    ->description('Tanggal tes akademik.')
-                                    ->schema([
-                                        DateTimePicker::make('tanggal_tes_akademik_mulai')
-                                            ->label('Tanggal Mulai Tes Akademik'),
-                                        DateTimePicker::make('tanggal_tes_akademik_selesai')
-                                            ->label('Tanggal Selesai Tes Akademik'),
-                                    ])
-                                    ->columns([
-                                        'sm' => '100%',
-                                        'md' => 2,
-                                        'lg' => 2,
-                                        'xl' => 2,
-                                        '2xl' => 2,
-                                    ]),
-                                Section::make('Tes Praktik')
-                                    ->collapsed()
-                                    ->description('Tanggal tes praktik.')
-                                    ->schema([
-                                        DateTimePicker::make('tanggal_tes_praktik_mulai')
-                                            ->label('Tanggal Mulai Tes Praktik'),
-                                        DateTimePicker::make('tanggal_tes_praktik_selesai')
-                                            ->label('Tanggal Selesai Tes Praktik'),
+                                            ->label('Tanggal Selesai Penerbitan Kartu Tes')
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
                                     ])
                                     ->columns([
                                         'sm' => '100%',
@@ -362,13 +178,21 @@ class JalurPendaftaranResource extends Resource
                                         '2xl' => 2,
                                     ]),
                                 Section::make('Registrasi Berkas')
-                                    ->collapsed()
+                                    ->collapsible()
                                     ->description('Tanggal registrasi berkas.')
                                     ->schema([
                                         DateTimePicker::make('tanggal_registrasi_berkas_mulai')
-                                            ->label('Tanggal Mulai Registrasi Berkas'),
+                                            ->label('Tanggal Mulai Registrasi Berkas')
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
                                         DateTimePicker::make('tanggal_registrasi_berkas_selesai')
-                                            ->label('Tanggal Selesai Registrasi Berkas'),
+                                            ->label('Tanggal Selesai Registrasi Berkas')
+                                            ->required()
+                                            ->validationMessages([
+                                                'required' => 'Form ini wajib diisi.',
+                                            ]),
                                     ])
                                     ->columns([
                                         'sm' => '100%',
@@ -377,6 +201,198 @@ class JalurPendaftaranResource extends Resource
                                         'xl' => 2,
                                         '2xl' => 2,
                                     ]),
+                                // Section::make('Pendaftaran Jalur Prestasi')
+                                //     ->collapsed()
+                                //     ->description('Tanggal pendaftaran untuk jalur prestasi.')
+                                //     ->schema([
+                                //         DateTimePicker::make('tanggal_pendaftaran_jalur_prestasi_mulai')
+                                //             ->label('Tanggal Mulai Pendaftaran Jalur Prestasi'),
+                                //         DateTimePicker::make('tanggal_pendaftaran_jalur_prestasi_selesai')
+                                //             ->label('Tanggal Selesai Pendaftaran Jalur Prestasi'),
+                                //     ])
+                                //     ->columns([
+                                //         'sm' => '100%',
+                                //         'md' => 2,
+                                //         'lg' => 2,
+                                //         'xl' => 2,
+                                //         '2xl' => 2,
+                                //     ]),
+                                // Section::make('Pengumuman Jalur Prestasi')
+                                //     ->collapsed()
+                                //     ->description('Tanggal pengumuman untuk jalur prestasi.')
+                                //     ->schema([
+                                //         DateTimePicker::make('tanggal_pengumuman_jalur_prestasi_mulai')
+                                //             ->label('Tanggal Mulai Pengumuman Jalur Prestasi'),
+                                //         DateTimePicker::make('tanggal_pengumuman_jalur_prestasi_selesai')
+                                //             ->label('Tanggal Selesai Pengumuman Jalur Prestasi'),
+                                //     ])
+                                //     ->columns([
+                                //         'sm' => '100%',
+                                //         'md' => 2,
+                                //         'lg' => 2,
+                                //         'xl' => 2,
+                                //         '2xl' => 2,
+                                //     ]),
+                                // Section::make('Pendaftaran Jalur Reguler')
+                                //     ->collapsed()
+                                //     ->description('Tanggal pendaftaran untuk jalur reguler.')
+                                //     ->schema([
+                                //         DateTimePicker::make('tanggal_pendaftaran_jalur_reguler_mulai')
+                                //             ->label('Tanggal Mulai Pendaftaran Jalur Reguler'),
+                                //         DateTimePicker::make('tanggal_pendaftaran_jalur_reguler_selesai')
+                                //             ->label('Tanggal Selesai Pendaftaran Jalur Reguler'),
+                                //     ])
+                                //     ->columns([
+                                //         'sm' => '100%',
+                                //         'md' => 2,
+                                //         'lg' => 2,
+                                //         'xl' => 2,
+                                //         '2xl' => 2,
+                                //     ]),
+                                // Section::make('Pengumuman Jalur Reguler')
+                                //     ->collapsed()
+                                //     ->description('Tanggal pengumuman untuk jalur reguler.')
+                                //     ->schema([
+                                //         DateTimePicker::make('tanggal_pengumuman_jalur_reguler_mulai')
+                                //             ->label('Tanggal Mulai Pengumuman Jalur Reguler'),
+                                //         DateTimePicker::make('tanggal_pengumuman_jalur_reguler_selesai')
+                                //             ->label('Tanggal Selesai Pengumuman Jalur Reguler'),
+                                //     ])
+                                //     ->columns([
+                                //         'sm' => '100%',
+                                //         'md' => 2,
+                                //         'lg' => 2,
+                                //         'xl' => 2,
+                                //         '2xl' => 2,
+                                //     ]),
+                                // Section::make('Pendaftaran Jalur Afirmasi')
+                                //     ->collapsed()
+                                //     ->description('Tanggal pendaftaran untuk jalur Afirmasi.')
+                                //     ->schema([
+                                //         DateTimePicker::make('tanggal_pendaftaran_jalur_afirmasi_mulai')
+                                //             ->label('Tanggal Mulai Pendaftaran Jalur Afirmasi'),
+                                //         DateTimePicker::make('tanggal_pendaftaran_jalur_afirmasi_selesai')
+                                //             ->label('Tanggal Selesai Pendaftaran Jalur Afirmasi'),
+                                //     ])
+                                //     ->columns([
+                                //         'sm' => '100%',
+                                //         'md' => 2,
+                                //         'lg' => 2,
+                                //         'xl' => 2,
+                                //         '2xl' => 2,
+                                //     ]),
+                                // Section::make('Pengumuman Jalur Afirmasi')
+                                //     ->collapsed()
+                                //     ->description('Tanggal pengumuman untuk jalur Afirmasi.')
+                                //     ->schema([
+                                //         DateTimePicker::make('tanggal_pengumuman_jalur_afirmasi_mulai')
+                                //             ->label('Tanggal Mulai Pengumuman Jalur Afirmasi'),
+                                //         DateTimePicker::make('tanggal_pengumuman_jalur_afirmasi_selesai')
+                                //             ->label('Tanggal Selesai Pengumuman Jalur Afirmasi'),
+                                //     ])
+                                //     ->columns([
+                                //         'sm' => '100%',
+                                //         'md' => 2,
+                                //         'lg' => 2,
+                                //         'xl' => 2,
+                                //         '2xl' => 2,
+                                //     ]),
+                                // Section::make('Pendaftaran Jalur Zonasi')
+                                //     ->collapsed()
+                                //     ->description('Tanggal pendaftaran untuk jalur Zonasi.')
+                                //     ->schema([
+                                //         DateTimePicker::make('tanggal_pendaftaran_jalur_zonasi_mulai')
+                                //             ->label('Tanggal Mulai Pendaftaran Jalur Zonasi'),
+                                //         DateTimePicker::make('tanggal_pendaftaran_jalur_zonasi_selesai')
+                                //             ->label('Tanggal Selesai Pendaftaran Jalur Zonasi'),
+                                //     ])
+                                //     ->columns([
+                                //         'sm' => '100%',
+                                //         'md' => 2,
+                                //         'lg' => 2,
+                                //         'xl' => 2,
+                                //         '2xl' => 2,
+                                //     ]),
+                                // Section::make('Pengumuman Jalur Zonasi')
+                                //     ->collapsed()
+                                //     ->description('Tanggal pengumuman untuk jalur Zonasi.')
+                                //     ->schema([
+                                //         DateTimePicker::make('tanggal_pengumuman_jalur_zonasi_mulai')
+                                //             ->label('Tanggal Mulai Pengumuman Jalur Zonasi'),
+                                //         DateTimePicker::make('tanggal_pengumuman_jalur_zonasi_selesai')
+                                //             ->label('Tanggal Selesai Pengumuman Jalur Zonasi'),
+                                //     ])
+                                //     ->columns([
+                                //         'sm' => '100%',
+                                //         'md' => 2,
+                                //         'lg' => 2,
+                                //         'xl' => 2,
+                                //         '2xl' => 2,
+                                //     ]),
+                                // Section::make('Pendaftaran Jalur Mutasi')
+                                //     ->collapsed()
+                                //     ->description('Tanggal pendaftaran untuk jalur Mutasi.')
+                                //     ->schema([
+                                //         DateTimePicker::make('tanggal_pendaftaran_jalur_mutasi_mulai')
+                                //             ->label('Tanggal Mulai Pendaftaran Jalur Mutasi'),
+                                //         DateTimePicker::make('tanggal_pendaftaran_jalur_mutasi_selesai')
+                                //             ->label('Tanggal Selesai Pendaftaran Jalur Mutasi'),
+                                //     ])
+                                //     ->columns([
+                                //         'sm' => '100%',
+                                //         'md' => 2,
+                                //         'lg' => 2,
+                                //         'xl' => 2,
+                                //         '2xl' => 2,
+                                //     ]),
+                                // Section::make('Pengumuman Jalur Mutasi')
+                                //     ->collapsed()
+                                //     ->description('Tanggal pengumuman untuk jalur Mutasi.')
+                                //     ->schema([
+                                //         DateTimePicker::make('tanggal_pengumuman_jalur_mutasi_mulai')
+                                //             ->label('Tanggal Mulai Pengumuman Jalur Mutasi'),
+                                //         DateTimePicker::make('tanggal_pengumuman_jalur_mutasi_selesai')
+                                //             ->label('Tanggal Selesai Pengumuman Jalur Mutasi'),
+                                //     ])
+                                //     ->columns([
+                                //         'sm' => '100%',
+                                //         'md' => 2,
+                                //         'lg' => 2,
+                                //         'xl' => 2,
+                                //         '2xl' => 2,
+                                //     ]),
+                                // Section::make('Tes Akademik')
+                                //     ->collapsed()
+                                //     ->description('Tanggal tes akademik.')
+                                //     ->schema([
+                                //         DateTimePicker::make('tanggal_tes_akademik_mulai')
+                                //             ->label('Tanggal Mulai Tes Akademik'),
+                                //         DateTimePicker::make('tanggal_tes_akademik_selesai')
+                                //             ->label('Tanggal Selesai Tes Akademik'),
+                                //     ])
+                                //     ->columns([
+                                //         'sm' => '100%',
+                                //         'md' => 2,
+                                //         'lg' => 2,
+                                //         'xl' => 2,
+                                //         '2xl' => 2,
+                                //     ]),
+                                // Section::make('Tes Praktik')
+                                //     ->collapsed()
+                                //     ->description('Tanggal tes praktik.')
+                                //     ->schema([
+                                //         DateTimePicker::make('tanggal_tes_praktik_mulai')
+                                //             ->label('Tanggal Mulai Tes Praktik'),
+                                //         DateTimePicker::make('tanggal_tes_praktik_selesai')
+                                //             ->label('Tanggal Selesai Tes Praktik'),
+                                //     ])
+                                //     ->columns([
+                                //         'sm' => '100%',
+                                //         'md' => 2,
+                                //         'lg' => 2,
+                                //         'xl' => 2,
+                                //         '2xl' => 2,
+                                //     ]),
                             ]),
                     ])
                     ->columns([
@@ -408,7 +424,7 @@ class JalurPendaftaranResource extends Resource
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'Aktif' => 'success',
                         'Nonaktif' => 'gray'
                     }),

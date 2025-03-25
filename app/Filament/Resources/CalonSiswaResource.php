@@ -1729,6 +1729,10 @@ class CalonSiswaResource extends Resource
                     ->label('Nama Lengkap')
                     ->searchable(),
 
+                TextColumn::make('jenis_kelamin')
+                    ->label('Jenis Kelamin')
+                    ->searchable(),
+
                 TextColumn::make('nik')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('NIK')
@@ -1760,9 +1764,6 @@ class CalonSiswaResource extends Resource
                 TextColumn::make('tahun_lulus')
                     ->label('Tahun Lulus')
                     ->sortable(),
-                TextColumn::make('jenis_kelamin')
-                    ->label('Jenis Kelamin')
-                    ->searchable(),
                 TextColumn::make('golongan_darah')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Golongan Darah')
@@ -1877,73 +1878,26 @@ class CalonSiswaResource extends Resource
                 TextColumn::make('tes_sesi')
                     ->label('Sesi Tes')
                     ->sortable()
-                    ->visible(function () {
-                        $tahunPendaftaran = DB::table('tahun_pendaftarans')
-                            ->where('status', 'Aktif')
-                            ->first();
-                        $currentDate = Carbon::now();
-                        $startDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_penerbitan_kartu_tes_mulai));
-                        $endDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_penerbitan_kartu_tes_selesai));
-
-                        if ($currentDate->lt($startDate) || $currentDate->gt($endDate) || Auth::user()->username === 'administrator') {
-                            return false;
-                        }
-                        return true;
-                    })
+                    ->visible(Auth::user()->username === 'administrator')
                     ->searchable(),
 
                 TextColumn::make('tes_ruang')
                     ->label('Ruang Tes')
                     ->sortable()
-                    ->visible(function () {
-                        $tahunPendaftaran = DB::table('tahun_pendaftarans')
-                            ->where('status', 'Aktif')
-                            ->first();
-                        $currentDate = Carbon::now();
-                        $startDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_penerbitan_kartu_tes_mulai));
-                        $endDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_penerbitan_kartu_tes_selesai));
-
-                        if ($currentDate->lt($startDate) || $currentDate->gt($endDate) || Auth::user()->username === 'administrator') {
-                            return false;
-                        }
-                        return true;
-                    })
+                    ->visible(Auth::user()->username === 'administrator')
                     ->searchable(),
 
                 TextColumn::make('tes_akademik')
                     ->label('Tes Akademik')
                     ->date('d F Y H:i:s')
-                    ->visible(function () {
-                        $tahunPendaftaran = DB::table('tahun_pendaftarans')
-                            ->where('status', 'Aktif')
-                            ->first();
-                        $currentDate = Carbon::now();
-                        $startDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_penerbitan_kartu_tes_mulai));
-                        $endDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_penerbitan_kartu_tes_selesai));
+                    ->visible(Auth::user()->username === 'administrator')
 
-                        if ($currentDate->lt($startDate) || $currentDate->gt($endDate) || Auth::user()->username === 'administrator') {
-                            return false;
-                        }
-                        return true;
-                    })
                     ->sortable(),
 
                 TextColumn::make('tes_praktik')
                     ->label('Tes Praktik')
                     ->date('d F Y H:i:s')
-                    ->visible(function () {
-                        $tahunPendaftaran = DB::table('tahun_pendaftarans')
-                            ->where('status', 'Aktif')
-                            ->first();
-                        $currentDate = Carbon::now();
-                        $startDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_penerbitan_kartu_tes_mulai));
-                        $endDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_penerbitan_kartu_tes_selesai));
-
-                        if ($currentDate->lt($startDate) || $currentDate->gt($endDate) || Auth::user()->username === 'administrator') {
-                            return false;
-                        }
-                        return true;
-                    })
+                    ->visible(Auth::user()->username === 'administrator')
                     ->sortable(),
 
                 // Lainnya

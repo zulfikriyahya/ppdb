@@ -16,6 +16,11 @@ class ListCalonSiswas extends ListRecords
 {
     protected static string $resource = CalonSiswaResource::class;
 
+    protected function getShieldRedirectPath(): string
+    {
+        return '/'; // redirect to the root index...
+    }
+
     protected function getHeaderActions(): array
     {
         if (Auth::check()) {
@@ -26,7 +31,6 @@ class ListCalonSiswas extends ListRecords
             if ($calonSiswa) {
                 $urlView = "/formulir/{$calonSiswa->id}";
                 $urlEdit = "/formulir/{$calonSiswa->id}/edit";
-            } else {
             }
         }
 
@@ -59,6 +63,7 @@ class ListCalonSiswas extends ListRecords
                 ->hidden(
                     Auth::user()->username === 'administrator' || $calonSiswa === null || ($calonSiswa->status_pendaftaran !== 'Diproses' && $calonSiswa->status_pendaftaran !== 'Berkas Tidak Lengkap')
                 )
+
                 ->successRedirectUrl($urlView),
 
             // Export
