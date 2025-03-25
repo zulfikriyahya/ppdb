@@ -2,21 +2,21 @@
 
 namespace App\Filament\Resources\JurusanResource\Pages;
 
-use App\Filament\Resources\JurusanResource;
 use Filament\Actions;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Resources\Pages\EditRecord;
+use App\Filament\Resources\JurusanResource;
 
 class EditJurusan extends EditRecord
 {
     protected static string $resource = JurusanResource::class;
 
-    protected function getHeaderActions(): array
+    // Override handleRecordUpdate dengan tanda tangan yang sesuai
+    protected function handleRecordUpdate(Model $record, array $data): Model
     {
-        return [
-            Actions\ViewAction::make(),
-            Actions\DeleteAction::make(),
-            Actions\ForceDeleteAction::make(),
-            Actions\RestoreAction::make(),
-        ];
+        $updatedRecord = parent::handleRecordUpdate($record, $data);
+        $this->redirect($this->getResource()::getUrl('index'));
+
+        return $updatedRecord;
     }
 }

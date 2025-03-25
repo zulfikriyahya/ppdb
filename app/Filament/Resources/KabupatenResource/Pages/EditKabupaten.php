@@ -2,21 +2,21 @@
 
 namespace App\Filament\Resources\KabupatenResource\Pages;
 
-use App\Filament\Resources\KabupatenResource;
 use Filament\Actions;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Resources\Pages\EditRecord;
+use App\Filament\Resources\KabupatenResource;
 
 class EditKabupaten extends EditRecord
 {
     protected static string $resource = KabupatenResource::class;
 
-    protected function getHeaderActions(): array
+    // Override handleRecordUpdate dengan tanda tangan yang sesuai
+    protected function handleRecordUpdate(Model $record, array $data): Model
     {
-        return [
-            Actions\ViewAction::make(),
-            Actions\DeleteAction::make(),
-            Actions\ForceDeleteAction::make(),
-            Actions\RestoreAction::make(),
-        ];
+        $updatedRecord = parent::handleRecordUpdate($record, $data);
+        $this->redirect($this->getResource()::getUrl('index'));
+
+        return $updatedRecord;
     }
 }

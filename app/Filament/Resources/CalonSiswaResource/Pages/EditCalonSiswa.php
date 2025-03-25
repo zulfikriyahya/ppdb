@@ -34,6 +34,15 @@ class EditCalonSiswa extends EditRecord
 
     use HasWizard;
 
+    // Override handleRecordUpdate dengan tanda tangan yang sesuai
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        $updatedRecord = parent::handleRecordUpdate($record, $data);
+        $this->redirect($this->getResource()::getUrl('index'));
+
+        return $updatedRecord;
+    }
+
     protected function getSteps(): array
     {
         return [
@@ -1595,16 +1604,5 @@ class EditCalonSiswa extends EditRecord
                         ]),
                 ]),
         ];
-    }
-
-    // Override handleRecordUpdate dengan tanda tangan yang sesuai
-    protected function handleRecordUpdate(Model $record, array $data): Model
-    {
-        $updatedRecord = parent::handleRecordUpdate($record, $data);
-
-        // Redirect ke halaman ListCalonSiswas
-        $this->redirect($this->getResource()::getUrl('index'));
-
-        return $updatedRecord;
     }
 }

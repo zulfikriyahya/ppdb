@@ -2,21 +2,21 @@
 
 namespace App\Filament\Resources\KelasResource\Pages;
 
-use App\Filament\Resources\KelasResource;
 use Filament\Actions;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Resources\Pages\EditRecord;
+use App\Filament\Resources\KelasResource;
 
 class EditKelas extends EditRecord
 {
     protected static string $resource = KelasResource::class;
 
-    protected function getHeaderActions(): array
+    // Override handleRecordUpdate dengan tanda tangan yang sesuai
+    protected function handleRecordUpdate(Model $record, array $data): Model
     {
-        return [
-            Actions\ViewAction::make(),
-            Actions\DeleteAction::make(),
-            Actions\ForceDeleteAction::make(),
-            Actions\RestoreAction::make(),
-        ];
+        $updatedRecord = parent::handleRecordUpdate($record, $data);
+        $this->redirect($this->getResource()::getUrl('index'));
+
+        return $updatedRecord;
     }
 }
