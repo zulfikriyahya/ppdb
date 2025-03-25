@@ -23,6 +23,7 @@ use Filament\Tables\Grouping\Group;
 use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Wizard;
+use Illuminate\Support\Facades\Blade;
 use Filament\Forms\Components\Section;
 use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Columns\TextColumn;
@@ -41,6 +42,7 @@ use Filament\Tables\Enums\ActionsPosition;
 use Filament\Tables\Filters\TrashedFilter;
 use App\Filament\Exports\CalonSiswaExporter;
 use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\ExportBulkAction;
@@ -1633,7 +1635,16 @@ class CalonSiswaResource extends Resource
                             ])
                             ->columnSpanFull(),
 
-                    ]),
+                    ])
+                    ->submitAction(
+                        Action::make('close')
+                            ->label('Tutup')
+                            ->url(CalonSiswaResource::getUrl('index')) // Redirect langsung ke URL
+                            ->color('danger')
+                            ->button()
+                            ->outlined()
+                        // ->icon('heroicon-o-x-circle')
+                    )
             ]);
     }
 

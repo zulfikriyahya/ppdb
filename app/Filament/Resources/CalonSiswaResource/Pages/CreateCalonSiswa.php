@@ -1596,4 +1596,15 @@ class CreateCalonSiswa extends CreateRecord
 
         ];
     }
+
+    // Override handleRecordCreate dengan tanda tangan yang sesuai
+    protected function handleRecordCreate(Model $record, array $data): Model
+    {
+        $createdRecord = parent::handleRecordCreate($record, $data);
+
+        // Redirect ke halaman ListCalonSiswas
+        $this->redirect($this->getResource()::getUrl('index'));
+
+        return $createdRecord;
+    }
 }

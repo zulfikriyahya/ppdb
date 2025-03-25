@@ -14,6 +14,7 @@ use Illuminate\Support\HtmlString;
 use Filament\Forms\Components\Tabs;
 use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Wizard;
 use Filament\Forms\Components\Section;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
@@ -22,6 +23,7 @@ use Filament\Support\Enums\IconPosition;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Wizard\Step;
+use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
 use App\Filament\Resources\CalonSiswaResource;
 use Filament\Resources\Pages\CreateRecord\Concerns\HasWizard;
@@ -1591,9 +1593,18 @@ class EditCalonSiswa extends EditRecord
                             'md' => '100%',
                             'lg' => 2,
                         ]),
-                ])
-                ->columnSpanFull(),
-
+                ]),
         ];
+    }
+
+    // Override handleRecordUpdate dengan tanda tangan yang sesuai
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        $updatedRecord = parent::handleRecordUpdate($record, $data);
+
+        // Redirect ke halaman ListCalonSiswas
+        $this->redirect($this->getResource()::getUrl('index'));
+
+        return $updatedRecord;
     }
 }
