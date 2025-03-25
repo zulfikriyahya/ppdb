@@ -2359,7 +2359,6 @@ class CalonSiswaResource extends Resource
                         }),
                 ])
                     ->visible(Auth::user()->username === 'administrator'),
-
             ])
             ->striped()
             ->filtersLayout(FiltersLayout::AboveContentCollapsible)
