@@ -1,0 +1,229 @@
+<body>
+    <table width="100%">
+        <tr>
+            <td align="center">
+                logo institusi
+            </td>
+
+            <td align="center">
+                <b> KEMENTERIAN AGAMA REPUBLIK INDONESIA </b> <br>
+                <b> KANTOR KEMENTERIAN AGAMA KABUPATEN PANDEGLANG </b> <br>
+                <b> MADRASAH TSANAWIYAH NEGERI 1 PANDEGLANG </b> <br>
+                <span> Jl. Raya Labuan Km. 5,7 Desa Palurahan, Kaduhejo, Pandeglang - Banten
+                </span>
+                <br>
+                <span> Website: www.mtsn1pandeglang.sch.id Email: adm@mtsn1pandeglang.sch.id
+                </span> <br>
+            </td>
+
+            <td align="center">
+                logo instansi
+            </td>
+        </tr>
+    </table>
+    <hr style="border: 1px solid">
+    <table width="100%" style="border: 1px solid">
+        <tr>
+            <td align="center" colspan="4">
+                <br>
+                <b>FORMULIR PENDAFTARAN</b>
+                <br>
+                <br>
+                <br>
+            </td>
+        </tr>
+
+        <tr>
+            <td colspan="4">
+                <b>DATA PESERTA</b>
+            </td>
+        </tr>
+
+        <tr>
+            <td width="140px">
+                <span>Nama lengkap</span>
+            </td>
+            <td>
+                <span>:</span>
+            </td>
+            <td>
+                {{ $record->nama ?? '' }}
+            </td>
+            <td rowspan="9" width="120px">
+                <img src="{{ Storage::url($record->berkas_foto ?? '') }}" alt="Foto">
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <span>Jalur pendaftaran</span>
+            </td>
+            <td>
+                <span>:</span>
+            </td>
+            <td>
+                {{ $record->jalurPendaftaran->nama ?? '' }}
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <span>NISN</span>
+            </td>
+            <td>
+                <span>:</span>
+            </td>
+            <td>
+                {{ $record->nisn ?? '' }}
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <span>Tempat, tanggal lahir</span>
+            </td>
+            <td>
+                <span>:</span>
+            </td>
+            <td>
+                {{ $record->tempat_lahir ?? '' }}, {{ $record->tanggal_lahir ?? '' }}
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <span>Sekolah asal</span>
+            </td>
+            <td>
+                <span>:</span>
+            </td>
+            <td>
+                {{ $record->sekolahAsal->nama ?? '' }}
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <span>Tahun lulus</span>
+            </td>
+            <td>
+                <span>:</span>
+            </td>
+            <td>
+                {{ $record->tahun_lulus ?? '' }}
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <span>Jenis kelamin</span>
+            </td>
+            <td>
+                <span>:</span>
+            </td>
+            <td>
+                {{ $record->jenis_kelamin ?? '' }}
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <span>Golongan darah</span>
+            </td>
+            <td>
+                <span>:</span>
+            </td>
+            <td>
+                {{ $record->golongan_darah ?? '' }}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span>Agama</span>
+            </td>
+            <td>
+                <span>:</span>
+            </td>
+            <td>
+                {{ $record->agama ?? '' }}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span>Alamat</span>
+            </td>
+            <td>
+                <span>:</span>
+            </td>
+            <td colspan="2">
+                {{ $record->siswa_alamat ?? '' }}, {{ $record->siswaKelurahan->nama ?? '' }}, {{
+                $record->siswaKecamatan->nama ?? '' }}, {{ $record->siswaKabupaten->nama ?? '' }}, {{
+                $record->siswaProvinsi->nama ?? '' }}, {{ $record->siswaNegara->nama ?? '' }}
+            </td>
+        </tr>
+    </table>
+    <br>
+    <!-- Jika CalonSiswa->JalurPendaftaran == 'Prestasi' Munculkan Tabel Prestasi -->
+    <table width="100%" border="1">
+        <thead>
+            <th colspan="6"> DATA PRESTASI</th>
+        </thead>
+        <thead>
+            <th>NO</th>
+            <th>JENIS</th>
+            <th>NAMA</th>
+            <th>TINGKAT</th>
+            <th>KATEGORI</th>
+            <th>JUARA</th>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>Olimpiade</td>
+                <td>KSM</td>
+                <td>Kabupaten</td>
+                <td>Individu</td>
+                <td>1</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Hapalan Al Quran</td>
+                <td>Hapalan Al Quran 30 Juz</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+            </tr>
+        </tbody>
+    </table>
+    <br>
+    <table width="100%" border="1">
+        <tr>
+            <td rowspan="5" width="60%">
+                {{ QR_CODE (NISN) }}
+            </td>
+            <td>
+                {{ DATE_CREATED }}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                SEKRETARIS {{ ENV('APPLICATION_NAME') }}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                {{ TTE_SEKRETARIS }}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                {{ NAMA_SEKRETARIS }}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                NIP. {{ NIP_SEKRETARIS }}
+            </td>
+        </tr>
+    </table>
+</body>

@@ -1,27 +1,62 @@
-<span> Nama Lengkap : {{ $record->nama ?? '' }} </span>
-<span> NIK : {{ $record->nik ?? '' }} </span>
-<span> {{ $record->nisn ?? '' }} </span>
-<span> {{ $record->tempat_lahir ?? '' }} </span>
-<span> {{ $record->tanggal_lahir ?? '' }} </span>
-<span> {{ $record->tahun_lulus ?? '' }} </span>
-<span> {{ $record->jenis_kelamin ?? '' }} </span>
-<span> {{ $record->golongan_darah ?? '' }} </span>
-<span> {{ $record->agama ?? '' }} </span>
-<span> {{ $record->anak_ke ?? '' }} </span>
-<span> {{ $record->jumlah_saudara ?? '' }} </span>
-<span> {{ $record->tinggal_bersama ?? '' }} </span>
-<span> {{ $record->jarak_ke_sekolah ?? '' }} </span>
-<span> {{ $record->disabilitas ?? '' }} </span>
-<span> {{ $record->tinggi_badan ?? '' }} </span>
-<span> {{ $record->berat_badan ?? '' }} </span>
-<span> {{ $record->no_kip ?? '' }} </span>
-<span> {{ $record->siswa_telepon ?? '' }} </span>
-<span> {{ $record->siswa_alamat ?? '' }} </span>
-<span> {{ $record->siswaKelurahan->nama ?? '' }} </span>
-<span> {{ $record->siswaKecamatan->nama ?? '' }} </span>
-<span> {{ $record->siswaKabupaten->nama ?? '' }} </span>
-<span> {{ $record->siswaProvinsi->nama ?? '' }} </span>
-<span> {{ $record->siswaNegara->nama ?? '' }} </span>
+<body>
+
+    <table border="1" width="100%">
+        <tr>
+            <td width="120px" height="120px" align="center">
+                logo institusi
+            </td>
+            <td align="center">
+                <b> AGAMA REPUBLIK INDONESIA </b> <br>
+                <b> KANTOR KEMENTERIAN AGAMA KABUPATEN PANDEGLANG </b> <br>
+                <b> MADRASAH TSANAWIYAH NEGERI 1 PANDEGLANG </b> <br>
+                <span> Jl. Raya Labuan Km. 5,7 Desa Palurahan Kecamatan Kaduhejo Kabupaten Pandeglang - Banten </span>
+                <br>
+                <span> Website: www.mtsn1pandeglang.sch.id Surel: adm@mtsn1pandeglang.sch.id
+                </span> <br>
+            </td>
+            <td width="120px" height="120px" align="center">
+                logo instansi
+            </td>
+        </tr>
+    </table>
+
+</body>
+
+
+
+
+
+
+
+
+
+{{ $record->nama ?? '' }}
+{{ $record->nik ?? '' }}
+{{ $record->nisn ?? '' }}
+{{ $record->tempat_lahir ?? '' }}
+{{ $record->tanggal_lahir ?? '' }}
+{{ $record->tahun_lulus ?? '' }}
+{{ $record->jenis_kelamin ?? '' }}
+{{ $record->golongan_darah ?? '' }}
+{{ $record->agama ?? '' }}
+{{ $record->anak_ke ?? '' }}
+{{ $record->jumlah_saudara ?? '' }}
+{{ $record->tinggal_bersama ?? '' }}
+{{ $record->jarak_ke_sekolah ?? '' }}
+{{ $record->disabilitas ?? '' }}
+{{ $record->tinggi_badan ?? '' }}
+{{ $record->berat_badan ?? '' }}
+{{ $record->no_kip ?? '' }}
+{{ $record->siswa_telepon ?? '' }}
+{{ $record->siswa_alamat ?? '' }}
+{{ $record->siswaKelurahan->nama ?? '' }}
+{{ $record->siswaKecamatan->nama ?? '' }}
+{{ $record->siswaKabupaten->nama ?? '' }}
+{{ $record->siswaProvinsi->nama ?? '' }}
+{{ $record->siswaNegara->nama ?? '' }}
+
+
+
 <img src="{{ Storage::url($record->berkas_foto ?? '') }}" alt="Foto">
 <img src="{{ Storage::url($record->berkas_kk ?? '') }}" alt="KK">
 <img src="{{ Storage::url($record->berkas_akta ?? '') }}" alt="Akta">
@@ -116,6 +151,7 @@
 <span> {{ $record->tes_akademik_mulai ?? '' }} </span>
 {{-- Selesai Tes Akademik --}}
 <span> {{ $record->tes_akademik_selesai ?? '' }} </span>
+
 {{-- Mulai Tes Praktik --}}
 <span> {{ $record->tes_praktik_mulai ?? '' }} </span>
 {{-- Selesai Tes Praktik --}}
