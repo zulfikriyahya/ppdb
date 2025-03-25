@@ -87,10 +87,63 @@ class ViewCalonSiswa extends ViewRecord
                         ->where('status', 'Aktif')
                         ->first();
                     $currentDate = Carbon::now();
-                    $startDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_penerbitan_kartu_tes_mulai));
-                    $endDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_penerbitan_kartu_tes_selesai));
 
-                    if ($currentDate->lt($startDate) || $currentDate->gt($endDate)) {
+                    $mulaiPengumumanPrestasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_mulai)
+                        ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_mulai))
+                        : null;
+
+                    $akhirPengumumanPrestasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_selesai)
+                        ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_selesai))
+                        : null;
+
+                    $mulaiPengumumanReguler = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_mulai)
+                        ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_mulai))
+                        : null;
+
+                    $akhirPengumumanReguler = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_selesai)
+                        ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_selesai))
+                        : null;
+
+                    $mulaiPengumumanAfirmasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai)
+                        ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai))
+                        : null;
+
+                    $akhirPengumumanAfirmasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_selesai)
+                        ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_selesai))
+                        : null;
+
+                    $mulaiPengumumanZonasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai)
+                        ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai))
+                        : null;
+
+                    $akhirPengumumanZonasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_selesai)
+                        ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_selesai))
+                        : null;
+
+                    $mulaiPengumumanMutasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai)
+                        ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai))
+                        : null;
+
+                    $akhirPengumumanMutasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai)
+                        ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai))
+                        : null;
+
+                    if (
+                        ($mulaiPengumumanPrestasi === null || $akhirPengumumanPrestasi === null ||
+                            $currentDate->lt($mulaiPengumumanPrestasi) || $currentDate->gt($akhirPengumumanPrestasi))
+                        ||
+                        ($mulaiPengumumanReguler === null || $akhirPengumumanReguler === null ||
+                            $currentDate->lt($mulaiPengumumanReguler) || $currentDate->gt($akhirPengumumanReguler))
+                        ||
+                        ($mulaiPengumumanAfirmasi === null || $akhirPengumumanAfirmasi === null ||
+                            $currentDate->lt($mulaiPengumumanAfirmasi) || $currentDate->gt($akhirPengumumanAfirmasi))
+                        ||
+                        ($mulaiPengumumanZonasi === null || $akhirPengumumanZonasi === null ||
+                            $currentDate->lt($mulaiPengumumanZonasi) || $currentDate->gt($akhirPengumumanZonasi))
+                        ||
+                        ($mulaiPengumumanMutasi === null || $akhirPengumumanMutasi === null ||
+                            $currentDate->lt($mulaiPengumumanMutasi) || $currentDate->gt($akhirPengumumanMutasi))
+                    ) {
                         return false;
                     }
                     return true;
