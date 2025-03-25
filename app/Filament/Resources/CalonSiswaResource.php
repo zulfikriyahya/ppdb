@@ -1886,9 +1886,9 @@ class CalonSiswaResource extends Resource
                         $endDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_penerbitan_kartu_tes_selesai));
 
                         if ($currentDate->lt($startDate) || $currentDate->gt($endDate) || Auth::user()->username === 'administrator') {
-                            return true;
+                            return false;
                         }
-                        return false;
+                        return true;
                     })
                     ->searchable(),
 
@@ -1904,9 +1904,9 @@ class CalonSiswaResource extends Resource
                         $endDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_penerbitan_kartu_tes_selesai));
 
                         if ($currentDate->lt($startDate) || $currentDate->gt($endDate) || Auth::user()->username === 'administrator') {
-                            return true;
+                            return false;
                         }
-                        return false;
+                        return true;
                     })
                     ->searchable(),
 
@@ -1922,9 +1922,9 @@ class CalonSiswaResource extends Resource
                         $endDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_penerbitan_kartu_tes_selesai));
 
                         if ($currentDate->lt($startDate) || $currentDate->gt($endDate) || Auth::user()->username === 'administrator') {
-                            return true;
+                            return false;
                         }
-                        return false;
+                        return true;
                     })
                     ->sortable(),
 
@@ -1940,9 +1940,9 @@ class CalonSiswaResource extends Resource
                         $endDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_penerbitan_kartu_tes_selesai));
 
                         if ($currentDate->lt($startDate) || $currentDate->gt($endDate) || Auth::user()->username === 'administrator') {
-                            return true;
+                            return false;
                         }
-                        return false;
+                        return true;
                     })
                     ->sortable(),
 
