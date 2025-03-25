@@ -1715,10 +1715,10 @@ class CalonSiswaResource extends Resource
                             ->where('status', 'Aktif')
                             ->first();
                         $currentDate = Carbon::now();
-                        $startDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_ppdb_mulai));
-                        $endDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_registrasi_berkas_selesai));
+                        // Tanggal Pengumuman Seharusnya Atau Tanggal Selesai Registrasi Berkas
+                        $berkasDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_registrasi_berkas_selesai));
 
-                        if ($currentDate->lt($startDate) || $currentDate->gt($endDate) || Auth::user()->username === 'administrator') {
+                        if ($currentDate->gte($berkasDate) || Auth::user()->username === 'administrator') {
                             return true;
                         }
                         return false;
