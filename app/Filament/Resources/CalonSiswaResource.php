@@ -2,34 +2,36 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Exports\CalonSiswaExporter;
-use App\Filament\Resources\CalonSiswaResource\Pages;
-use App\Models\CalonSiswa;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Form;
-use Filament\Forms\Set;
-use Filament\Resources\Resource;
+use Carbon\Carbon;
 use Filament\Tables;
+use Filament\Forms\Set;
+use Filament\Forms\Form;
+use App\Models\CalonSiswa;
+use Filament\Tables\Table;
+use Filament\Resources\Resource;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Filament\Tables\Grouping\Group;
+use Illuminate\Support\Facades\Auth;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Section;
 use Filament\Tables\Actions\BulkAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Filters\SelectFilter;
+use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Filters\TrashedFilter;
+use App\Filament\Exports\CalonSiswaExporter;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ExportBulkAction;
-use Filament\Tables\Actions\ForceDeleteBulkAction;
 use Filament\Tables\Actions\RestoreBulkAction;
-use Filament\Tables\Columns\ImageColumn;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Enums\ActionsPosition;
-use Filament\Tables\Enums\FiltersLayout;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Filters\TrashedFilter;
-use Filament\Tables\Grouping\Group;
-use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
+use App\Filament\Resources\CalonSiswaResource\Pages;
 use Torgodly\Html2Media\Tables\Actions\Html2MediaAction;
 
 class CalonSiswaResource extends Resource
@@ -77,14 +79,14 @@ class CalonSiswaResource extends Resource
                 TextColumn::make('jalurPendaftaran.nama')
                     ->label('Jalur Pendaftaran')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'Reguler' => 'success',
                         'Prestasi' => 'primary',
                         'Afirmasi' => 'warning',
                         'Zonasi' => 'danger',
                         'Mutasi' => 'info',
                     })
-                    ->icon(fn (string $state): string => match ($state) {
+                    ->icon(fn(string $state): string => match ($state) {
                         'Reguler' => 'heroicon-o-sparkles',
                         'Prestasi' => 'heroicon-o-trophy',
                         'Afirmasi' => 'heroicon-o-gift',
@@ -95,7 +97,7 @@ class CalonSiswaResource extends Resource
                 TextColumn::make('status_pendaftaran')
                     ->label('Status Pendaftaran')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'Diproses' => 'warning',
                         'Diverifikasi' => 'success',
                         'Berkas Tidak Lengkap' => 'warning',
@@ -104,7 +106,7 @@ class CalonSiswaResource extends Resource
                         'Diterima Di Kelas Reguler' => 'success',
                         'Diterima Di Kelas Unggulan' => 'primary',
                     })
-                    ->icon(fn (string $state): string => match ($state) {
+                    ->icon(fn(string $state): string => match ($state) {
                         'Diproses' => 'heroicon-o-arrow-path',
                         'Diverifikasi' => 'heroicon-o-clipboard-document-check',
                         'Berkas Tidak Lengkap' => 'heroicon-o-document-minus',
@@ -113,11 +115,23 @@ class CalonSiswaResource extends Resource
                         'Diterima Di Kelas Reguler' => 'heroicon-o-shield-check',
                         'Diterima Di Kelas Unggulan' => 'heroicon-o-shield-check',
                     })
+                    ->visible(function () {
+                        $tahunPendaftaran = DB::table('tahun_pendaftarans')
+                            ->where('status', 'Aktif')
+                            ->first();
+                        return Carbon::now() === Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_ppdb_selesai));
+                    })
                     ->sortable(),
                 TextColumn::make('kelas.nama')
                     ->label('Diterima Di Kelas')
                     ->badge()
                     ->icon('heroicon-o-building-storefront')
+                    ->visible(function () {
+                        $tahunPendaftaran = DB::table('tahun_pendaftarans')
+                            ->where('status', 'Aktif')
+                            ->first();
+                        return Carbon::now() === Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_ppdb_selesai));
+                    })
                     ->sortable(),
                 TextColumn::make('nama')
                     ->label('Nama Lengkap')
@@ -612,7 +626,7 @@ class CalonSiswaResource extends Resource
                     ->visible(Auth::user()->username === 'administrator'),
                 SelectFilter::make('jalur_pendaftaran')
                     ->label('Jalur Pendaftaran')
-                    ->relationship('jalurPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif')) // Menampilkan data jalurPendaftaran dengan kondisi statusnya aktif saja
+                    ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif')) // Menampilkan data jalurPendaftaran dengan kondisi statusnya aktif saja
                     ->visible(Auth::user()->username === 'administrator'),
                 SelectFilter::make('status_pendaftaran')
                     ->label('Status Pendaftaran')
@@ -646,7 +660,7 @@ class CalonSiswaResource extends Resource
                         ->color('success')
                         ->exporter(CalonSiswaExporter::class)
                         ->chunkSize(250)
-                        ->visible(fn (): string => CalonSiswa::count() > 0 && Auth::user()->username === 'administrator'),
+                        ->visible(fn(): string => CalonSiswa::count() > 0 && Auth::user()->username === 'administrator'),
 
                     // Action Print
                     Html2MediaAction::make('formulir')
@@ -663,7 +677,7 @@ class CalonSiswaResource extends Resource
                         ->format('a4', 'mm') // A4 format with mm units
                         ->enableLinks() // Enable links in PDF
                         ->margin([10, 20, 10, 20]) // Set custom margins
-                        ->content(fn ($record) => view('formulir', ['record' => $record])), // Set content
+                        ->content(fn($record) => view('formulir', ['record' => $record])), // Set content
                 ])
                     ->visible(Auth::user()->username === 'administrator'),
             ], ActionsPosition::BeforeColumns)
@@ -687,7 +701,7 @@ class CalonSiswaResource extends Resource
                         ->form([
                             Select::make('jalur_pendaftaran')
                                 ->label('Jalur Pendaftaran')
-                                ->relationship('jalurPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif'))
+                                ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
                                 ->required(),
                         ])
                         ->action(function (Collection $records, array $data) {
