@@ -68,7 +68,7 @@ class ViewCalonSiswa extends ViewRecord
                     return true;
                 }),
 
-            // SKL
+            // SKL/Hasil
             Html2MediaAction::make('cetak_skl')
                 ->outlined()
                 ->label('Hasil')
@@ -149,7 +149,7 @@ class ViewCalonSiswa extends ViewRecord
                     return true;
                 }),
 
-            // Pakta Integritas
+            // Pakta Integritas dan Tata Tertib
             Html2MediaAction::make('cetak_pakta_integritas')
                 ->label('Pakta Integritas')
                 ->outlined()
