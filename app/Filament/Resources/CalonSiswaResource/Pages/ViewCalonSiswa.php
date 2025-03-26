@@ -175,7 +175,7 @@ class ViewCalonSiswa extends ViewRecord
                 ->enableLinks() // Enable links in PDF
                 ->margin([10, 20, 10, 20]) // Set custom margins
                 ->content(fn($record) => view('pakta-integritas', ['record' => $record])) // Set content
-                ->visible(function () {
+                ->hidden(function () {
                     $tahunPendaftaran = DB::table('tahun_pendaftarans')
                         ->where('status', 'Aktif')
                         ->first();
@@ -222,32 +222,24 @@ class ViewCalonSiswa extends ViewRecord
                         : null;
 
                     if (
-                        ($mulaiPengumumanPrestasi === null || $akhirPengumumanPrestasi === null ||
-                            $currentDate->lt($mulaiPengumumanPrestasi) || $currentDate->gt($akhirPengumumanPrestasi))
-                    ) {
-                        return false;
-                    } elseif (
-                        ($mulaiPengumumanReguler === null || $akhirPengumumanReguler === null ||
-                            $currentDate->lt($mulaiPengumumanReguler) || $currentDate->gt($akhirPengumumanReguler))
-                    ) {
-                        return false;
-                    } elseif (
-                        ($mulaiPengumumanAfirmasi === null || $akhirPengumumanAfirmasi === null ||
-                            $currentDate->lt($mulaiPengumumanAfirmasi) || $currentDate->gt($akhirPengumumanAfirmasi))
-                    ) {
-                        return false;
-                    } elseif (
-                        ($mulaiPengumumanZonasi === null || $akhirPengumumanZonasi === null ||
-                            $currentDate->lt($mulaiPengumumanZonasi) || $currentDate->gt($akhirPengumumanZonasi))
-                    ) {
-                        return false;
-                    } elseif (
-                        $mulaiPengumumanMutasi === null || $akhirPengumumanMutasi === null ||
-                        $currentDate->lt($mulaiPengumumanMutasi) || $currentDate->gt($akhirPengumumanMutasi)
+                        // $mulaiPengumumanPrestasi === null || $akhirPengumumanPrestasi === null || $mulaiPengumumanReguler === null || $akhirPengumumanReguler === null || $mulaiPengumumanAfirmasi === null || $akhirPengumumanAfirmasi === null || $mulaiPengumumanZonasi === null || $akhirPengumumanZonasi === null || $mulaiPengumumanMutasi === null || $akhirPengumumanMutasi === null ||
+                        $currentDate >= $mulaiPengumumanPrestasi ||
+                        $currentDate <= $akhirPengumumanPrestasi ||
+
+                        $currentDate >= $mulaiPengumumanReguler ||
+                        $currentDate <= $akhirPengumumanReguler ||
+
+                        $currentDate >= $mulaiPengumumanAfirmasi ||
+                        $currentDate <= $akhirPengumumanAfirmasi ||
+
+                        $currentDate >= $mulaiPengumumanZonasi ||
+                        $currentDate <= $akhirPengumumanZonasi ||
+
+                        $currentDate >= $mulaiPengumumanMutasi ||
+                        $currentDate <= $akhirPengumumanMutasi
                     ) {
                         return false;
                     }
-                    return true;
                 }),
         ];
     }
