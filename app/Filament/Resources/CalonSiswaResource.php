@@ -1714,13 +1714,19 @@ class CalonSiswaResource extends Resource
                         $tahunPendaftaran = DB::table('tahun_pendaftarans')
                             ->where('status', 'Aktif')
                             ->first();
+
+                        if (!$tahunPendaftaran || empty($tahunPendaftaran->tanggal_registrasi_berkas_selesai)) {
+                            // Jika data tidak ada atau tanggal kosong, kembalikan false
+                            return false;
+                        }
+
                         $currentDate = Carbon::now();
-                        // Tanggal Pengumuman Seharusnya Atau Tanggal Selesai Registrasi Berkas
                         $berkasDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_registrasi_berkas_selesai));
 
                         if ($currentDate->gte($berkasDate) || Auth::user()->username === 'administrator') {
                             return true;
                         }
+
                         return false;
                     })
                     ->sortable(),

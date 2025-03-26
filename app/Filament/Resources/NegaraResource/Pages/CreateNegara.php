@@ -10,10 +10,12 @@ class CreateNegara extends CreateRecord
 {
     protected static string $resource = NegaraResource::class;
 
-    // Override handleRecordCreate dengan tanda tangan yang sesuai
-    protected function handleRecordCreate(Model $record, array $data): Model
+    // Override untuk menambahkan logika khusus setelah pembuatan record
+    protected function handleRecordCreate(array $data): Model
     {
-        $createdRecord = parent::handleRecordCreate($record, $data);
+        $createdRecord = parent::handleRecordCreate($data);
+
+        // Pengalihan manual (opsional)
         $this->redirect($this->getResource()::getUrl('index'));
 
         return $createdRecord;
