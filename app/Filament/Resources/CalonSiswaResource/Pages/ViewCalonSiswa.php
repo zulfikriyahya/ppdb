@@ -105,45 +105,53 @@ class ViewCalonSiswa extends ViewRecord
                         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_selesai))
                         : null;
 
-                    // $mulaiPengumumanAfirmasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai)
-                    //     ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai))
-                    //     : null;
+                    $mulaiPengumumanAfirmasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai)
+                        ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai))
+                        : null;
 
-                    // $akhirPengumumanAfirmasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_selesai)
-                    //     ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_selesai))
-                    //     : null;
+                    $akhirPengumumanAfirmasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_selesai)
+                        ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_selesai))
+                        : null;
 
-                    // $mulaiPengumumanZonasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai)
-                    //     ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai))
-                    //     : null;
+                    $mulaiPengumumanZonasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai)
+                        ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai))
+                        : null;
 
-                    // $akhirPengumumanZonasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_selesai)
-                    //     ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_selesai))
-                    //     : null;
+                    $akhirPengumumanZonasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_selesai)
+                        ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_selesai))
+                        : null;
 
-                    // $mulaiPengumumanMutasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai)
-                    //     ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai))
-                    //     : null;
+                    $mulaiPengumumanMutasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai)
+                        ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai))
+                        : null;
 
-                    // $akhirPengumumanMutasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai)
-                    //     ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai))
-                    //     : null;
+                    $akhirPengumumanMutasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai)
+                        ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai))
+                        : null;
 
                     if (
                         ($mulaiPengumumanPrestasi === null || $akhirPengumumanPrestasi === null ||
                             $currentDate->lt($mulaiPengumumanPrestasi) || $currentDate->gt($akhirPengumumanPrestasi))
-                        ||
+                    ) {
+                        return false;
+                    } elseif (
                         ($mulaiPengumumanReguler === null || $akhirPengumumanReguler === null ||
                             $currentDate->lt($mulaiPengumumanReguler) || $currentDate->gt($akhirPengumumanReguler))
-                        // ||
-                        // ($mulaiPengumumanAfirmasi === null || $akhirPengumumanAfirmasi === null ||
-                        //     $currentDate->lt($mulaiPengumumanAfirmasi) || $currentDate->gt($akhirPengumumanAfirmasi))
-                        // ||
-                        // ($mulaiPengumumanZonasi === null || $akhirPengumumanZonasi === null ||
-                        //     $currentDate->lt($mulaiPengumumanZonasi) || $currentDate->gt($akhirPengumumanZonasi))
-                        // ||
-                        // ($mulaiPengumumanMutasi === null || $akhirPengumumanMutasi === null ||
-                        //     $currentDate->lt($mulaiPengumumanMutasi) || $currentDate->gt($akhirPengumumanMutasi))
+                    ) {
+                        return false;
+                    } elseif (
+                        ($mulaiPengumumanAfirmasi === null || $akhirPengumumanAfirmasi === null ||
+                            $currentDate->lt($mulaiPengumumanAfirmasi) || $currentDate->gt($akhirPengumumanAfirmasi))
+                    ) {
+                        return false;
+                    } elseif (
+                        ($mulaiPengumumanZonasi === null || $akhirPengumumanZonasi === null ||
+                            $currentDate->lt($mulaiPengumumanZonasi) || $currentDate->gt($akhirPengumumanZonasi))
+                    ) {
+                        return false;
+                    } elseif (
+                        $mulaiPengumumanMutasi === null || $akhirPengumumanMutasi === null ||
+                        $currentDate->lt($mulaiPengumumanMutasi) || $currentDate->gt($akhirPengumumanMutasi)
                     ) {
                         return false;
                     }
@@ -171,12 +179,6 @@ class ViewCalonSiswa extends ViewRecord
                     $tahunPendaftaran = DB::table('tahun_pendaftarans')
                         ->where('status', 'Aktif')
                         ->first();
-
-                    // Cek Juga Apakah Status Pendaftarannya Adalah Diterima || Diterima di kelas Unggulan || Diterima di kelas Reguler
-                    // $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
-                    // dd($calonSiswa);
-
-
                     $currentDate = Carbon::now();
 
                     $mulaiPengumumanPrestasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_mulai)
@@ -222,19 +224,26 @@ class ViewCalonSiswa extends ViewRecord
                     if (
                         ($mulaiPengumumanPrestasi === null || $akhirPengumumanPrestasi === null ||
                             $currentDate->lt($mulaiPengumumanPrestasi) || $currentDate->gt($akhirPengumumanPrestasi))
-                        ||
+                    ) {
+                        return false;
+                    } elseif (
                         ($mulaiPengumumanReguler === null || $akhirPengumumanReguler === null ||
                             $currentDate->lt($mulaiPengumumanReguler) || $currentDate->gt($akhirPengumumanReguler))
-                        ||
+                    ) {
+                        return false;
+                    } elseif (
                         ($mulaiPengumumanAfirmasi === null || $akhirPengumumanAfirmasi === null ||
                             $currentDate->lt($mulaiPengumumanAfirmasi) || $currentDate->gt($akhirPengumumanAfirmasi))
-                        ||
+                    ) {
+                        return false;
+                    } elseif (
                         ($mulaiPengumumanZonasi === null || $akhirPengumumanZonasi === null ||
                             $currentDate->lt($mulaiPengumumanZonasi) || $currentDate->gt($akhirPengumumanZonasi))
-                        ||
-                        ($mulaiPengumumanMutasi === null || $akhirPengumumanMutasi === null ||
-                            $currentDate->lt($mulaiPengumumanMutasi) || $currentDate->gt($akhirPengumumanMutasi))
-                        // && ($calonSiswa->status_pendaftaran !== 'Diterima Di Kelas Reguler' || $calonSiswa->status_pendaftaran !== 'Diterima Di Kelas Unggulan')
+                    ) {
+                        return false;
+                    } elseif (
+                        $mulaiPengumumanMutasi === null || $akhirPengumumanMutasi === null ||
+                        $currentDate->lt($mulaiPengumumanMutasi) || $currentDate->gt($akhirPengumumanMutasi)
                     ) {
                         return false;
                     }
