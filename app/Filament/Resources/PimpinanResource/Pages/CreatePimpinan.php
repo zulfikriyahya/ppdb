@@ -2,20 +2,10 @@
 
 namespace App\Filament\Resources\PimpinanResource\Pages;
 
-use Illuminate\Database\Eloquent\Model;
-use Filament\Resources\Pages\CreateRecord;
 use App\Filament\Resources\PimpinanResource;
+use Filament\Resources\Pages\CreateRecord;
 
 class CreatePimpinan extends CreateRecord
 {
     protected static string $resource = PimpinanResource::class;
-
-    // Override handleRecordCreate dengan tanda tangan yang sesuai
-    protected function handleRecordCreate(Model $record, array $data): Model
-    {
-        $createdRecord = parent::handleRecordCreate($record, $data);
-        $this->redirect($this->getResource()::getUrl('index'));
-
-        return $createdRecord;
-    }
 }

@@ -2,22 +2,22 @@
 
 namespace App\Filament\Resources;
 
-use Filament\Tables;
-use Filament\Forms\Form;
-use Filament\Tables\Table;
-use App\Models\JalurPendaftaran;
-use Filament\Resources\Resource;
-use Illuminate\Support\HtmlString;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Section;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Forms\Components\TextInput;
-use Filament\Tables\Enums\FiltersLayout;
-use Filament\Forms\Components\DatePicker;
-use Illuminate\Database\Eloquent\Builder;
-use Filament\Forms\Components\DateTimePicker;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\JalurPendaftaranResource\Pages;
+use App\Models\JalurPendaftaran;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\HtmlString;
 
 class JalurPendaftaranResource extends Resource
 {
@@ -79,7 +79,7 @@ class JalurPendaftaranResource extends Resource
 
                         Select::make('tahun_pendaftaran_id')
                             ->label('Tahun Pendaftaran')
-                            ->relationship('tahunPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
+                            ->relationship('tahunPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif'))
                             ->required()
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
@@ -424,7 +424,7 @@ class JalurPendaftaranResource extends Resource
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'Aktif' => 'success',
                         'Nonaktif' => 'gray'
                     }),

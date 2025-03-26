@@ -2,10 +2,9 @@
 
 namespace App\Filament\Resources\InformasiResource\Pages;
 
-use Filament\Actions;
-use Illuminate\Database\Eloquent\Model;
-use Filament\Resources\Pages\EditRecord;
 use App\Filament\Resources\InformasiResource;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
 
 class EditInformasi extends EditRecord
 {

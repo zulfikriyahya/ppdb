@@ -2,17 +2,14 @@
 
 namespace App\Filament\Resources\CalonSiswaResource\Pages;
 
-use Carbon\Carbon;
-use App\Models\CalonSiswa;
-use Filament\Actions\Action;
-use Filament\Actions\CreateAction;
-use Filament\Actions\ExportAction;
-use Filament\Support\Colors\Color;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-use Filament\Resources\Pages\ListRecords;
 use App\Filament\Exports\CalonSiswaExporter;
 use App\Filament\Resources\CalonSiswaResource;
+use App\Models\CalonSiswa;
+use Filament\Actions\Action;
+use Filament\Actions\ExportAction;
+use Filament\Resources\Pages\ListRecords;
+use Filament\Support\Colors\Color;
+use Illuminate\Support\Facades\Auth;
 
 class ListCalonSiswas extends ListRecords
 {
@@ -75,7 +72,7 @@ class ListCalonSiswas extends ListRecords
                 ->color('success')
                 ->exporter(CalonSiswaExporter::class)
                 ->chunkSize(250)
-                ->visible(fn(): string => CalonSiswa::count() > 0 && Auth::user()->username === 'administrator'),
+                ->visible(fn (): string => CalonSiswa::count() > 0 && Auth::user()->username === 'administrator'),
         ];
     }
 }

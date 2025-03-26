@@ -2,10 +2,9 @@
 
 namespace App\Filament\Resources\JurusanResource\Pages;
 
-use Filament\Actions;
-use Illuminate\Database\Eloquent\Model;
-use Filament\Resources\Pages\EditRecord;
 use App\Filament\Resources\JurusanResource;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
 
 class EditJurusan extends EditRecord
 {

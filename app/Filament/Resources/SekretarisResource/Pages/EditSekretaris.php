@@ -2,10 +2,9 @@
 
 namespace App\Filament\Resources\SekretarisResource\Pages;
 
-use Filament\Actions;
-use Illuminate\Database\Eloquent\Model;
-use Filament\Resources\Pages\EditRecord;
 use App\Filament\Resources\SekretarisResource;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
 
 class EditSekretaris extends EditRecord
 {

@@ -2,10 +2,9 @@
 
 namespace App\Filament\Resources\JalurPendaftaranResource\Pages;
 
-use Filament\Actions;
-use Illuminate\Database\Eloquent\Model;
-use Filament\Resources\Pages\EditRecord;
 use App\Filament\Resources\JalurPendaftaranResource;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
 
 class EditJalurPendaftaran extends EditRecord
 {

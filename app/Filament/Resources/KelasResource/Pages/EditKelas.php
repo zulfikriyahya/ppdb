@@ -2,10 +2,9 @@
 
 namespace App\Filament\Resources\KelasResource\Pages;
 
-use Filament\Actions;
-use Illuminate\Database\Eloquent\Model;
-use Filament\Resources\Pages\EditRecord;
 use App\Filament\Resources\KelasResource;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
 
 class EditKelas extends EditRecord
 {

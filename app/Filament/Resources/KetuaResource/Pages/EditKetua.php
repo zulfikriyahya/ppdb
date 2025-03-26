@@ -2,10 +2,9 @@
 
 namespace App\Filament\Resources\KetuaResource\Pages;
 
-use Filament\Actions;
-use Illuminate\Database\Eloquent\Model;
-use Filament\Resources\Pages\EditRecord;
 use App\Filament\Resources\KetuaResource;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
 
 class EditKetua extends EditRecord
 {

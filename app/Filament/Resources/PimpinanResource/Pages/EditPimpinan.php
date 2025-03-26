@@ -2,10 +2,9 @@
 
 namespace App\Filament\Resources\PimpinanResource\Pages;
 
-use Filament\Actions;
-use Illuminate\Database\Eloquent\Model;
-use Filament\Resources\Pages\EditRecord;
 use App\Filament\Resources\PimpinanResource;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
 
 class EditPimpinan extends EditRecord
 {

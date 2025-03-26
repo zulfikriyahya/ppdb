@@ -2,13 +2,13 @@
 
 namespace App\Filament\Resources\CalonSiswaResource\Pages;
 
-use Carbon\Carbon;
-use App\Models\CalonSiswa;
-use Filament\Support\Colors\Color;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-use Filament\Resources\Pages\ViewRecord;
 use App\Filament\Resources\CalonSiswaResource;
+use App\Models\CalonSiswa;
+use Carbon\Carbon;
+use Filament\Resources\Pages\ViewRecord;
+use Filament\Support\Colors\Color;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Torgodly\Html2Media\Actions\Html2MediaAction;
 
 class ViewCalonSiswa extends ViewRecord
@@ -35,7 +35,7 @@ class ViewCalonSiswa extends ViewRecord
                 ->format('a4', 'mm') // A4 format with mm units
                 ->enableLinks() // Enable links in PDF
                 ->margin([10, 20, 10, 20]) // Set custom margins
-                ->content(fn($record) => view('formulir', ['record' => $record])), // Set Content
+                ->content(fn ($record) => view('formulir', ['record' => $record])), // Set Content
 
             // Kartu Tes
             Html2MediaAction::make('cetak_kartu_tes')
@@ -53,7 +53,7 @@ class ViewCalonSiswa extends ViewRecord
                 ->format('a4', 'mm') // A4 format with mm units
                 ->enableLinks() // Enable links in PDF
                 ->margin([10, 20, 10, 20]) // Set custom margins
-                ->content(fn($record) => view('kartu-tes', ['record' => $record])) // Set content
+                ->content(fn ($record) => view('kartu-tes', ['record' => $record])) // Set content
                 ->visible(function () {
                     $tahunPendaftaran = DB::table('tahun_pendaftarans')
                         ->where('status', 'Aktif')
@@ -65,6 +65,7 @@ class ViewCalonSiswa extends ViewRecord
                     if ($currentDate->lt($startDate) || $currentDate->gt($endDate)) {
                         return false;
                     }
+
                     return true;
                 }),
 
@@ -85,7 +86,7 @@ class ViewCalonSiswa extends ViewRecord
                 ->format('a4', 'mm') // A4 format with mm units
                 ->enableLinks() // Enable links in PDF
                 ->margin([10, 20, 10, 20]) // Set custom margins
-                ->content(fn($record) => view('skl', ['record' => $record])) // Set content
+                ->content(fn ($record) => view('skl', ['record' => $record])) // Set content
                 ->hidden(function () {
                     $tahunPendaftaran = DB::table('tahun_pendaftarans')
                         ->where('status', 'Aktif')
@@ -93,43 +94,43 @@ class ViewCalonSiswa extends ViewRecord
 
                     $sekarang = Carbon::now();
 
-                    $mulaiPengumumanPrestasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_mulai)
+                    $mulaiPengumumanPrestasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_mulai)
                         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_mulai))
                         : null;
 
-                    $akhirPengumumanPrestasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_selesai)
+                    $akhirPengumumanPrestasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_selesai)
                         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_selesai))
                         : null;
 
-                    $mulaiPengumumanReguler = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_mulai)
+                    $mulaiPengumumanReguler = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_mulai)
                         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_mulai))
                         : null;
 
-                    $akhirPengumumanReguler = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_selesai)
+                    $akhirPengumumanReguler = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_selesai)
                         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_selesai))
                         : null;
 
-                    $mulaiPengumumanAfirmasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai)
+                    $mulaiPengumumanAfirmasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai)
                         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai))
                         : null;
 
-                    $akhirPengumumanAfirmasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_selesai)
+                    $akhirPengumumanAfirmasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_selesai)
                         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_selesai))
                         : null;
 
-                    $mulaiPengumumanZonasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai)
+                    $mulaiPengumumanZonasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai)
                         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai))
                         : null;
 
-                    $akhirPengumumanZonasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_selesai)
+                    $akhirPengumumanZonasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_selesai)
                         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_selesai))
                         : null;
 
-                    $mulaiPengumumanMutasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai)
+                    $mulaiPengumumanMutasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai)
                         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai))
                         : null;
 
-                    $akhirPengumumanMutasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai)
+                    $akhirPengumumanMutasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai)
                         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai))
                         : null;
 
@@ -138,7 +139,7 @@ class ViewCalonSiswa extends ViewRecord
                         [$mulaiPengumumanReguler, $akhirPengumumanReguler],
                         [$mulaiPengumumanAfirmasi, $akhirPengumumanAfirmasi],
                         [$mulaiPengumumanZonasi, $akhirPengumumanZonasi],
-                        [$mulaiPengumumanMutasi, $akhirPengumumanMutasi]
+                        [$mulaiPengumumanMutasi, $akhirPengumumanMutasi],
                     ];
 
                     foreach ($periodePengumuman as [$mulai, $selesai]) {
@@ -146,6 +147,7 @@ class ViewCalonSiswa extends ViewRecord
                             return false;
                         }
                     }
+
                     return true;
                 }),
 
@@ -166,55 +168,54 @@ class ViewCalonSiswa extends ViewRecord
                 ->format('a4', 'mm') // A4 format with mm units
                 ->enableLinks() // Enable links in PDF
                 ->margin([10, 20, 10, 20]) // Set custom margins
-                ->content(fn($record) => view('pakta-integritas', ['record' => $record])) // Set content
+                ->content(fn ($record) => view('pakta-integritas', ['record' => $record])) // Set content
                 ->hidden(function () {
                     $tahunPendaftaran = DB::table('tahun_pendaftarans')
                         ->where('status', 'Aktif')
                         ->first();
                     $sekarang = Carbon::now();
 
-
                     $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
                     $status = $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Unggulan' ||
                         $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Reguler';
 
-                    $mulaiPengumumanPrestasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_mulai)
+                    $mulaiPengumumanPrestasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_mulai)
                         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_mulai))
                         : null;
 
-                    $akhirPengumumanPrestasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_selesai)
+                    $akhirPengumumanPrestasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_selesai)
                         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_selesai))
                         : null;
 
-                    $mulaiPengumumanReguler = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_mulai)
+                    $mulaiPengumumanReguler = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_mulai)
                         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_mulai))
                         : null;
 
-                    $akhirPengumumanReguler = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_selesai)
+                    $akhirPengumumanReguler = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_selesai)
                         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_selesai))
                         : null;
 
-                    $mulaiPengumumanAfirmasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai)
+                    $mulaiPengumumanAfirmasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai)
                         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai))
                         : null;
 
-                    $akhirPengumumanAfirmasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_selesai)
+                    $akhirPengumumanAfirmasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_selesai)
                         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_selesai))
                         : null;
 
-                    $mulaiPengumumanZonasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai)
+                    $mulaiPengumumanZonasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai)
                         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai))
                         : null;
 
-                    $akhirPengumumanZonasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_selesai)
+                    $akhirPengumumanZonasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_selesai)
                         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_selesai))
                         : null;
 
-                    $mulaiPengumumanMutasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai)
+                    $mulaiPengumumanMutasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai)
                         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai))
                         : null;
 
-                    $akhirPengumumanMutasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai)
+                    $akhirPengumumanMutasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai)
                         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai))
                         : null;
 
@@ -223,7 +224,7 @@ class ViewCalonSiswa extends ViewRecord
                         [$mulaiPengumumanReguler, $akhirPengumumanReguler],
                         [$mulaiPengumumanAfirmasi, $akhirPengumumanAfirmasi],
                         [$mulaiPengumumanZonasi, $akhirPengumumanZonasi],
-                        [$mulaiPengumumanMutasi, $akhirPengumumanMutasi]
+                        [$mulaiPengumumanMutasi, $akhirPengumumanMutasi],
                     ];
 
                     foreach ($periodePengumuman as [$mulai, $selesai]) {
@@ -231,6 +232,7 @@ class ViewCalonSiswa extends ViewRecord
                             return false;
                         }
                     }
+
                     return true;
                 }),
         ];
