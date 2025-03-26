@@ -153,6 +153,7 @@ class ViewCalonSiswa extends ViewRecord
             Html2MediaAction::make('cetak_pakta_integritas')
                 ->label('Pakta Integritas')
                 ->outlined()
+                ->color(Color::Cyan)
                 ->icon('heroicon-o-printer')
                 ->scale(2)
                 ->print() // Enable print option
@@ -174,8 +175,7 @@ class ViewCalonSiswa extends ViewRecord
 
 
                     $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
-                    $status = $calonSiswa->status_pendaftaran === 'Diterima' ||
-                        $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Unggulan' ||
+                    $status = $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Unggulan' ||
                         $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Reguler';
 
                     $mulaiPengumumanPrestasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_mulai)
