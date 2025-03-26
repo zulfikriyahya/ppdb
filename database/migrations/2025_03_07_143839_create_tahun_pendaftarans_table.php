@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
@@ -12,8 +12,8 @@ return new class extends Migration
         Schema::create('tahun_pendaftarans', function (Blueprint $table) {
             $table->id();
             $table->string('nama');
-            $table->date('tanggal_ppdb_mulai');
-            $table->date('tanggal_ppdb_selesai');
+            $table->dateTime('tanggal_ppdb_mulai');
+            $table->dateTime('tanggal_ppdb_selesai');
             $table->dateTime('tanggal_pendaftaran_jalur_prestasi_mulai')->nullable();
             $table->dateTime('tanggal_pendaftaran_jalur_prestasi_selesai')->nullable();
             $table->dateTime('tanggal_pengumuman_jalur_prestasi_mulai')->nullable();

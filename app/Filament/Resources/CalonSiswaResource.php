@@ -1636,6 +1636,7 @@ class CalonSiswaResource extends Resource
                             ->columnSpanFull(),
 
                     ])
+                    ->columnSpanFull()
                     ->submitAction(
                         Action::make('close')
                             ->label('Tutup')

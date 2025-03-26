@@ -27,6 +27,7 @@ class ListCalonSiswas extends ListRecords
     {
         if (Auth::check()) {
             $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
+            $urlCreate = '/formulir/create';
             $urlView = '';
             $urlEdit = '';
 
@@ -38,13 +39,13 @@ class ListCalonSiswas extends ListRecords
 
         return [
             // Daftar Sekarang
-            CreateAction::make()
+            Action::make('buat_formulir_pendaftaran')
                 ->label('Daftar Sekarang')
                 ->icon('heroicon-m-plus')
                 ->outlined()
                 ->color('primary')
-                ->hidden(Auth::user()->username === 'administrator' || $calonSiswa !== null)
-                ->successRedirectUrl($urlView),
+                ->url($urlCreate)
+                ->hidden(Auth::user()->username === 'administrator' || $calonSiswa !== null),
 
             // Lihat Formulir
             Action::make('lihat_formulir_pendaftaran')
@@ -65,7 +66,6 @@ class ListCalonSiswas extends ListRecords
                 ->hidden(
                     Auth::user()->username === 'administrator' || $calonSiswa === null || ($calonSiswa->status_pendaftaran !== 'Diproses' && $calonSiswa->status_pendaftaran !== 'Berkas Tidak Lengkap')
                 )
-
                 ->successRedirectUrl($urlView),
 
             // Export

@@ -37,43 +37,45 @@ class AdminPanelProvider extends PanelProvider
      * Fungsi untuk menangani redirect berdasarkan tanggal pendaftaran
      * AKtifkan setelah proses migrasi database
      */
-    // protected function handleRegistrationRedirect(): string
-    // {
-    //     $tahunPendaftaran = DB::table('tahun_pendaftarans')
-    //         ->where('status', 'Aktif')
-    //         ->first();
+    protected function handleRegistrationRedirect(): string
+    {
+        $tahunPendaftaran = DB::table('tahun_pendaftarans')
+            ->where('status', 'Aktif')
+            ->first();
 
-    //     if (! $tahunPendaftaran) {
-    //         // Jika data tidak ditemukan, arahkan ke LoginCustom
-    //         return LoginCustom::class;
-    //     }
+        if (! $tahunPendaftaran) {
+            // Jika data tidak ditemukan, arahkan ke LoginCustom
+            return LoginCustom::class;
+        }
 
-    //     try {
-    //         // Parsing tanggal pendaftaran
-    //         $startDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_ppdb_mulai));
-    //         $endDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_ppdb_selesai));
-    //         $currentDate = Carbon::now();
+        try {
+            // Parsing tanggal pendaftaran
+            $startDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_ppdb_mulai));
+            $endDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_ppdb_selesai));
+            $currentDate = Carbon::now();
 
-    //         // Cek apakah tanggal sekarang berada di dalam rentang pendaftaran
-    //         if ($currentDate->lt($startDate) || $currentDate->gt($endDate)) {
-    //             // Jika di luar rentang, arahkan ke LoginCustom
-    //             return LoginCustom::class;
-    //         }
-    //     } catch (\Exception $e) {
-    //         // Log error jika terjadi masalah parsing tanggal
-    //         Log::error('Error memproses tanggal: ' . $e->getMessage());
 
-    //         return LoginCustom::class;
-    //     }
+            // dd($startDate);
+            // Cek apakah tanggal sekarang berada di dalam rentang pendaftaran
+            if ($currentDate->lt($startDate) || $currentDate->gt($endDate)) {
+                // Jika di luar rentang, arahkan ke LoginCustom
+                return LoginCustom::class;
+            }
+        } catch (\Exception $e) {
+            // Log error jika terjadi masalah parsing tanggal
+            Log::error('Error memproses tanggal: ' . $e->getMessage());
 
-    //     // Jika semua validasi berhasil, arahkan ke RegisterCustom
-    //     return RegisterCustom::class;
-    // }
+            return LoginCustom::class;
+        }
+
+        // Jika semua validasi berhasil, arahkan ke RegisterCustom
+        return RegisterCustom::class;
+    }
 
     public function panel(Panel $panel): Panel
     {
         // Variabel default untuk halaman registrasi
-        // $registerClass = $this->handleRegistrationRedirect();
+        $registerClass = $this->handleRegistrationRedirect();
 
         return $panel
             ->maxContentWidth(MaxWidth::Full)
@@ -83,7 +85,40 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogoHeight('2.6rem')
             ->topNavigation()
             ->login(LoginCustom::class)
-            // ->registration($registerClass)
+            ->registration($registerClass)
+            // ->registration(function () {
+            //     $tahunPendaftaran = DB::table('tahun_pendaftarans')
+            //         ->where('status', 'Aktif')
+            //         ->first();
+
+            //     // if (! $tahunPendaftaran) {
+            //     //     // Jika data tidak ditemukan, arahkan ke LoginCustom
+            //     //     return LoginCustom::class;
+            //     // }
+
+            //     // try {
+            //     // Parsing tanggal pendaftaran
+            //     $startDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_ppdb_mulai));
+            //     $endDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_ppdb_selesai));
+            //     $currentDate = Carbon::now();
+
+
+            //     // dd($startDate);
+            //     // Cek apakah tanggal sekarang berada di dalam rentang pendaftaran
+            //     if ($currentDate->lt($startDate) || $currentDate->gt($endDate)) {
+            //         // Jika di luar rentang, arahkan ke LoginCustom
+            //         return LoginCustom::class;
+            //     }
+            //     // } catch (\Exception $e) {
+            //     //     // Log error jika terjadi masalah parsing tanggal
+            //     //     Log::error('Error memproses tanggal: ' . $e->getMessage());
+
+            //     //     return LoginCustom::class;
+            //     // }
+
+            //     // Jika semua validasi berhasil, arahkan ke RegisterCustom
+            //     return RegisterCustom::class;
+            // })
             ->id('admin')
             ->profile(EditProfileCustom::class)
             ->path('')
