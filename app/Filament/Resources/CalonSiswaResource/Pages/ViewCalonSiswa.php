@@ -181,6 +181,10 @@ class ViewCalonSiswa extends ViewRecord
                         ->first();
                     $currentDate = Carbon::now();
 
+                    // $mulaiPengumumanPrestasi = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_mulai));
+
+                    // $akhirPengumumanPrestasi = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_selesai));
+
                     $mulaiPengumumanPrestasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_mulai)
                         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_mulai))
                         : null;
@@ -189,57 +193,58 @@ class ViewCalonSiswa extends ViewRecord
                         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_selesai))
                         : null;
 
-                    $mulaiPengumumanReguler = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_mulai)
-                        ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_mulai))
-                        : null;
+                    // $mulaiPengumumanReguler = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_mulai)
+                    //     ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_mulai))
+                    //     : null;
 
-                    $akhirPengumumanReguler = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_selesai)
-                        ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_selesai))
-                        : null;
+                    // $akhirPengumumanReguler = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_selesai)
+                    //     ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_selesai))
+                    //     : null;
 
-                    $mulaiPengumumanAfirmasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai)
-                        ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai))
-                        : null;
+                    // $mulaiPengumumanAfirmasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai)
+                    //     ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai))
+                    //     : null;
 
-                    $akhirPengumumanAfirmasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_selesai)
-                        ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_selesai))
-                        : null;
+                    // $akhirPengumumanAfirmasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_selesai)
+                    //     ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_selesai))
+                    //     : null;
 
-                    $mulaiPengumumanZonasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai)
-                        ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai))
-                        : null;
+                    // $mulaiPengumumanZonasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai)
+                    //     ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai))
+                    //     : null;
 
-                    $akhirPengumumanZonasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_selesai)
-                        ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_selesai))
-                        : null;
+                    // $akhirPengumumanZonasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_selesai)
+                    //     ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_selesai))
+                    //     : null;
 
-                    $mulaiPengumumanMutasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai)
-                        ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai))
-                        : null;
+                    // $mulaiPengumumanMutasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai)
+                    //     ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai))
+                    //     : null;
 
-                    $akhirPengumumanMutasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai)
-                        ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai))
-                        : null;
+                    // $akhirPengumumanMutasi = !empty($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai)
+                    //     ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai))
+                    //     : null;
 
                     if (
-                        // $mulaiPengumumanPrestasi === null || $akhirPengumumanPrestasi === null || $mulaiPengumumanReguler === null || $akhirPengumumanReguler === null || $mulaiPengumumanAfirmasi === null || $akhirPengumumanAfirmasi === null || $mulaiPengumumanZonasi === null || $akhirPengumumanZonasi === null || $mulaiPengumumanMutasi === null || $akhirPengumumanMutasi === null ||
-                        $currentDate >= $mulaiPengumumanPrestasi ||
-                        $currentDate <= $akhirPengumumanPrestasi ||
+                        ($currentDate >= $mulaiPengumumanPrestasi &&
+                            $currentDate <= $akhirPengumumanPrestasi)
+                        // ||
 
-                        $currentDate >= $mulaiPengumumanReguler ||
-                        $currentDate <= $akhirPengumumanReguler ||
+                        // $currentDate >= $mulaiPengumumanReguler ||
+                        // $currentDate <= $akhirPengumumanReguler ||
 
-                        $currentDate >= $mulaiPengumumanAfirmasi ||
-                        $currentDate <= $akhirPengumumanAfirmasi ||
+                        // $currentDate >= $mulaiPengumumanAfirmasi ||
+                        // $currentDate <= $akhirPengumumanAfirmasi ||
 
-                        $currentDate >= $mulaiPengumumanZonasi ||
-                        $currentDate <= $akhirPengumumanZonasi ||
+                        // $currentDate >= $mulaiPengumumanZonasi ||
+                        // $currentDate <= $akhirPengumumanZonasi ||
 
-                        $currentDate >= $mulaiPengumumanMutasi ||
-                        $currentDate <= $akhirPengumumanMutasi
+                        // $currentDate >= $mulaiPengumumanMutasi ||
+                        // $currentDate <= $akhirPengumumanMutasi
                     ) {
                         return false;
                     }
+                    return true;
                 }),
         ];
     }
