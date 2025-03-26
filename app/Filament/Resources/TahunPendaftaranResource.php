@@ -169,198 +169,198 @@ class TahunPendaftaranResource extends Resource
                         'xl' => 2,
                         '2xl' => 2,
                     ]),
-                // Section::make('Pendaftaran Jalur Prestasi')
-                //     ->collapsed()
-                //     ->description('Tanggal pendaftaran untuk jalur prestasi.')
-                //     ->schema([
-                //         DateTimePicker::make('tanggal_pendaftaran_jalur_prestasi_mulai')
-                //             ->label('Tanggal Mulai Pendaftaran Jalur Prestasi'),
-                //         DateTimePicker::make('tanggal_pendaftaran_jalur_prestasi_selesai')
-                //             ->label('Tanggal Selesai Pendaftaran Jalur Prestasi'),
-                //     ])
-                //     ->columns([
-                //         'sm' => '100%',
-                //         'md' => 2,
-                //         'lg' => 2,
-                //         'xl' => 2,
-                //         '2xl' => 2,
-                //     ]),
-                // Section::make('Pengumuman Jalur Prestasi')
-                //     ->collapsed()
-                //     ->description('Tanggal pengumuman untuk jalur prestasi.')
-                //     ->schema([
-                //         DateTimePicker::make('tanggal_pengumuman_jalur_prestasi_mulai')
-                //             ->label('Tanggal Mulai Pengumuman Jalur Prestasi'),
-                //         DateTimePicker::make('tanggal_pengumuman_jalur_prestasi_selesai')
-                //             ->label('Tanggal Selesai Pengumuman Jalur Prestasi'),
-                //     ])
-                //     ->columns([
-                //         'sm' => '100%',
-                //         'md' => 2,
-                //         'lg' => 2,
-                //         'xl' => 2,
-                //         '2xl' => 2,
-                //     ]),
-                // Section::make('Pendaftaran Jalur Reguler')
-                //     ->collapsed()
-                //     ->description('Tanggal pendaftaran untuk jalur reguler.')
-                //     ->schema([
-                //         DateTimePicker::make('tanggal_pendaftaran_jalur_reguler_mulai')
-                //             ->label('Tanggal Mulai Pendaftaran Jalur Reguler'),
-                //         DateTimePicker::make('tanggal_pendaftaran_jalur_reguler_selesai')
-                //             ->label('Tanggal Selesai Pendaftaran Jalur Reguler'),
-                //     ])
-                //     ->columns([
-                //         'sm' => '100%',
-                //         'md' => 2,
-                //         'lg' => 2,
-                //         'xl' => 2,
-                //         '2xl' => 2,
-                //     ]),
-                // Section::make('Pengumuman Jalur Reguler')
-                //     ->collapsed()
-                //     ->description('Tanggal pengumuman untuk jalur reguler.')
-                //     ->schema([
-                //         DateTimePicker::make('tanggal_pengumuman_jalur_reguler_mulai')
-                //             ->label('Tanggal Mulai Pengumuman Jalur Reguler'),
-                //         DateTimePicker::make('tanggal_pengumuman_jalur_reguler_selesai')
-                //             ->label('Tanggal Selesai Pengumuman Jalur Reguler'),
-                //     ])
-                //     ->columns([
-                //         'sm' => '100%',
-                //         'md' => 2,
-                //         'lg' => 2,
-                //         'xl' => 2,
-                //         '2xl' => 2,
-                //     ]),
-                // Section::make('Pendaftaran Jalur Afirmasi')
-                //     ->collapsed()
-                //     ->description('Tanggal pendaftaran untuk jalur Afirmasi.')
-                //     ->schema([
-                //         DateTimePicker::make('tanggal_pendaftaran_jalur_afirmasi_mulai')
-                //             ->label('Tanggal Mulai Pendaftaran Jalur Afirmasi'),
-                //         DateTimePicker::make('tanggal_pendaftaran_jalur_afirmasi_selesai')
-                //             ->label('Tanggal Selesai Pendaftaran Jalur Afirmasi'),
-                //     ])
-                //     ->columns([
-                //         'sm' => '100%',
-                //         'md' => 2,
-                //         'lg' => 2,
-                //         'xl' => 2,
-                //         '2xl' => 2,
-                //     ]),
-                // Section::make('Pengumuman Jalur Afirmasi')
-                //     ->collapsed()
-                //     ->description('Tanggal pengumuman untuk jalur Afirmasi.')
-                //     ->schema([
-                //         DateTimePicker::make('tanggal_pengumuman_jalur_afirmasi_mulai')
-                //             ->label('Tanggal Mulai Pengumuman Jalur Afirmasi'),
-                //         DateTimePicker::make('tanggal_pengumuman_jalur_afirmasi_selesai')
-                //             ->label('Tanggal Selesai Pengumuman Jalur Afirmasi'),
-                //     ])
-                //     ->columns([
-                //         'sm' => '100%',
-                //         'md' => 2,
-                //         'lg' => 2,
-                //         'xl' => 2,
-                //         '2xl' => 2,
-                //     ]),
-                // Section::make('Pendaftaran Jalur Zonasi')
-                //     ->collapsed()
-                //     ->description('Tanggal pendaftaran untuk jalur Zonasi.')
-                //     ->schema([
-                //         DateTimePicker::make('tanggal_pendaftaran_jalur_zonasi_mulai')
-                //             ->label('Tanggal Mulai Pendaftaran Jalur Zonasi'),
-                //         DateTimePicker::make('tanggal_pendaftaran_jalur_zonasi_selesai')
-                //             ->label('Tanggal Selesai Pendaftaran Jalur Zonasi'),
-                //     ])
-                //     ->columns([
-                //         'sm' => '100%',
-                //         'md' => 2,
-                //         'lg' => 2,
-                //         'xl' => 2,
-                //         '2xl' => 2,
-                //     ]),
-                // Section::make('Pengumuman Jalur Zonasi')
-                //     ->collapsed()
-                //     ->description('Tanggal pengumuman untuk jalur Zonasi.')
-                //     ->schema([
-                //         DateTimePicker::make('tanggal_pengumuman_jalur_zonasi_mulai')
-                //             ->label('Tanggal Mulai Pengumuman Jalur Zonasi'),
-                //         DateTimePicker::make('tanggal_pengumuman_jalur_zonasi_selesai')
-                //             ->label('Tanggal Selesai Pengumuman Jalur Zonasi'),
-                //     ])
-                //     ->columns([
-                //         'sm' => '100%',
-                //         'md' => 2,
-                //         'lg' => 2,
-                //         'xl' => 2,
-                //         '2xl' => 2,
-                //     ]),
-                // Section::make('Pendaftaran Jalur Mutasi')
-                //     ->collapsed()
-                //     ->description('Tanggal pendaftaran untuk jalur Mutasi.')
-                //     ->schema([
-                //         DateTimePicker::make('tanggal_pendaftaran_jalur_mutasi_mulai')
-                //             ->label('Tanggal Mulai Pendaftaran Jalur Mutasi'),
-                //         DateTimePicker::make('tanggal_pendaftaran_jalur_mutasi_selesai')
-                //             ->label('Tanggal Selesai Pendaftaran Jalur Mutasi'),
-                //     ])
-                //     ->columns([
-                //         'sm' => '100%',
-                //         'md' => 2,
-                //         'lg' => 2,
-                //         'xl' => 2,
-                //         '2xl' => 2,
-                //     ]),
-                // Section::make('Pengumuman Jalur Mutasi')
-                //     ->collapsed()
-                //     ->description('Tanggal pengumuman untuk jalur Mutasi.')
-                //     ->schema([
-                //         DateTimePicker::make('tanggal_pengumuman_jalur_mutasi_mulai')
-                //             ->label('Tanggal Mulai Pengumuman Jalur Mutasi'),
-                //         DateTimePicker::make('tanggal_pengumuman_jalur_mutasi_selesai')
-                //             ->label('Tanggal Selesai Pengumuman Jalur Mutasi'),
-                //     ])
-                //     ->columns([
-                //         'sm' => '100%',
-                //         'md' => 2,
-                //         'lg' => 2,
-                //         'xl' => 2,
-                //         '2xl' => 2,
-                //     ]),
-                // Section::make('Tes Akademik')
-                //     ->collapsed()
-                //     ->description('Tanggal tes akademik.')
-                //     ->schema([
-                //         DateTimePicker::make('tanggal_tes_akademik_mulai')
-                //             ->label('Tanggal Mulai Tes Akademik'),
-                //         DateTimePicker::make('tanggal_tes_akademik_selesai')
-                //             ->label('Tanggal Selesai Tes Akademik'),
-                //     ])
-                //     ->columns([
-                //         'sm' => '100%',
-                //         'md' => 2,
-                //         'lg' => 2,
-                //         'xl' => 2,
-                //         '2xl' => 2,
-                //     ]),
-                // Section::make('Tes Praktik')
-                //     ->collapsed()
-                //     ->description('Tanggal tes praktik.')
-                //     ->schema([
-                //         DateTimePicker::make('tanggal_tes_praktik_mulai')
-                //             ->label('Tanggal Mulai Tes Praktik'),
-                //         DateTimePicker::make('tanggal_tes_praktik_selesai')
-                //             ->label('Tanggal Selesai Tes Praktik'),
-                //     ])
-                //     ->columns([
-                //         'sm' => '100%',
-                //         'md' => 2,
-                //         'lg' => 2,
-                //         'xl' => 2,
-                //         '2xl' => 2,
-                //     ]),
+                Section::make('Pendaftaran Jalur Prestasi')
+                    ->collapsed()
+                    ->description('Tanggal pendaftaran untuk jalur prestasi.')
+                    ->schema([
+                        DateTimePicker::make('tanggal_pendaftaran_jalur_prestasi_mulai')
+                            ->label('Tanggal Mulai Pendaftaran Jalur Prestasi'),
+                        DateTimePicker::make('tanggal_pendaftaran_jalur_prestasi_selesai')
+                            ->label('Tanggal Selesai Pendaftaran Jalur Prestasi'),
+                    ])
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => 2,
+                        'lg' => 2,
+                        'xl' => 2,
+                        '2xl' => 2,
+                    ]),
+                Section::make('Pengumuman Jalur Prestasi')
+                    ->collapsed()
+                    ->description('Tanggal pengumuman untuk jalur prestasi.')
+                    ->schema([
+                        DateTimePicker::make('tanggal_pengumuman_jalur_prestasi_mulai')
+                            ->label('Tanggal Mulai Pengumuman Jalur Prestasi'),
+                        DateTimePicker::make('tanggal_pengumuman_jalur_prestasi_selesai')
+                            ->label('Tanggal Selesai Pengumuman Jalur Prestasi'),
+                    ])
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => 2,
+                        'lg' => 2,
+                        'xl' => 2,
+                        '2xl' => 2,
+                    ]),
+                Section::make('Pendaftaran Jalur Reguler')
+                    ->collapsed()
+                    ->description('Tanggal pendaftaran untuk jalur reguler.')
+                    ->schema([
+                        DateTimePicker::make('tanggal_pendaftaran_jalur_reguler_mulai')
+                            ->label('Tanggal Mulai Pendaftaran Jalur Reguler'),
+                        DateTimePicker::make('tanggal_pendaftaran_jalur_reguler_selesai')
+                            ->label('Tanggal Selesai Pendaftaran Jalur Reguler'),
+                    ])
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => 2,
+                        'lg' => 2,
+                        'xl' => 2,
+                        '2xl' => 2,
+                    ]),
+                Section::make('Pengumuman Jalur Reguler')
+                    ->collapsed()
+                    ->description('Tanggal pengumuman untuk jalur reguler.')
+                    ->schema([
+                        DateTimePicker::make('tanggal_pengumuman_jalur_reguler_mulai')
+                            ->label('Tanggal Mulai Pengumuman Jalur Reguler'),
+                        DateTimePicker::make('tanggal_pengumuman_jalur_reguler_selesai')
+                            ->label('Tanggal Selesai Pengumuman Jalur Reguler'),
+                    ])
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => 2,
+                        'lg' => 2,
+                        'xl' => 2,
+                        '2xl' => 2,
+                    ]),
+                Section::make('Pendaftaran Jalur Afirmasi')
+                    ->collapsed()
+                    ->description('Tanggal pendaftaran untuk jalur Afirmasi.')
+                    ->schema([
+                        DateTimePicker::make('tanggal_pendaftaran_jalur_afirmasi_mulai')
+                            ->label('Tanggal Mulai Pendaftaran Jalur Afirmasi'),
+                        DateTimePicker::make('tanggal_pendaftaran_jalur_afirmasi_selesai')
+                            ->label('Tanggal Selesai Pendaftaran Jalur Afirmasi'),
+                    ])
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => 2,
+                        'lg' => 2,
+                        'xl' => 2,
+                        '2xl' => 2,
+                    ]),
+                Section::make('Pengumuman Jalur Afirmasi')
+                    ->collapsed()
+                    ->description('Tanggal pengumuman untuk jalur Afirmasi.')
+                    ->schema([
+                        DateTimePicker::make('tanggal_pengumuman_jalur_afirmasi_mulai')
+                            ->label('Tanggal Mulai Pengumuman Jalur Afirmasi'),
+                        DateTimePicker::make('tanggal_pengumuman_jalur_afirmasi_selesai')
+                            ->label('Tanggal Selesai Pengumuman Jalur Afirmasi'),
+                    ])
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => 2,
+                        'lg' => 2,
+                        'xl' => 2,
+                        '2xl' => 2,
+                    ]),
+                Section::make('Pendaftaran Jalur Zonasi')
+                    ->collapsed()
+                    ->description('Tanggal pendaftaran untuk jalur Zonasi.')
+                    ->schema([
+                        DateTimePicker::make('tanggal_pendaftaran_jalur_zonasi_mulai')
+                            ->label('Tanggal Mulai Pendaftaran Jalur Zonasi'),
+                        DateTimePicker::make('tanggal_pendaftaran_jalur_zonasi_selesai')
+                            ->label('Tanggal Selesai Pendaftaran Jalur Zonasi'),
+                    ])
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => 2,
+                        'lg' => 2,
+                        'xl' => 2,
+                        '2xl' => 2,
+                    ]),
+                Section::make('Pengumuman Jalur Zonasi')
+                    ->collapsed()
+                    ->description('Tanggal pengumuman untuk jalur Zonasi.')
+                    ->schema([
+                        DateTimePicker::make('tanggal_pengumuman_jalur_zonasi_mulai')
+                            ->label('Tanggal Mulai Pengumuman Jalur Zonasi'),
+                        DateTimePicker::make('tanggal_pengumuman_jalur_zonasi_selesai')
+                            ->label('Tanggal Selesai Pengumuman Jalur Zonasi'),
+                    ])
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => 2,
+                        'lg' => 2,
+                        'xl' => 2,
+                        '2xl' => 2,
+                    ]),
+                Section::make('Pendaftaran Jalur Mutasi')
+                    ->collapsed()
+                    ->description('Tanggal pendaftaran untuk jalur Mutasi.')
+                    ->schema([
+                        DateTimePicker::make('tanggal_pendaftaran_jalur_mutasi_mulai')
+                            ->label('Tanggal Mulai Pendaftaran Jalur Mutasi'),
+                        DateTimePicker::make('tanggal_pendaftaran_jalur_mutasi_selesai')
+                            ->label('Tanggal Selesai Pendaftaran Jalur Mutasi'),
+                    ])
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => 2,
+                        'lg' => 2,
+                        'xl' => 2,
+                        '2xl' => 2,
+                    ]),
+                Section::make('Pengumuman Jalur Mutasi')
+                    ->collapsed()
+                    ->description('Tanggal pengumuman untuk jalur Mutasi.')
+                    ->schema([
+                        DateTimePicker::make('tanggal_pengumuman_jalur_mutasi_mulai')
+                            ->label('Tanggal Mulai Pengumuman Jalur Mutasi'),
+                        DateTimePicker::make('tanggal_pengumuman_jalur_mutasi_selesai')
+                            ->label('Tanggal Selesai Pengumuman Jalur Mutasi'),
+                    ])
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => 2,
+                        'lg' => 2,
+                        'xl' => 2,
+                        '2xl' => 2,
+                    ]),
+                Section::make('Tes Akademik')
+                    ->collapsed()
+                    ->description('Tanggal tes akademik.')
+                    ->schema([
+                        DateTimePicker::make('tanggal_tes_akademik_mulai')
+                            ->label('Tanggal Mulai Tes Akademik'),
+                        DateTimePicker::make('tanggal_tes_akademik_selesai')
+                            ->label('Tanggal Selesai Tes Akademik'),
+                    ])
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => 2,
+                        'lg' => 2,
+                        'xl' => 2,
+                        '2xl' => 2,
+                    ]),
+                Section::make('Tes Praktik')
+                    ->collapsed()
+                    ->description('Tanggal tes praktik.')
+                    ->schema([
+                        DateTimePicker::make('tanggal_tes_praktik_mulai')
+                            ->label('Tanggal Mulai Tes Praktik'),
+                        DateTimePicker::make('tanggal_tes_praktik_selesai')
+                            ->label('Tanggal Selesai Tes Praktik'),
+                    ])
+                    ->columns([
+                        'sm' => '100%',
+                        'md' => 2,
+                        'lg' => 2,
+                        'xl' => 2,
+                        '2xl' => 2,
+                    ]),
             ]);
     }
 
@@ -421,75 +421,75 @@ class TahunPendaftaranResource extends Resource
                         fn(TahunPendaftaran $record) => $record->tanggal_registrasi_berkas_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_registrasi_berkas_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
                     ),
 
-                // TextColumn::make('tanggal_pendaftaran_jalur_prestasi_mulai')
-                //     ->label('Pendaftaran Jalur Prestasi')
-                //     ->dateTime('d F Y H:i:s')
-                //     ->description(
-                //         fn(TahunPendaftaran $record) => $record->tanggal_pendaftaran_jalur_prestasi_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pendaftaran_jalur_prestasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
-                //     ),
+                TextColumn::make('tanggal_pendaftaran_jalur_prestasi_mulai')
+                    ->label('Pendaftaran Jalur Prestasi')
+                    ->dateTime('d F Y H:i:s')
+                    ->description(
+                        fn(TahunPendaftaran $record) => $record->tanggal_pendaftaran_jalur_prestasi_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pendaftaran_jalur_prestasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
+                    ),
 
-                // TextColumn::make('tanggal_pengumuman_jalur_prestasi_mulai')
-                //     ->label('Pengumuman Jalur Prestasi')
-                //     ->dateTime('d F Y H:i:s')
-                //     ->description(
-                //         fn(TahunPendaftaran $record) => $record->tanggal_pengumuman_jalur_prestasi_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pengumuman_jalur_prestasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
-                //     ),
+                TextColumn::make('tanggal_pengumuman_jalur_prestasi_mulai')
+                    ->label('Pengumuman Jalur Prestasi')
+                    ->dateTime('d F Y H:i:s')
+                    ->description(
+                        fn(TahunPendaftaran $record) => $record->tanggal_pengumuman_jalur_prestasi_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pengumuman_jalur_prestasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
+                    ),
 
-                // TextColumn::make('tanggal_pendaftaran_jalur_reguler_mulai')
-                //     ->label('Pendaftaran Jalur Reguler')
-                //     ->dateTime('d F Y H:i:s')
-                //     ->description(
-                //         fn(TahunPendaftaran $record) => $record->tanggal_pendaftaran_jalur_reguler_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pendaftaran_jalur_reguler_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
-                //     ),
+                TextColumn::make('tanggal_pendaftaran_jalur_reguler_mulai')
+                    ->label('Pendaftaran Jalur Reguler')
+                    ->dateTime('d F Y H:i:s')
+                    ->description(
+                        fn(TahunPendaftaran $record) => $record->tanggal_pendaftaran_jalur_reguler_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pendaftaran_jalur_reguler_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
+                    ),
 
-                // TextColumn::make('tanggal_pengumuman_jalur_reguler_mulai')
-                //     ->label('Pengumuman Jalur Reguler')
-                //     ->dateTime('d F Y H:i:s')
-                //     ->description(
-                //         fn(TahunPendaftaran $record) => $record->tanggal_pengumuman_jalur_reguler_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pengumuman_jalur_reguler_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
-                //     ),
+                TextColumn::make('tanggal_pengumuman_jalur_reguler_mulai')
+                    ->label('Pengumuman Jalur Reguler')
+                    ->dateTime('d F Y H:i:s')
+                    ->description(
+                        fn(TahunPendaftaran $record) => $record->tanggal_pengumuman_jalur_reguler_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pengumuman_jalur_reguler_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
+                    ),
 
-                // TextColumn::make('tanggal_pendaftaran_jalur_afirmasi_mulai')
-                //     ->label('Pendaftaran Jalur Afirmasi')
-                //     ->dateTime('d F Y H:i:s')
-                //     ->description(
-                //         fn(TahunPendaftaran $record) => $record->tanggal_pendaftaran_jalur_afirmasi_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pendaftaran_jalur_afirmasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
-                //     ),
+                TextColumn::make('tanggal_pendaftaran_jalur_afirmasi_mulai')
+                    ->label('Pendaftaran Jalur Afirmasi')
+                    ->dateTime('d F Y H:i:s')
+                    ->description(
+                        fn(TahunPendaftaran $record) => $record->tanggal_pendaftaran_jalur_afirmasi_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pendaftaran_jalur_afirmasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
+                    ),
 
-                // TextColumn::make('tanggal_pengumuman_jalur_afirmasi_mulai')
-                //     ->label('Pengumuman Jalur Afirmasi')
-                //     ->dateTime('d F Y H:i:s')
-                //     ->description(
-                //         fn(TahunPendaftaran $record) => $record->tanggal_pengumuman_jalur_afirmasi_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pengumuman_jalur_afirmasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
-                //     ),
+                TextColumn::make('tanggal_pengumuman_jalur_afirmasi_mulai')
+                    ->label('Pengumuman Jalur Afirmasi')
+                    ->dateTime('d F Y H:i:s')
+                    ->description(
+                        fn(TahunPendaftaran $record) => $record->tanggal_pengumuman_jalur_afirmasi_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pengumuman_jalur_afirmasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
+                    ),
 
-                // TextColumn::make('tanggal_pendaftaran_jalur_zonasi_mulai')
-                //     ->label('Pendaftaran Jalur Zonasi')
-                //     ->dateTime('d F Y H:i:s')
-                //     ->description(
-                //         fn(TahunPendaftaran $record) => $record->tanggal_pendaftaran_jalur_zonasi_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pendaftaran_jalur_zonasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
-                //     ),
+                TextColumn::make('tanggal_pendaftaran_jalur_zonasi_mulai')
+                    ->label('Pendaftaran Jalur Zonasi')
+                    ->dateTime('d F Y H:i:s')
+                    ->description(
+                        fn(TahunPendaftaran $record) => $record->tanggal_pendaftaran_jalur_zonasi_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pendaftaran_jalur_zonasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
+                    ),
 
-                // TextColumn::make('tanggal_pengumuman_jalur_zonasi_mulai')
-                //     ->label('Pengumuman Jalur Zonasi')
-                //     ->dateTime('d F Y H:i:s')
-                //     ->description(
-                //         fn(TahunPendaftaran $record) => $record->tanggal_pengumuman_jalur_zonasi_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pengumuman_jalur_zonasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
-                //     ),
+                TextColumn::make('tanggal_pengumuman_jalur_zonasi_mulai')
+                    ->label('Pengumuman Jalur Zonasi')
+                    ->dateTime('d F Y H:i:s')
+                    ->description(
+                        fn(TahunPendaftaran $record) => $record->tanggal_pengumuman_jalur_zonasi_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pengumuman_jalur_zonasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
+                    ),
 
-                // TextColumn::make('tanggal_pendaftaran_jalur_mutasi_mulai')
-                //     ->label('Pendaftaran Jalur Mutasi')
-                //     ->dateTime('d F Y H:i:s')
-                //     ->description(
-                //         fn(TahunPendaftaran $record) => $record->tanggal_pendaftaran_jalur_mutasi_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pendaftaran_jalur_mutasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
-                //     ),
+                TextColumn::make('tanggal_pendaftaran_jalur_mutasi_mulai')
+                    ->label('Pendaftaran Jalur Mutasi')
+                    ->dateTime('d F Y H:i:s')
+                    ->description(
+                        fn(TahunPendaftaran $record) => $record->tanggal_pendaftaran_jalur_mutasi_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pendaftaran_jalur_mutasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
+                    ),
 
-                // TextColumn::make('tanggal_pengumuman_jalur_mutasi_mulai')
-                //     ->label('Pengumuman Jalur Mutasi')
-                //     ->dateTime('d F Y H:i:s')
-                //     ->description(
-                //         fn(TahunPendaftaran $record) => $record->tanggal_pengumuman_jalur_mutasi_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pengumuman_jalur_mutasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
-                //     ),
+                TextColumn::make('tanggal_pengumuman_jalur_mutasi_mulai')
+                    ->label('Pengumuman Jalur Mutasi')
+                    ->dateTime('d F Y H:i:s')
+                    ->description(
+                        fn(TahunPendaftaran $record) => $record->tanggal_pengumuman_jalur_mutasi_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pengumuman_jalur_mutasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
+                    ),
 
                 // TextColumn::make('created_at')
                 //     ->label('Dibuat')
