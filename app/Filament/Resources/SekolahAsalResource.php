@@ -2,37 +2,37 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\SekolahAsalResource\Pages;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
+use App\Models\Provinsi;
+use Filament\Forms\Form;
 use App\Models\Kabupaten;
 use App\Models\Kecamatan;
 use App\Models\Kelurahan;
-use App\Models\Provinsi;
+use Filament\Tables\Table;
 use App\Models\SekolahAsal;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Resources\Resource;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\DeleteBulkAction;
+use Illuminate\Support\Collection;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Section;
 use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\ForceDeleteAction;
-use Filament\Tables\Actions\ForceDeleteBulkAction;
-use Filament\Tables\Actions\RestoreAction;
-use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\TextInput;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Enums\FiltersLayout;
-use Filament\Tables\Filters\TrashedFilter;
-use Filament\Tables\Table;
+use Filament\Forms\Components\FileUpload;
+use Filament\Tables\Actions\DeleteAction;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\RestoreBulkAction;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Collection;
+use App\Filament\Resources\SekolahAsalResource\Pages;
 
 class SekolahAsalResource extends Resource
 {
@@ -107,6 +107,7 @@ class SekolahAsalResource extends Resource
                             ->fetchFileInformation(false)
                             ->directory('assets/instansi-lain')
                             ->downloadable()
+                            ->openable()
                             ->maxSize(500)
                             ->minSize(10)
                             ->visibility('private')
@@ -143,7 +144,7 @@ class SekolahAsalResource extends Resource
                             }),
                         Select::make('provinsi_id')
                             ->label('Provinsi')
-                            ->options(fn (Get $get): Collection => Provinsi::query()
+                            ->options(fn(Get $get): Collection => Provinsi::query()
                                 ->where('negara_id', $get('negara_id'))
                                 ->pluck('nama', 'id'))
                             ->required()
@@ -160,7 +161,7 @@ class SekolahAsalResource extends Resource
                             }),
                         Select::make('kabupaten_id')
                             ->label('Kabupaten')
-                            ->options(fn (Get $get): Collection => Kabupaten::query()
+                            ->options(fn(Get $get): Collection => Kabupaten::query()
                                 ->where('provinsi_id', $get('provinsi_id'))
                                 ->pluck('nama', 'id'))
                             ->required()
@@ -176,7 +177,7 @@ class SekolahAsalResource extends Resource
                             }),
                         Select::make('kecamatan_id')
                             ->label('Kecamatan')
-                            ->options(fn (Get $get): Collection => Kecamatan::query()
+                            ->options(fn(Get $get): Collection => Kecamatan::query()
                                 ->where('kabupaten_id', $get('kabupaten_id'))
                                 ->pluck('nama', 'id'))
                             ->required()
@@ -191,7 +192,7 @@ class SekolahAsalResource extends Resource
                             }),
                         Select::make('kelurahan_id')
                             ->label('Kelurahan')
-                            ->options(fn (Get $get): Collection => Kelurahan::query()
+                            ->options(fn(Get $get): Collection => Kelurahan::query()
                                 ->where('kecamatan_id', $get('kecamatan_id'))
                                 ->pluck('nama', 'id'))
                             ->required()
@@ -249,6 +250,9 @@ class SekolahAsalResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('logo')
+                    ->label('Logo')
+                    ->searchable(),
                 TextColumn::make('nama')
                     ->label('Nama Instansi')
                     ->searchable(),
@@ -264,9 +268,6 @@ class SekolahAsalResource extends Resource
                 TextColumn::make('status')
                     ->label('Status')
                     ->sortable(),
-                TextColumn::make('logo')
-                    ->label('Logo')
-                    ->searchable(),
                 TextColumn::make('akreditasi')
                     ->label('Akreditasi')
                     ->badge()
@@ -274,25 +275,20 @@ class SekolahAsalResource extends Resource
                 TextColumn::make('alamat')
                     ->label('Alamat')
                     ->searchable(),
-                TextColumn::make('negara.nama')
-                    ->label('Negara')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('provinsi.nama')
-                    ->label('Provinsi')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('kabupaten.nama')
-                    ->label('Kabupaten')
-                    ->numeric()
+                TextColumn::make('kelurahan.nama')
+                    ->label('Kelurahan')
                     ->sortable(),
                 TextColumn::make('kecamatan.nama')
                     ->label('Kecamatan')
-                    ->numeric()
                     ->sortable(),
-                TextColumn::make('kelurahan.nama')
-                    ->label('Kelurahan')
-                    ->numeric()
+                TextColumn::make('kabupaten.nama')
+                    ->label('Kabupaten')
+                    ->sortable(),
+                TextColumn::make('provinsi.nama')
+                    ->label('Provinsi')
+                    ->sortable(),
+                TextColumn::make('negara.nama')
+                    ->label('Negara')
                     ->sortable(),
                 TextColumn::make('website')
                     ->label('Website')
@@ -303,6 +299,8 @@ class SekolahAsalResource extends Resource
                 TextColumn::make('email')
                     ->label('Email')
                     ->searchable(),
+
+                // Timestamp
                 TextColumn::make('created_at')
                     ->label('Dibuat')
                     ->dateTime()
@@ -324,7 +322,6 @@ class SekolahAsalResource extends Resource
             ])
             ->actions([
                 ActionGroup::make([
-                    ViewAction::make(),
                     EditAction::make(),
                     DeleteAction::make(),
                     ForceDeleteAction::make(),

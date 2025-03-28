@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
@@ -24,10 +24,10 @@ return new class extends Migration
             $table->foreignId('kabupaten_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('kecamatan_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('kelurahan_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
-            $table->string('website');
-            $table->string('telepon');
-            $table->string('email');
-            $table->string('nomor_surat');
+            $table->string('website')->nullable();
+            $table->string('telepon')->nullable();
+            $table->string('email')->nullable();
+            $table->string('nomor_surat')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
