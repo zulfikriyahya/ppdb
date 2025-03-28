@@ -99,7 +99,7 @@ class AdminPanelProvider extends PanelProvider
                     ->visible(fn() => Auth::user()->username === 'administrator'),
             ])
             ->default()
-            // ->spa()
+            ->spa()
             ->passwordReset()
             ->emailVerification()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
