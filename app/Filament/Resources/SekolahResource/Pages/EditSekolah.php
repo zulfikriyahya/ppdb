@@ -49,13 +49,13 @@ class EditSekolah extends EditRecord
                                     'required' => 'Form ini wajib diisi.',
                                 ]),
                             TextInput::make('npsn')
-                                ->label('Nomor Pokok Sekolah Nasional')
+                                ->label('NPSN')
                                 ->required()
                                 ->validationMessages([
                                     'required' => 'Form ini wajib diisi.',
                                 ]),
                             TextInput::make('nss')
-                                ->label('Nomor Statistik Sekolah/Madrasah')
+                                ->label('NSS/NSM')
                                 ->required()
                                 ->validationMessages([
                                     'required' => 'Form ini wajib diisi.',
@@ -107,19 +107,13 @@ class EditSekolah extends EditRecord
                                 ->validationMessages([
                                     'required' => 'Form ini wajib diisi.',
                                 ])
-                                ->options(['A' => 'A', 'B' => 'B', 'C' => 'C', 'D' => 'D']),
+                                ->options(['A' => 'A (Sangat Baik)', 'B' => 'B (Baik)', 'C' => 'C (Cukup)', 'D' => 'D (Kurang)']),
                         ])
                         ->columns([
                             'sm' => '100%',
                             'md' => 3,
                             'lg' => 3,
                         ]),
-
-
-
-
-
-
                 ]),
             Step::make('Data Alamat')
                 ->schema([
@@ -160,7 +154,7 @@ class EditSekolah extends EditRecord
                                     $set('kelurahan_id', null);
                                 }),
                             Select::make('kabupaten_id')
-                                ->label('Kabupaten')
+                                ->label('Kabupaten/Kota')
                                 ->options(fn(Get $get): Collection => Kabupaten::query()
                                     ->where('provinsi_id', $get('provinsi_id'))
                                     ->pluck('nama', 'id'))
@@ -191,7 +185,7 @@ class EditSekolah extends EditRecord
                                     $set('kelurahan_id', null);
                                 }),
                             Select::make('kelurahan_id')
-                                ->label('Kelurahan')
+                                ->label('Kelurahan/Desa')
                                 ->options(fn(Get $get): Collection => Kelurahan::query()
                                     ->where('kecamatan_id', $get('kecamatan_id'))
                                     ->pluck('nama', 'id'))
@@ -225,9 +219,7 @@ class EditSekolah extends EditRecord
                                 ->required()
                                 ->validationMessages([
                                     'required' => 'Form ini wajib diisi.',
-                                ])
-                                ->prefix('https://')
-                                ->suffix('.sch.id'),
+                                ]),
                             TextInput::make('telepon')
                                 ->label('Telepon')
                                 ->required()

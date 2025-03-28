@@ -2,11 +2,11 @@
 
 namespace App\Filament\Resources\SekolahResource\Pages;
 
-use Filament\Actions;
+use Filament\Actions\EditAction;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Pages\ViewRecord;
-use Filament\Infolists\Components\Section;
 use App\Filament\Resources\SekolahResource;
+use Filament\Infolists\Components\Fieldset;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\ImageEntry;
 
@@ -17,7 +17,9 @@ class ViewSekolah extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\EditAction::make(),
+            EditAction::make()
+                ->icon('heroicon-o-pencil-square')
+                ->outlined(),
         ];
     }
 
@@ -25,22 +27,82 @@ class ViewSekolah extends ViewRecord
     {
         return $infolist
             ->schema([
-                Section::make('Informasi Instansi')
+                Fieldset::make('')
+                    ->columns(1)
                     ->schema([
-                        TextEntry::make('nama')
-                            ->label('Nama Instansi'),
-                        TextEntry::make('npsn')
-                            ->label('Nomor Pokok Sekolah Nasional'),
-                        TextEntry::make('nss')
-                            ->label('Nomor Statistik Sekolah'),
                         ImageEntry::make('logo')
-                            ->label('Logo'),
-                        TextEntry::make('pimpinan.nama')
-                            ->label('Kepala Instansi'),
+                            ->alignCenter()
+                            ->hiddenLabel(),
+                        TextEntry::make('nama')
+                            ->alignCenter()
+                            ->extraAttributes(['class' => 'text-6xl font-bold'])
+                            ->hiddenLabel(),
+                    ]),
+                Fieldset::make('Instansi')
+                    ->columns([
+                        'sm' => 1,
+                        'md' => 4,
+                        'lg' => 4,
+                        'xl' => 4,
+                    ])
+                    ->schema([
+                        TextEntry::make('npsn')
+                            ->label('NPSN'),
+                        TextEntry::make('nss')
+                            ->label('NSS/NSM'),
                         TextEntry::make('akreditasi')
+                            ->badge()
+                            ->suffix(fn(string $state): string => match ($state) {
+                                'A' => ' (Sangat Baik)',
+                                'B' => ' (Baik)',
+                                'C' => ' (Cukup)',
+                                'D' => ' (Kurang)'
+                            })
+                            ->color(fn(string $state): string => match ($state) {
+                                'A' => 'primary',
+                                'B' => 'success',
+                                'C' => 'warning',
+                                'D' => 'danger'
+                            })
                             ->label('Akreditasi'),
+                        TextEntry::make('pimpinan.nama')
+                            ->icon('heroicon-o-user-circle')
+                            ->iconColor('success')
+                            ->label('Kepala Instansi'),
+                    ]),
+
+
+                Fieldset::make('Kontak')
+                    ->columns([
+                        'sm' => 1,
+                        'md' => 3,
+                        'lg' => 3,
+                        'xl' => 3,
+                    ])
+                    ->schema([
+                        TextEntry::make('website')
+                            ->icon('heroicon-o-globe-alt')
+                            ->iconColor('success')
+                            ->label('Website'),
+                        TextEntry::make('telepon')
+                            ->icon('heroicon-o-phone')
+                            ->iconColor('success')
+                            ->label('Telepon'),
+                        TextEntry::make('email')
+                            ->icon('heroicon-o-envelope')
+                            ->iconColor('success')
+                            ->label('Email'),
+                    ]),
+                Fieldset::make('Alamat')
+                    ->columns([
+                        'sm' => 1,
+                        'md' => 3,
+                        'lg' => 3,
+                        'xl' => 3,
+                    ])
+                    ->schema([
                         TextEntry::make('alamat')
-                            ->label('Alamat'),
+                            ->label('Jalan/Kampung/Dusun'),
                         TextEntry::make('kelurahan.nama')
                             ->label('Kelurahan'),
                         TextEntry::make('kecamatan.nama')
@@ -51,15 +113,7 @@ class ViewSekolah extends ViewRecord
                             ->label('Provinsi'),
                         TextEntry::make('negara.nama')
                             ->label('Negara'),
-                        TextEntry::make('website')
-                            ->label('Website'),
-                        TextEntry::make('telepon')
-                            ->label('Telepon'),
-                        TextEntry::make('email')
-                            ->label('Email'),
-                        TextEntry::make('nomor_surat')
-                            ->label('Nomor Surat'),
-                    ])
+                    ]),
             ]);
     }
 }

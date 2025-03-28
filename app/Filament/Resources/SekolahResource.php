@@ -26,7 +26,8 @@ class SekolahResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListSekolahs::route('/{record}'),
+            'index' => Pages\ListSekolahs::route('/'),
+            'create' => Pages\CreateSekolah::route('/create'),
             'view' => Pages\ViewSekolah::route('/{record}'),
             'edit' => Pages\EditSekolah::route('/{record}/edit'),
         ];

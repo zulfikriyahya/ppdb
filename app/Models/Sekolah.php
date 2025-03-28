@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Sekolah extends Model
 {
@@ -18,7 +18,8 @@ class Sekolah extends Model
         'nss',
         'logo',
         'logo_institusi',
-        'pimpinan_id',
+        'jenjang',
+        'status',
         'akreditasi',
         'alamat',
         'negara_id',
@@ -26,10 +27,11 @@ class Sekolah extends Model
         'kabupaten_id',
         'kecamatan_id',
         'kelurahan_id',
+        'pimpinan_id',
         'website',
         'telepon',
-        'nomor_surat',
         'email',
+        'nomor_surat',
     ];
 
     protected $casts = [

@@ -30,28 +30,88 @@ class CreateSekolah extends CreateRecord
             Step::make('Data Instansi')
                 ->schema([
                     Section::make('Instansi')
-                        ->collapsible()
                         ->schema([
                             TextInput::make('nama')
                                 ->label('Nama Instansi')
+                                ->prefixIcon('heroicon-o-building-library')
                                 ->required()
                                 ->validationMessages([
                                     'required' => 'Form ini wajib diisi.',
-                                ]),
+                                ])
+                                ->columnSpanFull(),
                             TextInput::make('npsn')
-                                ->label('Nomor Pokok Sekolah Nasional')
-                                ->required()
+                                ->label('NPSN')
+                                ->minLength(8)
+                                ->maxLength(8)
                                 ->validationMessages([
-                                    'required' => 'Form ini wajib diisi.',
+                                    'minLength' => 'NPSN harus terdiri dari minimal 8 digit.',
+                                    'maxLength' => 'NPSN tidak boleh lebih dari 8 digit.',
                                 ]),
                             TextInput::make('nss')
-                                ->label('Nomor Statistik Sekolah/Madrasah')
+                                ->label('NSS/NSM')
+                                ->minLength(12)
+                                ->maxLength(12)
+                                ->validationMessages([
+                                    'minLength' => 'Nomor NSS/NSM harus terdiri dari minimal 12 digit.',
+                                    'maxLength' => 'Nomor NSS/NSM tidak boleh lebih dari 12 digit.',
+                                ]),
+                            Select::make('pimpinan_id')
+                                ->label('Kepala Instansi')
+                                ->relationship('pimpinan', 'nama')
+                                ->native(false)
                                 ->required()
                                 ->validationMessages([
                                     'required' => 'Form ini wajib diisi.',
                                 ]),
+                            Select::make('akreditasi')
+                                ->label('Akreditasi')
+                                ->native(false)
+                                ->required()
+                                ->validationMessages([
+                                    'required' => 'Form ini wajib diisi.',
+                                ])
+                                ->options(['A' => 'A (Sangat Baik)', 'B' => 'B (Baik)', 'C' => 'C (Cukup)', 'D' => 'D (Kurang)']),
+                            Select::make('jenjang')
+                                ->label('Jenjang')
+                                ->native(false)
+                                ->required()
+                                ->validationMessages([
+                                    'required' => 'Form ini wajib diisi.',
+                                ])
+                                ->options(['PAUD' => 'PAUD', 'TK' => 'TK', 'SD' => 'SD', 'MI' => 'MI', 'SMP' => 'SMP', 'MTS' => 'MTS', 'SMA' => 'SMA', 'SMK' => 'SMK', 'MA' => 'MA']),
+                            Select::make('status')
+                                ->label('Status')
+                                ->native(false)
+                                ->required()
+                                ->validationMessages([
+                                    'required' => 'Form ini wajib diisi.',
+                                ])
+                                ->options(['NEGERI' => 'NEGERI', 'SWASTA' => 'SWASTA']),
+                        ])
+                        ->columns([
+                            'sm' => '100%',
+                            'md' => 3,
+                            'lg' => 3,
+                        ]),
+                    Section::make('Logo')
+                        ->schema([
+                            FileUpload::make('logo_institusi')
+                                ->label('Logo Institusi')
+                                ->image()
+                                ->imageEditor()
+                                ->imageEditorAspectRatios([
+                                    null,
+                                    '1:1' => '1:1',
+                                ])
+                                ->fetchFileInformation(false)
+                                ->directory('assets/institusi')
+                                ->downloadable()
+                                ->openable()
+                                ->maxSize(500)
+                                ->minSize(10)
+                                ->visibility('private'),
                             FileUpload::make('logo')
-                                ->label('Logo')
+                                ->label('Logo Instansi')
                                 ->image()
                                 ->imageEditor()
                                 ->imageEditorAspectRatios([
@@ -69,52 +129,16 @@ class CreateSekolah extends CreateRecord
                                 ->validationMessages([
                                     'required' => 'Form ini wajib diisi.',
                                 ]),
-                            FileUpload::make('logo_institusi')
-                                ->label('Logo Institusi')
-                                ->image()
-                                ->imageEditor()
-                                ->imageEditorAspectRatios([
-                                    null,
-                                    '1:1' => '1:1',
-                                ])
-                                ->fetchFileInformation(false)
-                                ->directory('assets/institusi')
-                                ->downloadable()
-                                ->openable()
-                                ->maxSize(500)
-                                ->minSize(10)
-                                ->visibility('private'),
-                            Select::make('pimpinan_id')
-                                ->label('Kepala Instansi')
-                                ->relationship('pimpinan', 'nama')
-                                ->required()
-                                ->validationMessages([
-                                    'required' => 'Form ini wajib diisi.',
-                                ]),
-                            Select::make('akreditasi')
-                                ->label('Akreditasi')
-                                ->required()
-                                ->validationMessages([
-                                    'required' => 'Form ini wajib diisi.',
-                                ])
-                                ->options(['A' => 'A', 'B' => 'B', 'C' => 'C', 'D' => 'D']),
                         ])
                         ->columns([
                             'sm' => '100%',
-                            'md' => 3,
-                            'lg' => 3,
+                            'md' => 2,
+                            'lg' => 2,
                         ]),
-
-
-
-
-
-
                 ]),
             Step::make('Data Alamat')
                 ->schema([
                     Section::make('Alamat')
-                        ->collapsible()
                         ->schema([
                             Select::make('negara_id')
                                 ->label('Negara')
@@ -150,7 +174,7 @@ class CreateSekolah extends CreateRecord
                                     $set('kelurahan_id', null);
                                 }),
                             Select::make('kabupaten_id')
-                                ->label('Kabupaten')
+                                ->label('Kabupaten/Kota')
                                 ->options(fn(Get $get): Collection => Kabupaten::query()
                                     ->where('provinsi_id', $get('provinsi_id'))
                                     ->pluck('nama', 'id'))
@@ -181,7 +205,7 @@ class CreateSekolah extends CreateRecord
                                     $set('kelurahan_id', null);
                                 }),
                             Select::make('kelurahan_id')
-                                ->label('Kelurahan')
+                                ->label('Kelurahan/Desa')
                                 ->options(fn(Get $get): Collection => Kelurahan::query()
                                     ->where('kecamatan_id', $get('kecamatan_id'))
                                     ->pluck('nama', 'id'))
@@ -207,31 +231,34 @@ class CreateSekolah extends CreateRecord
             Step::make('Data Kontak')
                 ->schema([
                     Section::make('Kontak')
-                        ->collapsible()
                         ->schema([
                             TextInput::make('website')
                                 ->label('Website')
                                 ->url()
+                                ->prefixIcon('heroicon-m-globe-alt')
                                 ->required()
                                 ->validationMessages([
                                     'required' => 'Form ini wajib diisi.',
                                 ])
-                                ->prefix('https://')
-                                ->suffix('.sch.id'),
+                                ->placeholder('adm@mtsn1pandeglang.sch.id'),
                             TextInput::make('telepon')
                                 ->label('Telepon')
                                 ->required()
                                 ->validationMessages([
                                     'required' => 'Form ini wajib diisi.',
                                 ])
-                                ->tel(),
+                                ->tel()
+                                ->placeholder('08**********')
+                                ->prefixIcon('heroicon-m-phone'),
                             TextInput::make('email')
                                 ->label('Email')
                                 ->required()
                                 ->validationMessages([
                                     'required' => 'Form ini wajib diisi.',
                                 ])
-                                ->email(),
+                                ->placeholder('adm@mtsn1pandeglang.sch.id')
+                                ->email()
+                                ->prefixIcon('heroicon-m-envelope'),
                         ])
                         ->columns([
                             'sm' => '100%',
@@ -240,10 +267,9 @@ class CreateSekolah extends CreateRecord
                         ]),
 
                     Section::make('Surat')
-                        ->collapsible()
                         ->schema([
                             TextInput::make('nomor_surat')
-                                ->label('Nomor Surat SKL')
+                                ->label('Nomor SKL')
                                 ->required()
                                 ->minLength(5)
                                 ->maxLength(20)
