@@ -23,20 +23,19 @@ class ShieldSeeder extends Seeder
         "guard_name":"web",
         "permissions":[
         "update_calon::siswa","create_calon::siswa","view_calon::siswa","view_any_calon::siswa"
-        ]},
-        
-        {"name":"administrator",
-        "guard_name":"web",
-        "permissions":[
-        
-        ]}
-        ]';
+        ]
+        },
+        {
+            "name":"administrator",
+            "guard_name":"web",
+            "permissions":[]
+        }]';
         $directPermissions = '[]';
 
         static::makeRolesWithPermissions($rolesWithPermissions);
         static::makeDirectPermissions($directPermissions);
 
-        $this->command->info('Shield Seeding Completed.');
+        // $this->command->info('Shield Seeding Completed.');
     }
 
     protected static function makeRolesWithPermissions(string $rolesWithPermissions): void
