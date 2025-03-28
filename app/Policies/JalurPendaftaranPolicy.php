@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\JalurPendaftaran;
 use App\Models\User;
+use App\Models\JalurPendaftaran;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class JalurPendaftaranPolicy
