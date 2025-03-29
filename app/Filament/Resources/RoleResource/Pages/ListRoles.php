@@ -55,6 +55,7 @@ class ListRoles extends ListRecords
                     ->colors(['success']),
                 TextColumn::make('updated_at')
                     ->label('Diubah')
+                    ->sinceTooltip()
                     ->dateTime('d F Y H:i:s'),
             ])
             ->filters([

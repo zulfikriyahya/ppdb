@@ -37,6 +37,8 @@ class TahunPendaftaranResource extends Resource
 {
     protected static ?string $model = TahunPendaftaran::class;
 
+    protected static ?string $recordTitleAttribute = 'nama';
+
     protected static ?string $navigationLabel = 'Tahun Pendaftaran';
 
     protected static ?string $label = 'Tahun Pendaftaran';

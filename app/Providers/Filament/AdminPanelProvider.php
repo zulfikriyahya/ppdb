@@ -6,6 +6,7 @@ use App\Filament\Pages\Auth\EditProfileCustom;
 use App\Filament\Pages\Auth\LoginCustom;
 use App\Filament\Pages\Auth\RegisterCustom;
 use App\Filament\Resources\UserResource;
+use App\Filament\Resources\UserResource\Widgets\UserRegisters;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Carbon\Carbon;
 use Devonab\FilamentEasyFooter\EasyFooterPlugin;
@@ -77,6 +78,7 @@ class AdminPanelProvider extends PanelProvider
         $registerClass = $this->handleRegistrationRedirect();
 
         return $panel
+            ->globalSearch(false)
             ->maxContentWidth(MaxWidth::Full)
             ->unsavedChangesAlerts()
             ->databaseNotifications()
@@ -110,6 +112,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
+                UserRegisters::class,
                 // Widgets\FilamentInfoWidget::class,
             ])
             ->middleware([

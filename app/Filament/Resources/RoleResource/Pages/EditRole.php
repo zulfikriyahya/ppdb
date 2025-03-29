@@ -4,7 +4,6 @@ namespace App\Filament\Resources\RoleResource\Pages;
 
 use App\Filament\Resources\RoleResource;
 use BezhanSalleh\FilamentShield\Support\Utils;
-use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -14,13 +13,6 @@ class EditRole extends EditRecord
     protected static string $resource = RoleResource::class;
 
     public Collection $permissions;
-
-    protected function getActions(): array
-    {
-        return [
-            Actions\DeleteAction::make(),
-        ];
-    }
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
