@@ -3,8 +3,21 @@
 namespace App\Filament\Resources\UserResource\Pages;
 
 use Filament\Actions;
+use Filament\Tables\Table;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\TextColumn;
 use App\Filament\Resources\UserResource;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Enums\FiltersLayout;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Actions\ForceDeleteAction;
 
 class ListUsers extends ListRecords
 {
@@ -17,7 +30,7 @@ class ListUsers extends ListRecords
         ];
     }
 
-    public static function table(Table $table): Table
+    public function table(Table $table): Table
     {
         return $table
             ->columns([

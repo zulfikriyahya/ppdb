@@ -2,18 +2,30 @@
 
 namespace App\Filament\Resources\UserResource\Pages;
 
+use Filament\Forms\Form;
+use Filament\Forms\Components\Field;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Fieldset;
 use App\Filament\Resources\UserResource;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Wizard\Step;
 use Filament\Resources\Pages\CreateRecord;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Resources\Pages\CreateRecord\Concerns\HasWizard;
 
 class CreateUser extends CreateRecord
 {
     protected static string $resource = UserResource::class;
 
-    public static function form(Form $form): Form
+    // use HasWizard;
+
+    public function form(Form $form): Form
     {
         return $form
             ->schema([
-                Section::make('Pengguna')
+                Fieldset::make('Pengguna')
                     ->schema([
                         TextInput::make('name')
                             ->label('Nama Lengkap')
@@ -82,9 +94,11 @@ class CreateUser extends CreateRecord
                             ->directory('assets/avatar'),
                     ])
                     ->columns([
-                        'sm' => '100%',
+                        'sm' => 1,
                         'md' => 3,
                         'lg' => 3,
+                        'xl' => 3,
+                        '2xl' => 3,
                     ]),
             ]);
     }
