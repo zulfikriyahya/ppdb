@@ -2,12 +2,12 @@
 
 namespace App\Filament\Pages\Auth;
 
-use DiogoGPinto\AuthUIEnhancer\Pages\Auth\Concerns\HasCustomLayout;
-use Filament\Forms\Components\Component;
-use Filament\Forms\Components\TextInput;
 use Filament\Pages\Auth\Register;
 use Illuminate\Support\Facades\Hash;
+use Filament\Forms\Components\Component;
+use Filament\Forms\Components\TextInput;
 use Illuminate\Validation\Rules\Password;
+use DiogoGPinto\AuthUIEnhancer\Pages\Auth\Concerns\HasCustomLayout;
 
 class RegisterCustom extends Register
 {
@@ -35,6 +35,7 @@ class RegisterCustom extends Register
         return TextInput::make('name')
             ->label(__('Nama Lengkap'))
             ->required()
+            ->prefixIcon('heroicon-o-user-circle')
             ->maxLength(100)
             ->autofocus();
     }
@@ -44,11 +45,13 @@ class RegisterCustom extends Register
         return TextInput::make('username')
             ->label(__('Nomor Induk Siswa Nasional (NISN)'))
             ->required()
+            ->prefixIcon('heroicon-o-identification')
+            ->numeric()
             ->maxLength(10)
             ->minLength(10)
             ->validationMessages([
-                'max' => 'NISN: Masukkan maksimal 10 Angka.',
-                'min' => 'NISN: Masukkan minimal 10 Angka.',
+                'max_digits' => 'NISN: Masukkan maksimal 10 Angka.',
+                'min_digits' => 'NISN: Masukkan minimal 10 Angka.',
                 'unique' => 'NISN: Nomor ini sudah pernah di isi.',
                 'required' => 'Form ini wajib diisi.',
             ])
@@ -61,6 +64,7 @@ class RegisterCustom extends Register
             ->label(__('Email'))
             ->email()
             ->required()
+            ->prefixIcon('heroicon-o-envelope')
             ->maxLength(50)
             ->validationMessages([
                 'max' => 'Email: Masukkan maksimal 50 Karakter.',
@@ -78,7 +82,7 @@ class RegisterCustom extends Register
             ->revealable(filament()->arePasswordsRevealable())
             ->required()
             ->rule(Password::default())
-            ->dehydrateStateUsing(fn ($state) => Hash::make($state))
+            ->dehydrateStateUsing(fn($state) => Hash::make($state))
             ->same('passwordConfirmation')
             ->validationMessages([
                 'same' => 'Password: Password tidak sesuai dengan isian password konfirmasi.',
