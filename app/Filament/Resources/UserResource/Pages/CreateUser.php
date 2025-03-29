@@ -2,17 +2,14 @@
 
 namespace App\Filament\Resources\UserResource\Pages;
 
-use Filament\Forms\Form;
-use Filament\Forms\Components\Field;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Fieldset;
 use App\Filament\Resources\UserResource;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Wizard\Step;
-use Filament\Resources\Pages\CreateRecord;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Fieldset;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Resources\Pages\CreateRecord;
 use Filament\Resources\Pages\CreateRecord\Concerns\HasWizard;
 
 class CreateUser extends CreateRecord
@@ -37,8 +34,8 @@ class CreateUser extends CreateRecord
                             ->label('Nomor Induk Siswa Nasional (NISN)')
                             // ->required()
                             ->unique(ignoreRecord: true)
-                            ->rule(fn($record) => $record === null ? 'unique:users,username' : 'unique:users,username,' . $record->id)
-                            ->dehydrateStateUsing(fn($state) => $state ? $state : null)
+                            ->rule(fn ($record) => $record === null ? 'unique:users,username' : 'unique:users,username,'.$record->id)
+                            ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
                             // ->maxLength(10)
                             // ->minLength(10)
                             ->validationMessages([
@@ -50,8 +47,8 @@ class CreateUser extends CreateRecord
                         TextInput::make('email')
                             ->label('Email')
                             ->email()
-                            ->rule(fn($record) => $record === null ? 'unique:users,email' : 'unique:users,email,' . $record->id)
-                            ->dehydrateStateUsing(fn($state) => $state ? $state : null)
+                            ->rule(fn ($record) => $record === null ? 'unique:users,email' : 'unique:users,email,'.$record->id)
+                            ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
                             ->disabledOn('edit')
                             ->required()
                             ->validationMessages([
@@ -60,8 +57,8 @@ class CreateUser extends CreateRecord
                         TextInput::make('password')
                             ->label('Password')
                             ->password()
-                            ->required(fn($record) => $record === null)
-                            ->dehydrateStateUsing(fn($state, $record) => $state ? bcrypt($state) : $record->password),
+                            ->required(fn ($record) => $record === null)
+                            ->dehydrateStateUsing(fn ($state, $record) => $state ? bcrypt($state) : $record->password),
                         DateTimePicker::make('email_verified_at')
                             ->label('Diverifikasi')
                             ->default(now()),

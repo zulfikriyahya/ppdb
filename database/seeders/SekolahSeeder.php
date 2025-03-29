@@ -29,8 +29,8 @@ class SekolahSeeder extends Seeder
                 'website' => 'https://mtsn1pandeglang.sch.id',
                 'telepon' => '089612050291',
                 'email' => 'adm@mtsn1pandeglang.sch.id',
-                'nomor_surat' => null
-            ]
+                'nomor_surat' => null,
+            ],
         ];
 
         foreach ($dataSekolah as $data) {

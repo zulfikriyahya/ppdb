@@ -2,13 +2,13 @@
 
 namespace App\Filament\Resources\SekolahResource\Pages;
 
+use App\Filament\Resources\SekolahResource;
 use Filament\Actions\EditAction;
+use Filament\Infolists\Components\Fieldset;
+use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Pages\ViewRecord;
-use App\Filament\Resources\SekolahResource;
-use Filament\Infolists\Components\Fieldset;
-use Filament\Infolists\Components\TextEntry;
-use Filament\Infolists\Components\ImageEntry;
 
 class ViewSekolah extends ViewRecord
 {
@@ -52,13 +52,13 @@ class ViewSekolah extends ViewRecord
                             ->label('NSS/NSM'),
                         TextEntry::make('akreditasi')
                             ->badge()
-                            ->suffix(fn(string $state): string => match ($state) {
+                            ->suffix(fn (string $state): string => match ($state) {
                                 'A' => ' (Sangat Baik)',
                                 'B' => ' (Baik)',
                                 'C' => ' (Cukup)',
                                 'D' => ' (Kurang)'
                             })
-                            ->color(fn(string $state): string => match ($state) {
+                            ->color(fn (string $state): string => match ($state) {
                                 'A' => 'primary',
                                 'B' => 'success',
                                 'C' => 'warning',
@@ -70,7 +70,6 @@ class ViewSekolah extends ViewRecord
                             ->iconColor('success')
                             ->label('Kepala Instansi'),
                     ]),
-
 
                 Fieldset::make('Kontak')
                     ->columns([

@@ -2,37 +2,36 @@
 
 namespace App\Filament\Resources;
 
-use Filament\Forms\Get;
-use Filament\Forms\Set;
-use App\Models\Provinsi;
-use Filament\Forms\Form;
+use App\Filament\Resources\SekolahAsalResource\Pages;
 use App\Models\Kabupaten;
 use App\Models\Kecamatan;
 use App\Models\Kelurahan;
-use Filament\Tables\Table;
+use App\Models\Provinsi;
 use App\Models\SekolahAsal;
-use Filament\Resources\Resource;
-use Illuminate\Support\Collection;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Section;
-use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\ViewAction;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Forms\Components\TextInput;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Enums\FiltersLayout;
 use Filament\Forms\Components\FileUpload;
-use Filament\Tables\Actions\DeleteAction;
-use Illuminate\Database\Eloquent\Builder;
-use Filament\Tables\Actions\RestoreAction;
-use Filament\Tables\Filters\TrashedFilter;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
+use Filament\Resources\Resource;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ForceDeleteAction;
-use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Actions\ForceDeleteBulkAction;
+use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Actions\RestoreBulkAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\SekolahAsalResource\Pages;
+use Illuminate\Support\Collection;
 
 class SekolahAsalResource extends Resource
 {
@@ -144,7 +143,7 @@ class SekolahAsalResource extends Resource
                             }),
                         Select::make('provinsi_id')
                             ->label('Provinsi')
-                            ->options(fn(Get $get): Collection => Provinsi::query()
+                            ->options(fn (Get $get): Collection => Provinsi::query()
                                 ->where('negara_id', $get('negara_id'))
                                 ->pluck('nama', 'id'))
                             ->required()
@@ -161,7 +160,7 @@ class SekolahAsalResource extends Resource
                             }),
                         Select::make('kabupaten_id')
                             ->label('Kabupaten')
-                            ->options(fn(Get $get): Collection => Kabupaten::query()
+                            ->options(fn (Get $get): Collection => Kabupaten::query()
                                 ->where('provinsi_id', $get('provinsi_id'))
                                 ->pluck('nama', 'id'))
                             ->required()
@@ -177,7 +176,7 @@ class SekolahAsalResource extends Resource
                             }),
                         Select::make('kecamatan_id')
                             ->label('Kecamatan')
-                            ->options(fn(Get $get): Collection => Kecamatan::query()
+                            ->options(fn (Get $get): Collection => Kecamatan::query()
                                 ->where('kabupaten_id', $get('kabupaten_id'))
                                 ->pluck('nama', 'id'))
                             ->required()
@@ -192,7 +191,7 @@ class SekolahAsalResource extends Resource
                             }),
                         Select::make('kelurahan_id')
                             ->label('Kelurahan')
-                            ->options(fn(Get $get): Collection => Kelurahan::query()
+                            ->options(fn (Get $get): Collection => Kelurahan::query()
                                 ->where('kecamatan_id', $get('kecamatan_id'))
                                 ->pluck('nama', 'id'))
                             ->required()

@@ -2,10 +2,9 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\SekolahResource\Pages;
 use App\Models\Sekolah;
 use Filament\Resources\Resource;
-use App\Filament\Resources\SekolahResource\Pages;
-
 
 class SekolahResource extends Resource
 {
