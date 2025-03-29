@@ -44,7 +44,7 @@ class EditProfileCustom extends EditProfile
             ->label(__('Avatar'))
             ->image()
             ->minSize(5)
-            ->maxSize(100)
+            ->maxSize(500)
             ->visibility('private')
             ->directory('assets/avatar');
     }
