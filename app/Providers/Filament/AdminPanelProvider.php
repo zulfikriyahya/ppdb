@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Filament\Support\Enums\MaxWidth;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 use App\Filament\Pages\Auth\LoginCustom;
 use App\Filament\Resources\UserResource;
 use Filament\Http\Middleware\Authenticate;
@@ -34,50 +36,13 @@ use App\Filament\Resources\UserResource\Widgets\UserRegisters;
 
 class AdminPanelProvider extends PanelProvider
 {
-    /**
-     * Fungsi untuk menangani redirect berdasarkan tanggal pendaftaran
-     * AKtifkan setelah proses migrasi database
-     */
-    protected function handleRegistrationRedirect(): string
-    {
-        $tahunPendaftaran = DB::table('tahun_pendaftarans')
-            ->where('status', 'Aktif')
-            ->first();
-
-        if (! $tahunPendaftaran) {
-            // Jika data tidak ditemukan, arahkan ke LoginCustom
-            return LoginCustom::class;
-        }
-
-        try {
-            // Parsing tanggal pendaftaran
-            $startDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_ppdb_mulai));
-            $endDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_ppdb_selesai));
-            $currentDate = Carbon::now();
-
-            // dd($startDate);
-            // Cek apakah tanggal sekarang berada di dalam rentang pendaftaran
-            if ($currentDate->lt($startDate) || $currentDate->gt($endDate)) {
-                // Jika di luar rentang, arahkan ke LoginCustom
-                return LoginCustom::class;
-            }
-        } catch (\Exception $e) {
-            // Log error jika terjadi masalah parsing tanggal
-            Log::error('Error memproses tanggal: ' . $e->getMessage());
-
-            return LoginCustom::class;
-        }
-
-        // Jika semua validasi berhasil, arahkan ke RegisterCustom
-        return RegisterCustom::class;
-    }
-
     public function panel(Panel $panel): Panel
     {
         // Variabel default untuk halaman registrasi
         $registerClass = $this->handleRegistrationRedirect();
 
         return $panel
+            ->registration($registerClass)
             ->globalSearch(false)
             ->maxContentWidth(MaxWidth::Full)
             ->unsavedChangesAlerts()
@@ -86,7 +51,6 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogoHeight('2.6rem')
             ->topNavigation()
             ->login(LoginCustom::class)
-            ->registration($registerClass)
             ->id('admin')
             ->profile(EditProfileCustom::class)
             ->path('')
@@ -165,5 +129,47 @@ class AdminPanelProvider extends PanelProvider
                     ->emptyPanelBackgroundColor(Color::hex('#010101'))
                     ->showEmptyPanelOnMobile(false),
             ]);
+    }
+
+    /**
+     * Fungsi untuk menangani redirect berdasarkan tanggal pendaftaran
+     * Aktifkan setelah proses migrasi database
+     */
+    protected function handleRegistrationRedirect(): string
+    {
+        try {
+            // Cek apakah koneksi database tersedia
+            if (! Schema::hasTable('tahun_pendaftarans')) {
+                // Jika tabel tidak ada, arahkan langsung ke LoginCustom
+                return LoginCustom::class;
+            }
+
+            $tahunPendaftaran = DB::table('tahun_pendaftarans')
+                ->where('status', 'Aktif')
+                ->first();
+
+            if (! $tahunPendaftaran) {
+                // Jika data tidak ditemukan, arahkan ke LoginCustom
+                return LoginCustom::class;
+            }
+
+            // Parsing tanggal pendaftaran
+            $startDate = Carbon::createFromFormat('Y-m-d H:i:s', $tahunPendaftaran->tanggal_ppdb_mulai);
+            $endDate = Carbon::createFromFormat('Y-m-d H:i:s', $tahunPendaftaran->tanggal_ppdb_selesai);
+            $currentDate = Carbon::now();
+
+            // Cek apakah tanggal sekarang berada di dalam rentang pendaftaran
+            if ($currentDate->lt($startDate) || $currentDate->gt($endDate)) {
+                // Jika di luar rentang, arahkan ke LoginCustom
+                return LoginCustom::class;
+            }
+        } catch (\Exception $e) {
+            // Tangani error (misalnya, masalah parsing tanggal atau database tidak tersedia)
+            Log::error('Error memproses tanggal atau database: ' . $e->getMessage());
+            return LoginCustom::class;
+        }
+
+        // Jika semua validasi berhasil, arahkan ke RegisterCustom
+        return RegisterCustom::class;
     }
 }
