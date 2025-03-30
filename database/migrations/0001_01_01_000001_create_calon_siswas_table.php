@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
@@ -12,11 +12,11 @@ return new class extends Migration
         Schema::create('calon_siswas', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('nama', 50);
-            $table->foreign('nama')->references('name')->on('users')->onUpdate('cascade');
+            $table->foreign('nama')->references('name')->on('users')->onUpdate('cascade')->index();
             $table->string('nik')->unique();
             $table->string('kk');
             $table->string('nisn', 10)->unique();
-            $table->foreign('nisn')->references('username')->on('users')->onUpdate('cascade');
+            $table->foreign('nisn')->references('username')->on('users')->onUpdate('cascade')->index();
             $table->string('tempat_lahir');
             $table->date('tanggal_lahir');
             $table->string('tahun_lulus');

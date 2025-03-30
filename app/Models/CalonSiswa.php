@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class CalonSiswa extends Model
 {
@@ -113,7 +113,6 @@ class CalonSiswa extends Model
     ];
 
     protected $casts = [
-        // 'id' => 'integer',
         'tanggal_lahir' => 'date',
         'siswa_negara_id' => 'integer',
         'siswa_provinsi_id' => 'integer',

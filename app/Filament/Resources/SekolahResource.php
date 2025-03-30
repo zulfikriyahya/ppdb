@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\SekolahResource\Pages;
 use App\Models\Sekolah;
 use Filament\Resources\Resource;
+use App\Filament\Resources\SekolahResource\Pages;
 
 class SekolahResource extends Resource
 {
@@ -29,6 +29,7 @@ class SekolahResource extends Resource
         return [
             'index' => Pages\ListSekolahs::route('/'),
             'create' => Pages\CreateSekolah::route('/create'),
+            'view' => Pages\ViewSekolah::route('/{record}'),
             'edit' => Pages\EditSekolah::route('/{record}/edit'),
         ];
     }
