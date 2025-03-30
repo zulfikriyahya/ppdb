@@ -10,13 +10,10 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\FileUpload;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Forms\Components\DateTimePicker;
-use Filament\Resources\Pages\CreateRecord\Concerns\HasWizard;
 
 class CreateUser extends CreateRecord
 {
     protected static string $resource = UserResource::class;
-
-    // use HasWizard;
 
     public function form(Form $form): Form
     {

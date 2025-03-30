@@ -2,21 +2,21 @@
 
 namespace App\Filament\Resources\SekolahResource\Pages;
 
-use App\Filament\Resources\SekolahResource;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
+use App\Models\Provinsi;
 use App\Models\Kabupaten;
 use App\Models\Kecamatan;
 use App\Models\Kelurahan;
-use App\Models\Provinsi;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Wizard\Step;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
-use Filament\Resources\Pages\CreateRecord;
-use Filament\Resources\Pages\CreateRecord\Concerns\HasWizard;
 use Illuminate\Support\Collection;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Wizard\Step;
+use Filament\Resources\Pages\CreateRecord;
+use App\Filament\Resources\SekolahResource;
+use Filament\Resources\Pages\CreateRecord\Concerns\HasWizard;
 
 class CreateSekolah extends CreateRecord
 {
@@ -41,19 +41,21 @@ class CreateSekolah extends CreateRecord
                                 ->columnSpanFull(),
                             TextInput::make('npsn')
                                 ->label('NPSN')
+                                ->numeric()
                                 ->minLength(8)
                                 ->maxLength(8)
                                 ->validationMessages([
-                                    'minLength' => 'NPSN harus terdiri dari minimal 8 digit.',
-                                    'maxLength' => 'NPSN tidak boleh lebih dari 8 digit.',
+                                    'min_digits' => 'NPSN harus terdiri dari minimal 8 digit.',
+                                    'max_digits' => 'NPSN tidak boleh lebih dari 8 digit.',
                                 ]),
                             TextInput::make('nss')
                                 ->label('NSS/NSM')
+                                ->numeric()
                                 ->minLength(12)
                                 ->maxLength(12)
                                 ->validationMessages([
-                                    'minLength' => 'Nomor NSS/NSM harus terdiri dari minimal 12 digit.',
-                                    'maxLength' => 'Nomor NSS/NSM tidak boleh lebih dari 12 digit.',
+                                    'min_digits' => 'Nomor NSS/NSM harus terdiri dari minimal 12 digit.',
+                                    'max_digits' => 'Nomor NSS/NSM tidak boleh lebih dari 12 digit.',
                                 ]),
                             Select::make('pimpinan_id')
                                 ->label('Kepala Instansi')
@@ -158,7 +160,7 @@ class CreateSekolah extends CreateRecord
                                 }),
                             Select::make('provinsi_id')
                                 ->label('Provinsi')
-                                ->options(fn (Get $get): Collection => Provinsi::query()
+                                ->options(fn(Get $get): Collection => Provinsi::query()
                                     ->where('negara_id', $get('negara_id'))
                                     ->pluck('nama', 'id'))
                                 ->required()
@@ -175,7 +177,7 @@ class CreateSekolah extends CreateRecord
                                 }),
                             Select::make('kabupaten_id')
                                 ->label('Kabupaten/Kota')
-                                ->options(fn (Get $get): Collection => Kabupaten::query()
+                                ->options(fn(Get $get): Collection => Kabupaten::query()
                                     ->where('provinsi_id', $get('provinsi_id'))
                                     ->pluck('nama', 'id'))
                                 ->required()
@@ -191,7 +193,7 @@ class CreateSekolah extends CreateRecord
                                 }),
                             Select::make('kecamatan_id')
                                 ->label('Kecamatan')
-                                ->options(fn (Get $get): Collection => Kecamatan::query()
+                                ->options(fn(Get $get): Collection => Kecamatan::query()
                                     ->where('kabupaten_id', $get('kabupaten_id'))
                                     ->pluck('nama', 'id'))
                                 ->required()
@@ -206,7 +208,7 @@ class CreateSekolah extends CreateRecord
                                 }),
                             Select::make('kelurahan_id')
                                 ->label('Kelurahan/Desa')
-                                ->options(fn (Get $get): Collection => Kelurahan::query()
+                                ->options(fn(Get $get): Collection => Kelurahan::query()
                                     ->where('kecamatan_id', $get('kecamatan_id'))
                                     ->pluck('nama', 'id'))
                                 ->required()
@@ -240,7 +242,7 @@ class CreateSekolah extends CreateRecord
                                 ->validationMessages([
                                     'required' => 'Form ini wajib diisi.',
                                 ])
-                                ->placeholder('adm@mtsn1pandeglang.sch.id'),
+                                ->placeholder('https://mtsn1pandeglang.sch.id'),
                             TextInput::make('telepon')
                                 ->label('Telepon')
                                 ->required()
