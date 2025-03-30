@@ -12,6 +12,8 @@ class SekretarisResource extends Resource
 {
     protected static ?string $model = Sekretaris::class;
 
+    protected static ?string $recordTitleAttribute = 'nama';
+
     protected static ?string $navigationLabel = 'Sekretaris';
 
     protected static ?string $label = 'Sekretaris';

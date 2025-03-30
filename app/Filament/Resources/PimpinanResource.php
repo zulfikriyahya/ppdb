@@ -12,6 +12,8 @@ class PimpinanResource extends Resource
 {
     protected static ?string $model = Pimpinan::class;
 
+    protected static ?string $recordTitleAttribute = 'nama';
+
     protected static ?string $navigationLabel = 'Pimpinan';
 
     protected static ?string $label = 'Pimpinan';

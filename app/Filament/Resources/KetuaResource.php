@@ -12,6 +12,8 @@ class KetuaResource extends Resource
 {
     protected static ?string $model = Ketua::class;
 
+    protected static ?string $recordTitleAttribute = 'nama';
+
     protected static ?string $navigationLabel = 'Ketua';
 
     protected static ?string $label = 'Ketua';

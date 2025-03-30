@@ -12,6 +12,8 @@ class SekolahAsalResource extends Resource
 {
     protected static ?string $model = SekolahAsal::class;
 
+    protected static ?string $recordTitleAttribute = 'nama';
+
     protected static ?string $navigationLabel = 'Instansi Lain';
 
     protected static ?string $label = 'Instansi Lain';

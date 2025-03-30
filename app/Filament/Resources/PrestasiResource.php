@@ -2,33 +2,35 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\PrestasiResource\Pages;
 use App\Models\Prestasi;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Tables\Table;
 use Filament\Resources\Resource;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Section;
 use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\ForceDeleteAction;
-use Filament\Tables\Actions\ForceDeleteBulkAction;
-use Filament\Tables\Actions\RestoreAction;
-use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\TextInput;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Enums\FiltersLayout;
-use Filament\Tables\Filters\TrashedFilter;
-use Filament\Tables\Table;
+use Filament\Tables\Actions\DeleteAction;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\RestoreBulkAction;
+use App\Filament\Resources\PrestasiResource\Pages;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class PrestasiResource extends Resource
 {
     protected static ?string $model = Prestasi::class;
+
+    protected static ?string $recordTitleAttribute = 'nama';
 
     protected static ?string $navigationLabel = 'Prestasi';
 
@@ -84,14 +86,14 @@ class PrestasiResource extends Resource
                                         'Provinsi' => 'Provinsi',
                                         'Kabupaten/Kota' => 'Kabupaten/Kota',
                                     ])
-                                    ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                    ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
                                 Select::make('kategori')
                                     ->label('Kategori')
                                     ->options([
                                         'Regu/Kelompok' => 'Regu/Kelompok',
                                         'Individu' => 'Individu',
                                     ])
-                                    ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                    ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
                                 Select::make('peringkat')
                                     ->label('Peringkat')
                                     ->options([
@@ -99,14 +101,14 @@ class PrestasiResource extends Resource
                                         '2' => '2',
                                         '3' => '3',
                                     ])
-                                    ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                    ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
                             ])
                             ->columns([
                                 'sm' => '100%',
                                 'md' => 3,
                                 'lg' => 3,
                             ])
-                            ->visible(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                            ->visible(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
                     ])
                     ->columns([
                         'sm' => '100%',
@@ -126,7 +128,7 @@ class PrestasiResource extends Resource
                 TextColumn::make('jenis')
                     ->label('Jenis Prestasi')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'Hafalan Al-Quran' => 'success',
                         'Olimpiade/Kejuaraan' => 'primary'
                     }),

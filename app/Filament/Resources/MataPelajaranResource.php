@@ -2,32 +2,34 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\MataPelajaranResource\Pages;
-use App\Models\MataPelajaran;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Tables\Table;
+use App\Models\MataPelajaran;
 use Filament\Resources\Resource;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Forms\Components\Section;
 use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\ForceDeleteAction;
-use Filament\Tables\Actions\ForceDeleteBulkAction;
-use Filament\Tables\Actions\RestoreAction;
-use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\TextInput;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Enums\FiltersLayout;
-use Filament\Tables\Filters\TrashedFilter;
-use Filament\Tables\Table;
+use Filament\Tables\Actions\DeleteAction;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\RestoreBulkAction;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\MataPelajaranResource\Pages;
 
 class MataPelajaranResource extends Resource
 {
     protected static ?string $model = MataPelajaran::class;
+
+    protected static ?string $recordTitleAttribute = 'nama';
 
     protected static ?string $navigationLabel = 'Mata Pelajaran';
 

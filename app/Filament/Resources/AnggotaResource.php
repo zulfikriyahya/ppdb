@@ -12,6 +12,8 @@ class AnggotaResource extends Resource
 {
     protected static ?string $model = Anggota::class;
 
+    protected static ?string $recordTitleAttribute = 'nama';
+
     protected static ?string $navigationLabel = 'Anggota';
 
     protected static ?string $label = 'Anggota';

@@ -12,6 +12,8 @@ class BendaharaResource extends Resource
 {
     protected static ?string $model = Bendahara::class;
 
+    protected static ?string $recordTitleAttribute = 'nama';
+
     protected static ?string $navigationLabel = 'Bendahara';
 
     protected static ?string $label = 'Bendahara';

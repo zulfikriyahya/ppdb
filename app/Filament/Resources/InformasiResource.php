@@ -2,37 +2,39 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\InformasiResource\Pages;
-use App\Models\Informasi;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Forms\Form;
+use App\Models\Informasi;
+use Filament\Tables\Table;
 use Filament\Resources\Resource;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Section;
 use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\ForceDeleteAction;
-use Filament\Tables\Actions\ForceDeleteBulkAction;
-use Filament\Tables\Actions\RestoreAction;
-use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\TextInput;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Enums\FiltersLayout;
-use Filament\Tables\Filters\TrashedFilter;
-use Filament\Tables\Table;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\RichEditor;
+use Filament\Tables\Actions\DeleteAction;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\RestoreBulkAction;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
+use App\Filament\Resources\InformasiResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class InformasiResource extends Resource
 {
     protected static ?string $model = Informasi::class;
+
+    protected static ?string $recordTitleAttribute = 'nama';
 
     protected static ?string $navigationLabel = 'Informasi';
 
@@ -54,7 +56,7 @@ class InformasiResource extends Resource
                     ->schema([
                         Select::make('tahun_pendaftaran_id')
                             ->label('Tahun Pendaftaran')
-                            ->relationship('tahunPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif'))
+                            ->relationship('tahunPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
                             ->required()
                             ->native(false)
                             ->live()
@@ -64,7 +66,7 @@ class InformasiResource extends Resource
                             ->columnSpanFull(),
                     ]),
                 Section::make()
-                    ->visible(fn ($get) => $get('tahun_pendaftaran_id') !== null)
+                    ->visible(fn($get) => $get('tahun_pendaftaran_id') !== null)
                     ->schema([
                         TextInput::make('judul')
                             ->label('Judul')
@@ -106,7 +108,7 @@ class InformasiResource extends Resource
                             ->label('Tanggal')
                             ->default(now())
                             ->required()
-                            ->hidden(fn (Get $get) => $get('status') !== 'Publish')
+                            ->hidden(fn(Get $get) => $get('status') !== 'Publish')
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ])
@@ -154,7 +156,7 @@ class InformasiResource extends Resource
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'Publish' => 'success',
                         'Draft' => 'gray'
                     })

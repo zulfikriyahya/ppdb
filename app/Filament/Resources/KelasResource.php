@@ -2,33 +2,35 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\KelasResource\Pages;
 use App\Models\Kelas;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Tables\Table;
 use Filament\Resources\Resource;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Section;
 use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\ForceDeleteAction;
-use Filament\Tables\Actions\ForceDeleteBulkAction;
-use Filament\Tables\Actions\RestoreAction;
-use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\TextInput;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Enums\FiltersLayout;
-use Filament\Tables\Filters\TrashedFilter;
-use Filament\Tables\Table;
+use Filament\Tables\Actions\DeleteAction;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\RestoreBulkAction;
+use App\Filament\Resources\KelasResource\Pages;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class KelasResource extends Resource
 {
     protected static ?string $model = Kelas::class;
+
+    protected static ?string $recordTitleAttribute = 'nama';
 
     protected static ?string $navigationLabel = 'Kelas';
 

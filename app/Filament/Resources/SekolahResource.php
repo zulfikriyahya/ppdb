@@ -2,13 +2,15 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\SekolahResource\Pages;
 use App\Models\Sekolah;
 use Filament\Resources\Resource;
+use App\Filament\Resources\SekolahResource\Pages;
 
 class SekolahResource extends Resource
 {
     protected static ?string $model = Sekolah::class;
+
+    protected static ?string $recordTitleAttribute = 'nama';
 
     protected static ?string $navigationLabel = 'Instansi';
 
