@@ -42,21 +42,14 @@ class ListEkstrakurikulers extends ListRecords
                 TextColumn::make('nama')
                     ->label('Ekstrakurikuler')
                     ->searchable(),
-                TextColumn::make('deleted_at')
-                    ->label('Dihapus')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->label('Dibuat')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
                 TextColumn::make('updated_at')
                     ->label('Diubah')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
             ])
             ->filters([])
             ->actions([

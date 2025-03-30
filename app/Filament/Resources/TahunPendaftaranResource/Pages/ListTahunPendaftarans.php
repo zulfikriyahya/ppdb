@@ -163,21 +163,14 @@ class ListTahunPendaftarans extends ListRecords
                         fn(TahunPendaftaran $record) => $record->tanggal_pengumuman_jalur_mutasi_selesai ? 'Hingga: ' . Carbon::parse($record->tanggal_pengumuman_jalur_mutasi_selesai)->translatedFormat('d F Y H:i:s') : 'Hingga: (Sekarang)'
                     ),
 
-                // TextColumn::make('created_at')
-                //     ->label('Dibuat')
-                //     ->dateTime('d F Y H:i:s')
-                //     ->sortable()
-                //     ->toggleable(isToggledHiddenByDefault: true),
-                // TextColumn::make('updated_at')
-                //     ->label('Diubah')
-                //     ->dateTime('d F Y H:i:s')
-                //     ->sortable()
-                //     ->toggleable(isToggledHiddenByDefault: true),
-                // TextColumn::make('deleted_at')
-                //     ->label('Dihapus')
-                //     ->dateTime('d F Y H:i:s')
-                //     ->sortable()
-                //     ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('created_at')
+                    ->label('Dibuat')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+                TextColumn::make('updated_at')
+                    ->label('Diubah')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
             ])
             ->filters([])
             ->actions([

@@ -5,24 +5,16 @@ namespace App\Filament\Resources\AnggotaResource\Pages;
 use Filament\Actions;
 use App\Models\Anggota;
 use Filament\Tables\Table;
-use Illuminate\Contracts\View\View;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Pages\Actions\CreateAction;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\RestoreAction;
 use Filament\Tables\Enums\ActionsPosition;
-use Illuminate\Contracts\Support\Htmlable;
 use App\Filament\Resources\AnggotaResource;
-use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Tables\Actions\ForceDeleteAction;
-use Filament\Tables\Actions\RestoreBulkAction;
-use Filament\Tables\Actions\ForceDeleteBulkAction;
 
 class ListAnggotas extends ListRecords
 {

@@ -42,10 +42,6 @@ class ListRoles extends ListRecords
                     ->label('Peran')
                     ->formatStateUsing(fn($state): string => Str::headline($state))
                     ->searchable(),
-                // TextColumn::make('guard_name')
-                //     ->badge()
-                //     ->color(Color::Cyan)
-                //     ->label('Auth Guard'),
                 TextColumn::make('team.name')
                     ->default('Global')
                     ->badge()
