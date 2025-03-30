@@ -2,23 +2,27 @@
 
 namespace App\Filament\Resources\AnggotaResource\Pages;
 
-use App\Filament\Resources\AnggotaResource;
 use Filament\Actions;
-use Filament\Resources\Pages\ListRecords;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\ForceDeleteAction;
-use Filament\Tables\Actions\ForceDeleteBulkAction;
-use Filament\Tables\Actions\RestoreAction;
-use Filament\Tables\Actions\RestoreBulkAction;
-use Filament\Tables\Columns\ImageColumn;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Enums\FiltersLayout;
-use Filament\Tables\Filters\TrashedFilter;
+use App\Models\Anggota;
 use Filament\Tables\Table;
+use Illuminate\Contracts\View\View;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Pages\Actions\CreateAction;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Resources\Pages\ListRecords;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Enums\ActionsPosition;
+use Illuminate\Contracts\Support\Htmlable;
+use App\Filament\Resources\AnggotaResource;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\RestoreBulkAction;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
 
 class ListAnggotas extends ListRecords
 {
@@ -27,7 +31,10 @@ class ListAnggotas extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->outlined()
+                ->hiddenLabel()
+                ->icon('heroicon-o-plus'),
         ];
     }
 
@@ -41,56 +48,43 @@ class ListAnggotas extends ListRecords
                     ->defaultImageUrl('/img/avatar.png'),
                 TextColumn::make('nama')
                     ->label('Nama Lengkap')
-                    ->searchable(),
+                    ->searchable(Anggota::count() > 10),
                 TextColumn::make('nip')
-                    ->label('NIP')
-                    ->searchable(),
+                    ->label('NIP'),
                 TextColumn::make('tahunPendaftaran.nama')
                     ->label('Tahun Pendaftaran')
-                    ->searchable(),
+                    ->sortable(Anggota::count() > 10),
                 ImageColumn::make('berkas_tte')
                     ->label('TTE')
                     ->defaultImageUrl('/img/tte.png'),
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'Aktif' => 'success',
                         'Nonaktif' => 'gray'
                     }),
                 TextColumn::make('created_at')
                     ->label('Dibuat')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
                 TextColumn::make('updated_at')
                     ->label('Diubah')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('deleted_at')
-                    ->label('Dihapus')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
             ])
-            ->filters([
-                // TrashedFilter::make(),
-            ])
+            ->filters([])
             ->actions([
                 ActionGroup::make([
                     EditAction::make(),
                     DeleteAction::make(),
-                    ForceDeleteAction::make(),
-                    RestoreAction::make(),
                 ]),
-            ])
+            ], ActionsPosition::BeforeColumns)
             ->bulkActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                    ForceDeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
-                ]),
+                DeleteBulkAction::make()
+                    ->outlined()
+                    ->hiddenLabel()
+                    ->icon('heroicon-o-trash'),
             ])
             ->striped()
             ->filtersLayout(FiltersLayout::AboveContentCollapsible)

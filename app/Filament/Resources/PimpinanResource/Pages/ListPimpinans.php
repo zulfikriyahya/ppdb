@@ -2,23 +2,24 @@
 
 namespace App\Filament\Resources\PimpinanResource\Pages;
 
-use App\Filament\Resources\PimpinanResource;
 use Filament\Actions;
-use Filament\Resources\Pages\ListRecords;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\ForceDeleteAction;
-use Filament\Tables\Actions\ForceDeleteBulkAction;
-use Filament\Tables\Actions\RestoreAction;
-use Filament\Tables\Actions\RestoreBulkAction;
-use Filament\Tables\Columns\ImageColumn;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Enums\FiltersLayout;
-use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Resources\Pages\ListRecords;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Filters\TrashedFilter;
+use App\Filament\Resources\PimpinanResource;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\RestoreBulkAction;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
 
 class ListPimpinans extends ListRecords
 {
@@ -54,7 +55,7 @@ class ListPimpinans extends ListRecords
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'Aktif' => 'success',
                         'Nonaktif' => 'gray'
                     }),
@@ -74,23 +75,18 @@ class ListPimpinans extends ListRecords
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->filters([
-                // TrashedFilter::make(),
-            ])
+            ->filters([])
             ->actions([
                 ActionGroup::make([
                     EditAction::make(),
                     DeleteAction::make(),
-                    ForceDeleteAction::make(),
-                    RestoreAction::make(),
                 ]),
-            ])
+            ], ActionsPosition::BeforeColumns)
             ->bulkActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                    ForceDeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
-                ]),
+                DeleteBulkAction::make()
+                    ->outlined()
+                    ->hiddenLabel()
+                    ->icon('heroicon-o-trash'),
             ])
             ->striped()
             ->filtersLayout(FiltersLayout::AboveContentCollapsible)
