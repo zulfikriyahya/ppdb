@@ -97,9 +97,7 @@ class EditCalonSiswa extends EditRecord
                                     TextInput::make('nama')
                                         ->label('Nama Lengkap')
                                         ->required()
-                                        ->reactive()
                                         ->disabledOn('edit')
-                                        ->reactive()
                                         ->dehydrated()
                                         ->default(fn() => Auth::user()->name)
                                         ->validationMessages([
@@ -138,7 +136,6 @@ class EditCalonSiswa extends EditRecord
                                         ->label('Nomor Induk Siswa Nasional (NISN)')
                                         ->required()
                                         ->disabledOn('edit')
-                                        ->reactive()
                                         ->dehydrated()
                                         ->default(fn() => Auth::user()->username)
                                         ->unique(ignoreRecord: true)

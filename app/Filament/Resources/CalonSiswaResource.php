@@ -130,9 +130,6 @@ class CalonSiswaResource extends Resource
                                                 TextInput::make('nama')
                                                     ->label('Nama Lengkap')
                                                     ->required()
-                                                    ->reactive()
-                                                    ->disabledOn('create')
-                                                    ->reactive()
                                                     ->dehydrated()
                                                     ->default(fn() => Auth::user()->name)
                                                     ->validationMessages([
@@ -170,8 +167,6 @@ class CalonSiswaResource extends Resource
                                                 TextInput::make('nisn')
                                                     ->label('Nomor Induk Siswa Nasional (NISN)')
                                                     ->required()
-                                                    ->disabledOn('create')
-                                                    ->reactive()
                                                     ->dehydrated()
                                                     ->default(fn() => Auth::user()->username)
                                                     ->unique(ignoreRecord: true)

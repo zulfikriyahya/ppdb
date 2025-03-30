@@ -2,13 +2,13 @@
 
 namespace App\Filament\Resources\CalonSiswaResource\Pages;
 
-use App\Filament\Resources\CalonSiswaResource;
-use App\Models\CalonSiswa;
 use Carbon\Carbon;
-use Filament\Resources\Pages\ViewRecord;
+use App\Models\CalonSiswa;
 use Filament\Support\Colors\Color;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Filament\Resources\Pages\ViewRecord;
+use App\Filament\Resources\CalonSiswaResource;
 use Torgodly\Html2Media\Actions\Html2MediaAction;
 
 class ViewCalonSiswa extends ViewRecord
@@ -35,7 +35,7 @@ class ViewCalonSiswa extends ViewRecord
                 ->format('a4', 'mm') // A4 format with mm units
                 ->enableLinks() // Enable links in PDF
                 ->margin([10, 20, 10, 20]) // Set custom margins
-                ->content(fn ($record) => view('formulir', ['record' => $record])), // Set Content
+                ->content(fn($record) => view('formulir', ['record' => $record])), // Set Content
 
             // Kartu Tes
             Html2MediaAction::make('cetak_kartu_tes')
@@ -53,14 +53,25 @@ class ViewCalonSiswa extends ViewRecord
                 ->format('a4', 'mm') // A4 format with mm units
                 ->enableLinks() // Enable links in PDF
                 ->margin([10, 20, 10, 20]) // Set custom margins
-                ->content(fn ($record) => view('kartu-tes', ['record' => $record])) // Set content
+                ->content(fn($record) => view('kartu-tes', ['record' => $record])) // Set content
                 ->visible(function () {
                     $tahunPendaftaran = DB::table('tahun_pendaftarans')
                         ->where('status', 'Aktif')
                         ->first();
+
+                    // Pastikan $tahunPendaftaran valid
+                    if (!$tahunPendaftaran || empty($tahunPendaftaran->tanggal_penerbitan_kartu_tes_mulai) || empty($tahunPendaftaran->tanggal_penerbitan_kartu_tes_selesai)) {
+                        return false;
+                    }
+
+                    try {
+                        $startDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_penerbitan_kartu_tes_mulai));
+                        $endDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_penerbitan_kartu_tes_selesai));
+                    } catch (\Exception $e) {
+                        return false; // Kembalikan false jika terjadi error format
+                    }
+
                     $currentDate = Carbon::now();
-                    $startDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_penerbitan_kartu_tes_mulai));
-                    $endDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_penerbitan_kartu_tes_selesai));
 
                     if ($currentDate->lt($startDate) || $currentDate->gt($endDate)) {
                         return false;
@@ -86,7 +97,7 @@ class ViewCalonSiswa extends ViewRecord
                 ->format('a4', 'mm') // A4 format with mm units
                 ->enableLinks() // Enable links in PDF
                 ->margin([10, 20, 10, 20]) // Set custom margins
-                ->content(fn ($record) => view('skl', ['record' => $record])) // Set content
+                ->content(fn($record) => view('skl', ['record' => $record])) // Set content
                 ->hidden(function () {
                     $tahunPendaftaran = DB::table('tahun_pendaftarans')
                         ->where('status', 'Aktif')
@@ -168,7 +179,7 @@ class ViewCalonSiswa extends ViewRecord
                 ->format('a4', 'mm') // A4 format with mm units
                 ->enableLinks() // Enable links in PDF
                 ->margin([10, 20, 10, 20]) // Set custom margins
-                ->content(fn ($record) => view('pakta-integritas', ['record' => $record])) // Set content
+                ->content(fn($record) => view('pakta-integritas', ['record' => $record])) // Set content
                 ->hidden(function () {
                     $tahunPendaftaran = DB::table('tahun_pendaftarans')
                         ->where('status', 'Aktif')

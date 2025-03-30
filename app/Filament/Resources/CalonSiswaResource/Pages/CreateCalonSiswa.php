@@ -88,9 +88,7 @@ class CreateCalonSiswa extends CreateRecord
                                     TextInput::make('nama')
                                         ->label('Nama Lengkap')
                                         ->required()
-                                        ->reactive()
                                         ->disabledOn('create')
-                                        ->reactive()
                                         ->dehydrated()
                                         ->default(fn() => Auth::user()->name)
                                         ->validationMessages([
@@ -129,7 +127,6 @@ class CreateCalonSiswa extends CreateRecord
                                         ->label('Nomor Induk Siswa Nasional (NISN)')
                                         ->required()
                                         ->disabledOn('create')
-                                        ->reactive()
                                         ->dehydrated()
                                         ->default(fn() => Auth::user()->username)
                                         ->unique(ignoreRecord: true)
@@ -337,6 +334,7 @@ class CreateCalonSiswa extends CreateRecord
                                         ]),
                                     TextInput::make('siswa_telepon')
                                         ->label('Nomor Telepon')
+                                        ->numeric()
                                         ->tel(),
                                     // Data Sekolah Asal Calon Peserta Didik Baru
                                     Select::make('sekolah_asal_id')
@@ -524,6 +522,7 @@ class CreateCalonSiswa extends CreateRecord
                                                         ->label('Website'),
                                                     TextInput::make('telepon')
                                                         ->required()
+                                                        ->numeric()
                                                         ->validationMessages([
                                                             'required' => 'Form ini wajib diisi.',
                                                         ])
@@ -964,6 +963,7 @@ class CreateCalonSiswa extends CreateRecord
 
                                     TextInput::make('ibu_telepon')
                                         ->label('Nomor Telepon')
+                                        ->numeric()
                                         ->tel()
                                         ->required()
                                         ->validationMessages([
@@ -1158,6 +1158,7 @@ class CreateCalonSiswa extends CreateRecord
                                         ]),
                                     TextInput::make('ayah_telepon')
                                         ->label('Nomor Telepon')
+                                        ->numeric()
                                         ->tel()
                                         ->required()
                                         ->validationMessages([
@@ -1346,6 +1347,7 @@ class CreateCalonSiswa extends CreateRecord
                                         ]),
                                     TextInput::make('wali_telepon')
                                         ->label('Nomor Telepon')
+                                        ->numeric()
                                         ->tel(),
                                     Select::make('wali_pekerjaan')
                                         ->label('Pekerjaan')
