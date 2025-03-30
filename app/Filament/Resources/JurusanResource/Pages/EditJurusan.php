@@ -2,9 +2,12 @@
 
 namespace App\Filament\Resources\JurusanResource\Pages;
 
-use App\Filament\Resources\JurusanResource;
-use Filament\Resources\Pages\EditRecord;
+use Filament\Forms\Form;
+use Filament\Forms\Components\Section;
 use Illuminate\Database\Eloquent\Model;
+use Filament\Forms\Components\TextInput;
+use Filament\Resources\Pages\EditRecord;
+use App\Filament\Resources\JurusanResource;
 
 class EditJurusan extends EditRecord
 {
@@ -17,5 +20,22 @@ class EditJurusan extends EditRecord
         $this->redirect($this->getResource()::getUrl('index'));
 
         return $updatedRecord;
+    }
+
+    public function form(Form $form): Form
+    {
+        return $form
+            ->schema([
+                Section::make('Jurusan')
+                    ->collapsible()
+                    ->schema([
+                        TextInput::make('nama')
+                            ->label('Nama Jurusan')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
+                    ]),
+            ]);
     }
 }

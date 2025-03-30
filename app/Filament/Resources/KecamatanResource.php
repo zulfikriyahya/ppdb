@@ -134,28 +134,12 @@ class KecamatanResource extends Resource
             ->paginationPageOptions([10, 25, 50]);
     }
 
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
-    }
-
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListKecamatans::route('/'),
             'create' => Pages\CreateKecamatan::route('/create'),
-            'view' => Pages\ViewKecamatan::route('/{record}'),
             'edit' => Pages\EditKecamatan::route('/{record}/edit'),
         ];
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
     }
 }

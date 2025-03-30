@@ -131,28 +131,12 @@ class KabupatenResource extends Resource
             ->paginationPageOptions([10, 25, 50]);
     }
 
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
-    }
-
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListKabupatens::route('/'),
             'create' => Pages\CreateKabupaten::route('/create'),
-            'view' => Pages\ViewKabupaten::route('/{record}'),
             'edit' => Pages\EditKabupaten::route('/{record}/edit'),
         ];
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
     }
 }

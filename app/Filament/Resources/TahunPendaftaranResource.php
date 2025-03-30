@@ -28,10 +28,6 @@ class TahunPendaftaranResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-
-
-
-
     public static function getPages(): array
     {
         return [
@@ -39,13 +35,5 @@ class TahunPendaftaranResource extends Resource
             'create' => CreateTahunPendaftaran::route('/create'),
             'edit' => EditTahunPendaftaran::route('/{record}/edit'),
         ];
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
     }
 }

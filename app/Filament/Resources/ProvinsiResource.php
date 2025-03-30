@@ -128,13 +128,6 @@ class ProvinsiResource extends Resource
             ->paginationPageOptions([10, 25, 50]);
     }
 
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
-    }
-
     public static function getPages(): array
     {
         return [
@@ -143,13 +136,5 @@ class ProvinsiResource extends Resource
             'view' => Pages\ViewProvinsi::route('/{record}'),
             'edit' => Pages\EditProvinsi::route('/{record}/edit'),
         ];
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
     }
 }

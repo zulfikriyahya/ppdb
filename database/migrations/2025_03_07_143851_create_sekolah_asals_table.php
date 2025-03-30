@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
@@ -29,7 +29,6 @@ return new class extends Migration
             $table->string('telepon', 13)->nullable();
             $table->string('email', 50)->nullable();
             $table->timestamps();
-            $table->softDeletes();
         });
         Schema::enableForeignKeyConstraints();
     }

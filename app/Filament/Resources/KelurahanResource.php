@@ -137,28 +137,12 @@ class KelurahanResource extends Resource
             ->paginationPageOptions([10, 25, 50]);
     }
 
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
-    }
-
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListKelurahans::route('/'),
             'create' => Pages\CreateKelurahan::route('/create'),
-            'view' => Pages\ViewKelurahan::route('/{record}'),
             'edit' => Pages\EditKelurahan::route('/{record}/edit'),
         ];
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
     }
 }

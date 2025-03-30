@@ -31,16 +31,7 @@ class InformasiResource extends Resource
         return [
             'index' => Pages\ListInformasis::route('/'),
             'create' => Pages\CreateInformasi::route('/create'),
-            'view' => Pages\ViewInformasi::route('/{record}'),
             'edit' => Pages\EditInformasi::route('/{record}/edit'),
         ];
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
     }
 }

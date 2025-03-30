@@ -31,16 +31,7 @@ class BendaharaResource extends Resource
         return [
             'index' => Pages\ListBendaharas::route('/'),
             'create' => Pages\CreateBendahara::route('/create'),
-            'view' => Pages\ViewBendahara::route('/{record}'),
             'edit' => Pages\EditBendahara::route('/{record}/edit'),
         ];
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
     }
 }

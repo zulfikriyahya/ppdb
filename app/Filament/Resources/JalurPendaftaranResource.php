@@ -31,16 +31,7 @@ class JalurPendaftaranResource extends Resource
         return [
             'index' => Pages\ListJalurPendaftarans::route('/'),
             'create' => Pages\CreateJalurPendaftaran::route('/create'),
-            'view' => Pages\ViewJalurPendaftaran::route('/{record}'),
             'edit' => Pages\EditJalurPendaftaran::route('/{record}/edit'),
         ];
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
     }
 }

@@ -129,28 +129,12 @@ class NegaraResource extends Resource
             ->paginationPageOptions([10, 25, 50]);
     }
 
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
-    }
-
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListNegaras::route('/'),
             'create' => Pages\CreateNegara::route('/create'),
-            'view' => Pages\ViewNegara::route('/{record}'),
             'edit' => Pages\EditNegara::route('/{record}/edit'),
         ];
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
     }
 }

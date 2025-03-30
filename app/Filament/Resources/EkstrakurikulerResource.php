@@ -31,16 +31,7 @@ class EkstrakurikulerResource extends Resource
         return [
             'index' => Pages\ListEkstrakurikulers::route('/'),
             'create' => Pages\CreateEkstrakurikuler::route('/create'),
-            'view' => Pages\ViewEkstrakurikuler::route('/{record}'),
             'edit' => Pages\EditEkstrakurikuler::route('/{record}/edit'),
         ];
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
     }
 }

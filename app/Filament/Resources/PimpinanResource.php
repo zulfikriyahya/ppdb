@@ -31,16 +31,7 @@ class PimpinanResource extends Resource
         return [
             'index' => Pages\ListPimpinans::route('/'),
             'create' => Pages\CreatePimpinan::route('/create'),
-            'view' => Pages\ViewPimpinan::route('/{record}'),
             'edit' => Pages\EditPimpinan::route('/{record}/edit'),
         ];
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
     }
 }

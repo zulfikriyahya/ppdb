@@ -31,16 +31,7 @@ class SekolahAsalResource extends Resource
         return [
             'index' => Pages\ListSekolahAsals::route('/'),
             'create' => Pages\CreateSekolahAsal::route('/create'),
-            'view' => Pages\ViewSekolahAsal::route('/{record}'),
             'edit' => Pages\EditSekolahAsal::route('/{record}/edit'),
         ];
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
     }
 }

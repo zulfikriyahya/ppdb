@@ -31,16 +31,7 @@ class SekretarisResource extends Resource
         return [
             'index' => Pages\ListSekretaris::route('/'),
             'create' => Pages\CreateSekretaris::route('/create'),
-            'view' => Pages\ViewSekretaris::route('/{record}'),
             'edit' => Pages\EditSekretaris::route('/{record}/edit'),
         ];
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
     }
 }

@@ -31,16 +31,7 @@ class AnggotaResource extends Resource
         return [
             'index' => Pages\ListAnggotas::route('/'),
             'create' => Pages\CreateAnggota::route('/create'),
-            'view' => Pages\ViewAnggota::route('/{record}'),
             'edit' => Pages\EditAnggota::route('/{record}/edit'),
         ];
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
     }
 }

@@ -31,16 +31,7 @@ class MataPelajaranResource extends Resource
         return [
             'index' => Pages\ListMataPelajarans::route('/'),
             'create' => Pages\CreateMataPelajaran::route('/create'),
-            'view' => Pages\ViewMataPelajaran::route('/{record}'),
             'edit' => Pages\EditMataPelajaran::route('/{record}/edit'),
         ];
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
     }
 }

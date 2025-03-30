@@ -31,16 +31,7 @@ class KetuaResource extends Resource
         return [
             'index' => Pages\ListKetuas::route('/'),
             'create' => Pages\CreateKetua::route('/create'),
-            'view' => Pages\ViewKetua::route('/{record}'),
             'edit' => Pages\EditKetua::route('/{record}/edit'),
         ];
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
     }
 }

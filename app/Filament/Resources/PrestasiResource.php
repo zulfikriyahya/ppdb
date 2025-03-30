@@ -181,13 +181,6 @@ class PrestasiResource extends Resource
             ->paginationPageOptions([10, 25, 50]);
     }
 
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
-    }
-
     public static function getPages(): array
     {
         return [
@@ -196,13 +189,5 @@ class PrestasiResource extends Resource
             'view' => Pages\ViewPrestasi::route('/{record}'),
             'edit' => Pages\EditPrestasi::route('/{record}/edit'),
         ];
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
     }
 }
