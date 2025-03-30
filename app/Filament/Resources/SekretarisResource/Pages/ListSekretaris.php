@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\SekretarisResource\Pages;
 
 use Filament\Actions;
+use App\Models\Sekretaris;
 use Filament\Tables\Table;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -45,13 +46,12 @@ class ListSekretaris extends ListRecords
                     ->defaultImageUrl('/img/avatar.png'),
                 TextColumn::make('nama')
                     ->label('Nama Lengkap')
-                    ->searchable(),
+                    ->searchable(Sekretaris::count() > 10),
                 TextColumn::make('nip')
-                    ->label('NIP')
-                    ->searchable(),
+                    ->label('NIP'),
                 TextColumn::make('tahunPendaftaran.nama')
                     ->label('Tahun Pendaftaran')
-                    ->searchable(),
+                    ->sortable(Sekretaris::count() > 10),
                 ImageColumn::make('berkas_tte')
                     ->label('TTE')
                     ->defaultImageUrl('/img/tte.png'),

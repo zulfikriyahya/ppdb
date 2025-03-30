@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\PimpinanResource\Pages;
 
 use Filament\Actions;
+use App\Models\Pimpinan;
 use Filament\Tables\Table;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -45,13 +46,12 @@ class ListPimpinans extends ListRecords
                     ->defaultImageUrl('/img/avatar.png'),
                 TextColumn::make('nama')
                     ->label('Nama Lengkap')
-                    ->searchable(),
+                    ->searchable(Pimpinan::count() > 10),
                 TextColumn::make('nip')
-                    ->label('NIP')
-                    ->searchable(),
+                    ->label('NIP'),
                 TextColumn::make('tahunPendaftaran.nama')
                     ->label('Tahun Pendaftaran')
-                    ->searchable(),
+                    ->sortable(Pimpinan::count() > 10),
                 ImageColumn::make('berkas_tte')
                     ->label('TTE')
                     ->defaultImageUrl('/img/tte.png'),

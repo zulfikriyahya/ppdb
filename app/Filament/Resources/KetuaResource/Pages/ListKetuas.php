@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\KetuaResource\Pages;
 
+use App\Models\Ketua;
 use Filament\Actions;
 use Filament\Tables\Table;
 use Filament\Tables\Actions\EditAction;
@@ -45,13 +46,12 @@ class ListKetuas extends ListRecords
                     ->defaultImageUrl('/img/avatar.png'),
                 TextColumn::make('nama')
                     ->label('Nama Lengkap')
-                    ->searchable(),
+                    ->searchable(Ketua::count() > 10),
                 TextColumn::make('nip')
-                    ->label('NIP')
-                    ->searchable(),
+                    ->label('NIP'),
                 TextColumn::make('tahunPendaftaran.nama')
                     ->label('Tahun Pendaftaran')
-                    ->searchable(),
+                    ->sortable(Ketua::count() > 10),
                 ImageColumn::make('berkas_tte')
                     ->label('TTE')
                     ->defaultImageUrl('/img/tte.png'),
