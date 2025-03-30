@@ -29,7 +29,10 @@ class ListProvinsis extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->outlined()
+                ->hiddenLabel()
+                ->icon('heroicon-o-plus'),
         ];
     }
 
