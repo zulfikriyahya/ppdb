@@ -4,8 +4,6 @@ namespace App\Filament\Resources;
 
 use App\Models\Ekstrakurikuler;
 use Filament\Resources\Resource;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\EkstrakurikulerResource\Pages;
 
 class EkstrakurikulerResource extends Resource

@@ -4,9 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Models\Informasi;
 use Filament\Resources\Resource;
-use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\InformasiResource\Pages;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class InformasiResource extends Resource
 {

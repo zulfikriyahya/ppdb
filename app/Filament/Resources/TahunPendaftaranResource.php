@@ -4,8 +4,6 @@ namespace App\Filament\Resources;
 
 use App\Models\TahunPendaftaran;
 use Filament\Resources\Resource;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\TahunPendaftaranResource\Pages\EditTahunPendaftaran;
 use App\Filament\Resources\TahunPendaftaranResource\Pages\ListTahunPendaftarans;
 use App\Filament\Resources\TahunPendaftaranResource\Pages\CreateTahunPendaftaran;

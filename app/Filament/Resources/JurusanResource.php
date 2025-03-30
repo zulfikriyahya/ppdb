@@ -4,9 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Models\Jurusan;
 use Filament\Resources\Resource;
-use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\JurusanResource\Pages;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class JurusanResource extends Resource
 {

@@ -4,9 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Models\Bendahara;
 use Filament\Resources\Resource;
-use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\BendaharaResource\Pages;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class BendaharaResource extends Resource
 {

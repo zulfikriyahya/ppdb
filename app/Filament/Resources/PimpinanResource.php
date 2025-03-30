@@ -4,9 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Models\Pimpinan;
 use Filament\Resources\Resource;
-use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\PimpinanResource\Pages;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class PimpinanResource extends Resource
 {

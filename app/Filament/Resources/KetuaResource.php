@@ -4,9 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Models\Ketua;
 use Filament\Resources\Resource;
-use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\KetuaResource\Pages;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class KetuaResource extends Resource
 {
