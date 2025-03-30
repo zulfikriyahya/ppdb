@@ -2372,22 +2372,10 @@ class CalonSiswaResource extends Resource
             ->paginationPageOptions([10, 25, 50]);
     }
 
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
-    }
-
     public static function getPages(): array
     {
         if (Auth::user() && Auth::user()->username !== 'administrator') {
-            return [
-                // 'index' => Pages\ListCalonSiswas::route('/'),
-                // 'create' => Pages\CreateCalonSiswa::route('/create'),
-                // 'view' => Pages\ViewCalonSiswa::route('/{record}'),
-                // 'edit' => Pages\EditCalonSiswa::route('/{record}/edit'),
-            ];
+            return [];
         }
 
         return [
