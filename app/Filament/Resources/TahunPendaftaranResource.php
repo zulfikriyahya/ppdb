@@ -2,11 +2,11 @@
 
 namespace App\Filament\Resources;
 
-use App\Models\TahunPendaftaran;
-use Filament\Resources\Resource;
+use App\Filament\Resources\TahunPendaftaranResource\Pages\CreateTahunPendaftaran;
 use App\Filament\Resources\TahunPendaftaranResource\Pages\EditTahunPendaftaran;
 use App\Filament\Resources\TahunPendaftaranResource\Pages\ListTahunPendaftarans;
-use App\Filament\Resources\TahunPendaftaranResource\Pages\CreateTahunPendaftaran;
+use App\Models\TahunPendaftaran;
+use Filament\Resources\Resource;
 
 class TahunPendaftaranResource extends Resource
 {

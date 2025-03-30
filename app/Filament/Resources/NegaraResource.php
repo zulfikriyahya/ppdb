@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\NegaraResource\Pages;
 use App\Models\Negara;
 use Filament\Resources\Resource;
-use App\Filament\Resources\NegaraResource\Pages;
 
 class NegaraResource extends Resource
 {

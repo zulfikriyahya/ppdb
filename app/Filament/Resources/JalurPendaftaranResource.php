@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\JalurPendaftaranResource\Pages;
 use App\Models\JalurPendaftaran;
 use Filament\Resources\Resource;
-use App\Filament\Resources\JalurPendaftaranResource\Pages;
 
 class JalurPendaftaranResource extends Resource
 {

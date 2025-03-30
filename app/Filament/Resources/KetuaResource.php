@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\KetuaResource\Pages;
 use App\Models\Ketua;
 use Filament\Resources\Resource;
-use App\Filament\Resources\KetuaResource\Pages;
 
 class KetuaResource extends Resource
 {

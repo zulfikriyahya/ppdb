@@ -2,23 +2,23 @@
 
 namespace App\Filament\Resources\KetuaResource\Pages;
 
-use Filament\Tables;
-use Filament\Actions;
-use Filament\Tables\Table;
-use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Columns\ImageColumn;
-use Filament\Tables\Enums\FiltersLayout;
 use App\Filament\Resources\KetuaResource;
+use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ForceDeleteAction;
-use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Actions\ForceDeleteBulkAction;
+use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Actions\RestoreBulkAction;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Table;
 
 class ListKetuas extends ListRecords
 {
@@ -30,6 +30,7 @@ class ListKetuas extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
+
     public function table(Table $table): Table
     {
         return $table
@@ -53,7 +54,7 @@ class ListKetuas extends ListRecords
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'Aktif' => 'success',
                         'Nonaktif' => 'gray'
                     }),
@@ -74,7 +75,7 @@ class ListKetuas extends ListRecords
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                // TrashedFilter::make(),
             ])
             ->actions([
                 ActionGroup::make([

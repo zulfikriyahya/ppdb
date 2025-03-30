@@ -2,13 +2,13 @@
 
 namespace App\Filament\Resources\PrestasiResource\Pages;
 
-use Filament\Forms\Form;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Section;
-use Illuminate\Database\Eloquent\Model;
-use Filament\Forms\Components\TextInput;
-use Filament\Resources\Pages\EditRecord;
 use App\Filament\Resources\PrestasiResource;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
 
 class EditPrestasi extends EditRecord
 {
@@ -65,14 +65,14 @@ class EditPrestasi extends EditRecord
                                         'Provinsi' => 'Provinsi',
                                         'Kabupaten/Kota' => 'Kabupaten/Kota',
                                     ])
-                                    ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                    ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
                                 Select::make('kategori')
                                     ->label('Kategori')
                                     ->options([
                                         'Regu/Kelompok' => 'Regu/Kelompok',
                                         'Individu' => 'Individu',
                                     ])
-                                    ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                    ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
                                 Select::make('peringkat')
                                     ->label('Peringkat')
                                     ->options([
@@ -80,14 +80,14 @@ class EditPrestasi extends EditRecord
                                         '2' => '2',
                                         '3' => '3',
                                     ])
-                                    ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                    ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
                             ])
                             ->columns([
                                 'sm' => '100%',
                                 'md' => 3,
                                 'lg' => 3,
                             ])
-                            ->visible(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                            ->visible(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
                     ])
                     ->columns([
                         'sm' => '100%',

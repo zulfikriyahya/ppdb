@@ -2,17 +2,18 @@
 
 namespace App\Filament\Resources\AnggotaResource\Pages;
 
-use Filament\Forms\Form;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\FileUpload;
-use Filament\Resources\Pages\CreateRecord;
 use App\Filament\Resources\AnggotaResource;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Resources\Pages\CreateRecord;
 
 class CreateAnggota extends CreateRecord
 {
     protected static string $resource = AnggotaResource::class;
+
     public function form(Form $form): Form
     {
         return $form
@@ -37,7 +38,7 @@ class CreateAnggota extends CreateRecord
                             ->prefix('NIP'),
                         Select::make('tahun_pendaftaran_id')
                             ->label('Tahun Pendaftaran')
-                            ->relationship('tahunPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
+                            ->relationship('tahunPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif'))
                             ->required()
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',

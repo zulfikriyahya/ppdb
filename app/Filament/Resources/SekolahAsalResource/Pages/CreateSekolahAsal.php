@@ -2,20 +2,20 @@
 
 namespace App\Filament\Resources\SekolahAsalResource\Pages;
 
-use Filament\Forms\Get;
-use Filament\Forms\Set;
-use App\Models\Provinsi;
-use Filament\Forms\Form;
+use App\Filament\Resources\SekolahAsalResource;
 use App\Models\Kabupaten;
 use App\Models\Kecamatan;
 use App\Models\Kelurahan;
-use Illuminate\Support\Collection;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\TextInput;
+use App\Models\Provinsi;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Resources\Pages\CreateRecord;
-use App\Filament\Resources\SekolahAsalResource;
+use Illuminate\Support\Collection;
 
 class CreateSekolahAsal extends CreateRecord
 {
@@ -117,7 +117,7 @@ class CreateSekolahAsal extends CreateRecord
                             }),
                         Select::make('provinsi_id')
                             ->label('Provinsi')
-                            ->options(fn(Get $get): Collection => Provinsi::query()
+                            ->options(fn (Get $get): Collection => Provinsi::query()
                                 ->where('negara_id', $get('negara_id'))
                                 ->pluck('nama', 'id'))
                             ->required()
@@ -134,7 +134,7 @@ class CreateSekolahAsal extends CreateRecord
                             }),
                         Select::make('kabupaten_id')
                             ->label('Kabupaten')
-                            ->options(fn(Get $get): Collection => Kabupaten::query()
+                            ->options(fn (Get $get): Collection => Kabupaten::query()
                                 ->where('provinsi_id', $get('provinsi_id'))
                                 ->pluck('nama', 'id'))
                             ->required()
@@ -150,7 +150,7 @@ class CreateSekolahAsal extends CreateRecord
                             }),
                         Select::make('kecamatan_id')
                             ->label('Kecamatan')
-                            ->options(fn(Get $get): Collection => Kecamatan::query()
+                            ->options(fn (Get $get): Collection => Kecamatan::query()
                                 ->where('kabupaten_id', $get('kabupaten_id'))
                                 ->pluck('nama', 'id'))
                             ->required()
@@ -165,7 +165,7 @@ class CreateSekolahAsal extends CreateRecord
                             }),
                         Select::make('kelurahan_id')
                             ->label('Kelurahan')
-                            ->options(fn(Get $get): Collection => Kelurahan::query()
+                            ->options(fn (Get $get): Collection => Kelurahan::query()
                                 ->where('kecamatan_id', $get('kecamatan_id'))
                                 ->pluck('nama', 'id'))
                             ->required()

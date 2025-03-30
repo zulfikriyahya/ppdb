@@ -2,13 +2,13 @@
 
 namespace App\Filament\Resources\NegaraResource\Pages;
 
-use Filament\Forms\Form;
-use Filament\Forms\Components\Section;
-use Illuminate\Database\Eloquent\Model;
-use Filament\Forms\Components\TextInput;
-use Filament\Resources\Pages\EditRecord;
-use Filament\Forms\Components\FileUpload;
 use App\Filament\Resources\NegaraResource;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
 
 class EditNegara extends EditRecord
 {

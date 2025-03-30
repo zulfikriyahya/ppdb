@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\AnggotaResource\Pages;
 use App\Models\Anggota;
 use Filament\Resources\Resource;
-use App\Filament\Resources\AnggotaResource\Pages;
 
 class AnggotaResource extends Resource
 {

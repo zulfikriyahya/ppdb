@@ -2,12 +2,12 @@
 
 namespace App\Filament\Resources\EkstrakurikulerResource\Pages;
 
-use Filament\Forms\Form;
-use Filament\Forms\Components\Section;
-use Illuminate\Database\Eloquent\Model;
-use Filament\Forms\Components\TextInput;
-use Filament\Resources\Pages\EditRecord;
 use App\Filament\Resources\EkstrakurikulerResource;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
 
 class EditEkstrakurikuler extends EditRecord
 {
@@ -21,6 +21,7 @@ class EditEkstrakurikuler extends EditRecord
 
         return $updatedRecord;
     }
+
     public function form(Form $form): Form
     {
         return $form

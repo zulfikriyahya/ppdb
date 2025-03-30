@@ -2,12 +2,12 @@
 
 namespace App\Filament\Resources\MataPelajaranResource\Pages;
 
-use Filament\Forms\Form;
-use Filament\Forms\Components\Section;
-use Illuminate\Database\Eloquent\Model;
-use Filament\Forms\Components\TextInput;
-use Filament\Resources\Pages\EditRecord;
 use App\Filament\Resources\MataPelajaranResource;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
 
 class EditMataPelajaran extends EditRecord
 {

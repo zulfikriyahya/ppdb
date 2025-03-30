@@ -2,17 +2,16 @@
 
 namespace App\Filament\Resources\AnggotaResource\Pages;
 
-use Filament\Forms\Form;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Section;
-use Illuminate\Database\Eloquent\Model;
-use Filament\Forms\Components\TextInput;
-use Filament\Resources\Pages\EditRecord;
-use Filament\Forms\Components\FileUpload;
 use App\Filament\Resources\AnggotaResource;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
 
 class EditAnggota extends EditRecord
-
 {
     // Override handleRecordUpdate dengan tanda tangan yang sesuai
     protected function handleRecordUpdate(Model $record, array $data): Model
@@ -22,7 +21,9 @@ class EditAnggota extends EditRecord
 
         return $updatedRecord;
     }
+
     protected static string $resource = AnggotaResource::class;
+
     public function form(Form $form): Form
     {
         return $form
@@ -47,7 +48,7 @@ class EditAnggota extends EditRecord
                             ->prefix('NIP'),
                         Select::make('tahun_pendaftaran_id')
                             ->label('Tahun Pendaftaran')
-                            ->relationship('tahunPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
+                            ->relationship('tahunPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif'))
                             ->required()
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',

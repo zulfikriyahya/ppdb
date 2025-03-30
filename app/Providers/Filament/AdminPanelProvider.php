@@ -2,37 +2,36 @@
 
 namespace App\Providers\Filament;
 
-use Carbon\Carbon;
-use Filament\Pages;
-use Filament\Panel;
-use Filament\Widgets;
-use Filament\PanelProvider;
-use Filament\Navigation\MenuItem;
-use Filament\Support\Colors\Color;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Filament\Support\Enums\MaxWidth;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Schema;
-use App\Filament\Pages\Auth\LoginCustom;
-use App\Filament\Resources\UserResource;
-use Filament\Http\Middleware\Authenticate;
-use App\Filament\Pages\Auth\RegisterCustom;
 use App\Filament\Pages\Auth\EditProfileCustom;
-use Illuminate\Session\Middleware\StartSession;
-use Devonab\FilamentEasyFooter\EasyFooterPlugin;
-use Illuminate\Cookie\Middleware\EncryptCookies;
-use Filament\Http\Middleware\AuthenticateSession;
-use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
+use App\Filament\Pages\Auth\LoginCustom;
+use App\Filament\Pages\Auth\RegisterCustom;
+use App\Filament\Resources\UserResource;
+use App\Filament\Resources\UserResource\Widgets\UserRegisters;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
-use Illuminate\Routing\Middleware\SubstituteBindings;
-use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Carbon\Carbon;
+use Devonab\FilamentEasyFooter\EasyFooterPlugin;
+use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
+use Filament\Http\Middleware\Authenticate;
+use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Filament\Navigation\MenuItem;
+use Filament\Pages;
+use Filament\Panel;
+use Filament\PanelProvider;
+use Filament\Support\Colors\Color;
+use Filament\Support\Enums\MaxWidth;
+use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
-use App\Filament\Resources\UserResource\Widgets\UserRegisters;
+use Illuminate\Cookie\Middleware\EncryptCookies;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -60,9 +59,9 @@ class AdminPanelProvider extends PanelProvider
             ->userMenuItems([
                 MenuItem::make()
                     ->label('Manajemen Pengguna')
-                    ->url(fn(): string => UserResource::getUrl())
+                    ->url(fn (): string => UserResource::getUrl())
                     ->icon('heroicon-o-identification')
-                    ->visible(fn() => Auth::user()->username === 'administrator'),
+                    ->visible(fn () => Auth::user()->username === 'administrator'),
             ])
             ->default()
             ->spa()
@@ -165,7 +164,8 @@ class AdminPanelProvider extends PanelProvider
             }
         } catch (\Exception $e) {
             // Tangani error (misalnya, masalah parsing tanggal atau database tidak tersedia)
-            Log::error('Error memproses tanggal atau database: ' . $e->getMessage());
+            Log::error('Error memproses tanggal atau database: '.$e->getMessage());
+
             return LoginCustom::class;
         }
 

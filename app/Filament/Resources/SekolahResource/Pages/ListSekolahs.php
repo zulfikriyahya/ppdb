@@ -2,19 +2,19 @@
 
 namespace App\Filament\Resources\SekolahResource\Pages;
 
+use App\Filament\Resources\SekolahResource;
 use App\Models\Sekolah;
-use Filament\Tables\Table;
 use Filament\Actions\CreateAction;
+use Filament\Resources\Pages\ListRecords;
 use Filament\Support\Enums\FontWeight;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\ImageColumn;
-use Filament\Resources\Pages\ListRecords;
-use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\ActionsPosition;
-use App\Filament\Resources\SekolahResource;
+use Filament\Tables\Table;
 
 class ListSekolahs extends ListRecords
 {
@@ -26,7 +26,7 @@ class ListSekolahs extends ListRecords
             CreateAction::make()
                 ->icon('heroicon-o-plus-circle')
                 ->outlined()
-                ->visible(fn() => Sekolah::count() === 0),
+                ->visible(fn () => Sekolah::count() === 0),
         ];
     }
 
@@ -38,9 +38,9 @@ class ListSekolahs extends ListRecords
                     ->label('Logo'),
                 TextColumn::make('nama')
                     ->description(
-                        fn(Sekolah $record) => implode(' | ', array_filter([
-                            'NPSN: ' . $record->npsn ?? null,
-                            'NSS: ' . $record->nss ?? null,
+                        fn (Sekolah $record) => implode(' | ', array_filter([
+                            'NPSN: '.$record->npsn ?? null,
+                            'NSS: '.$record->nss ?? null,
                         ]))
                     )
                     ->wrap()
@@ -48,13 +48,13 @@ class ListSekolahs extends ListRecords
                     ->label('Nama Instansi'),
                 TextColumn::make('akreditasi')
                     ->label('Akreditasi')
-                    ->suffix(fn(string $state): string => match ($state) {
+                    ->suffix(fn (string $state): string => match ($state) {
                         'A' => ' (Sangat Baik)',
                         'B' => ' (Baik)',
                         'C' => ' (Cukup)',
                         'D' => ' (Kurang)'
                     })
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'A' => 'primary',
                         'B' => 'success',
                         'C' => 'warning',
@@ -68,7 +68,7 @@ class ListSekolahs extends ListRecords
                 TextColumn::make('alamat')
                     ->label('Alamat Lengkap')
                     ->description(
-                        fn(Sekolah $record) => implode(', ', array_filter([
+                        fn (Sekolah $record) => implode(', ', array_filter([
                             $record->kelurahan->nama ?? null,
                             $record->kecamatan->nama ?? null,
                             $record->kabupaten->nama ?? null,

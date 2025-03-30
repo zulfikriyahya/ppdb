@@ -2,17 +2,16 @@
 
 namespace App\Filament\Resources\JalurPendaftaranResource\Pages;
 
-use Filament\Forms\Form;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\TextInput;
-use Filament\Resources\Pages\CreateRecord;
 use App\Filament\Resources\JalurPendaftaranResource;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Resources\Pages\CreateRecord;
 
 class CreateJalurPendaftaran extends CreateRecord
 {
     protected static string $resource = JalurPendaftaranResource::class;
-
 
     public function form(Form $form): Form
     {
@@ -58,7 +57,7 @@ class CreateJalurPendaftaran extends CreateRecord
 
                         Select::make('tahun_pendaftaran_id')
                             ->label('Tahun Pendaftaran')
-                            ->relationship('tahunPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
+                            ->relationship('tahunPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif'))
                             ->required()
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',

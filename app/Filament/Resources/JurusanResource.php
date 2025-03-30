@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\JurusanResource\Pages;
 use App\Models\Jurusan;
 use Filament\Resources\Resource;
-use App\Filament\Resources\JurusanResource\Pages;
 
 class JurusanResource extends Resource
 {

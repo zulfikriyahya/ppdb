@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\SekretarisResource\Pages;
 use App\Models\Sekretaris;
 use Filament\Resources\Resource;
-use App\Filament\Resources\SekretarisResource\Pages;
 
 class SekretarisResource extends Resource
 {

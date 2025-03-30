@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\InformasiResource\Pages;
 use App\Models\Informasi;
 use Filament\Resources\Resource;
-use App\Filament\Resources\InformasiResource\Pages;
 
 class InformasiResource extends Resource
 {
