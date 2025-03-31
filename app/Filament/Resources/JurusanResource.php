@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\JurusanResource\Pages;
 use App\Models\Jurusan;
 use Filament\Resources\Resource;
+use App\Filament\Resources\JurusanResource\Pages;
 
 class JurusanResource extends Resource
 {
@@ -22,7 +22,7 @@ class JurusanResource extends Resource
 
     protected static bool $shouldRegisterNavigation = true;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-bookmark-square';
 
     public static function getPages(): array
     {

@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\JalurPendaftaranResource\Pages;
 use App\Models\JalurPendaftaran;
 use Filament\Resources\Resource;
+use App\Filament\Resources\JalurPendaftaranResource\Pages;
 
 class JalurPendaftaranResource extends Resource
 {
@@ -22,7 +22,7 @@ class JalurPendaftaranResource extends Resource
 
     protected static bool $shouldRegisterNavigation = true;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-arrows-right-left';
 
     public static function getPages(): array
     {

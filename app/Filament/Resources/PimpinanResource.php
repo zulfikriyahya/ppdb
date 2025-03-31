@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\PimpinanResource\Pages;
 use App\Models\Pimpinan;
 use Filament\Resources\Resource;
+use App\Filament\Resources\PimpinanResource\Pages;
 
 class PimpinanResource extends Resource
 {
@@ -22,7 +22,7 @@ class PimpinanResource extends Resource
 
     protected static bool $shouldRegisterNavigation = true;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-user-circle';
 
     public static function getPages(): array
     {

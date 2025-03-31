@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\KelasResource\Pages;
 use App\Models\Kelas;
 use Filament\Resources\Resource;
+use App\Filament\Resources\KelasResource\Pages;
 
 class KelasResource extends Resource
 {
@@ -22,7 +22,7 @@ class KelasResource extends Resource
 
     protected static bool $shouldRegisterNavigation = true;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-building-storefront';
 
     public static function getPages(): array
     {

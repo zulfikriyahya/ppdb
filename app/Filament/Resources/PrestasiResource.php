@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\PrestasiResource\Pages;
 use App\Models\Prestasi;
 use Filament\Resources\Resource;
+use App\Filament\Resources\PrestasiResource\Pages;
 
 class PrestasiResource extends Resource
 {
@@ -22,7 +22,7 @@ class PrestasiResource extends Resource
 
     protected static bool $shouldRegisterNavigation = true;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
 
     public static function getPages(): array
     {

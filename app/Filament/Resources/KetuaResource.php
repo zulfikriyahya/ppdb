@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\KetuaResource\Pages;
 use App\Models\Ketua;
 use Filament\Resources\Resource;
+use App\Filament\Resources\KetuaResource\Pages;
 
 class KetuaResource extends Resource
 {
@@ -22,7 +22,7 @@ class KetuaResource extends Resource
 
     protected static bool $shouldRegisterNavigation = true;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-user-circle';
 
     public static function getPages(): array
     {

@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\NegaraResource\Pages;
 use App\Models\Negara;
 use Filament\Resources\Resource;
+use App\Filament\Resources\NegaraResource\Pages;
 
 class NegaraResource extends Resource
 {
@@ -22,7 +22,7 @@ class NegaraResource extends Resource
 
     protected static bool $shouldRegisterNavigation = true;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-globe-asia-australia';
 
     public static function getPages(): array
     {

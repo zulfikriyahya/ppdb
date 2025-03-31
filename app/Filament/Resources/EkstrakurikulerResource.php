@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\EkstrakurikulerResource\Pages;
 use App\Models\Ekstrakurikuler;
 use Filament\Resources\Resource;
+use App\Filament\Resources\EkstrakurikulerResource\Pages;
 
 class EkstrakurikulerResource extends Resource
 {
@@ -22,7 +22,7 @@ class EkstrakurikulerResource extends Resource
 
     protected static bool $shouldRegisterNavigation = true;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-sparkles';
 
     public static function getPages(): array
     {

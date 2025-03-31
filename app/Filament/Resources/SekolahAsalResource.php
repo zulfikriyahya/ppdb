@@ -25,7 +25,7 @@ class SekolahAsalResource extends Resource
 
     protected static bool $shouldRegisterNavigation = true;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-building-library';
 
     public static function getPages(): array
     {

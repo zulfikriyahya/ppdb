@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\InformasiResource\Pages;
 use App\Models\Informasi;
 use Filament\Resources\Resource;
+use App\Filament\Resources\InformasiResource\Pages;
 
 class InformasiResource extends Resource
 {
@@ -22,7 +22,7 @@ class InformasiResource extends Resource
 
     protected static bool $shouldRegisterNavigation = true;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-information-circle';
 
     public static function getPages(): array
     {

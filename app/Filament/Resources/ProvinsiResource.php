@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\ProvinsiResource\Pages;
 use App\Models\Provinsi;
 use Filament\Resources\Resource;
+use App\Filament\Resources\ProvinsiResource\Pages;
 
 class ProvinsiResource extends Resource
 {
@@ -22,7 +22,7 @@ class ProvinsiResource extends Resource
 
     protected static bool $shouldRegisterNavigation = true;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-map';
 
     public static function getPages(): array
     {

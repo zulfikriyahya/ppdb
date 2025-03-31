@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\MataPelajaranResource\Pages;
 use App\Models\MataPelajaran;
 use Filament\Resources\Resource;
+use App\Filament\Resources\MataPelajaranResource\Pages;
 
 class MataPelajaranResource extends Resource
 {
@@ -22,7 +22,7 @@ class MataPelajaranResource extends Resource
 
     protected static bool $shouldRegisterNavigation = true;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-book-open';
 
     public static function getPages(): array
     {

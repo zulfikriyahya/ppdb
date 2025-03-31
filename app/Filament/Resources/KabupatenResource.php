@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\KabupatenResource\Pages;
 use App\Models\Kabupaten;
 use Filament\Resources\Resource;
+use App\Filament\Resources\KabupatenResource\Pages;
 
 class KabupatenResource extends Resource
 {
@@ -22,7 +22,7 @@ class KabupatenResource extends Resource
 
     protected static bool $shouldRegisterNavigation = true;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-map';
 
     public static function getPages(): array
     {

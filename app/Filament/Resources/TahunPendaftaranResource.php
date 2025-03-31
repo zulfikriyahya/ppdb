@@ -2,11 +2,11 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\TahunPendaftaranResource\Pages\CreateTahunPendaftaran;
-use App\Filament\Resources\TahunPendaftaranResource\Pages\EditTahunPendaftaran;
-use App\Filament\Resources\TahunPendaftaranResource\Pages\ListTahunPendaftarans;
 use App\Models\TahunPendaftaran;
 use Filament\Resources\Resource;
+use App\Filament\Resources\TahunPendaftaranResource\Pages\EditTahunPendaftaran;
+use App\Filament\Resources\TahunPendaftaranResource\Pages\ListTahunPendaftarans;
+use App\Filament\Resources\TahunPendaftaranResource\Pages\CreateTahunPendaftaran;
 
 class TahunPendaftaranResource extends Resource
 {
@@ -24,7 +24,7 @@ class TahunPendaftaranResource extends Resource
 
     protected static bool $shouldRegisterNavigation = true;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
 
     public static function getPages(): array
     {
