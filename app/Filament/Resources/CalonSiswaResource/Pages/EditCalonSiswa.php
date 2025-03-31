@@ -643,7 +643,7 @@ class EditCalonSiswa extends EditRecord
                                     // Data Prestasi Calon Peserta Didik Baru
                                     Select::make('prestasi_id')
                                         ->label('Prestasi')
-                                        ->helperText(new HtmlString('<small><i>Abaikan jika Jalur Pendaftaran yang dipilih bukan Jalur Prestasi.<sup style="color:red">*</sup></i></small>'))
+                                        ->helperText(new HtmlString('<small><i>Pilih prestasi yang paling tinggi jika memiliki lebih dari satu prestasi.<br>Abaikan jika Jalur Pendaftaran yang dipilih bukan Jalur Prestasi.<sup style="color:red">*</sup></i></small>'))
                                         ->relationship('prestasi', 'nama')
                                         // ->multiple() // array tipe data
                                         ->preload()
