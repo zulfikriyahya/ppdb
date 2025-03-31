@@ -385,7 +385,7 @@ class CalonSiswaResource extends Resource
                                                         'required' => 'Form ini wajib diisi.',
                                                     ])
                                                     ->native(false)
-                                                    ->searchable()
+
                                                     ->preload()
                                                     ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->nama} | NPSN: {$record->npsn}")
                                                     ->createOptionForm([
@@ -662,13 +662,13 @@ class CalonSiswaResource extends Resource
                                                             ]),
                                                     ])
                                                     ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->jenis} | {$record->nama} | {$record->tingkat} | {$record->kategori} | {$record->peringkat}")
-                                                    ->searchable()
+
                                                     ->native(false),
                                                 // Data Peminatan Ekstrakurikuler Calon Peserta Didik Baru
                                                 Select::make('ekstrakurikuler_id')
                                                     ->label('Peminatan Ekstrakurikuler')
                                                     ->required()
-                                                    ->searchable()
+
                                                     ->preload()
                                                     ->native(false)
                                                     ->relationship('ekstrakurikuler', 'nama')
@@ -678,7 +678,7 @@ class CalonSiswaResource extends Resource
                                                 // Data Peminatan Pelajaran Calon Peserta Didik Baru
                                                 Select::make('mata_pelajaran_id')
                                                     ->label('Peminatan Mata Pelajaran')
-                                                    ->searchable()
+
                                                     ->preload()
                                                     ->required()
                                                     ->native(false)
@@ -1648,19 +1648,10 @@ class CalonSiswaResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->groups([
-                Group::make('jalurPendaftaran.nama')
-                    ->label('Jalur Pendaftaran'),
-                Group::make('status_pendaftaran')
-                    ->label('Status Pendaftaran'),
-                // Group::make('kelas.nama')
-                //     ->label('Kelas'),
-            ])
             ->columns([
                 ImageColumn::make('berkas_foto')
                     ->label('Foto')
-                    ->circular()
-                    ->searchable(),
+                    ->circular(),
 
                 TextColumn::make('jalurPendaftaran.nama')
                     ->label('Jalur Pendaftaran')
@@ -1678,8 +1669,7 @@ class CalonSiswaResource extends Resource
                         'Afirmasi' => 'heroicon-o-gift',
                         'Zonasi' => 'heroicon-o-map',
                         'Mutasi' => 'heroicon-o-arrows-right-left',
-                    })
-                    ->sortable(),
+                    }),
 
                 TextColumn::make('status_pendaftaran')
                     ->label('Status Pendaftaran')
@@ -1702,7 +1692,8 @@ class CalonSiswaResource extends Resource
                         'Diterima Di Kelas Reguler' => 'heroicon-o-shield-check',
                         'Diterima Di Kelas Unggulan' => 'heroicon-o-shield-check',
                     })
-                    ->sortable(),
+
+                    ->visible(Auth::user()->username === 'administrator'),
 
                 TextColumn::make('kelas.nama')
                     ->label('Diterima Di Kelas')
@@ -1726,117 +1717,94 @@ class CalonSiswaResource extends Resource
                         }
 
                         return false;
-                    })
-                    ->sortable(),
+                    }),
 
                 TextColumn::make('nama')
                     ->label('Nama Lengkap')
-                    ->searchable(),
-
+                    ->searchable(Auth::user()->username === 'administrator' && CalonSiswa::count() > 10),
                 TextColumn::make('jenis_kelamin')
-                    ->label('Jenis Kelamin')
-                    ->searchable(),
-
+                    ->label('Jenis Kelamin'),
                 TextColumn::make('nik')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('NIK')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->searchable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('kk')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('KK')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->searchable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('nisn')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('NISN')
-                    ->searchable(),
+                    ->searchable(Auth::user()->username === 'administrator' && CalonSiswa::count() > 10),
                 TextColumn::make('sekolahAsal.nama')
-                    ->label('Sekolah Asal')
-                    ->sortable(),
+                    ->label('Sekolah Asal'),
                 TextColumn::make('tempat_lahir')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Tempat Lahir')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->searchable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('tanggal_lahir')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Tanggal Lahir')
                     ->toggleable(isToggledHiddenByDefault: true)
-                    ->date('d F Y H:i:s')
-                    ->sortable(),
+                    ->date('d F Y H:i:s'),
                 TextColumn::make('tahun_lulus')
-                    ->label('Tahun Lulus')
-                    ->sortable(),
+                    ->label('Tahun Lulus'),
                 TextColumn::make('golongan_darah')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Golongan Darah')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->searchable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('agama')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Agama')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->searchable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('anak_ke')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Anak Ke')
                     ->toggleable(isToggledHiddenByDefault: true)
-                    ->numeric()
-                    ->sortable(),
+                    ->numeric(),
                 TextColumn::make('jumlah_saudara')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Jumlah Saudara')
                     ->toggleable(isToggledHiddenByDefault: true)
-                    ->numeric()
-                    ->sortable(),
+                    ->numeric(),
                 TextColumn::make('tinggal_bersama')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Tinggal Bersama')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->searchable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('jarak_ke_sekolah')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Jarak Ke Sekolah')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->searchable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('disabilitas')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Disabilitas')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->searchable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('tinggi_badan')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Tinggi Badan')
                     ->toggleable(isToggledHiddenByDefault: true)
-                    ->numeric()
-                    ->sortable(),
+                    ->numeric(),
                 TextColumn::make('berat_badan')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Berat Badan')
                     ->toggleable(isToggledHiddenByDefault: true)
-                    ->numeric()
-                    ->sortable(),
+                    ->numeric(),
                 TextColumn::make('no_kip')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Nomor KIP')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->searchable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('no_kks')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Nomor KKS')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->searchable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('no_pkh')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Nomor PKH')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->searchable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('siswa_telepon')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Telepon')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->searchable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('siswa_alamat')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Alamat')
@@ -1850,134 +1818,121 @@ class CalonSiswaResource extends Resource
                         }
 
                         return $state;
-                    })
-                    ->searchable(),
+                    }),
                 TextColumn::make('siswaKelurahan.nama')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Kelurahan')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->sortable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('siswaKecamatan.nama')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Kecamatan')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->sortable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('siswaKabupaten.nama')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Kabupaten')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->sortable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('siswaProvinsi.nama')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Provinsi')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->sortable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('siswaNegara.nama')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Negara')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->sortable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 // Jadwal Tes
                 TextColumn::make('tes_sesi')
                     ->label('Sesi Tes')
-                    ->sortable()
-                    ->visible(Auth::user()->username === 'administrator')
-                    ->searchable(),
+
+                    ->visible(Auth::user()->username === 'administrator'),
 
                 TextColumn::make('tes_ruang')
                     ->label('Ruang Tes')
-                    ->sortable()
-                    ->visible(Auth::user()->username === 'administrator')
-                    ->searchable(),
+
+                    ->visible(Auth::user()->username === 'administrator'),
 
                 TextColumn::make('tes_akademik')
                     ->label('Tes Akademik')
                     ->date('d F Y H:i:s')
-                    ->visible(Auth::user()->username === 'administrator')
-                    ->sortable(),
+                    ->visible(Auth::user()->username === 'administrator'),
 
                 TextColumn::make('tes_praktik')
                     ->label('Tes Praktik')
                     ->date('d F Y H:i:s')
-                    ->visible(Auth::user()->username === 'administrator')
-                    ->sortable(),
+                    ->visible(Auth::user()->username === 'administrator'),
 
                 // Lainnya
                 TextColumn::make('prestasi.nama')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Nama Prestasi')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->sortable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('ekstrakurikuler.nama')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Peminatan Ekstrakurikuler')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->searchable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('mataPelajaran.nama')
                     ->visible(Auth::user()->username === 'administrator')
                     ->label('Peminatan Pelajaran')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->searchable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 // Berkas
                 // ImageColumn::make('berkas_kk')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('KK')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->searchable(),
+                //     ,
                 // ImageColumn::make('berkas_akta')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Akta')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->searchable(),
+                //     ,
                 // ImageColumn::make('berkas_kip')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('KIP')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->searchable(),
+                //     ,
                 // ImageColumn::make('berkas_nisn')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('NISN')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->searchable(),
+                //     ,
                 // TextColumn::make('berkas_skbb')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('SKBB')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->searchable(),
+                //     ,
                 // TextColumn::make('berkas_skab')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('SKAB')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->searchable(),
+                //     ,
                 // TextColumn::make('berkas_prestasi')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Bukti Prestasi')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->searchable(),
+                //     ,
 
                 // Ibu
                 // TextColumn::make('ibu_nama')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Nama Ibu')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->searchable(),
+                //     ,
                 // TextColumn::make('ibu_telepon')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Telepon Ibu')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->searchable(),
+                //     ,
                 // TextColumn::make('ibu_pekerjaan')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Pekerjaan Ibu')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->searchable(),
+                //     ,
                 // TextColumn::make('ibu_status')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Status Ibu')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->searchable(),
+                //     ,
                 // TextColumn::make('ibu_alamat')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Alamat Ibu')
@@ -1992,54 +1947,54 @@ class CalonSiswaResource extends Resource
 
                 //         return $state;
                 //     })
-                //     ->searchable(),
+                //     ,
                 // TextColumn::make('ibuKelurahan.nama')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Kelurahan')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->sortable(),
+                //     ,
                 // TextColumn::make('ibuKecamatan.nama')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Kecamatan')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->sortable(),
+                //     ,
                 // TextColumn::make('ibuKabupaten.nama')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Kabupaten')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->sortable(),
+                //     ,
                 // TextColumn::make('ibuProvinsi.nama')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Provinsi')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->sortable(),
+                //     ,
                 // TextColumn::make('ibuNegara.nama')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Negara')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->sortable(),
+                //     ,
 
                 // Ayah
                 // TextColumn::make('ayah_nama')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Nama Ayah')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->searchable(),
+                //     ,
                 // TextColumn::make('ayah_telepon')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Telepon Ayah')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->searchable(),
+                //     ,
                 // TextColumn::make('ayah_pekerjaan')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Pekerjaan Ayah')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->searchable(),
+                //     ,
                 // TextColumn::make('ayah_status')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Status Ayah')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->searchable(),
+                //     ,
                 // TextColumn::make('ayah_alamat')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Alamat Ayah')
@@ -2054,55 +2009,55 @@ class CalonSiswaResource extends Resource
 
                 //         return $state;
                 //     })
-                //     ->searchable(),
+                //     ,
                 // TextColumn::make('ayahKelurahan.nama')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Kelurahan')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->sortable(),
+                //     ,
                 // TextColumn::make('ayahKecamatan.nama')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Kecamatan')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->sortable(),
+                //     ,
                 // TextColumn::make('ayahKabupaten.nama')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Kabupaten')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->sortable(),
+                //     ,
                 // TextColumn::make('ayahProvinsi.nama')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Provinsi')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->sortable(),
+                //     ,
                 // TextColumn::make('ayahNegara.nama')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Negara')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->sortable(),
+                //     ,
 
                 // Wali
                 // TextColumn::make('wali_nama')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Nama Wali')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->searchable(),
+                //     ,
                 // TextColumn::make('wali_telepon')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Telepon Wali')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->searchable(),
+                //     ,
                 // TextColumn::make('wali_pekerjaan')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Pekerjaan Wali')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->searchable(),
+                //     ,
 
                 // TextColumn::make('wali_status')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Status Wali')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->searchable(),
+                //     ,
                 // TextColumn::make('wali_alamat')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Alamat Wali')
@@ -2117,32 +2072,32 @@ class CalonSiswaResource extends Resource
 
                 //         return $state;
                 //     })
-                //     ->searchable(),
+                //     ,
                 // TextColumn::make('waliKelurahan.nama')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Kelurahan')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->sortable(),
+                //     ,
                 // TextColumn::make('waliKecamatan.nama')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Kecamatan')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->sortable(),
+                //     ,
                 // TextColumn::make('waliKabupaten.nama')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Kabupaten')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->sortable(),
+                //     ,
                 // TextColumn::make('waliProvinsi.nama')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Provinsi')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->sortable(),
+                //     ,
                 // TextColumn::make('waliNegara.nama')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Negara')
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->sortable(),
+                //     ,
 
                 // Nilai Tes
                 // TextColumn::make('nilai_ipa')
@@ -2150,77 +2105,77 @@ class CalonSiswaResource extends Resource
                 //     ->label('Nilai IPA')
                 //     ->numeric()
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->sortable(),
+                //     ,
                 // TextColumn::make('nilai_ips')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Nilai IPS')
                 //     ->numeric()
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->sortable(),
+                //     ,
                 // TextColumn::make('nilai_matematika')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Nilai Matematika')
                 //     ->numeric()
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->sortable(),
+                //     ,
                 // TextColumn::make('nilai_indonesia')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Nilai Bahasa Indonesia')
                 //     ->numeric()
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->sortable(),
+                //     ,
                 // TextColumn::make('nilai_inggris')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Nilai Bahasa Inggris')
                 //     ->numeric()
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->sortable(),
+                //     ,
                 // TextColumn::make('nilai_arab')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Nilai Bahasa Arab')
                 //     ->numeric()
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->sortable(),
+                //     ,
                 // TextColumn::make('bobot_nilai_akademik')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Bobot Nilai Akademik')
                 //     ->numeric()
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->sortable(),
+                //     ,
                 // TextColumn::make('bobot_nilai_praktik')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Bobot Nilai Praktik')
                 //     ->numeric()
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->sortable(),
+                //     ,
                 // TextColumn::make('nilai_akademik')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Nilai Akademik')
                 //     ->numeric()
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->sortable(),
+                //     ,
                 // TextColumn::make('nilai_praktik')
                 //     ->visible(Auth::user()->username === 'administrator')
                 //     ->label('Nilai Praktik')
                 //     ->numeric()
                 //     ->toggleable(isToggledHiddenByDefault: true)
-                //     ->sortable(),
+                //     ,
 
                 // Timestamp
                 // TextColumn::make('created_at')
                 //     ->label('Dibuat')
                 //     ->date('d F Y H:i:s')
-                //     ->sortable()
+                //     
                 //     ->toggleable(isToggledHiddenByDefault: true),
                 // TextColumn::make('updated_at')
                 //     ->label('Diubah')
                 //     ->date('d F Y H:i:s')
-                //     ->sortable()
+                //     
                 //     ->toggleable(isToggledHiddenByDefault: true),
                 // TextColumn::make('deleted_at')
                 //     ->label('Dihapus')
                 //     ->date('d F Y H:i:s')
-                //     ->sortable()
+                //     
                 //     ->toggleable(isToggledHiddenByDefault: true),
             ])
 

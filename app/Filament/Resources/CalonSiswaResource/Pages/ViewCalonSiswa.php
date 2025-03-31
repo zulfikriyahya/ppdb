@@ -35,7 +35,22 @@ class ViewCalonSiswa extends ViewRecord
                 ->format('a4', 'mm') // A4 format with mm units
                 ->enableLinks() // Enable links in PDF
                 ->margin([10, 20, 10, 20]) // Set custom margins
-                ->content(fn($record) => view('formulir', ['record' => $record])), // Set Content
+                ->content(fn($record) => view('formulir', ['record' => $record]))
+                ->visible(function () {
+                    $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
+
+                    if (!$calonSiswa) {
+                        return 'warning'; // Default jika data calon siswa tidak ditemukan
+                    }
+
+                    $status = $calonSiswa->status_pendaftaran;
+
+                    if ($status === 'Diproses' || $status === 'Ditolak' || $status === 'Berkas Tidak Lengkap') {
+                        return false;
+                    }
+
+                    return true;
+                }), // Set Content
 
             // Kartu Tes
             Html2MediaAction::make('cetak_kartu_tes')
@@ -187,6 +202,7 @@ class ViewCalonSiswa extends ViewRecord
                     $sekarang = Carbon::now();
 
                     $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
+
                     $status = $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Unggulan' ||
                         $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Reguler';
 
