@@ -46,6 +46,20 @@ class ListSekolahAsals extends ListRecords
                     ->wrap()
                     ->weight(FontWeight::Bold)
                     ->label('Nama Instansi'),
+                TextColumn::make('jenjang')
+                    ->label('Jenjang')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'PAUD' => 'gray',
+                        'TK' => 'gray',
+                        'SD' => 'danger',
+                        'MI' => 'danger',
+                        'SMP' => 'info',
+                        'MTS' => 'info',
+                        'SMA' => 'success',
+                        'SMK' => 'success',
+                        'MA' => 'success',
+                    }),
                 TextColumn::make('akreditasi')
                     ->label('Akreditasi')
                     ->suffix(fn(string $state): string => match ($state) {
@@ -94,10 +108,6 @@ class ListSekolahAsals extends ListRecords
                     ->icon('heroicon-o-envelope')
                     ->iconColor('success')
                     ->label('Email'),
-                TextColumn::make('nomor_surat')
-                    ->copyable()
-                    ->copyMessage('Nomor SKL Disalin!')
-                    ->label('Nomor SKL'),
             ])
             ->filters([])
             ->actions([
