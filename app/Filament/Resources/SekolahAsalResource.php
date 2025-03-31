@@ -2,9 +2,12 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\SekolahAsalResource\Pages;
 use App\Models\SekolahAsal;
 use Filament\Resources\Resource;
+use App\Filament\Resources\SekolahAsalResource\Pages\EditSekolahAsal;
+use App\Filament\Resources\SekolahAsalResource\Pages\ViewSekolahAsal;
+use App\Filament\Resources\SekolahAsalResource\Pages\ListSekolahAsals;
+use App\Filament\Resources\SekolahAsalResource\Pages\CreateSekolahAsal;
 
 class SekolahAsalResource extends Resource
 {
@@ -27,9 +30,10 @@ class SekolahAsalResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListSekolahAsals::route('/'),
-            'create' => Pages\CreateSekolahAsal::route('/create'),
-            'edit' => Pages\EditSekolahAsal::route('/{record}/edit'),
+            'index' => ListSekolahAsals::route('/'),
+            'create' => CreateSekolahAsal::route('/create'),
+            'view' => ViewSekolahAsal::route('/{record}'),
+            'edit' => EditSekolahAsal::route('/{record}/edit'),
         ];
     }
 }
