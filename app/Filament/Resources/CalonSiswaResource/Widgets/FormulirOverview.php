@@ -110,7 +110,7 @@ class FormulirOverview extends BaseWidget
                 )
                 ->extraAttributes([
                     'class' => 'cursor-pointer',
-                    'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Diterima'",
+                    // 'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Diterima'",
                 ]),
 
             Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Diterima Di Kelas Reguler')->count() . ' Peserta')
@@ -127,7 +127,7 @@ class FormulirOverview extends BaseWidget
                 )
                 ->extraAttributes([
                     'class' => 'cursor-pointer',
-                    'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Diterima+Di+Kelas+Reguler'",
+                    // 'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Diterima+Di+Kelas+Reguler'",
                 ]),
 
             Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Diterima Di Kelas Unggulan')->count() . ' Peserta')
@@ -144,7 +144,7 @@ class FormulirOverview extends BaseWidget
                 )
                 ->extraAttributes([
                     'class' => 'cursor-pointer',
-                    'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Diterima+Di+Kelas+Unggulan'",
+                    // 'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Diterima+Di+Kelas+Unggulan'",
                 ]),
 
             Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Ditolak')->count() . ' Peserta')
@@ -161,7 +161,7 @@ class FormulirOverview extends BaseWidget
                 )
                 ->extraAttributes([
                     'class' => 'cursor-pointer',
-                    'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Ditolak'",
+                    // 'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Ditolak'",
                 ]),
         ];
     }
