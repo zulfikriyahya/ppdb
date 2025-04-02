@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 class CalonSiswa extends Model
 {
@@ -155,6 +156,43 @@ class CalonSiswa extends Model
 
     ];
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public function jalurPrestasi(): HasOneThrough
+    {
+        return $this->hasOneThrough(JalurPendaftaran::class, 'jalur_pendaftaran_id', 'prestasi_id');
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public function prestasi(): BelongsTo
+    {
+        return $this->belongsTo(Prestasi::class, 'prestasi_id');
+    }
+
     public function jalurPendaftaran(): BelongsTo
     {
         return $this->belongsTo(JalurPendaftaran::class, 'jalur_pendaftaran_id');
@@ -229,7 +267,6 @@ class CalonSiswa extends Model
     }
 
     // Kabupaten
-
     public function kabupaten(): BelongsTo
     {
         return $this->belongsTo(Kabupaten::class, 'kabupaten_id');
@@ -317,8 +354,20 @@ class CalonSiswa extends Model
         return $this->belongsTo(SekolahAsal::class, 'sekolah_asal_id');
     }
 
-    public function prestasi(): BelongsTo
+    public function pimpinan(): BelongsTo
     {
-        return $this->belongsTo(Prestasi::class, 'prestasi_id');
+        return $this->belongsTo(Pimpinan::class);
+    }
+    public function ketua(): BelongsTo
+    {
+        return $this->belongsTo(Ketua::class);
+    }
+    public function sekretaris(): BelongsTo
+    {
+        return $this->belongsTo(Sekretaris::class);
+    }
+    public function bendahara(): BelongsTo
+    {
+        return $this->belongsTo(Bendahara::class);
     }
 }

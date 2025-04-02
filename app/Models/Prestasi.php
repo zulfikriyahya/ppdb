@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Prestasi extends Model
 {
@@ -24,6 +24,6 @@ class Prestasi extends Model
 
     public function calonSiswas(): HasMany
     {
-        return $this->hasMany(CalonSiswa::class);
+        return $this->hasMany(CalonSiswa::class, 'calon_siswa_id');
     }
 }

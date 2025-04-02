@@ -24,17 +24,17 @@ class ViewCalonSiswa extends ViewRecord
                 ->outlined()
                 ->color(Color::Gray)
                 ->icon('heroicon-o-printer')
-                ->scale(2)
+                // ->scale(2)
                 ->print() // Enable print option
                 // ->preview() // Enable preview option
                 ->filename('formulir.pdf') // Custom file name
-                ->savePdf() // Enable save as PDF option
-                ->requiresConfirmation() // Show confirmation modal
+                // ->savePdf() // Enable save as PDF option
+                // ->requiresConfirmation() // Show confirmation modal
                 // ->pagebreak('section', ['css', 'legacy'])
                 ->orientation('portrait') // Portrait orientation
                 ->format('a4', 'mm') // A4 format with mm units
                 ->enableLinks() // Enable links in PDF
-                ->margin([10, 20, 10, 20]) // Set custom margins
+                ->margin([10, 10, 10, 10]) // Set custom margins
                 ->content(fn($record) => view('formulir', ['record' => $record]))
                 ->visible(function () {
                     $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
