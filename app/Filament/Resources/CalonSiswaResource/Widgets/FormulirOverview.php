@@ -97,7 +97,7 @@ class FormulirOverview extends BaseWidget
                 ]),
 
             Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Diterima')->count() . ' Peserta')
-                ->description('Diterima')
+                ->description('Diterima Jalur Prestasi')
                 ->descriptionIcon('heroicon-o-check-circle', IconPosition::Before)
                 ->color('success')
                 ->chart(
