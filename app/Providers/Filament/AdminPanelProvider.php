@@ -10,6 +10,7 @@ use Filament\PanelProvider;
 use Filament\Navigation\MenuItem;
 use Filament\Support\Colors\Color;
 use Illuminate\Support\Facades\DB;
+use Filament\Widgets\AccountWidget;
 use Illuminate\Support\Facades\Log;
 use Filament\Support\Enums\MaxWidth;
 use Illuminate\Support\Facades\Auth;
@@ -32,6 +33,7 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use App\Filament\Resources\UserResource\Widgets\UserRegisters;
+use App\Filament\Resources\CalonSiswaResource\Widgets\FormulirOverview;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -74,9 +76,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
+                // AccountWidget::class,
+                FormulirOverview::class,
                 UserRegisters::class,
-                Widgets\FilamentInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,

@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\Pimpinan;
 use App\Models\User;
+use App\Models\Pimpinan;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class PimpinanPolicy

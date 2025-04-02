@@ -40,8 +40,8 @@ class ListCalonSiswas extends ListRecords
         return [
             // Daftar Sekarang
             Action::make('buat_formulir_pendaftaran')
-                ->label('Daftar Sekarang')
-                ->icon('heroicon-m-plus')
+                ->label('Daftar Sekarang 🚀')
+                ->icon('heroicon-o-clipboard-document-list')
                 ->outlined()
                 ->color('primary')
                 ->url($urlCreate)
@@ -126,77 +126,9 @@ class ListCalonSiswas extends ListRecords
                     return 'gray';
                 })
                 // ->outlined()
+                ->size('sm')
                 ->disabled()
                 ->hidden(Auth::user()->username === 'administrator' || $calonSiswa === null || $calonSiswa->status_pendaftaran === 'Diterima' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Unggulan' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Reguler' || $calonSiswa->status_pendaftaran === 'Ditolak'),
-            // ->hidden(function () {
-            //     $tahunPendaftaran = DB::table('tahun_pendaftarans')
-            //         ->where('status', 'Aktif')
-            //         ->first();
-            //     $sekarang = Carbon::now();
-
-            //     $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
-
-            //     $status = $calonSiswa->status_pendaftaran === 'Diproses' ||
-            //         $calonSiswa->status_pendaftaran === 'Berkas Tidak Lengkap';
-
-            //     $mulaiPengumumanPrestasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_mulai)
-            //         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_mulai))
-            //         : null;
-
-            //     $akhirPengumumanPrestasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_selesai)
-            //         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_selesai))
-            //         : null;
-
-            //     $mulaiPengumumanReguler = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_mulai)
-            //         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_mulai))
-            //         : null;
-
-            //     $akhirPengumumanReguler = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_selesai)
-            //         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_selesai))
-            //         : null;
-
-            //     $mulaiPengumumanAfirmasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai)
-            //         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai))
-            //         : null;
-
-            //     $akhirPengumumanAfirmasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_selesai)
-            //         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_selesai))
-            //         : null;
-
-            //     $mulaiPengumumanZonasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai)
-            //         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai))
-            //         : null;
-
-            //     $akhirPengumumanZonasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_selesai)
-            //         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_selesai))
-            //         : null;
-
-            //     $mulaiPengumumanMutasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai)
-            //         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai))
-            //         : null;
-
-            //     $akhirPengumumanMutasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai)
-            //         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai))
-            //         : null;
-
-            //     $periodePengumuman = [
-            //         [$mulaiPengumumanPrestasi, $akhirPengumumanPrestasi],
-            //         [$mulaiPengumumanReguler, $akhirPengumumanReguler],
-            //         [$mulaiPengumumanAfirmasi, $akhirPengumumanAfirmasi],
-            //         [$mulaiPengumumanZonasi, $akhirPengumumanZonasi],
-            //         [$mulaiPengumumanMutasi, $akhirPengumumanMutasi],
-            //     ];
-
-            //     foreach ($periodePengumuman as [$mulai, $selesai]) {
-            //         if ($sekarang >= $mulai && $sekarang <= $selesai && $status) {
-            //             return false;
-            //         }
-            //     }
-
-            //     return true;
-            // }),
-
-
 
             // Export
             ExportAction::make('Ekspor')

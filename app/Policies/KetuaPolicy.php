@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\Ketua;
 use App\Models\User;
+use App\Models\Ketua;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class KetuaPolicy

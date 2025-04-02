@@ -20,7 +20,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\HtmlString;
 use Filament\Forms\Components\Tabs;
-use Filament\Tables\Grouping\Group;
 use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Wizard;
@@ -34,7 +33,6 @@ use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
-use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Wizard\Step;
@@ -71,6 +69,11 @@ class CalonSiswaResource extends Resource
     protected static bool $shouldRegisterNavigation = true;
 
     protected static ?string $navigationIcon = 'heroicon-o-identification';
+
+    public static function getNavigationBadge(): ?string
+    {
+        return CalonSiswa::count();
+    }
 
     public static function form(Form $form): Form
     {
@@ -2545,10 +2548,10 @@ class CalonSiswaResource extends Resource
 
     public static function getPages(): array
     {
-        if (Auth::user() && Auth::user()->username !== 'administrator') {
+        $user = Auth::user() && Auth::user()->username !== 'administrator';
+        if ($user) {
             return [];
         }
-
         return [
             'index' => Pages\ListCalonSiswas::route('/'),
             'create' => Pages\CreateCalonSiswa::route('/create'),

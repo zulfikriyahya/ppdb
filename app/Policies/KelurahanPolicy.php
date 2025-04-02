@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\Kelurahan;
 use App\Models\User;
+use App\Models\Kelurahan;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class KelurahanPolicy
