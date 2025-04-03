@@ -10,13 +10,13 @@ use Filament\Tables\Columns\ImageColumn;
 
 class UserRegisters extends TableWidget
 {
-    protected static ?int $sort = 1;
+    protected static ?int $sort = 2;
 
     protected static bool $isLazy = false;
 
     protected function getTableHeading(): string
     {
-        return 'Akun Baru';
+        return '🗒️ Log Akun Baru';
     }
 
     public function table(Table $table): Table

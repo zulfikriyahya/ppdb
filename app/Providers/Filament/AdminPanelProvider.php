@@ -29,10 +29,13 @@ use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
+use App\Filament\Resources\UserResource\Widgets\Informasi;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use App\Filament\Resources\UserResource\Widgets\UserRegisters;
+use App\Filament\Resources\UserResource\Widgets\InformasiPublished;
+use App\Filament\Resources\CalonSiswaResource\Widgets\PrintOverview;
 use App\Filament\Resources\CalonSiswaResource\Widgets\FormulirOverview;
 
 class AdminPanelProvider extends PanelProvider
@@ -78,6 +81,7 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 // AccountWidget::class,
                 FormulirOverview::class,
+                InformasiPublished::class,
                 UserRegisters::class,
             ])
             ->middleware([
@@ -120,7 +124,7 @@ class AdminPanelProvider extends PanelProvider
                     ->withLinks([
                         ['title' => 'Dibuat dan dikembangkan dengan ❤ oleh Yahya Zulfikri', 'url' => 'https://instagram.com/zulfikriyahya_'],
                     ])
-                    // ->withLoadTime('Halaman ini dimuat dalam')
+                    ->withLoadTime('Halaman ini dimuat dalam')
                     ->withBorder(),
 
                 AuthUIEnhancerPlugin::make()

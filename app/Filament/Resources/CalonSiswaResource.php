@@ -20,6 +20,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\HtmlString;
 use Filament\Forms\Components\Tabs;
+use Filament\Tables\Actions\Action;
 use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Wizard;
@@ -40,7 +41,6 @@ use Filament\Tables\Enums\ActionsPosition;
 use Filament\Tables\Filters\TrashedFilter;
 use App\Filament\Exports\CalonSiswaExporter;
 use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\ExportBulkAction;
@@ -1650,7 +1650,70 @@ class CalonSiswaResource extends Resource
 
     public static function table(Table $table): Table
     {
+        $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
+        $label = $calonSiswa ? $calonSiswa->status_pendaftaran : '';
         return $table
+            ->headerActions([
+                // Status Pendaftaran === Ditampilkan ketika Waktu Pengumuman
+                Action::make('status_pendaftaran')
+                    ->label($label)
+                    ->color(function () {
+                        $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
+
+                        if (!$calonSiswa) {
+                            return 'warning'; // Default jika data calon siswa tidak ditemukan
+                        }
+
+                        $status = $calonSiswa->status_pendaftaran;
+
+                        if ($status === 'Diproses') {
+                            return 'warning';
+                        } elseif ($status === 'Diverifikasi') {
+                            return 'success';
+                        } elseif ($status === 'Berkas Tidak Lengkap') {
+                            return 'warning';
+                        } elseif ($status === 'Ditolak') {
+                            return 'danger';
+                        } elseif ($status === 'Diterima') {
+                            return 'success';
+                        } elseif ($status === 'Diterima Di Kelas Reguler') {
+                            return 'success';
+                        } elseif ($status === 'Diterima Di Kelas Unggulan') {
+                            return 'info';
+                        }
+                        return 'warning';
+                    })
+                    ->icon(function () {
+                        $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
+
+                        if (!$calonSiswa) {
+                            return 'heroicon-o-arrow-path'; // Default jika data calon siswa tidak ditemukan
+                        }
+
+                        $status = $calonSiswa->status_pendaftaran;
+
+                        if ($status === 'Diproses') {
+                            return 'heroicon-o-arrow-path';
+                        } elseif ($status === 'Diverifikasi') {
+                            return 'heroicon-o-clipboard-document-check';
+                        } elseif ($status === 'Berkas Tidak Lengkap') {
+                            return 'heroicon-o-document-minus';
+                        } elseif ($status === 'Ditolak') {
+                            return 'heroicon-o-no-symbol';
+                        } elseif ($status === 'Diterima') {
+                            return 'heroicon-o-check-circle';
+                        } elseif ($status === 'Diterima Di Kelas Reguler') {
+                            return 'heroicon-o-shield-check';
+                        } elseif ($status === 'Diterima Di Kelas Unggulan') {
+                            return 'heroicon-o-shield-check';
+                        }
+                        return 'gray';
+                    })
+                    ->outlined()
+                    ->size('sm')
+                    ->disabled()
+                    ->hidden(Auth::user()->username === 'administrator' || $calonSiswa === null || $calonSiswa->status_pendaftaran === 'Diterima' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Unggulan' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Reguler' || $calonSiswa->status_pendaftaran === 'Ditolak'),
+            ])
             ->columns([
                 ImageColumn::make('berkas_foto')
                     ->label('Foto')

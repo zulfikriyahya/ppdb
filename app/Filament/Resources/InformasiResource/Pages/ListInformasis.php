@@ -46,14 +46,6 @@ class ListInformasis extends ListRecords
                     ->label('Uraian')
                     ->wrap()
                     ->words(5)
-                    ->tooltip(function (TextColumn $column): ?string {
-                        $state = $column->getState();
-                        if (strlen($state) <= $column->getCharacterLimit()) {
-                            return null;
-                        }
-
-                        return $state;
-                    })
                     ->searchable(),
                 TextColumn::make('gambar')
                     ->label('Lampiran')
@@ -86,6 +78,7 @@ class ListInformasis extends ListRecords
             ->filters([])
             ->actions([
                 ActionGroup::make([
+                    ViewAction::make(),
                     EditAction::make(),
                     DeleteAction::make(),
                 ]),

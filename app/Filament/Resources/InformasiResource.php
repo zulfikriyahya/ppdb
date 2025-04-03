@@ -2,8 +2,16 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Forms\Get;
+use Filament\Forms\Form;
 use App\Models\Informasi;
 use Filament\Resources\Resource;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\DateTimePicker;
 use App\Filament\Resources\InformasiResource\Pages;
 
 class InformasiResource extends Resource
@@ -16,7 +24,9 @@ class InformasiResource extends Resource
 
     protected static ?string $label = 'Informasi';
 
-    protected static ?string $navigationGroup = 'Referensi';
+    protected static ?string $slug = 'informasi';
+
+    // protected static ?string $navigationGroup = 'Referensi';
 
     protected static ?int $navigationSort = 8;
 
@@ -29,6 +39,7 @@ class InformasiResource extends Resource
         return [
             'index' => Pages\ListInformasis::route('/'),
             'create' => Pages\CreateInformasi::route('/create'),
+            'view' => Pages\ViewInformasi::route('/{record}'),
             'edit' => Pages\EditInformasi::route('/{record}/edit'),
         ];
     }
