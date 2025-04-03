@@ -2,10 +2,12 @@
 use App\Models\Ketua;
 use App\Models\Sekolah;
 use App\Models\Pimpinan;
+use App\Models\CalonSiswa;
 use App\Models\Sekretaris;
 use App\Models\TahunPendaftaran;
 use Illuminate\Support\Facades\Storage;
 
+    $record = CalonSiswa::first();
     $instansi = Sekolah::first();
     $tahunPendaftaran = TahunPendaftaran::where('status', 'Aktif')->first();
     $sekretaris = Sekretaris::where('status', 'Aktif')->first();

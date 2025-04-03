@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\UserResource\Widgets;
 
 use App\Models\User;
+use App\Models\CalonSiswa;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
 use Filament\Tables\Columns\TextColumn;
@@ -16,7 +17,7 @@ class UserRegisters extends TableWidget
 
     protected function getTableHeading(): string
     {
-        return '🗒️ Log Akun Baru';
+        return '🗒️ Log Akun';
     }
 
     public function table(Table $table): Table

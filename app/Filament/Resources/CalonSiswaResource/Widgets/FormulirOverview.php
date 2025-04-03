@@ -164,65 +164,56 @@ class FormulirOverview extends BaseWidget
                 ->chart(CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
                     ->groupBy('hari')
                     ->orderBy('hari')
-                    ->pluck('total')->toArray())
-                ->extraAttributes([
-                    'class' => 'cursor-pointer',
-                    'onclick' => "window.location.href='/formulir'",
-                ]),
+                    ->pluck('total')->toArray()),
+            // ->extraAttributes([
+            //     'class' => 'cursor-pointer',
+            //     'onclick' => "window.location.href='/formulir'",
+            // ]),
 
             Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Diproses')->count() . ' Peserta')
                 ->description('Diproses')
                 ->descriptionIcon('heroicon-o-arrow-path', IconPosition::Before)
                 ->color('warning')
-                ->chart(
-                    CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-                        ->where('status_pendaftaran', 'Diproses') // Filter hanya status "Diproses"
-                        ->groupBy('hari')
-                        ->orderBy('hari')
-                        ->pluck('total')
-                        ->toArray()
-                )
-
-                ->extraAttributes([
-                    'class' => 'cursor-pointer',
-                    'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Diproses'",
-                ]),
+                ->chart(CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
+                    ->where('status_pendaftaran', 'Diproses') // Filter hanya status "Diproses"
+                    ->groupBy('hari')
+                    ->orderBy('hari')
+                    ->pluck('total')
+                    ->toArray()),
+            // ->extraAttributes([
+            //     'class' => 'cursor-pointer',
+            //     'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Diproses'",
+            // ]),
 
             Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Berkas Tidak Lengkap')->count() . ' Peserta')
                 ->description('Berkas Tidak Lengkap')
                 ->descriptionIcon('heroicon-o-document-minus', IconPosition::Before)
                 ->color('warning')
-                ->chart(
-                    CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-                        ->where('status_pendaftaran', 'Berkas Tidak Lengkap')
-                        ->groupBy('hari')
-                        ->orderBy('hari')
-                        ->pluck('total')
-                        ->toArray()
-                )
-
-                ->extraAttributes([
-                    'class' => 'cursor-pointer',
-                    'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Berkas+Tidak+Lengkap'",
-                ]),
+                ->chart(CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
+                    ->where('status_pendaftaran', 'Berkas Tidak Lengkap')
+                    ->groupBy('hari')
+                    ->orderBy('hari')
+                    ->pluck('total')
+                    ->toArray()),
+            // ->extraAttributes([
+            //     'class' => 'cursor-pointer',
+            //     'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Berkas+Tidak+Lengkap'",
+            // ]),
 
             Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Diverifikasi')->count() . ' Peserta')
                 ->description('Diverifikasi')
                 ->descriptionIcon('heroicon-o-clipboard-document-check', IconPosition::Before)
                 ->color('success')
-                ->chart(
-                    CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-                        ->where('status_pendaftaran', 'Diverifikasi')
-                        ->groupBy('hari')
-                        ->orderBy('hari')
-                        ->pluck('total')
-                        ->toArray()
-                )
-
-                ->extraAttributes([
-                    'class' => 'cursor-pointer',
-                    'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Diverifikasi'",
-                ]),
+                ->chart(CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
+                    ->where('status_pendaftaran', 'Diverifikasi')
+                    ->groupBy('hari')
+                    ->orderBy('hari')
+                    ->pluck('total')
+                    ->toArray()),
+            // ->extraAttributes([
+            //     'class' => 'cursor-pointer',
+            //     'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Diverifikasi'",
+            // ]),
         ];
     }
 }

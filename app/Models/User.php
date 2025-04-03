@@ -57,8 +57,10 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     {
         $peserta = CalonSiswa::first();
         return $this->avatar
-            ? asset('storage/' . $this->avatar)
-            : ($peserta->berkas_foto ?? null);
+            ? asset(
+                'storage/' . $peserta->berkas_foto
+            )
+            : (asset('storage/' . $this->avatar) ?? null);
     }
 
     protected static function booted()

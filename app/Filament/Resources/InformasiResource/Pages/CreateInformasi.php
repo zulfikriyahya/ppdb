@@ -66,7 +66,6 @@ class CreateInformasi extends CreateRecord
                             //     'blockquote',
                             //     'strike',
                             // ])
-                            ->formatStateUsing(fn($state) => str($state)->sanitizeHtml())
                             // ->fileAttachmentsDisk('s3')
                             ->fileAttachmentsDirectory('lampiran-informasi')
                             ->fileAttachmentsVisibility('private')
