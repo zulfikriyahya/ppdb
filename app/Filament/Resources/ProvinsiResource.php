@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\ProvinsiResource\Pages;
 use App\Models\Provinsi;
 use Filament\Resources\Resource;
-use App\Filament\Resources\ProvinsiResource\Pages;
 
 class ProvinsiResource extends Resource
 {

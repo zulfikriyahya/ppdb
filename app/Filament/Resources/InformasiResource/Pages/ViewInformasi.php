@@ -2,18 +2,17 @@
 
 namespace App\Filament\Resources\InformasiResource\Pages;
 
+use App\Filament\Resources\InformasiResource;
 use Filament\Actions;
-use Filament\Forms\Get;
-use Filament\Forms\Form;
-use Filament\Infolists\Infolist;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Resources\Pages\ViewRecord;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Infolists\Components\Section;
-use App\Filament\Resources\InformasiResource;
-use Filament\Forms\Components\DateTimePicker;
+use Filament\Resources\Pages\ViewRecord;
 
 class ViewInformasi extends ViewRecord
 {

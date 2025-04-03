@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\KelurahanResource\Pages;
 use App\Models\Kelurahan;
 use Filament\Resources\Resource;
-use App\Filament\Resources\KelurahanResource\Pages;
 
 class KelurahanResource extends Resource
 {

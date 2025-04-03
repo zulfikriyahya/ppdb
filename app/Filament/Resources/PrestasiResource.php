@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\PrestasiResource\Pages;
 use App\Models\Prestasi;
 use Filament\Resources\Resource;
-use App\Filament\Resources\PrestasiResource\Pages;
 
 class PrestasiResource extends Resource
 {

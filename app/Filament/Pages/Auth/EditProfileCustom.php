@@ -2,17 +2,15 @@
 
 namespace App\Filament\Pages\Auth;
 
-use App\Models\User;
+use DiogoGPinto\AuthUIEnhancer\Pages\Auth\Concerns\HasCustomLayout;
+use Filament\Forms\Components\Component;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
-use Spatie\Permission\Models\Role;
 use Filament\Pages\Auth\EditProfile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Filament\Forms\Components\Component;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\FileUpload;
 use Illuminate\Validation\Rules\Password;
-use DiogoGPinto\AuthUIEnhancer\Pages\Auth\Concerns\HasCustomLayout;
 
 class EditProfileCustom extends EditProfile
 {
@@ -39,6 +37,7 @@ class EditProfileCustom extends EditProfile
                 ),
             ];
         }
+
         return [
             'form' => $this->form(
                 $this->makeForm()
@@ -85,8 +84,8 @@ class EditProfileCustom extends EditProfile
             ->required()
             ->suffixIcon('heroicon-o-identification')
             ->unique(ignoreRecord: true)
-            ->rule(fn($record) => $record === null ? 'unique:users,username' : 'unique:users,username,' . $record->id)
-            ->dehydrateStateUsing(fn($state) => $state ? $state : null)
+            ->rule(fn ($record) => $record === null ? 'unique:users,username' : 'unique:users,username,'.$record->id)
+            ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
             ->visible(Auth::user()->username !== 'administrator')
             ->minLength(10)
             ->maxLength(10)
@@ -122,8 +121,8 @@ class EditProfileCustom extends EditProfile
             ->revealable(filament()->arePasswordsRevealable())
             ->rule(Password::default())
             ->autocomplete('new-password')
-            ->dehydrated(fn($state): bool => filled($state))
-            ->dehydrateStateUsing(fn($state): string => Hash::make($state))
+            ->dehydrated(fn ($state): bool => filled($state))
+            ->dehydrateStateUsing(fn ($state): string => Hash::make($state))
             ->live(debounce: 500)
             ->same('passwordConfirmation')
             ->validationMessages([
@@ -140,7 +139,7 @@ class EditProfileCustom extends EditProfile
             ->password()
             ->revealable(filament()->arePasswordsRevealable())
             ->required()
-            ->visible(fn(Get $get): bool => filled($get('password')))
+            ->visible(fn (Get $get): bool => filled($get('password')))
             ->dehydrated(false);
     }
 }

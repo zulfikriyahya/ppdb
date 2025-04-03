@@ -3,11 +3,10 @@
 namespace App\Filament\Resources\UserResource\Widgets;
 
 use App\Models\User;
-use App\Models\CalonSiswa;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\ImageColumn;
 
 class UserRegisters extends TableWidget
 {
@@ -41,11 +40,11 @@ class UserRegisters extends TableWidget
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'Aktif' => 'success',
                         'Nonaktif' => 'gray',
                     })
-                    ->icon(fn(string $state): string => match ($state) {
+                    ->icon(fn (string $state): string => match ($state) {
                         'Aktif' => 'heroicon-o-check-circle',
                         'Nonaktif' => 'heroicon-o-x-mark'
                     }),

@@ -2,21 +2,20 @@
 
 namespace App\Filament\Resources\RoleResource\Pages;
 
-use Filament\Actions;
-use Filament\Tables\Table;
-use Illuminate\Support\Str;
-use Filament\Support\Colors\Color;
-use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Columns\TextColumn;
 use App\Filament\Resources\RoleResource;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Enums\FiltersLayout;
-use Filament\Resources\Pages\ListRecords;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Enums\ActionsPosition;
-use Filament\Tables\Actions\DeleteBulkAction;
 use BezhanSalleh\FilamentShield\Support\Utils;
 use BezhanSalleh\FilamentShield\Traits\HasShieldFormComponents;
+use Filament\Actions;
+use Filament\Resources\Pages\ListRecords;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Table;
+use Illuminate\Support\Str;
 
 class ListRoles extends ListRecords
 {
@@ -40,15 +39,15 @@ class ListRoles extends ListRecords
             ->columns([
                 TextColumn::make('name')
                     ->label('Peran')
-                    ->formatStateUsing(fn($state): string => Str::headline($state))
+                    ->formatStateUsing(fn ($state): string => Str::headline($state))
                     ->searchable(),
                 TextColumn::make('team.name')
                     ->default('Global')
                     ->badge()
-                    ->color(fn(mixed $state): string => str($state)->contains('Global') ? 'gray' : 'primary')
+                    ->color(fn (mixed $state): string => str($state)->contains('Global') ? 'gray' : 'primary')
                     ->label(__('filament-shield::filament-shield.column.team'))
                     ->searchable()
-                    ->visible(fn(): bool => static::shield()->isCentralApp() && Utils::isTenancyEnabled()),
+                    ->visible(fn (): bool => static::shield()->isCentralApp() && Utils::isTenancyEnabled()),
                 TextColumn::make('permissions_count')
                     ->badge()
                     ->label('Perizinan')

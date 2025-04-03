@@ -2,17 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use Filament\Forms\Get;
-use Filament\Forms\Form;
+use App\Filament\Resources\InformasiResource\Pages;
 use App\Models\Informasi;
 use Filament\Resources\Resource;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\DateTimePicker;
-use App\Filament\Resources\InformasiResource\Pages;
 
 class InformasiResource extends Resource
 {

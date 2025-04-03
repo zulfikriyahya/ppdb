@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CalonSiswa extends Model
 {
@@ -156,37 +156,10 @@ class CalonSiswa extends Model
 
     ];
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     public function jalurPrestasi(): HasOneThrough
     {
         return $this->hasOneThrough(JalurPendaftaran::class, 'jalur_pendaftaran_id', 'prestasi_id');
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     public function prestasi(): BelongsTo
     {
@@ -358,14 +331,17 @@ class CalonSiswa extends Model
     {
         return $this->belongsTo(Pimpinan::class);
     }
+
     public function ketua(): BelongsTo
     {
         return $this->belongsTo(Ketua::class);
     }
+
     public function sekretaris(): BelongsTo
     {
         return $this->belongsTo(Sekretaris::class);
     }
+
     public function bendahara(): BelongsTo
     {
         return $this->belongsTo(Bendahara::class);

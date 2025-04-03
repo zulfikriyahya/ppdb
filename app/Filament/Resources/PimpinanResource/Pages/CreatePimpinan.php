@@ -2,14 +2,13 @@
 
 namespace App\Filament\Resources\PimpinanResource\Pages;
 
-use Filament\Forms\Form;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\TextInput;
+use App\Filament\Resources\PimpinanResource;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Wizard\Step;
 use Filament\Resources\Pages\CreateRecord;
-use App\Filament\Resources\PimpinanResource;
 use Filament\Resources\Pages\CreateRecord\Concerns\HasWizard;
 
 class CreatePimpinan extends CreateRecord
@@ -43,7 +42,7 @@ class CreatePimpinan extends CreateRecord
                                 ->prefix('NIP'),
                             Select::make('tahun_pendaftaran_id')
                                 ->label('Tahun Pendaftaran')
-                                ->relationship('tahunPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
+                                ->relationship('tahunPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif'))
                                 ->native(false)
                                 ->required()
                                 ->validationMessages([

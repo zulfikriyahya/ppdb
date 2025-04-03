@@ -2,23 +2,22 @@
 
 namespace App\Filament\Resources\SekolahAsalResource\Pages;
 
-use Filament\Forms\Get;
-use Filament\Forms\Set;
-use App\Models\Provinsi;
-use Filament\Forms\Form;
+use App\Filament\Resources\SekolahAsalResource;
 use App\Models\Kabupaten;
 use App\Models\Kecamatan;
 use App\Models\Kelurahan;
-use Illuminate\Support\Collection;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Section;
-use Illuminate\Database\Eloquent\Model;
-use Filament\Forms\Components\TextInput;
-use Filament\Resources\Pages\EditRecord;
+use App\Models\Provinsi;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Wizard\Step;
-use App\Filament\Resources\SekolahAsalResource;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
+use Filament\Resources\Pages\EditRecord;
 use Filament\Resources\Pages\EditRecord\Concerns\HasWizard;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 
 class EditSekolahAsal extends EditRecord
 {
@@ -163,7 +162,7 @@ class EditSekolahAsal extends EditRecord
                                 }),
                             Select::make('provinsi_id')
                                 ->label('Provinsi')
-                                ->options(fn(Get $get): Collection => Provinsi::query()
+                                ->options(fn (Get $get): Collection => Provinsi::query()
                                     ->where('negara_id', $get('negara_id'))
                                     ->pluck('nama', 'id'))
                                 ->required()
@@ -180,7 +179,7 @@ class EditSekolahAsal extends EditRecord
                                 }),
                             Select::make('kabupaten_id')
                                 ->label('Kabupaten/Kota')
-                                ->options(fn(Get $get): Collection => Kabupaten::query()
+                                ->options(fn (Get $get): Collection => Kabupaten::query()
                                     ->where('provinsi_id', $get('provinsi_id'))
                                     ->pluck('nama', 'id'))
                                 ->required()
@@ -196,7 +195,7 @@ class EditSekolahAsal extends EditRecord
                                 }),
                             Select::make('kecamatan_id')
                                 ->label('Kecamatan')
-                                ->options(fn(Get $get): Collection => Kecamatan::query()
+                                ->options(fn (Get $get): Collection => Kecamatan::query()
                                     ->where('kabupaten_id', $get('kabupaten_id'))
                                     ->pluck('nama', 'id'))
                                 ->required()
@@ -211,7 +210,7 @@ class EditSekolahAsal extends EditRecord
                                 }),
                             Select::make('kelurahan_id')
                                 ->label('Kelurahan/Desa')
-                                ->options(fn(Get $get): Collection => Kelurahan::query()
+                                ->options(fn (Get $get): Collection => Kelurahan::query()
                                     ->where('kecamatan_id', $get('kecamatan_id'))
                                     ->pluck('nama', 'id'))
                                 ->required()

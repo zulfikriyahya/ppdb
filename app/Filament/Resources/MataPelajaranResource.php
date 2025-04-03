@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\MataPelajaranResource\Pages;
 use App\Models\MataPelajaran;
 use Filament\Resources\Resource;
-use App\Filament\Resources\MataPelajaranResource\Pages;
 
 class MataPelajaranResource extends Resource
 {

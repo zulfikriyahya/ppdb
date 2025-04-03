@@ -2,17 +2,17 @@
 
 namespace App\Filament\Resources\InformasiResource\Pages;
 
-use Filament\Forms\Get;
-use Filament\Forms\Form;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Section;
-use Illuminate\Database\Eloquent\Model;
-use Filament\Forms\Components\TextInput;
-use Filament\Resources\Pages\EditRecord;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\RichEditor;
 use App\Filament\Resources\InformasiResource;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
 
 class EditInformasi extends EditRecord
 {
@@ -35,7 +35,7 @@ class EditInformasi extends EditRecord
                     ->schema([
                         Select::make('tahun_pendaftaran_id')
                             ->label('Tahun Pendaftaran')
-                            ->relationship('tahunPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
+                            ->relationship('tahunPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif'))
                             ->required()
                             ->native(false)
                             ->live()
@@ -45,7 +45,7 @@ class EditInformasi extends EditRecord
                             ->columnSpanFull(),
                     ]),
                 Section::make()
-                    ->visible(fn($get) => $get('tahun_pendaftaran_id') !== null)
+                    ->visible(fn ($get) => $get('tahun_pendaftaran_id') !== null)
                     ->schema([
                         TextInput::make('judul')
                             ->label('Judul')
@@ -95,7 +95,7 @@ class EditInformasi extends EditRecord
                             ->label('Tanggal')
                             ->default(now())
                             ->required()
-                            ->hidden(fn(Get $get) => $get('status') !== 'Publish')
+                            ->hidden(fn (Get $get) => $get('status') !== 'Publish')
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ])

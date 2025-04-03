@@ -2,19 +2,19 @@
 
 namespace App\Filament\Resources\SekolahAsalResource\Pages;
 
-use Filament\Actions;
-use Filament\Tables\Table;
+use App\Filament\Resources\SekolahAsalResource;
 use App\Models\SekolahAsal;
+use Filament\Actions;
+use Filament\Resources\Pages\ListRecords;
 use Filament\Support\Enums\FontWeight;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\ImageColumn;
-use Filament\Resources\Pages\ListRecords;
-use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\ActionsPosition;
-use App\Filament\Resources\SekolahAsalResource;
+use Filament\Tables\Table;
 
 class ListSekolahAsals extends ListRecords
 {
@@ -38,9 +38,9 @@ class ListSekolahAsals extends ListRecords
                     ->label('Logo'),
                 TextColumn::make('nama')
                     ->description(
-                        fn(SekolahAsal $record) => implode(' | ', array_filter([
-                            'NPSN: ' . $record->npsn ?? null,
-                            'NSS: ' . $record->nss ?? null,
+                        fn (SekolahAsal $record) => implode(' | ', array_filter([
+                            'NPSN: '.$record->npsn ?? null,
+                            'NSS: '.$record->nss ?? null,
                         ]))
                     )
                     ->wrap()
@@ -49,7 +49,7 @@ class ListSekolahAsals extends ListRecords
                 TextColumn::make('jenjang')
                     ->label('Jenjang')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'PAUD' => 'gray',
                         'TK' => 'gray',
                         'SD' => 'danger',
@@ -62,13 +62,13 @@ class ListSekolahAsals extends ListRecords
                     }),
                 TextColumn::make('akreditasi')
                     ->label('Akreditasi')
-                    ->suffix(fn(string $state): string => match ($state) {
+                    ->suffix(fn (string $state): string => match ($state) {
                         'A' => ' (Sangat Baik)',
                         'B' => ' (Baik)',
                         'C' => ' (Cukup)',
                         'D' => ' (Kurang)'
                     })
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'A' => 'primary',
                         'B' => 'success',
                         'C' => 'warning',
@@ -78,7 +78,7 @@ class ListSekolahAsals extends ListRecords
                 TextColumn::make('alamat')
                     ->label('Alamat Lengkap')
                     ->description(
-                        fn(SekolahAsal $record) => implode(', ', array_filter([
+                        fn (SekolahAsal $record) => implode(', ', array_filter([
                             $record->kelurahan->nama ?? null,
                             $record->kecamatan->nama ?? null,
                             $record->kabupaten->nama ?? null,

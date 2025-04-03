@@ -2,14 +2,13 @@
 
 namespace App\Filament\Resources\SekolahAsalResource\Pages;
 
-use Filament\Actions;
+use App\Filament\Resources\SekolahAsalResource;
 use Filament\Actions\EditAction;
+use Filament\Infolists\Components\Fieldset;
+use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Pages\ViewRecord;
-use Filament\Infolists\Components\Fieldset;
-use Filament\Infolists\Components\TextEntry;
-use Filament\Infolists\Components\ImageEntry;
-use App\Filament\Resources\SekolahAsalResource;
 
 class ViewSekolahAsal extends ViewRecord
 {
@@ -53,13 +52,13 @@ class ViewSekolahAsal extends ViewRecord
                             ->label('NSS/NSM'),
                         TextEntry::make('akreditasi')
                             ->badge()
-                            ->suffix(fn(string $state): string => match ($state) {
+                            ->suffix(fn (string $state): string => match ($state) {
                                 'A' => ' (Sangat Baik)',
                                 'B' => ' (Baik)',
                                 'C' => ' (Cukup)',
                                 'D' => ' (Kurang)'
                             })
-                            ->color(fn(string $state): string => match ($state) {
+                            ->color(fn (string $state): string => match ($state) {
                                 'A' => 'primary',
                                 'B' => 'success',
                                 'C' => 'warning',

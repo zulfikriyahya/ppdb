@@ -1,24 +1,18 @@
 <?php
 
-namespace App\Filament\Resources\UserResource\Widgets;
+namespace App\Filament\Resources\InformasiResource\Widgets;
 
-use Carbon\Carbon;
-use App\Models\Informasi;
 use App\Models\CalonSiswa;
-use Filament\Tables\Table;
-use Barryvdh\DomPDF\Facade\Pdf;
-use Filament\Widgets\TableWidget;
-use Filament\Support\Colors\Color;
-use Illuminate\Support\Facades\DB;
+use App\Models\Informasi;
+use Carbon\Carbon;
 use Filament\Tables\Actions\Action;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Blade;
-use Filament\Tables\Columns\TextColumn;
-use Illuminate\Database\Eloquent\Model;
 use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\ActionsPosition;
-use App\Filament\Resources\InformasiResource;
-use Torgodly\Html2Media\Tables\Actions\Html2MediaAction;
+use Filament\Tables\Table;
+use Filament\Widgets\TableWidget;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class InformasiPublished extends TableWidget
 {
@@ -41,11 +35,12 @@ class InformasiPublished extends TableWidget
             $urlInformasi = '';
 
             if ($calonSiswa) {
-                $urlFormulir = "/formulir";
-                $urlViewFormulir = "/formulir/" . $calonSiswa->id;
-                $urlInformasi = "/informasi";
+                $urlFormulir = '/formulir';
+                $urlViewFormulir = '/formulir/'.$calonSiswa->id;
+                $urlInformasi = '/informasi';
             }
         }
+
         return $table
             ->headerActions([
                 Action::make('label_status_pendaftaran')
@@ -60,7 +55,7 @@ class InformasiPublished extends TableWidget
                     ->color(function () {
                         $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
 
-                        if (!$calonSiswa) {
+                        if (! $calonSiswa) {
                             return 'warning'; // Default jika data calon siswa tidak ditemukan
                         }
 
@@ -81,12 +76,13 @@ class InformasiPublished extends TableWidget
                         } elseif ($status === 'Diterima Di Kelas Unggulan') {
                             return 'info';
                         }
+
                         return 'warning';
                     })
                     ->icon(function () {
                         $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
 
-                        if (!$calonSiswa) {
+                        if (! $calonSiswa) {
                             return 'heroicon-o-arrow-path'; // Default jika data calon siswa tidak ditemukan
                         }
 
@@ -107,6 +103,7 @@ class InformasiPublished extends TableWidget
                         } elseif ($status === 'Diterima Di Kelas Unggulan') {
                             return 'heroicon-o-shield-check';
                         }
+
                         return 'gray';
                     })
                     ->outlined()
@@ -187,7 +184,7 @@ class InformasiPublished extends TableWidget
                     ->color(function () {
                         $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
 
-                        if (!$calonSiswa) {
+                        if (! $calonSiswa) {
                             return ''; // Default jika data calon siswa tidak ditemukan
                         }
 
@@ -208,12 +205,13 @@ class InformasiPublished extends TableWidget
                         } elseif ($status === 'Diterima Di Kelas Unggulan') {
                             return 'info';
                         }
+
                         return 'warning';
                     })
                     ->icon(function () {
                         $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
 
-                        if (!$calonSiswa) {
+                        if (! $calonSiswa) {
                             return ''; // Default jika data calon siswa tidak ditemukan
                         }
 
@@ -234,6 +232,7 @@ class InformasiPublished extends TableWidget
                         } elseif ($status === 'Diterima Di Kelas Unggulan') {
                             return 'heroicon-o-shield-check';
                         }
+
                         return 'gray';
                     })
                     ->outlined()

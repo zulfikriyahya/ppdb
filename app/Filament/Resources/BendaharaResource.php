@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\BendaharaResource\Pages;
 use App\Models\Bendahara;
 use Filament\Resources\Resource;
-use App\Filament\Resources\BendaharaResource\Pages;
 
 class BendaharaResource extends Resource
 {

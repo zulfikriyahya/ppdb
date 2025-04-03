@@ -2,16 +2,15 @@
 
 namespace App\Filament\Resources\KetuaResource\Pages;
 
-use Filament\Forms\Form;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Section;
-use Illuminate\Database\Eloquent\Model;
-use Filament\Forms\Components\TextInput;
-use Filament\Resources\Pages\EditRecord;
 use App\Filament\Resources\KetuaResource;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Wizard\Step;
+use Filament\Resources\Pages\EditRecord;
 use Filament\Resources\Pages\EditRecord\Concerns\HasWizard;
+use Illuminate\Database\Eloquent\Model;
 
 class EditKetua extends EditRecord
 {
@@ -53,7 +52,7 @@ class EditKetua extends EditRecord
                                 ->prefix('NIP'),
                             Select::make('tahun_pendaftaran_id')
                                 ->label('Tahun Pendaftaran')
-                                ->relationship('tahunPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
+                                ->relationship('tahunPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif'))
                                 ->native(false)
                                 ->required()
                                 ->validationMessages([

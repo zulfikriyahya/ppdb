@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\PimpinanResource\Pages;
 use App\Models\Pimpinan;
 use Filament\Resources\Resource;
-use App\Filament\Resources\PimpinanResource\Pages;
 
 class PimpinanResource extends Resource
 {

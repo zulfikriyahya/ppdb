@@ -2,13 +2,13 @@
 
 namespace App\Filament\Resources\CalonSiswaResource\Pages;
 
-use Carbon\Carbon;
-use App\Models\CalonSiswa;
-use Filament\Support\Colors\Color;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-use Filament\Resources\Pages\ViewRecord;
 use App\Filament\Resources\CalonSiswaResource;
+use App\Models\CalonSiswa;
+use Carbon\Carbon;
+use Filament\Resources\Pages\ViewRecord;
+use Filament\Support\Colors\Color;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Torgodly\Html2Media\Actions\Html2MediaAction;
 
 class ViewCalonSiswa extends ViewRecord
@@ -35,11 +35,11 @@ class ViewCalonSiswa extends ViewRecord
                 ->format('a4', 'mm') // A4 format with mm units
                 ->enableLinks() // Enable links in PDF
                 ->margin([10, 10, 10, 10]) // Set custom margins
-                ->content(fn($record) => view('formulir', ['record' => $record]))
+                ->content(fn ($record) => view('formulir', ['record' => $record]))
                 ->visible(function () {
                     $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
 
-                    if (!$calonSiswa) {
+                    if (! $calonSiswa) {
                         return 'warning'; // Default jika data calon siswa tidak ditemukan
                     }
 
@@ -68,14 +68,14 @@ class ViewCalonSiswa extends ViewRecord
                 ->format('a4', 'mm') // A4 format with mm units
                 ->enableLinks() // Enable links in PDF
                 ->margin([10, 10, 10, 10]) // Set custom margins
-                ->content(fn($record) => view('kartu-tes', ['record' => $record])) // Set content
+                ->content(fn ($record) => view('kartu-tes', ['record' => $record])) // Set content
                 ->visible(function () {
                     $tahunPendaftaran = DB::table('tahun_pendaftarans')
                         ->where('status', 'Aktif')
                         ->first();
 
                     // Pastikan $tahunPendaftaran valid
-                    if (!$tahunPendaftaran || empty($tahunPendaftaran->tanggal_penerbitan_kartu_tes_mulai) || empty($tahunPendaftaran->tanggal_penerbitan_kartu_tes_selesai)) {
+                    if (! $tahunPendaftaran || empty($tahunPendaftaran->tanggal_penerbitan_kartu_tes_mulai) || empty($tahunPendaftaran->tanggal_penerbitan_kartu_tes_selesai)) {
                         return false;
                     }
 
@@ -112,7 +112,7 @@ class ViewCalonSiswa extends ViewRecord
                 ->format('a4', 'mm') // A4 format with mm units
                 ->enableLinks() // Enable links in PDF
                 ->margin([10, 10, 10, 10]) // Set custom margins
-                ->content(fn($record) => view('skl', ['record' => $record])) // Set content
+                ->content(fn ($record) => view('skl', ['record' => $record])) // Set content
                 ->hidden(function () {
                     $tahunPendaftaran = DB::table('tahun_pendaftarans')
                         ->where('status', 'Aktif')
@@ -194,7 +194,7 @@ class ViewCalonSiswa extends ViewRecord
                 ->format('a4', 'mm') // A4 format with mm units
                 ->enableLinks() // Enable links in PDF
                 ->margin([10, 10, 10, 10]) // Set custom margins
-                ->content(fn($record) => view('pakta-integritas', ['record' => $record])) // Set content
+                ->content(fn ($record) => view('pakta-integritas', ['record' => $record])) // Set content
                 ->hidden(function () {
                     $tahunPendaftaran = DB::table('tahun_pendaftarans')
                         ->where('status', 'Aktif')

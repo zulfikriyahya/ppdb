@@ -2,12 +2,12 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\SekolahAsalResource\Pages\CreateSekolahAsal;
+use App\Filament\Resources\SekolahAsalResource\Pages\EditSekolahAsal;
+use App\Filament\Resources\SekolahAsalResource\Pages\ListSekolahAsals;
+use App\Filament\Resources\SekolahAsalResource\Pages\ViewSekolahAsal;
 use App\Models\SekolahAsal;
 use Filament\Resources\Resource;
-use App\Filament\Resources\SekolahAsalResource\Pages\EditSekolahAsal;
-use App\Filament\Resources\SekolahAsalResource\Pages\ViewSekolahAsal;
-use App\Filament\Resources\SekolahAsalResource\Pages\ListSekolahAsals;
-use App\Filament\Resources\SekolahAsalResource\Pages\CreateSekolahAsal;
 
 class SekolahAsalResource extends Resource
 {

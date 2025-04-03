@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\KelasResource\Pages;
 use App\Models\Kelas;
 use Filament\Resources\Resource;
-use App\Filament\Resources\KelasResource\Pages;
 
 class KelasResource extends Resource
 {

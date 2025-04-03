@@ -2,18 +2,18 @@
 
 namespace App\Filament\Resources\InformasiResource\Pages;
 
+use App\Filament\Resources\InformasiResource;
 use Filament\Actions;
-use Filament\Tables\Table;
+use Filament\Resources\Pages\ListRecords;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Enums\FiltersLayout;
-use Filament\Resources\Pages\ListRecords;
-use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Enums\ActionsPosition;
-use App\Filament\Resources\InformasiResource;
-use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Table;
 
 class ListInformasis extends ListRecords
 {
@@ -55,7 +55,7 @@ class ListInformasis extends ListRecords
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'Publish' => 'success',
                         'Draft' => 'gray'
                     })

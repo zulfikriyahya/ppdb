@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\EkstrakurikulerResource\Pages;
 use App\Models\Ekstrakurikuler;
 use Filament\Resources\Resource;
-use App\Filament\Resources\EkstrakurikulerResource\Pages;
 
 class EkstrakurikulerResource extends Resource
 {
