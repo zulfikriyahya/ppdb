@@ -10,7 +10,7 @@ use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 
 class FormulirOverview extends BaseWidget
 {
-    // protected static bool $isLazy = false;
+    protected static bool $isLazy = false;
     protected ?string $heading = '♾️ Navigasi';
     // protected ?string $description = 'An overview of some analytics.';
     protected static ?int $sort = 0;
@@ -68,7 +68,7 @@ class FormulirOverview extends BaseWidget
                         'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Berkas+Tidak+Lengkap'",
                     ]),
 
-                Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Diverifikasi')->count() . ' Peserta')
+                Stat::make('', CalonSiswa::whereNotIn('status_pendaftaran', ['Berkas Tidak Lengkap', 'Diproses'])->count() . ' Peserta')
                     ->description('Diverifikasi')
                     ->descriptionIcon('heroicon-o-clipboard-document-check', IconPosition::Before)
                     ->color('success')
@@ -200,7 +200,7 @@ class FormulirOverview extends BaseWidget
             //     'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Berkas+Tidak+Lengkap'",
             // ]),
 
-            Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Diverifikasi')->count() . ' Peserta')
+            Stat::make('', CalonSiswa::whereNotIn('status_pendaftaran', ['Berkas Tidak Lengkap', 'Diproses'])->count() . ' Peserta')
                 ->description('Diverifikasi')
                 ->descriptionIcon('heroicon-o-clipboard-document-check', IconPosition::Before)
                 ->color('success')
