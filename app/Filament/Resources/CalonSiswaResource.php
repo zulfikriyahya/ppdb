@@ -2243,7 +2243,7 @@ class CalonSiswaResource extends Resource
                         ->orientation('portrait') // Portrait orientation
                         ->format('a4', 'mm') // A4 format with mm units
                         ->enableLinks() // Enable links in PDF
-                        ->margin([10, 20, 10, 20]) // Set custom margins
+                        ->margin([10, 10, 10, 10]) // Set custom margins
                         ->content(fn($record) => view('formulir', ['record' => $record])) // Set Content
                         ->visible(fn(): string => CalonSiswa::count() > 0 && Auth::user()->username === 'administrator'),
 
@@ -2262,7 +2262,7 @@ class CalonSiswaResource extends Resource
                         ->orientation('portrait') // Portrait orientation
                         ->format('a4', 'mm') // A4 format with mm units
                         ->enableLinks() // Enable links in PDF
-                        ->margin([10, 20, 10, 20]) // Set custom margins
+                        ->margin([10, 10, 10, 10]) // Set custom margins
                         ->content(fn($record) => view('kartu-tes', ['record' => $record])) // Set content
                         ->visible(fn(): string => CalonSiswa::count() > 0 && Auth::user()->username === 'administrator'),
                     // ->visible(function () {
@@ -2307,7 +2307,7 @@ class CalonSiswaResource extends Resource
                         ->orientation('portrait') // Portrait orientation
                         ->format('a4', 'mm') // A4 format with mm units
                         ->enableLinks() // Enable links in PDF
-                        ->margin([10, 20, 10, 20]) // Set custom margins
+                        ->margin([10, 10, 10, 10]) // Set custom margins
                         ->content(fn($record) => view('skl', ['record' => $record])) // Set content
                         ->visible(fn(): string => CalonSiswa::count() > 0 && Auth::user()->username === 'administrator'),
                     // ->hidden(function () {
@@ -2390,7 +2390,7 @@ class CalonSiswaResource extends Resource
                         ->orientation('portrait') // Portrait orientation
                         ->format('a4', 'mm') // A4 format with mm units
                         ->enableLinks() // Enable links in PDF
-                        ->margin([10, 20, 10, 20]) // Set custom margins
+                        ->margin([10, 10, 10, 10]) // Set custom margins
                         ->content(fn($record) => view('pakta-integritas', ['record' => $record])) // Set content
                         ->visible(fn(): string => CalonSiswa::count() > 0 && Auth::user()->username === 'administrator'),
                     // ->hidden(function () {

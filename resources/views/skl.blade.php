@@ -1,122 +1,315 @@
-<span> Nama Lengkap : {{ $record->nama ?? '' }} </span>
-<span> NIK : {{ $record->nik ?? '' }} </span>
-<span> {{ $record->nisn ?? '' }} </span>
-<span> {{ $record->tempat_lahir ?? '' }} </span>
-<span> {{ $record->tanggal_lahir ?? '' }} </span>
-<span> {{ $record->tahun_lulus ?? '' }} </span>
-<span> {{ $record->jenis_kelamin ?? '' }} </span>
-<span> {{ $record->golongan_darah ?? '' }} </span>
-<span> {{ $record->agama ?? '' }} </span>
-<span> {{ $record->anak_ke ?? '' }} </span>
-<span> {{ $record->jumlah_saudara ?? '' }} </span>
-<span> {{ $record->tinggal_bersama ?? '' }} </span>
-<span> {{ $record->jarak_ke_sekolah ?? '' }} </span>
-<span> {{ $record->disabilitas ?? '' }} </span>
-<span> {{ $record->tinggi_badan ?? '' }} </span>
-<span> {{ $record->berat_badan ?? '' }} </span>
-<span> {{ $record->no_kip ?? '' }} </span>
-<span> {{ $record->siswa_telepon ?? '' }} </span>
-<span> {{ $record->siswa_alamat ?? '' }} </span>
-<span> {{ $record->siswaKelurahan->nama ?? '' }} </span>
-<span> {{ $record->siswaKecamatan->nama ?? '' }} </span>
-<span> {{ $record->siswaKabupaten->nama ?? '' }} </span>
-<span> {{ $record->siswaProvinsi->nama ?? '' }} </span>
-<span> {{ $record->siswaNegara->nama ?? '' }} </span>
-<img src="{{ Storage::url($record->berkas_foto ?? '') }}" alt="Foto">
-<img src="{{ Storage::url($record->berkas_kk ?? '') }}" alt="KK">
-<img src="{{ Storage::url($record->berkas_akta ?? '') }}" alt="Akta">
-<img src="{{ Storage::url($record->berkas_kip ?? '') }}" alt="KIP">
-<img src="{{ Storage::url($record->berkas_nisn ?? '') }}" alt="NISN">
-<img src="{{ Storage::url($record->berkas_skbb ?? '') }}" alt="SKBB">
-<img src="{{ Storage::url($record->berkas_skab ?? '') }}" alt="SKAB">
-<img src="{{ Storage::url($record->berkas_prestasi ?? '') }}" alt="Prestasi">
+<?php 
+use App\Models\Ketua;
+use App\Models\Sekolah;
+use App\Models\Pimpinan;
+use App\Models\Sekretaris;
+use App\Models\TahunPendaftaran;
+use Illuminate\Support\Facades\Storage;
 
-{{-- Asal Sekolah --}}
-<span> {{ $record->sekolahAsal->nama ?? '' }} </span>
-{{-- Jalur Pendaftaran --}}
-<span> {{ $record->jalurPendaftaran->nama ?? '' }} </span>
-{{-- Prestasi --}}
-<span> {{ $record->prestasi->jenis ?? '' }} {{ $record->prestasi->nama ?? '' }} {{ $record->prestasi->tingkat ?? '' }} {{ $record->prestasi->kategori ?? '' }} {{ $record->prestasi->peringkat ?? '' }} </span>
-{{-- Peminatan Ekstrakurikuler --}}
-<span> {{ $record->peminatan_ekstrakurikuler ?? '' }} </span>
-{{-- Peminatan Mata Pelajaran --}}
-<span> {{ $record->peminatan_pelajaran ?? '' }} </span>
+    $instansi = Sekolah::first();
+    $tahunPendaftaran = TahunPendaftaran::where('status', 'Aktif')->first();
+    $sekretaris = Sekretaris::where('status', 'Aktif')->first();
+    $ketua = Ketua::where('status', 'Aktif')->first();
+    $pimpinan = Pimpinan::where('status', 'Aktif')->first();
+    $jenisKelamin = $record->jenis_kelamin === 'Pria' ? 'Laki-laki' : 'Perempuan';
+?>
 
+    <table width="100%">
+        <tr>
+            <td align="center">
+                <img src="{{ $instansi->logo_institusi ? Storage::url($instansi->logo_institusi) : asset('img/logo-institusi.png') }}" alt="Logo Instansi" width="90px">
+            </td>
 
+            <td align="center">
+                <b> KEMENTERIAN AGAMA REPUBLIK INDONESIA </b> <br>
+                <b> KANTOR KEMENTERIAN AGAMA KABUPATEN PANDEGLANG </b> <br>
+                <b> MADRASAH TSANAWIYAH NEGERI 1 PANDEGLANG </b> <br>
+                <small>
+                    {{ ucwords(strtolower($instansi->alamat)) ?? ''}} {{ ucwords(strtolower($instansi->kelurahan->nama)) ?? '' }}, {{ ucwords(strtolower($instansi->kecamatan->nama)) ?? '' }}, {{ ucwords(strtolower($instansi->kabupaten->nama)) ?? '' }} - {{ ucwords(strtolower($instansi->provinsi->nama)) ?? '' }}
+                </small>
+                <br>
+                <small> Website: {{ $instansi->website ?? 'https://mtsn1pandeglang.sch.id' }} Email: {{ $instansi->email ?? 'adm@mtsn1pandeglang.sch.id' }}
+                </small> <br>
+            </td>
 
-<span> {{ $record->ibu_nama ?? '' }} </span>
-<span> {{ $record->ibu_telepon ?? '' }} </span>
-<span> {{ $record->ibu_pekerjaan ?? '' }} </span>
-<span> {{ $record->ibu_status ?? '' }} </span>
-<span> {{ $record->ibu_alamat ?? '' }} </span>
-<span> {{ $record->ibuKelurahan->nama ?? '' }} </span>
-<span> {{ $record->ibuKecamatan->nama ?? '' }} </span>
-<span> {{ $record->ibuKabupaten->nama ?? '' }} </span>
-<span> {{ $record->ibuProvinsi->nama ?? '' }} </span>
-<span> {{ $record->ibuNegara->nama ?? '' }} </span>
+            <td align="center">
+                <img src="{{ $instansi->logo ? Storage::url($instansi->logo) : asset('img/logo.png') }}" alt="Logo Instansi" width="90px">
+            </td>
+        </tr>
+    </table>
+    <hr style="border: 1px solid">
+    <table width="100%">
+        <tr>
+            <td>
+                <br>
+            </td>
+        </tr>
+        <tr>
+            <td align="center" colspan="4">
+                <b>SURAT KEPUTUSAN KELULUSAN PPDBM</b>
+            </td>
+        </tr>
+        <tr>
+            <td align="center" colspan="4">
+                <span>Nomor : {{ $instansi->nomor_surat }}</span>
+            </td>
+        </tr>
 
+        <tr>
+            <td>
+                <br>
+            </td>
+        </tr>
+    </table>
 
-<span> {{ $record->ayah_nama ?? '' }} </span>
-<span> {{ $record->ayah_telepon ?? '' }} </span>
-<span> {{ $record->ayah_pekerjaan ?? '' }} </span>
-<span> {{ $record->ayah_status ?? '' }} </span>
-<span> {{ $record->ayah_alamat ?? '' }} </span>
-<span> {{ $record->ayahKelurahan->nama ?? '' }} </span>
-<span> {{ $record->ayahKecamatan->nama ?? '' }} </span>
-<span> {{ $record->ayahKabupaten->nama ?? '' }} </span>
-<span> {{ $record->ayahProvinsi->nama ?? '' }} </span>
-<span> {{ $record->ayahNegara->nama ?? '' }} </span>
+    <span style="text-align: justify">
+        <p>
+            Berdasarkan hasil <b>Sidang Panitia Penerimaan Peserta Didik Baru Madrasah (PPDBM)</b> Tahun Pelajaran {{ $tahunPendaftaran->nama }} yang mengacu pada hasil Tes Akademik, Praktik Ibadah, dan Baca Tulis Al-Qur'an (BTQ), memutuskan:
+        </p>
+    </span>
+    {{-- Tabel Identitas --}}
+    <table width="100%">
+        <tr>
+            <td width="170px">
+                <span>Nama Lengkap</span>
+            </td>
+            <td>
+                <span>:</span>
+            </td>
+            <td>
+                <strong>
+                    {{ ucwords(strtoupper($record->nama)) ?? '' }}
+                </strong>
+            </td>
+            <td rowspan="9" width="140px" style="align-content: flex-start">
+                <img src="{{ Storage::url($record->berkas_foto ?? '') }}" alt="Foto">
+            </td>
+        </tr>
 
+        <tr>
+            <td>
+                <span>Jalur Pendaftaran</span>
+            </td>
+            <td>
+                <span>:</span>
+            </td>
+            <td>
+                {{ ucwords(strtolower($record->jalurPendaftaran->nama)) ?? '' }}
+            </td>
+        </tr>
 
-<span> {{ $record->wali_nama ?? '' }} </span>
-<span> {{ $record->wali_telepon ?? '' }} </span>
-<span> {{ $record->wali_pekerjaan ?? '' }} </span>
-<span> {{ $record->wali_status ?? '' }} </span>
-<span> {{ $record->wali_alamat ?? '' }} </span>
-<span> {{ $record->waliKelurahan->nama ?? '' }} </span>
-<span> {{ $record->waliKecamatan->nama ?? '' }} </span>
-<span> {{ $record->waliKabupaten->nama ?? '' }} </span>
-<span> {{ $record->waliProvinsi->nama ?? '' }} </span>
-<span> {{ $record->waliNegara->nama ?? '' }} </span>
+        <tr>
+            <td>
+                <span>NISN</span>
+            </td>
+            <td>
+                <span>:</span>
+            </td>
+            <td>
+                {{ $record->nisn ?? '' }}
+            </td>
+        </tr>
 
-{{-- Hasil Nilai Tes --}}
-{{-- Nilai IPA --}}
-<span> {{ $record->nilai_ipa ?? '' }} </span>
-{{-- Nilai IPS --}}
-<span> {{ $record->nilai_ips ?? '' }} </span>
-{{-- Nilai Matematika --}}
-<span> {{ $record->nilai_matematika ?? '' }} </span>
-{{-- Nilai Indonesia --}}
-<span> {{ $record->nilai_indonesia ?? '' }} </span>
-{{-- Nilai Inggris --}}
-<span> {{ $record->nilai_inggris ?? '' }} </span>
-{{-- Nilai Arab --}}
-<span> {{ $record->nilai_arab ?? '' }} </span>
-{{-- Nilai Akademik --}}
-<span> {{ $record->bobot_nilai_akademik ?? '' }} </span>
-{{-- Nilai Praktik --}}
-<span> {{ $record->bobot_nilai_praktik ?? '' }} </span>
-{{-- Nilai Akademik --}}
-<span> {{ $record->nilai_akademik ?? '' }} </span>
-{{-- Nilai Praktik --}}
-<span> {{ $record->nilai_praktik ?? '' }} </span>
+        <tr>
+            <td>
+                <span>Tempat, Tanggal Lahir</span>
+            </td>
+            <td>
+                <span>:</span>
+            </td>
+            <td>
+                {{ ucwords(strtolower($record->tempat_lahir)) ?? '' }}, {{ ucwords(strtolower(date('d F Y', strtotime($record->tanggal_lahir)))) ?? '' }}
+            </td>
+        </tr>
 
-{{-- Status Pendaftaran --}}
-<span> {{ $record->status_pendaftaran ?? '' }} </span>
+        <tr>
+            <td>
+                <span>Asal Sekolah</span>
+            </td>
+            <td>
+                <span>:</span>
+            </td>
+            <td>
+                {{ ucwords(strtoupper($record->sekolahAsal->nama)) ?? '' }}
+            </td>
+        </tr>
 
-{{-- Kelas --}}
-<span> {{ $record->kelas_id ?? '' }} </span>
+        <tr>
+            <td>
+                <span>Tahun Lulus</span>
+            </td>
+            <td>
+                <span>:</span>
+            </td>
+            <td>
+                {{ $record->tahun_lulus ?? '' }}
+            </td>
+        </tr>
 
-{{-- Cetak Kartu Tes --}}
-{{-- Sesi Tes --}}
-<span> {{ $record->tes_sesi ?? '' }} </span>
-{{-- Ruang Tes --}}
-<span> {{ $record->tes_ruang ?? '' }} </span>
-{{-- Mulai Tes Akademik --}}
-<span> {{ $record->tes_akademik_mulai ?? '' }} </span>
-{{-- Selesai Tes Akademik --}}
-<span> {{ $record->tes_akademik_selesai ?? '' }} </span>
-{{-- Mulai Tes Praktik --}}
-<span> {{ $record->tes_praktik_mulai ?? '' }} </span>
-{{-- Selesai Tes Praktik --}}
-<span> {{ $record->tes_praktik_selesai ?? '' }} </span>
+        <tr>
+            <td>
+                <span>Jenis Lelamin</span>
+            </td>
+            <td>
+                <span>:</span>
+            </td>
+            <td>
+                {{ $jenisKelamin ?? '' }}
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <span>Status Pendaftaran</span>
+            </td>
+            <td>
+                <span>:</span>
+            </td>
+            <td>
+                <b>{{ ucwords(strtoupper($record->status_pendaftaran)) ?? '' }}</b>
+            </td>
+        </tr>
+        @if (false)
+            <tr>
+                <td>
+                    <span>Diterima di Kelas</span>
+                </td>
+                <td>
+                    <span>:</span>
+                </td>
+                <td>
+                    <b>{{ ucwords(strtoupper($record->kelas_id)) ?? '' }}</b>
+                </td>
+            </tr>    
+        @endif
+
+    </table>
+
+    <span style="text-align: justify">
+        <p>
+            Demikian Surat Keputusan ini kami sampaikan untuk dapat ditindaklanjuti sebagaimana mestinya.
+        </p>
+    </span>
+
+    <table width='100%' border="1">
+        <tr>
+            <td width="60%"></td>
+            <td>Ditetapkan di</td>
+            <td>:</td>
+            <td>{{ ucwords(strtolower($instansi->kabupaten->nama)) ?? '' }}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>Pada tanggal</td>
+            <td>:</td>
+            <td>{{date('d F Y', strtotime($record->created_at)) ?? '' }}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td colspan="3">
+                <b>Panitia PPDBM MTs N 1 Pandeglang</b>
+            </td>
+        </tr>
+    </table>
+
+    <table width="100%">
+        <tr>
+            <td width="70%">
+            </td>
+            <td>
+                <span>
+                    {{-- {{ ucwords(strtolower($instansi->kabupaten->nama)) ?? '' }}, {{date('d F Y', strtotime($record->created_at)) ?? '' }} --}}
+                </span>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span>
+                    Ketua,
+                </span>
+            </td>
+            <td>
+                <span>
+                    Sekretaris,
+                </span>
+            </td>
+        </tr>
+        <tr height="90px">
+            <td>
+                <span>
+                    <img src="{{ $ketua->berkas_tte ? Storage::url($ketua->berkas_tte) : asset('img/tte.png') }}" alt="TTE Ketua" width="90px">
+                </span>
+            </td>
+            <td>
+                <span>
+                    <img src="{{ $sekretaris->berkas_tte ? Storage::url($sekretaris->berkas_tte) : asset('img/tte.png') }}" alt="TTE Sekretaris" width="90px">
+                </span>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span>
+                    <strong>
+                        {{ $ketua->nama ?? '' }}
+                    </strong>   
+                </span>
+            </td>
+            <td>
+                <span>
+                    <strong>
+                        {{ $sekretaris->nama ?? '' }}
+                    </strong>   
+                </span>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span>
+                    NIP {{ $ketua->nip ?? '' }}
+                </span>
+            </td>
+            <td>
+                <span>
+                    NIP {{ $sekretaris->nip ?? '' }}
+                </span>
+            </td>
+        </tr>
+    </table>
+
+    <table border="1" width="100%">
+        <tr align="center">
+            <td>
+                Mengetahui,
+            </td>
+        </tr>
+        <tr align="center">
+            <td>
+                <span>
+                    Kepala {{ ucwords(strtolower($instansi->nama)) ?? 'Madrasah Tsanawiyah Negeri 1 Pandeglang' }},
+                </span>
+            </td>
+        </tr>
+        <tr align="center" height="90px">
+            <td>
+                <span>
+                    <img src="{{ $pimpinan->berkas_tte ? Storage::url($pimpinan->berkas_tte) : asset('img/tte.png') }}" alt="TTE Pimpinan" width="90px">
+                </span>
+            </td>
+        </tr>
+        <tr align="center">
+            <td>
+                <span>
+                    <strong>
+                        {{ $pimpinan->nama ?? '' }}
+                    </strong>  
+                </span>
+            </td>
+        </tr>
+        <tr align="center">
+            <td>
+                <span>
+                    NIP {{ $pimpinan->nip ?? '' }}
+                </span>
+            </td>
+        </tr>
+    </table>

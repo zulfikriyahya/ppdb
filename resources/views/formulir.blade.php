@@ -260,7 +260,7 @@ use Illuminate\Support\Facades\Storage;
         </tr>
     </table>
 
-        <table border="1" width="100%">
+    <table border="1" width="100%">
         <tr align="center">
             <td>
                 Mengetahui,
@@ -297,45 +297,3 @@ use Illuminate\Support\Facades\Storage;
             </td>
         </tr>
     </table>
-
-{{-- 
-    <table width="100%">
-        <tr>
-            <td rowspan="6" width="60%">
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-               {{ $record->siswaKabupaten->nama ?? '' }}, {{date('d F Y', strtotime($record->created_at)) ?? '' }}
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <span>Sekretaris,</span>
-            </td>
-        </tr>
-        <tr>
-            <td height="90px">
-                <img src="{{ $sekretaris->berkas_tte ? Storage::url($sekretaris->berkas_tte) : asset('img/tte.png') }}" alt="TTE Sekretaris" width="90px">
-
-            </td>
-        </tr>
-        <tr>
-            <td>
-               <span>
-                <strong>
-                    {{ $sekretaris->nama ?? '' }}
-                </strong>   
-               </span>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <span>
-                    NIP {{ $sekretaris->nip ?? '' }}
-                </span>
-            </td>
-        </tr> 
-    </table>
---}}
