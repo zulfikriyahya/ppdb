@@ -18,30 +18,11 @@ class EditProfileCustom extends EditProfile
 
     protected function getForms(): array
     {
-        if (Auth::user()->username === 'administrator') {
-            return [
-                'form' => $this->form(
-                    $this->makeForm()
-                        ->schema([
-                            $this->getAvatarFormComponent(),
-                            $this->getNameFormComponent(),
-                            $this->getUsernameFormComponent(),
-                            $this->getEmailFormComponent(),
-                            $this->getPasswordFormComponent(),
-                            $this->getPasswordConfirmationFormComponent(),
-                        ])
-                        ->operation('edit')
-                        ->model($this->getUser())
-                        ->statePath('data')
-                        ->inlineLabel(! static::isSimple()),
-                ),
-            ];
-        }
-
         return [
             'form' => $this->form(
                 $this->makeForm()
                     ->schema([
+                        $this->getAvatarFormComponent(),
                         $this->getNameFormComponent(),
                         $this->getUsernameFormComponent(),
                         $this->getEmailFormComponent(),
