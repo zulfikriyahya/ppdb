@@ -2,18 +2,19 @@
 
 namespace App\Filament\Resources\InformasiResource\Pages;
 
-use App\Filament\Resources\InformasiResource;
 use Filament\Actions;
-use Filament\Resources\Pages\ListRecords;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Table;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Enums\FiltersLayout;
-use Filament\Tables\Table;
+use Filament\Resources\Pages\ListRecords;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Enums\ActionsPosition;
+use App\Filament\Resources\InformasiResource;
+use Filament\Tables\Actions\DeleteBulkAction;
 
 class ListInformasis extends ListRecords
 {
@@ -35,39 +36,18 @@ class ListInformasis extends ListRecords
             ->columns([
                 TextColumn::make('judul')
                     ->label('Judul')
-                    ->searchable(),
+                    ->badge(),
                 TextColumn::make('isi')
                     ->label('Uraian')
                     ->wrap()
-                    ->words(5)
-                    ->searchable(),
-                TextColumn::make('gambar')
-                    ->label('Lampiran')
-                    ->url('#')
-                    ->searchable(),
+                    ->words(10),
+                ImageColumn::make('gambar')
+                    ->label('Lampiran'),
                 TextColumn::make('tanggal')
                     ->label('Tanggal')
-                    ->dateTime()
-                    ->sortable(),
-                TextColumn::make('tahunPendaftaran.nama')
-                    ->label('Tahun Pendaftaran')
-                    ->sortable(),
-                TextColumn::make('status')
-                    ->label('Status')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'Publish' => 'success',
-                        'Draft' => 'gray'
-                    })
-                    ->searchable(),
-                TextColumn::make('created_at')
-                    ->label('Dibuat')
                     ->dateTime('d F Y H:i:s')
-                    ->sinceTooltip(),
-                TextColumn::make('updated_at')
-                    ->label('Diubah')
-                    ->dateTime('d F Y H:i:s')
-                    ->sinceTooltip(),
+                    ->sinceTooltip()
+                    ->sortable(),
             ])
             ->filters([])
             ->actions([

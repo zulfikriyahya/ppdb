@@ -2,17 +2,17 @@
 
 namespace App\Filament\Resources\InformasiResource\Pages;
 
-use App\Filament\Resources\InformasiResource;
-use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Get;
+use Filament\Forms\Form;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Section;
+use Illuminate\Database\Eloquent\Model;
+use Filament\Forms\Components\TextInput;
+use Filament\Resources\Pages\EditRecord;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Resources\Pages\EditRecord;
-use Illuminate\Database\Eloquent\Model;
+use App\Filament\Resources\InformasiResource;
+use Filament\Forms\Components\DateTimePicker;
 
 class EditInformasi extends EditRecord
 {
@@ -35,7 +35,7 @@ class EditInformasi extends EditRecord
                     ->schema([
                         Select::make('tahun_pendaftaran_id')
                             ->label('Tahun Pendaftaran')
-                            ->relationship('tahunPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif'))
+                            ->relationship('tahunPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
                             ->required()
                             ->native(false)
                             ->live()
@@ -45,7 +45,7 @@ class EditInformasi extends EditRecord
                             ->columnSpanFull(),
                     ]),
                 Section::make()
-                    ->visible(fn ($get) => $get('tahun_pendaftaran_id') !== null)
+                    ->visible(fn($get) => $get('tahun_pendaftaran_id') !== null)
                     ->schema([
                         TextInput::make('judul')
                             ->label('Judul')
@@ -66,6 +66,25 @@ class EditInformasi extends EditRecord
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ]),
+                        DateTimePicker::make('tanggal')
+                            ->label('Tanggal')
+                            ->default(now())
+                            ->dehydrated()
+                            ->required()
+                            ->hidden(fn(Get $get) => $get('status') !== 'Publish')
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
+                        FileUpload::make('gambar')
+                            ->label('Lampiran')
+                            ->maxSize('2048')
+                            ->minSize('10')
+                            ->downloadable(true)
+                            ->openable()
+                            ->deletable()
+                            ->fetchFileInformation(false)
+                            ->directory('assets/informasi')
+                            ->acceptedFileTypes(['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/pdf', 'image/png', 'image/jpeg', 'image/png', 'image/webp']),
                         RichEditor::make('isi')
                             ->label('Uraian')
                             ->required()
@@ -79,26 +98,7 @@ class EditInformasi extends EditRecord
                             // ->fileAttachmentsDisk('s3')
                             ->fileAttachmentsDirectory('lampiran-informasi')
                             ->fileAttachmentsVisibility('private')
-                            ->disableGrammarly(),
-                        FileUpload::make('gambar')
-                            ->label('Lampiran')
-                            ->maxSize('2048')
-                            ->minSize('10')
-                            ->downloadable(true)
-                            ->openable()
-                            ->deletable()
-                            ->fetchFileInformation(false)
-                            ->directory('assets/informasi')
-                            ->acceptedFileTypes(['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/pdf', 'image/png', 'image/jpeg', 'image/png', 'image/webp']),
-
-                        DateTimePicker::make('tanggal')
-                            ->label('Tanggal')
-                            ->default(now())
-                            ->required()
-                            ->hidden(fn (Get $get) => $get('status') !== 'Publish')
-                            ->validationMessages([
-                                'required' => 'Form ini wajib diisi.',
-                            ])
+                            ->disableGrammarly()
                             ->columnSpanFull(),
                     ])
                     ->columns([
