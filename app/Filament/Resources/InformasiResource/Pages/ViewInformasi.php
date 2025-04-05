@@ -64,7 +64,6 @@ class ViewInformasi extends ViewRecord
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ]),
-
                         DateTimePicker::make('tanggal')
                             ->label('Tanggal')
                             ->default(now())
@@ -83,7 +82,6 @@ class ViewInformasi extends ViewRecord
                             ->fetchFileInformation(false)
                             ->directory('assets/informasi')
                             ->acceptedFileTypes(['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/pdf', 'image/png', 'image/jpeg', 'image/png', 'image/webp']),
-
                         RichEditor::make('isi')
                             ->label('Uraian')
                             ->required()
