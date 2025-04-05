@@ -16,7 +16,7 @@ class ShieldSeeder extends Seeder
         {
         "name":"panitia","guard_name":"web",
         "permissions":[
-        "update_calon::siswa","view_calon::siswa","view_any_calon::siswa",
+        "update_calon::siswa","view_any_calon::siswa",
         "update_informasi","create_informasi","view_informasi","view_any_informasi"
         ]},
         {

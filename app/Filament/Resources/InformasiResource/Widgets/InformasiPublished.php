@@ -50,7 +50,7 @@ class InformasiPublished extends TableWidget
                     ->color('gray')
                     ->disabled()
                     ->size('sm')
-                    ->hidden(Auth::user()->username === 'administrator' || $calonSiswa === null || $calonSiswa->status_pendaftaran === 'Diterima' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Unggulan' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Reguler' || $calonSiswa->status_pendaftaran === 'Ditolak'),
+                    ->hidden(Auth::user()->roles->first()->name !== 'peserta' || $calonSiswa === null || $calonSiswa->status_pendaftaran === 'Diterima' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Unggulan' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Reguler' || $calonSiswa->status_pendaftaran === 'Ditolak'),
                 Action::make('status_pendaftaran')
                     ->label($label)
                     ->color(function () {
@@ -110,7 +110,7 @@ class InformasiPublished extends TableWidget
                     ->outlined()
                     ->size('sm')
                     ->url($urlFormulir)
-                    ->hidden(Auth::user()->username === 'administrator' || $calonSiswa === null || $calonSiswa->status_pendaftaran === 'Diterima' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Unggulan' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Reguler' || $calonSiswa->status_pendaftaran === 'Ditolak'),
+                    ->hidden(Auth::user()->roles->first()->name !== 'peserta' || $calonSiswa === null || $calonSiswa->status_pendaftaran === 'Diterima' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Unggulan' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Reguler' || $calonSiswa->status_pendaftaran === 'Ditolak'),
 
                 Action::make('label_status_kelulusan')
                     ->label('Status Pendaftaran :')
