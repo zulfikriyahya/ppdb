@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use BezhanSalleh\FilamentShield\Support\Utils;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\PermissionRegistrar;
+use BezhanSalleh\FilamentShield\Support\Utils;
 
 class ShieldSeeder extends Seeder
 {
@@ -16,13 +16,15 @@ class ShieldSeeder extends Seeder
         {
         "name":"panitia","guard_name":"web",
         "permissions":[
-        
+        "update_calon::siswa","view_calon::siswa","view_any_calon::siswa",
+        "update_informasi","create_informasi","view_informasi","view_any_informasi"
         ]},
         {
         "name":"peserta",
         "guard_name":"web",
         "permissions":[
-        "update_calon::siswa","create_calon::siswa","view_calon::siswa","view_any_calon::siswa"
+        "update_calon::siswa","create_calon::siswa","view_calon::siswa","view_any_calon::siswa",
+        "view_informasi","view_any_informasi"
         ]
         },
         {
@@ -54,7 +56,7 @@ class ShieldSeeder extends Seeder
 
                 if (! blank($rolePlusPermission['permissions'])) {
                     $permissionModels = collect($rolePlusPermission['permissions'])
-                        ->map(fn ($permission) => $permissionModel::firstOrCreate([
+                        ->map(fn($permission) => $permissionModel::firstOrCreate([
                             'name' => $permission,
                             'guard_name' => $rolePlusPermission['guard_name'],
                         ]))

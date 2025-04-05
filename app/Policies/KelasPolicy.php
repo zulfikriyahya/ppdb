@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\Kelas;
 use App\Models\User;
+use App\Models\Kelas;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class KelasPolicy

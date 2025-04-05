@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\Anggota;
 use App\Models\User;
+use App\Models\Anggota;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class AnggotaPolicy

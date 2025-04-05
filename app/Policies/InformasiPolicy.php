@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\Informasi;
 use App\Models\User;
+use App\Models\Informasi;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class InformasiPolicy
