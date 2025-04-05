@@ -11,8 +11,8 @@ class SekretarisSeeder extends Seeder
     {
         $dataSekretaris = [
             [
-                'nama' => 'Mahbudin, S.Pd.I., M.Pd.',
-                'nip' => '',
+                'nama' => 'Hj. Oom Sunarsih, S.Pd.I., M.Pd.I.',
+                'nip' => '197205042005012007',
                 'tahun_pendaftaran_id' => '1',
                 'berkas_foto' => '/img/avatar.png',
                 'berkas_tte' => '/img/tte.png',

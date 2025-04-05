@@ -12,7 +12,7 @@ class BendaharaSeeder extends Seeder
         $dataBendahara = [
             [
                 'nama' => 'Didin Rosyidin, S.E., M.A.P.',
-                'nip' => '',
+                'nip' => '197608262005011000',
                 'tahun_pendaftaran_id' => '1',
                 'berkas_foto' => '/img/avatar.png',
                 'berkas_tte' => '/img/tte.png',

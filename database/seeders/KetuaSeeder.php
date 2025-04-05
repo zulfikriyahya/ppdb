@@ -12,7 +12,7 @@ class KetuaSeeder extends Seeder
         $dataKetua = [
             [
                 'nama' => 'Umar Mu\'tamar, S.Ag.',
-                'nip' => '',
+                'nip' => '196903061998031004',
                 'tahun_pendaftaran_id' => '1',
                 'berkas_foto' => '/img/avatar.png',
                 'berkas_tte' => '/img/tte.png',
