@@ -2,15 +2,16 @@
 
 namespace App\Providers;
 
-use Filament\Support\Facades\FilamentColor;
+use Filament\Facades\Filament;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\ServiceProvider;
+use Filament\Support\Facades\FilamentColor;
 
 class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        // FilamentColor::register([]);
+        //
     }
 
     public function boot(): void

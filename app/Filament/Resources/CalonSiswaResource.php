@@ -122,7 +122,7 @@ class CalonSiswaResource extends Resource
                                                 // Jalur Pendaftaran
                                                 Select::make('jalur_pendaftaran_id')
                                                     ->label('Jalur Pendaftaran')
-                                                    ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif')) // Menampilkan data jalurPendaftaran dengan kondisi statusnya aktif saja
+                                                    ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
                                                     ->required()
                                                     ->validationMessages([
                                                         'required' => 'Form ini wajib diisi.',
@@ -1652,70 +1652,48 @@ class CalonSiswaResource extends Resource
     {
         $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
         $label = $calonSiswa ? $calonSiswa->status_pendaftaran : '';
+        $status = ['Diterima', 'Diterima Di Kelas Unggulan', 'Diterima Di Kelas Reguler', 'Ditolak'];
 
         return $table
             ->headerActions([
-                // Status Pendaftaran === Ditampilkan ketika Waktu Pengumuman
                 Action::make('status_pendaftaran')
                     ->label($label)
                     ->color(function () {
                         $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
-
                         if (! $calonSiswa) {
-                            return 'warning'; // Default jika data calon siswa tidak ditemukan
-                        }
-
-                        $status = $calonSiswa->status_pendaftaran;
-
-                        if ($status === 'Diproses') {
                             return 'warning';
-                        } elseif ($status === 'Diverifikasi') {
-                            return 'success';
-                        } elseif ($status === 'Berkas Tidak Lengkap') {
-                            return 'warning';
-                        } elseif ($status === 'Ditolak') {
-                            return 'danger';
-                        } elseif ($status === 'Diterima') {
-                            return 'success';
-                        } elseif ($status === 'Diterima Di Kelas Reguler') {
-                            return 'success';
-                        } elseif ($status === 'Diterima Di Kelas Unggulan') {
-                            return 'info';
                         }
-
-                        return 'warning';
+                        $status = [
+                            'Diproses' => 'warning',
+                            'Diverifikasi' => 'success',
+                            'Berkas Tidak Lengkap' => 'warning',
+                            'Ditolak' => 'danger',
+                            'Diterima' => 'success',
+                            'Diterima Di Kelas Reguler' => 'success',
+                            'Diterima Di Kelas Unggulan' => 'info',
+                        ];
+                        return $status[$calonSiswa->status_pendaftaran] ?? 'warning';
                     })
                     ->icon(function () {
                         $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
-
                         if (! $calonSiswa) {
-                            return 'heroicon-o-arrow-path'; // Default jika data calon siswa tidak ditemukan
-                        }
-
-                        $status = $calonSiswa->status_pendaftaran;
-
-                        if ($status === 'Diproses') {
                             return 'heroicon-o-arrow-path';
-                        } elseif ($status === 'Diverifikasi') {
-                            return 'heroicon-o-clipboard-document-check';
-                        } elseif ($status === 'Berkas Tidak Lengkap') {
-                            return 'heroicon-o-document-minus';
-                        } elseif ($status === 'Ditolak') {
-                            return 'heroicon-o-no-symbol';
-                        } elseif ($status === 'Diterima') {
-                            return 'heroicon-o-check-circle';
-                        } elseif ($status === 'Diterima Di Kelas Reguler') {
-                            return 'heroicon-o-shield-check';
-                        } elseif ($status === 'Diterima Di Kelas Unggulan') {
-                            return 'heroicon-o-shield-check';
                         }
-
-                        return 'gray';
+                        $status = [
+                            'Diproses' => 'heroicon-o-arrow-path',
+                            'Diverifikasi' => 'heroicon-o-clipboard-document-check',
+                            'Berkas Tidak Lengkap' => 'heroicon-o-document-minus',
+                            'Ditolak' => 'heroicon-o-no-symbol',
+                            'Diterima' => 'heroicon-o-check-circle',
+                            'Diterima Di Kelas Reguler' => 'heroicon-o-shield-check',
+                            'Diterima Di Kelas Unggulan' => 'heroicon-o-shield-check',
+                        ];
+                        return $status[$calonSiswa->status_pendaftaran] ?? 'gray';
                     })
                     ->outlined()
                     ->size('sm')
                     ->disabled()
-                    ->hidden(Auth::user()->roles->first()->name === 'administrator' || $calonSiswa === null || $calonSiswa->status_pendaftaran === 'Diterima' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Unggulan' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Reguler' || $calonSiswa->status_pendaftaran === 'Ditolak'),
+                    ->hidden(Auth::user()->roles->first()->name !== 'peserta' || $calonSiswa === null || in_array($calonSiswa->status_pendaftaran, $status))
             ])
             ->columns([
                 ImageColumn::make('berkas_foto')
@@ -2252,7 +2230,7 @@ class CalonSiswaResource extends Resource
                     ->visible(Auth::user()->roles->first()->name === 'administrator'),
                 SelectFilter::make('jalur_pendaftaran')
                     ->label('Jalur Pendaftaran')
-                    ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif')) // Menampilkan data jalurPendaftaran dengan kondisi statusnya aktif saja
+                    ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
                     ->visible(Auth::user()->roles->first()->name !== 'peserta'),
                 SelectFilter::make('status_pendaftaran')
                     ->label('Status Pendaftaran')
@@ -2281,77 +2259,41 @@ class CalonSiswaResource extends Resource
                     // Formulir
                     Html2MediaAction::make('cetak_formulir')
                         ->label('Formulir')
-                        ->outlined()
-                        ->color(Color::Gray)
                         ->icon('heroicon-o-printer')
-                        ->scale(2)
-                        ->print() // Enable print option
-                        // ->preview() // Enable preview option
-                        ->filename('formulir.pdf') // Custom file name
-                        ->savePdf() // Enable save as PDF option
-                        ->requiresConfirmation() // Show confirmation modal
+                        ->filename(fn($record) => 'Formulir_' . $record->nama . '_' . $record->nisn . '.pdf')
+                        ->savePdf()
                         // ->pagebreak('section', ['css', 'legacy'])
-                        ->orientation('portrait') // Portrait orientation
-                        ->format('a4', 'mm') // A4 format with mm units
-                        ->enableLinks() // Enable links in PDF
-                        ->margin([10, 10, 10, 10]) // Set custom margins
+                        ->orientation('portrait')
+                        ->format('a4', 'mm')
+                        ->enableLinks()
+                        ->margin([10, 10, 10, 10])
                         ->content(fn($record) => view('formulir', ['record' => $record])),
 
                     // Kartu Tes
                     Html2MediaAction::make('cetak_kartu_tes')
                         ->label('Kartu Tes')
-                        ->outlined()
                         ->icon('heroicon-o-printer')
-                        ->scale(2)
-                        ->print() // Enable print option
-                        // ->preview() // Enable preview option
-                        ->filename('Kartu Tes.pdf') // Custom file name
-                        ->savePdf() // Enable save as PDF option
-                        ->requiresConfirmation() // Show confirmation modal
+                        ->filename(fn($record) => 'Kartu Tes_' . $record->nama . '_' . $record->nisn . '.pdf')
+                        ->savePdf()
                         // ->pagebreak('section', ['css', 'legacy'])
-                        ->orientation('portrait') // Portrait orientation
-                        ->format('a4', 'mm') // A4 format with mm units
-                        ->enableLinks() // Enable links in PDF
-                        ->margin([10, 10, 10, 10]) // Set custom margins
+                        ->orientation('portrait')
+                        ->format('a4', 'mm')
+                        ->enableLinks()
+                        ->margin([10, 10, 10, 10])
                         ->content(fn($record) => view('kartu-tes', ['record' => $record])),
 
                     // SKL/Hasil
                     Html2MediaAction::make('cetak_skl')
-                        ->outlined()
                         ->label('Hasil')
-                        ->color(Color::Cyan)
                         ->icon('heroicon-o-printer')
-                        ->scale(2)
-                        ->print() // Enable print option
-                        // ->preview() // Enable preview option
-                        ->filename('Surat Keterangan Kelulusan.pdf') // Custom file name
-                        ->savePdf() // Enable save as PDF option
-                        ->requiresConfirmation() // Show confirmation modal
+                        ->filename(fn($record) => 'Hasil_' . $record->nama . '_' . $record->nisn . '.pdf')
+                        ->savePdf()
                         // ->pagebreak('section', ['css', 'legacy'])
-                        ->orientation('portrait') // Portrait orientation
-                        ->format('a4', 'mm') // A4 format with mm units
-                        ->enableLinks() // Enable links in PDF
-                        ->margin([10, 10, 10, 10]) // Set custom margins
+                        ->orientation('portrait')
+                        ->format('a4', 'mm')
+                        ->enableLinks()
+                        ->margin([10, 10, 10, 10])
                         ->content(fn($record) => view('skl', ['record' => $record])),
-
-                    // Pakta Integritas dan Tata Tertib
-                    Html2MediaAction::make('cetak_pakta_integritas')
-                        ->label('Pakta Integritas')
-                        ->outlined()
-                        ->color(Color::Cyan)
-                        ->icon('heroicon-o-printer')
-                        ->scale(2)
-                        ->print() // Enable print option
-                        // ->preview() // Enable preview option
-                        ->filename('Pakta Integritas.pdf') // Custom file name
-                        ->savePdf() // Enable save as PDF option
-                        ->requiresConfirmation() // Show confirmation modal
-                        // ->pagebreak('section', ['css', 'legacy'])
-                        ->orientation('portrait') // Portrait orientation
-                        ->format('a4', 'mm') // A4 format with mm units
-                        ->enableLinks() // Enable links in PDF
-                        ->margin([10, 10, 10, 10]) // Set custom margins
-                        ->content(fn($record) => view('pakta-integritas', ['record' => $record])),
                 ])
                     ->visible(Auth::user()->roles->first()->name !== 'peserta'),
             ], ActionsPosition::BeforeColumns)

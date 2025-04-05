@@ -10,7 +10,6 @@ use Filament\Enums\ThemeMode;
 use Filament\Navigation\MenuItem;
 use Filament\Support\Colors\Color;
 use Illuminate\Support\Facades\DB;
-use Filament\Widgets\AccountWidget;
 use Illuminate\Support\Facades\Log;
 use Filament\Support\Enums\MaxWidth;
 use Illuminate\Support\Facades\Auth;
@@ -173,8 +172,6 @@ class AdminPanelProvider extends PanelProvider
 
             return LoginCustom::class;
         }
-
-        // Jika semua validasi berhasil, arahkan ke RegisterCustom
         return RegisterCustom::class;
     }
 }
