@@ -3,10 +3,10 @@
 namespace App\Filament\Resources\CalonSiswaResource\Widgets;
 
 use App\Models\CalonSiswa;
-use Filament\Support\Enums\IconPosition;
-use Filament\Widgets\StatsOverviewWidget as BaseWidget;
-use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Facades\Auth;
+use Filament\Support\Enums\IconPosition;
+use Filament\Widgets\StatsOverviewWidget\Stat;
+use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 
 class FormulirOverview extends BaseWidget
 {
@@ -19,9 +19,9 @@ class FormulirOverview extends BaseWidget
 
     protected function getStats(): array
     {
-        if (Auth::user()->username === 'administrator') {
+        if (Auth::user()->roles->first()->name !== 'peserta') {
             return [
-                Stat::make('', CalonSiswa::count().' Peserta')
+                Stat::make('', CalonSiswa::count() . ' Peserta')
                     ->description('Total Pendaftar')
                     ->descriptionIcon('heroicon-o-user-circle', IconPosition::Before)
                     ->color('gray')
@@ -34,7 +34,7 @@ class FormulirOverview extends BaseWidget
                         'onclick' => "window.location.href='/formulir'",
                     ]),
 
-                Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Diproses')->count().' Peserta')
+                Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Diproses')->count() . ' Peserta')
                     ->description('Diproses')
                     ->descriptionIcon('heroicon-o-arrow-path', IconPosition::Before)
                     ->color('warning')
@@ -46,13 +46,12 @@ class FormulirOverview extends BaseWidget
                             ->pluck('total')
                             ->toArray()
                     )
-
                     ->extraAttributes([
                         'class' => 'cursor-pointer',
                         'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Diproses'",
                     ]),
 
-                Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Berkas Tidak Lengkap')->count().' Peserta')
+                Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Berkas Tidak Lengkap')->count() . ' Peserta')
                     ->description('Berkas Tidak Lengkap')
                     ->descriptionIcon('heroicon-o-document-minus', IconPosition::Before)
                     ->color('warning')
@@ -64,13 +63,12 @@ class FormulirOverview extends BaseWidget
                             ->pluck('total')
                             ->toArray()
                     )
-
                     ->extraAttributes([
                         'class' => 'cursor-pointer',
                         'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Berkas+Tidak+Lengkap'",
                     ]),
 
-                Stat::make('', CalonSiswa::whereNotIn('status_pendaftaran', ['Berkas Tidak Lengkap', 'Diproses'])->count().' Peserta')
+                Stat::make('', CalonSiswa::whereNotIn('status_pendaftaran', ['Berkas Tidak Lengkap', 'Diproses'])->count() . ' Peserta')
                     ->description('Diverifikasi')
                     ->descriptionIcon('heroicon-o-clipboard-document-check', IconPosition::Before)
                     ->color('success')
@@ -82,13 +80,12 @@ class FormulirOverview extends BaseWidget
                             ->pluck('total')
                             ->toArray()
                     )
-
                     ->extraAttributes([
                         'class' => 'cursor-pointer',
                         'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Diverifikasi'",
                     ]),
 
-                Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Diterima')->count().' Peserta')
+                Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Diterima')->count() . ' Peserta')
                     ->description('Diterima Jalur Prestasi')
                     ->descriptionIcon('heroicon-o-check-circle', IconPosition::Before)
                     ->color('success')
@@ -105,7 +102,7 @@ class FormulirOverview extends BaseWidget
                         'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Diterima'",
                     ]),
 
-                Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Diterima Di Kelas Reguler')->count().' Peserta')
+                Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Diterima Di Kelas Reguler')->count() . ' Peserta')
                     ->description('Diterima Di Kelas Reguler')
                     ->descriptionIcon('heroicon-o-shield-check', IconPosition::Before)
                     ->color('success')
@@ -122,7 +119,7 @@ class FormulirOverview extends BaseWidget
                         'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Diterima+Di+Kelas+Reguler'",
                     ]),
 
-                Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Diterima Di Kelas Unggulan')->count().' Peserta')
+                Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Diterima Di Kelas Unggulan')->count() . ' Peserta')
                     ->description('Diterima Di Kelas Unggulan')
                     ->descriptionIcon('heroicon-o-shield-check', IconPosition::Before)
                     ->color('success')
@@ -139,7 +136,7 @@ class FormulirOverview extends BaseWidget
                         'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Diterima+Di+Kelas+Unggulan'",
                     ]),
 
-                Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Ditolak')->count().' Peserta')
+                Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Ditolak')->count() . ' Peserta')
                     ->description('Ditolak')
                     ->descriptionIcon('heroicon-o-no-symbol', IconPosition::Before)
                     ->color('danger')
@@ -159,7 +156,7 @@ class FormulirOverview extends BaseWidget
         }
 
         return [
-            Stat::make('', CalonSiswa::count().' Peserta')
+            Stat::make('', CalonSiswa::count() . ' Peserta')
                 ->description('Total Pendaftar')
                 ->descriptionIcon('heroicon-o-user-circle', IconPosition::Before)
                 ->color('gray')
@@ -167,12 +164,8 @@ class FormulirOverview extends BaseWidget
                     ->groupBy('hari')
                     ->orderBy('hari')
                     ->pluck('total')->toArray()),
-            // ->extraAttributes([
-            //     'class' => 'cursor-pointer',
-            //     'onclick' => "window.location.href='/formulir'",
-            // ]),
 
-            Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Diproses')->count().' Peserta')
+            Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Diproses')->count() . ' Peserta')
                 ->description('Diproses')
                 ->descriptionIcon('heroicon-o-arrow-path', IconPosition::Before)
                 ->color('warning')
@@ -182,12 +175,8 @@ class FormulirOverview extends BaseWidget
                     ->orderBy('hari')
                     ->pluck('total')
                     ->toArray()),
-            // ->extraAttributes([
-            //     'class' => 'cursor-pointer',
-            //     'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Diproses'",
-            // ]),
 
-            Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Berkas Tidak Lengkap')->count().' Peserta')
+            Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Berkas Tidak Lengkap')->count() . ' Peserta')
                 ->description('Berkas Tidak Lengkap')
                 ->descriptionIcon('heroicon-o-document-minus', IconPosition::Before)
                 ->color('warning')
@@ -197,12 +186,8 @@ class FormulirOverview extends BaseWidget
                     ->orderBy('hari')
                     ->pluck('total')
                     ->toArray()),
-            // ->extraAttributes([
-            //     'class' => 'cursor-pointer',
-            //     'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Berkas+Tidak+Lengkap'",
-            // ]),
 
-            Stat::make('', CalonSiswa::whereNotIn('status_pendaftaran', ['Berkas Tidak Lengkap', 'Diproses'])->count().' Peserta')
+            Stat::make('', CalonSiswa::whereNotIn('status_pendaftaran', ['Berkas Tidak Lengkap', 'Diproses'])->count() . ' Peserta')
                 ->description('Diverifikasi')
                 ->descriptionIcon('heroicon-o-clipboard-document-check', IconPosition::Before)
                 ->color('success')
@@ -212,10 +197,6 @@ class FormulirOverview extends BaseWidget
                     ->orderBy('hari')
                     ->pluck('total')
                     ->toArray()),
-            // ->extraAttributes([
-            //     'class' => 'cursor-pointer',
-            //     'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Diverifikasi'",
-            // ]),
         ];
     }
 }

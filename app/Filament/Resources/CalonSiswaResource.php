@@ -2,52 +2,52 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Exports\CalonSiswaExporter;
-use App\Filament\Resources\CalonSiswaResource\Pages;
-use App\Models\CalonSiswa;
+use Carbon\Carbon;
+use Filament\Tables;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
+use App\Models\Provinsi;
+use Filament\Forms\Form;
 use App\Models\Kabupaten;
 use App\Models\Kecamatan;
 use App\Models\Kelurahan;
-use App\Models\Provinsi;
-use Carbon\Carbon;
+use App\Models\CalonSiswa;
+use Filament\Tables\Table;
 use Filament\Facades\Filament;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Tabs;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Wizard;
-use Filament\Forms\Components\Wizard\Step;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Support\Colors\Color;
-use Filament\Support\Enums\IconPosition;
-use Filament\Tables;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\BulkAction;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Tables\Actions\ExportBulkAction;
-use Filament\Tables\Actions\ForceDeleteBulkAction;
-use Filament\Tables\Actions\RestoreBulkAction;
-use Filament\Tables\Columns\ImageColumn;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Enums\ActionsPosition;
-use Filament\Tables\Enums\FiltersLayout;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Filters\TrashedFilter;
-use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\HtmlString;
+use Filament\Forms\Components\Tabs;
+use Filament\Tables\Actions\Action;
+use Illuminate\Support\Facades\Auth;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Wizard;
+use Filament\Forms\Components\Section;
+use Filament\Tables\Actions\BulkAction;
+use Filament\Tables\Columns\TextColumn;
+use Illuminate\Database\Eloquent\Model;
+use Filament\Forms\Components\TextInput;
+use Filament\Support\Enums\IconPosition;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Tables\Filters\SelectFilter;
+use Illuminate\Database\Eloquent\Builder;
+use Filament\Forms\Components\Wizard\Step;
+use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Filters\TrashedFilter;
+use App\Filament\Exports\CalonSiswaExporter;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\ExportBulkAction;
+use Filament\Tables\Actions\RestoreBulkAction;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\CalonSiswaResource\Pages;
 use Torgodly\Html2Media\Tables\Actions\Html2MediaAction;
 
 class CalonSiswaResource extends Resource
@@ -122,20 +122,20 @@ class CalonSiswaResource extends Resource
                                                 // Jalur Pendaftaran
                                                 Select::make('jalur_pendaftaran_id')
                                                     ->label('Jalur Pendaftaran')
-                                                    ->relationship('jalurPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif')) // Menampilkan data jalurPendaftaran dengan kondisi statusnya aktif saja
+                                                    ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif')) // Menampilkan data jalurPendaftaran dengan kondisi statusnya aktif saja
                                                     ->required()
                                                     ->validationMessages([
                                                         'required' => 'Form ini wajib diisi.',
                                                     ])
                                                     ->native(false)
                                                     ->live()
-                                                    ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->nama} | {$record->tahunPendaftaran->nama}"),
+                                                    ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->nama} | {$record->tahunPendaftaran->nama}"),
                                                 // Nama Lengkap Calon Peserta Didik Baru
                                                 TextInput::make('nama')
                                                     ->label('Nama Lengkap')
                                                     ->required()
                                                     ->dehydrated()
-                                                    ->default(fn () => Auth::user()->name)
+                                                    ->default(fn() => Auth::user()->name)
                                                     ->validationMessages([
                                                         'required' => 'Form ini wajib diisi.',
                                                     ]),
@@ -144,8 +144,8 @@ class CalonSiswaResource extends Resource
                                                     ->label('Nomor Induk Kependudukan (NIK)')
                                                     ->required()
                                                     ->unique(ignoreRecord: true)
-                                                    ->rule(fn ($record) => $record === null ? 'unique:calon_siswas,nik' : 'unique:calon_siswas,nik,'.$record->id)
-                                                    ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
+                                                    ->rule(fn($record) => $record === null ? 'unique:calon_siswas,nik' : 'unique:calon_siswas,nik,' . $record->id)
+                                                    ->dehydrateStateUsing(fn($state) => $state ? $state : null)
                                                     ->numeric()
                                                     ->maxLength(16)
                                                     ->minLength(16)
@@ -172,10 +172,10 @@ class CalonSiswaResource extends Resource
                                                     ->label('Nomor Induk Siswa Nasional (NISN)')
                                                     ->required()
                                                     ->dehydrated()
-                                                    ->default(fn () => Auth::user()->username)
+                                                    ->default(fn() => Auth::user()->username)
                                                     ->unique(ignoreRecord: true)
-                                                    ->rule(fn ($record) => $record === null ? 'unique:calon_siswas,nisn' : 'unique:calon_siswas,nisn,'.$record->id)
-                                                    ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
+                                                    ->rule(fn($record) => $record === null ? 'unique:calon_siswas,nisn' : 'unique:calon_siswas,nisn,' . $record->id)
+                                                    ->dehydrateStateUsing(fn($state) => $state ? $state : null)
                                                     ->numeric()
                                                     ->maxLength(10)
                                                     ->minLength(10)
@@ -339,8 +339,8 @@ class CalonSiswaResource extends Resource
                                                     ->label('Nomor Kartu Indonesia Pintar')
                                                     ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Indonesia Pintar (KIP).<sup style="color:red">*</sup></i></small>'))
                                                     ->unique(ignoreRecord: true)
-                                                    ->rule(fn ($record) => $record === null ? 'unique:calon_siswas,no_kip' : 'unique:calon_siswas,no_kip,'.$record->id)
-                                                    ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
+                                                    ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_kip' : 'unique:calon_siswas,no_kip,' . $record->id)
+                                                    ->dehydrateStateUsing(fn($state) => $state ? $state : null)
                                                     ->maxLength(6)
                                                     ->minLength(6)
                                                     ->validationMessages([
@@ -353,8 +353,8 @@ class CalonSiswaResource extends Resource
                                                     ->label('Nomor Kartu Keluarga Sejahtera')
                                                     ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Keluarga Sejahtera (KKS).<sup style="color:red">*</sup></i></small>'))
                                                     ->unique(ignoreRecord: true)
-                                                    ->rule(fn ($record) => $record === null ? 'unique:calon_siswas,no_kks' : 'unique:calon_siswas,no_kks,'.$record->id)
-                                                    ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
+                                                    ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_kks' : 'unique:calon_siswas,no_kks,' . $record->id)
+                                                    ->dehydrateStateUsing(fn($state) => $state ? $state : null)
                                                     ->maxLength(6)
                                                     ->minLength(6)
                                                     ->validationMessages([
@@ -367,8 +367,8 @@ class CalonSiswaResource extends Resource
                                                     ->label('Nomor Kartu Program Keluarga Harapan')
                                                     ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Program Keluarga Harapan (PKH).<sup style="color:red">*</sup></i></small>'))
                                                     ->unique(ignoreRecord: true)
-                                                    ->rule(fn ($record) => $record === null ? 'unique:calon_siswas,no_pkh' : 'unique:calon_siswas,no_pkh,'.$record->id)
-                                                    ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
+                                                    ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_pkh' : 'unique:calon_siswas,no_pkh,' . $record->id)
+                                                    ->dehydrateStateUsing(fn($state) => $state ? $state : null)
                                                     ->maxLength(6)
                                                     ->minLength(6)
                                                     ->validationMessages([
@@ -390,7 +390,7 @@ class CalonSiswaResource extends Resource
                                                     ->native(false)
 
                                                     ->preload()
-                                                    ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->nama} | NPSN: {$record->npsn}")
+                                                    ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->nama} | NPSN: {$record->npsn}")
                                                     ->createOptionForm([
                                                         Section::make('Instansi')
                                                             ->collapsible()
@@ -483,7 +483,7 @@ class CalonSiswaResource extends Resource
                                                                     }),
                                                                 Select::make('provinsi_id')
                                                                     ->label('Provinsi')
-                                                                    ->options(fn (Get $get): Collection => Provinsi::query()
+                                                                    ->options(fn(Get $get): Collection => Provinsi::query()
                                                                         ->where('negara_id', $get('negara_id'))
                                                                         ->pluck('nama', 'id'))
                                                                     ->required()
@@ -500,7 +500,7 @@ class CalonSiswaResource extends Resource
                                                                     }),
                                                                 Select::make('kabupaten_id')
                                                                     ->label('Kabupaten')
-                                                                    ->options(fn (Get $get): Collection => Kabupaten::query()
+                                                                    ->options(fn(Get $get): Collection => Kabupaten::query()
                                                                         ->where('provinsi_id', $get('provinsi_id'))
                                                                         ->pluck('nama', 'id'))
                                                                     ->required()
@@ -516,7 +516,7 @@ class CalonSiswaResource extends Resource
                                                                     }),
                                                                 Select::make('kecamatan_id')
                                                                     ->label('Kecamatan')
-                                                                    ->options(fn (Get $get): Collection => Kecamatan::query()
+                                                                    ->options(fn(Get $get): Collection => Kecamatan::query()
                                                                         ->where('kabupaten_id', $get('kabupaten_id'))
                                                                         ->pluck('nama', 'id'))
                                                                     ->required()
@@ -531,7 +531,7 @@ class CalonSiswaResource extends Resource
                                                                     }),
                                                                 Select::make('kelurahan_id')
                                                                     ->label('Kelurahan')
-                                                                    ->options(fn (Get $get): Collection => Kelurahan::query()
+                                                                    ->options(fn(Get $get): Collection => Kelurahan::query()
                                                                         ->where('kecamatan_id', $get('kecamatan_id'))
                                                                         ->pluck('nama', 'id'))
                                                                     ->required()
@@ -633,7 +633,7 @@ class CalonSiswaResource extends Resource
                                                                                 'Provinsi' => 'Provinsi',
                                                                                 'Kabupaten/Kota' => 'Kabupaten/Kota',
                                                                             ])
-                                                                            ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                                                            ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
                                                                         Select::make('kategori')
                                                                             ->label('Kategori')
                                                                             ->native(false)
@@ -641,7 +641,7 @@ class CalonSiswaResource extends Resource
                                                                                 'Regu/Kelompok' => 'Regu/Kelompok',
                                                                                 'Individu' => 'Individu',
                                                                             ])
-                                                                            ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                                                            ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
                                                                         Select::make('peringkat')
                                                                             ->label('Peringkat')
                                                                             ->options([
@@ -649,14 +649,14 @@ class CalonSiswaResource extends Resource
                                                                                 '2' => '2',
                                                                                 '3' => '3',
                                                                             ])
-                                                                            ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                                                            ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
                                                                     ])
                                                                     ->columns([
                                                                         'sm' => '100%',
                                                                         'md' => 3,
                                                                         'lg' => 3,
                                                                     ])
-                                                                    ->visible(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                                                    ->visible(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
                                                             ])
                                                             ->columns([
                                                                 'sm' => '100%',
@@ -664,7 +664,7 @@ class CalonSiswaResource extends Resource
                                                                 'lg' => 3,
                                                             ]),
                                                     ])
-                                                    ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->jenis} | {$record->nama} | {$record->tingkat} | {$record->kategori} | {$record->peringkat}")
+                                                    ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->jenis} | {$record->nama} | {$record->tingkat} | {$record->kategori} | {$record->peringkat}")
 
                                                     ->native(false),
                                                 // Data Peminatan Ekstrakurikuler Calon Peserta Didik Baru
@@ -715,7 +715,7 @@ class CalonSiswaResource extends Resource
                                                     }),
                                                 Select::make('siswa_provinsi_id')
                                                     ->label('Provinsi')
-                                                    ->options(fn (Get $get): Collection => Provinsi::query()
+                                                    ->options(fn(Get $get): Collection => Provinsi::query()
                                                         ->where('negara_id', $get('siswa_negara_id'))
                                                         ->pluck('nama', 'id'))
                                                     ->required()
@@ -732,7 +732,7 @@ class CalonSiswaResource extends Resource
                                                     }),
                                                 Select::make('siswa_kabupaten_id')
                                                     ->label('Kabupaten')
-                                                    ->options(fn (Get $get): Collection => Kabupaten::query()
+                                                    ->options(fn(Get $get): Collection => Kabupaten::query()
                                                         ->where('provinsi_id', $get('siswa_provinsi_id'))
                                                         ->pluck('nama', 'id'))
                                                     ->required()
@@ -748,7 +748,7 @@ class CalonSiswaResource extends Resource
                                                     }),
                                                 Select::make('siswa_kecamatan_id')
                                                     ->label('Kecamatan')
-                                                    ->options(fn (Get $get): Collection => Kecamatan::query()
+                                                    ->options(fn(Get $get): Collection => Kecamatan::query()
                                                         ->where('kabupaten_id', $get('siswa_kabupaten_id'))
                                                         ->pluck('nama', 'id'))
                                                     ->required()
@@ -763,7 +763,7 @@ class CalonSiswaResource extends Resource
                                                     }),
                                                 Select::make('siswa_kelurahan_id')
                                                     ->label('Kelurahan')
-                                                    ->options(fn (Get $get): Collection => Kelurahan::query()
+                                                    ->options(fn(Get $get): Collection => Kelurahan::query()
                                                         ->where('kecamatan_id', $get('siswa_kecamatan_id'))
                                                         ->pluck('nama', 'id'))
                                                     ->required()
@@ -796,7 +796,7 @@ class CalonSiswaResource extends Resource
                                                         '3:4' => '3:4',
                                                     ])
                                                     ->fetchFileInformation(false)
-                                                    ->directory(fn ($get) => 'berkas/foto/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                                    ->directory(fn($get) => 'berkas/foto/' . $get('nisn')) // Dinamis berdasarkan NISN
                                                     ->downloadable()
                                                     ->openable()
                                                     ->maxSize(500)
@@ -817,7 +817,7 @@ class CalonSiswaResource extends Resource
                                                         '3:4' => '3:4',
                                                     ])
                                                     ->fetchFileInformation(false)
-                                                    ->directory(fn ($get) => 'berkas/kk/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                                    ->directory(fn($get) => 'berkas/kk/' . $get('nisn')) // Dinamis berdasarkan NISN
                                                     ->downloadable()
                                                     ->openable()
                                                     ->maxSize(500)
@@ -838,7 +838,7 @@ class CalonSiswaResource extends Resource
                                                         '3:4' => '3:4',
                                                     ])
                                                     ->fetchFileInformation(false)
-                                                    ->directory(fn ($get) => 'berkas/akta/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                                    ->directory(fn($get) => 'berkas/akta/' . $get('nisn')) // Dinamis berdasarkan NISN
                                                     ->downloadable()
                                                     ->openable()
                                                     ->maxSize(500)
@@ -860,7 +860,7 @@ class CalonSiswaResource extends Resource
                                                         '3:4' => '3:4',
                                                     ])
                                                     ->fetchFileInformation(false)
-                                                    ->directory(fn ($get) => 'berkas/kip/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                                    ->directory(fn($get) => 'berkas/kip/' . $get('nisn')) // Dinamis berdasarkan NISN
                                                     ->downloadable()
                                                     ->openable()
                                                     ->maxSize(500)
@@ -878,7 +878,7 @@ class CalonSiswaResource extends Resource
                                                         '3:4' => '3:4',
                                                     ])
                                                     ->fetchFileInformation(false)
-                                                    ->directory(fn ($get) => 'berkas/kks/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                                    ->directory(fn($get) => 'berkas/kks/' . $get('nisn')) // Dinamis berdasarkan NISN
                                                     ->downloadable()
                                                     ->openable()
                                                     ->maxSize(500)
@@ -896,7 +896,7 @@ class CalonSiswaResource extends Resource
                                                         '3:4' => '3:4',
                                                     ])
                                                     ->fetchFileInformation(false)
-                                                    ->directory(fn ($get) => 'berkas/pkh/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                                    ->directory(fn($get) => 'berkas/pkh/' . $get('nisn')) // Dinamis berdasarkan NISN
                                                     ->downloadable()
                                                     ->openable()
                                                     ->maxSize(500)
@@ -913,7 +913,7 @@ class CalonSiswaResource extends Resource
                                                         '3:4' => '3:4',
                                                     ])
                                                     ->fetchFileInformation(false)
-                                                    ->directory(fn ($get) => 'berkas/nisn/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                                    ->directory(fn($get) => 'berkas/nisn/' . $get('nisn')) // Dinamis berdasarkan NISN
                                                     ->downloadable()
                                                     ->openable()
                                                     ->maxSize(500)
@@ -931,7 +931,7 @@ class CalonSiswaResource extends Resource
                                                         'required' => 'Form ini wajib diisi.',
                                                     ])
                                                     ->fetchFileInformation(false)
-                                                    ->directory(fn ($get) => 'berkas/skbb/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                                    ->directory(fn($get) => 'berkas/skbb/' . $get('nisn')) // Dinamis berdasarkan NISN
                                                     ->downloadable()
                                                     ->openable()
                                                     ->acceptedFileTypes(['application/pdf'])
@@ -946,7 +946,7 @@ class CalonSiswaResource extends Resource
                                                         'required' => 'Form ini wajib diisi.',
                                                     ])
                                                     ->fetchFileInformation(false)
-                                                    ->directory(fn ($get) => 'berkas/skab/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                                    ->directory(fn($get) => 'berkas/skab/' . $get('nisn')) // Dinamis berdasarkan NISN
                                                     ->downloadable()
                                                     ->openable()
                                                     ->acceptedFileTypes(['application/pdf'])
@@ -958,7 +958,7 @@ class CalonSiswaResource extends Resource
                                                     ->label('Berkas Prestasi')
                                                     ->helperText(new HtmlString('<small><i>Gabungkan semua berkas jika memiliki lebih dari satu prestasi.<br>Abaikan jika Jalur Pendaftaran yang dipilih bukan Jalur Prestasi.<sup style="color:red">*</sup></i></small>'))
                                                     ->fetchFileInformation(false)
-                                                    ->directory(fn ($get) => 'berkas/prestasi/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                                    ->directory(fn($get) => 'berkas/prestasi/' . $get('nisn')) // Dinamis berdasarkan NISN
                                                     ->downloadable()
                                                     ->openable()
                                                     ->acceptedFileTypes(['application/pdf'])
@@ -1101,7 +1101,7 @@ class CalonSiswaResource extends Resource
                                                     }),
                                                 Select::make('ibu_provinsi_id')
                                                     ->label('Provinsi')
-                                                    ->options(fn (Get $get): Collection => Provinsi::query()
+                                                    ->options(fn(Get $get): Collection => Provinsi::query()
                                                         ->where('negara_id', $get('ibu_negara_id'))
                                                         ->pluck('nama', 'id'))
                                                     ->required()
@@ -1118,7 +1118,7 @@ class CalonSiswaResource extends Resource
                                                     }),
                                                 Select::make('ibu_kabupaten_id')
                                                     ->label('Kabupaten')
-                                                    ->options(fn (Get $get): Collection => Kabupaten::query()
+                                                    ->options(fn(Get $get): Collection => Kabupaten::query()
                                                         ->where('provinsi_id', $get('ibu_provinsi_id'))
                                                         ->pluck('nama', 'id'))
                                                     ->required()
@@ -1134,7 +1134,7 @@ class CalonSiswaResource extends Resource
                                                     }),
                                                 Select::make('ibu_kecamatan_id')
                                                     ->label('Kecamatan')
-                                                    ->options(fn (Get $get): Collection => Kecamatan::query()
+                                                    ->options(fn(Get $get): Collection => Kecamatan::query()
                                                         ->where('kabupaten_id', $get('ibu_kabupaten_id'))
                                                         ->pluck('nama', 'id'))
                                                     ->required()
@@ -1149,7 +1149,7 @@ class CalonSiswaResource extends Resource
                                                     }),
                                                 Select::make('ibu_kelurahan_id')
                                                     ->label('Kelurahan')
-                                                    ->options(fn (Get $get): Collection => Kelurahan::query()
+                                                    ->options(fn(Get $get): Collection => Kelurahan::query()
                                                         ->where('kecamatan_id', $get('ibu_kecamatan_id'))
                                                         ->pluck('nama', 'id'))
                                                     ->required()
@@ -1295,7 +1295,7 @@ class CalonSiswaResource extends Resource
                                                     }),
                                                 Select::make('ayah_provinsi_id')
                                                     ->label('Provinsi')
-                                                    ->options(fn (Get $get): Collection => Provinsi::query()
+                                                    ->options(fn(Get $get): Collection => Provinsi::query()
                                                         ->where('negara_id', $get('ayah_negara_id'))
                                                         ->pluck('nama', 'id'))
                                                     ->required()
@@ -1312,7 +1312,7 @@ class CalonSiswaResource extends Resource
                                                     }),
                                                 Select::make('ayah_kabupaten_id')
                                                     ->label('Kabupaten')
-                                                    ->options(fn (Get $get): Collection => Kabupaten::query()
+                                                    ->options(fn(Get $get): Collection => Kabupaten::query()
                                                         ->where('provinsi_id', $get('ayah_provinsi_id'))
                                                         ->pluck('nama', 'id'))
                                                     ->required()
@@ -1328,7 +1328,7 @@ class CalonSiswaResource extends Resource
                                                     }),
                                                 Select::make('ayah_kecamatan_id')
                                                     ->label('Kecamatan')
-                                                    ->options(fn (Get $get): Collection => Kecamatan::query()
+                                                    ->options(fn(Get $get): Collection => Kecamatan::query()
                                                         ->where('kabupaten_id', $get('ayah_kabupaten_id'))
                                                         ->pluck('nama', 'id'))
                                                     ->required()
@@ -1343,7 +1343,7 @@ class CalonSiswaResource extends Resource
                                                     }),
                                                 Select::make('ayah_kelurahan_id')
                                                     ->label('Kelurahan')
-                                                    ->options(fn (Get $get): Collection => Kelurahan::query()
+                                                    ->options(fn(Get $get): Collection => Kelurahan::query()
                                                         ->where('kecamatan_id', $get('ayah_kecamatan_id'))
                                                         ->pluck('nama', 'id'))
                                                     ->required()
@@ -1458,7 +1458,7 @@ class CalonSiswaResource extends Resource
                                                     }),
                                                 Select::make('wali_provinsi_id')
                                                     ->label('Provinsi')
-                                                    ->options(fn (Get $get): Collection => Provinsi::query()
+                                                    ->options(fn(Get $get): Collection => Provinsi::query()
                                                         ->where('negara_id', $get('wali_negara_id'))
                                                         ->pluck('nama', 'id'))
                                                     ->native(false)
@@ -1471,7 +1471,7 @@ class CalonSiswaResource extends Resource
                                                     }),
                                                 Select::make('wali_kabupaten_id')
                                                     ->label('Kabupaten')
-                                                    ->options(fn (Get $get): Collection => Kabupaten::query()
+                                                    ->options(fn(Get $get): Collection => Kabupaten::query()
                                                         ->where('provinsi_id', $get('wali_provinsi_id'))
                                                         ->pluck('nama', 'id'))
                                                     ->native(false)
@@ -1483,7 +1483,7 @@ class CalonSiswaResource extends Resource
                                                     }),
                                                 Select::make('wali_kecamatan_id')
                                                     ->label('Kecamatan')
-                                                    ->options(fn (Get $get): Collection => Kecamatan::query()
+                                                    ->options(fn(Get $get): Collection => Kecamatan::query()
                                                         ->where('kabupaten_id', $get('wali_kabupaten_id'))
                                                         ->pluck('nama', 'id'))
                                                     ->native(false)
@@ -1494,7 +1494,7 @@ class CalonSiswaResource extends Resource
                                                     }),
                                                 Select::make('wali_kelurahan_id')
                                                     ->label('Kelurahan')
-                                                    ->options(fn (Get $get): Collection => Kelurahan::query()
+                                                    ->options(fn(Get $get): Collection => Kelurahan::query()
                                                         ->where('kecamatan_id', $get('wali_kecamatan_id'))
                                                         ->pluck('nama', 'id'))
                                                     ->native(false),
@@ -1541,7 +1541,7 @@ class CalonSiswaResource extends Resource
                             ->schema([
                                 // Section Data Tes
                                 Section::make('Data Tes')
-                                    ->visible(fn ($get) => $get('jalur_pendaftaran_id') !== null)
+                                    ->visible(fn($get) => $get('jalur_pendaftaran_id') !== null)
                                     ->hidden(function () {
                                         return Filament::auth()->user()->username !== 'administrator';
                                     })
@@ -1715,7 +1715,7 @@ class CalonSiswaResource extends Resource
                     ->outlined()
                     ->size('sm')
                     ->disabled()
-                    ->hidden(Auth::user()->username === 'administrator' || $calonSiswa === null || $calonSiswa->status_pendaftaran === 'Diterima' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Unggulan' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Reguler' || $calonSiswa->status_pendaftaran === 'Ditolak'),
+                    ->hidden(Auth::user()->roles->first()->name === 'administrator' || $calonSiswa === null || $calonSiswa->status_pendaftaran === 'Diterima' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Unggulan' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Reguler' || $calonSiswa->status_pendaftaran === 'Ditolak'),
             ])
             ->columns([
                 ImageColumn::make('berkas_foto')
@@ -1725,14 +1725,14 @@ class CalonSiswaResource extends Resource
                 TextColumn::make('jalurPendaftaran.nama')
                     ->label('Jalur Pendaftaran')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'Reguler' => 'success',
                         'Prestasi' => 'primary',
                         'Afirmasi' => 'warning',
                         'Zonasi' => 'danger',
                         'Mutasi' => 'info',
                     })
-                    ->icon(fn (string $state): string => match ($state) {
+                    ->icon(fn(string $state): string => match ($state) {
                         'Reguler' => 'heroicon-o-sparkles',
                         'Prestasi' => 'heroicon-o-trophy',
                         'Afirmasi' => 'heroicon-o-gift',
@@ -1743,7 +1743,7 @@ class CalonSiswaResource extends Resource
                 TextColumn::make('status_pendaftaran')
                     ->label('Status Pendaftaran')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'Diproses' => 'warning',
                         'Diverifikasi' => 'success',
                         'Berkas Tidak Lengkap' => 'warning',
@@ -1752,7 +1752,7 @@ class CalonSiswaResource extends Resource
                         'Diterima Di Kelas Reguler' => 'success',
                         'Diterima Di Kelas Unggulan' => 'primary',
                     })
-                    ->icon(fn (string $state): string => match ($state) {
+                    ->icon(fn(string $state): string => match ($state) {
                         'Diproses' => 'heroicon-o-arrow-path',
                         'Diverifikasi' => 'heroicon-o-clipboard-document-check',
                         'Berkas Tidak Lengkap' => 'heroicon-o-document-minus',
@@ -1762,7 +1762,7 @@ class CalonSiswaResource extends Resource
                         'Diterima Di Kelas Unggulan' => 'heroicon-o-shield-check',
                     })
 
-                    ->visible(Auth::user()->username === 'administrator'),
+                    ->visible(Auth::user()->roles->first()->name === 'administrator'),
 
                 TextColumn::make('kelas.nama')
                     ->label('Diterima Di Kelas')
@@ -1781,7 +1781,7 @@ class CalonSiswaResource extends Resource
                         $currentDate = Carbon::now();
                         $berkasDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_registrasi_berkas_selesai));
 
-                        if ($currentDate->gte($berkasDate) || Auth::user()->username === 'administrator') {
+                        if ($currentDate->gte($berkasDate) || Auth::user()->roles->first()->name === 'administrator') {
                             return true;
                         }
 
@@ -1790,92 +1790,92 @@ class CalonSiswaResource extends Resource
 
                 TextColumn::make('nama')
                     ->label('Nama Lengkap')
-                    ->searchable(Auth::user()->username === 'administrator' && CalonSiswa::count() > 10),
+                    ->searchable(Auth::user()->roles->first()->name === 'administrator' && CalonSiswa::count() > 10),
                 TextColumn::make('jenis_kelamin')
                     ->label('Jenis Kelamin'),
                 TextColumn::make('nik')
-                    ->visible(Auth::user()->username === 'administrator')
+                    ->visible(Auth::user()->roles->first()->name === 'administrator')
                     ->label('NIK')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('kk')
-                    ->visible(Auth::user()->username === 'administrator')
+                    ->visible(Auth::user()->roles->first()->name === 'administrator')
                     ->label('KK')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('nisn')
-                    ->visible(Auth::user()->username === 'administrator')
+                    ->visible(Auth::user()->roles->first()->name === 'administrator')
                     ->label('NISN')
-                    ->searchable(Auth::user()->username === 'administrator' && CalonSiswa::count() > 10),
+                    ->searchable(Auth::user()->roles->first()->name === 'administrator' && CalonSiswa::count() > 10),
                 TextColumn::make('sekolahAsal.nama')
                     ->label('Sekolah Asal'),
                 TextColumn::make('tempat_lahir')
-                    ->visible(Auth::user()->username === 'administrator')
+                    ->visible(Auth::user()->roles->first()->name === 'administrator')
                     ->label('Tempat Lahir')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('tanggal_lahir')
-                    ->visible(Auth::user()->username === 'administrator')
+                    ->visible(Auth::user()->roles->first()->name === 'administrator')
                     ->label('Tanggal Lahir')
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->date('d F Y H:i:s'),
                 TextColumn::make('tahun_lulus')
                     ->label('Tahun Lulus'),
                 TextColumn::make('golongan_darah')
-                    ->visible(Auth::user()->username === 'administrator')
+                    ->visible(Auth::user()->roles->first()->name === 'administrator')
                     ->label('Golongan Darah')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('agama')
-                    ->visible(Auth::user()->username === 'administrator')
+                    ->visible(Auth::user()->roles->first()->name === 'administrator')
                     ->label('Agama')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('anak_ke')
-                    ->visible(Auth::user()->username === 'administrator')
+                    ->visible(Auth::user()->roles->first()->name === 'administrator')
                     ->label('Anak Ke')
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->numeric(),
                 TextColumn::make('jumlah_saudara')
-                    ->visible(Auth::user()->username === 'administrator')
+                    ->visible(Auth::user()->roles->first()->name === 'administrator')
                     ->label('Jumlah Saudara')
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->numeric(),
                 TextColumn::make('tinggal_bersama')
-                    ->visible(Auth::user()->username === 'administrator')
+                    ->visible(Auth::user()->roles->first()->name === 'administrator')
                     ->label('Tinggal Bersama')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('jarak_ke_sekolah')
-                    ->visible(Auth::user()->username === 'administrator')
+                    ->visible(Auth::user()->roles->first()->name === 'administrator')
                     ->label('Jarak Ke Sekolah')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('disabilitas')
-                    ->visible(Auth::user()->username === 'administrator')
+                    ->visible(Auth::user()->roles->first()->name === 'administrator')
                     ->label('Disabilitas')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('tinggi_badan')
-                    ->visible(Auth::user()->username === 'administrator')
+                    ->visible(Auth::user()->roles->first()->name === 'administrator')
                     ->label('Tinggi Badan')
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->numeric(),
                 TextColumn::make('berat_badan')
-                    ->visible(Auth::user()->username === 'administrator')
+                    ->visible(Auth::user()->roles->first()->name === 'administrator')
                     ->label('Berat Badan')
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->numeric(),
                 TextColumn::make('no_kip')
-                    ->visible(Auth::user()->username === 'administrator')
+                    ->visible(Auth::user()->roles->first()->name === 'administrator')
                     ->label('Nomor KIP')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('no_kks')
-                    ->visible(Auth::user()->username === 'administrator')
+                    ->visible(Auth::user()->roles->first()->name === 'administrator')
                     ->label('Nomor KKS')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('no_pkh')
-                    ->visible(Auth::user()->username === 'administrator')
+                    ->visible(Auth::user()->roles->first()->name === 'administrator')
                     ->label('Nomor PKH')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('siswa_telepon')
-                    ->visible(Auth::user()->username === 'administrator')
+                    ->visible(Auth::user()->roles->first()->name === 'administrator')
                     ->label('Telepon')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('siswa_alamat')
-                    ->visible(Auth::user()->username === 'administrator')
+                    ->visible(Auth::user()->roles->first()->name === 'administrator')
                     ->label('Alamat')
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->wrap()
@@ -1889,23 +1889,23 @@ class CalonSiswaResource extends Resource
                         return $state;
                     }),
                 TextColumn::make('siswaKelurahan.nama')
-                    ->visible(Auth::user()->username === 'administrator')
+                    ->visible(Auth::user()->roles->first()->name === 'administrator')
                     ->label('Kelurahan')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('siswaKecamatan.nama')
-                    ->visible(Auth::user()->username === 'administrator')
+                    ->visible(Auth::user()->roles->first()->name === 'administrator')
                     ->label('Kecamatan')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('siswaKabupaten.nama')
-                    ->visible(Auth::user()->username === 'administrator')
+                    ->visible(Auth::user()->roles->first()->name === 'administrator')
                     ->label('Kabupaten')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('siswaProvinsi.nama')
-                    ->visible(Auth::user()->username === 'administrator')
+                    ->visible(Auth::user()->roles->first()->name === 'administrator')
                     ->label('Provinsi')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('siswaNegara.nama')
-                    ->visible(Auth::user()->username === 'administrator')
+                    ->visible(Auth::user()->roles->first()->name === 'administrator')
                     ->label('Negara')
                     ->toggleable(isToggledHiddenByDefault: true),
 
@@ -1913,97 +1913,97 @@ class CalonSiswaResource extends Resource
                 TextColumn::make('tes_sesi')
                     ->label('Sesi Tes')
 
-                    ->visible(Auth::user()->username === 'administrator'),
+                    ->visible(Auth::user()->roles->first()->name === 'administrator'),
 
                 TextColumn::make('tes_ruang')
                     ->label('Ruang Tes')
 
-                    ->visible(Auth::user()->username === 'administrator'),
+                    ->visible(Auth::user()->roles->first()->name === 'administrator'),
 
                 TextColumn::make('tes_akademik')
                     ->label('Tes Akademik')
                     ->date('d F Y H:i:s')
-                    ->visible(Auth::user()->username === 'administrator'),
+                    ->visible(Auth::user()->roles->first()->name === 'administrator'),
 
                 TextColumn::make('tes_praktik')
                     ->label('Tes Praktik')
                     ->date('d F Y H:i:s')
-                    ->visible(Auth::user()->username === 'administrator'),
+                    ->visible(Auth::user()->roles->first()->name === 'administrator'),
 
                 // Lainnya
                 TextColumn::make('prestasi.nama')
-                    ->visible(Auth::user()->username === 'administrator')
+                    ->visible(Auth::user()->roles->first()->name === 'administrator')
                     ->label('Nama Prestasi')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('ekstrakurikuler.nama')
-                    ->visible(Auth::user()->username === 'administrator')
+                    ->visible(Auth::user()->roles->first()->name === 'administrator')
                     ->label('Peminatan Ekstrakurikuler')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('mataPelajaran.nama')
-                    ->visible(Auth::user()->username === 'administrator')
+                    ->visible(Auth::user()->roles->first()->name === 'administrator')
                     ->label('Peminatan Pelajaran')
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 // Berkas
                 // ImageColumn::make('berkas_kk')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('KK')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // ImageColumn::make('berkas_akta')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Akta')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // ImageColumn::make('berkas_kip')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('KIP')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // ImageColumn::make('berkas_nisn')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('NISN')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('berkas_skbb')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('SKBB')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('berkas_skab')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('SKAB')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('berkas_prestasi')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Bukti Prestasi')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
 
                 // Ibu
                 // TextColumn::make('ibu_nama')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Nama Ibu')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('ibu_telepon')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Telepon Ibu')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('ibu_pekerjaan')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Pekerjaan Ibu')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('ibu_status')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Status Ibu')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('ibu_alamat')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Alamat Ibu')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ->wrap()
@@ -2018,54 +2018,54 @@ class CalonSiswaResource extends Resource
                 //     })
                 //     ,
                 // TextColumn::make('ibuKelurahan.nama')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Kelurahan')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('ibuKecamatan.nama')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Kecamatan')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('ibuKabupaten.nama')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Kabupaten')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('ibuProvinsi.nama')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Provinsi')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('ibuNegara.nama')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Negara')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
 
                 // Ayah
                 // TextColumn::make('ayah_nama')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Nama Ayah')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('ayah_telepon')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Telepon Ayah')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('ayah_pekerjaan')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Pekerjaan Ayah')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('ayah_status')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Status Ayah')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('ayah_alamat')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Alamat Ayah')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ->wrap()
@@ -2080,55 +2080,55 @@ class CalonSiswaResource extends Resource
                 //     })
                 //     ,
                 // TextColumn::make('ayahKelurahan.nama')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Kelurahan')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('ayahKecamatan.nama')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Kecamatan')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('ayahKabupaten.nama')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Kabupaten')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('ayahProvinsi.nama')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Provinsi')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('ayahNegara.nama')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Negara')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
 
                 // Wali
                 // TextColumn::make('wali_nama')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Nama Wali')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('wali_telepon')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Telepon Wali')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('wali_pekerjaan')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Pekerjaan Wali')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
 
                 // TextColumn::make('wali_status')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Status Wali')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('wali_alamat')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Alamat Wali')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ->wrap()
@@ -2143,88 +2143,88 @@ class CalonSiswaResource extends Resource
                 //     })
                 //     ,
                 // TextColumn::make('waliKelurahan.nama')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Kelurahan')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('waliKecamatan.nama')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Kecamatan')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('waliKabupaten.nama')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Kabupaten')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('waliProvinsi.nama')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Provinsi')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('waliNegara.nama')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Negara')
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
 
                 // Nilai Tes
                 // TextColumn::make('nilai_ipa')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Nilai IPA')
                 //     ->numeric()
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('nilai_ips')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Nilai IPS')
                 //     ->numeric()
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('nilai_matematika')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Nilai Matematika')
                 //     ->numeric()
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('nilai_indonesia')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Nilai Bahasa Indonesia')
                 //     ->numeric()
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('nilai_inggris')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Nilai Bahasa Inggris')
                 //     ->numeric()
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('nilai_arab')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Nilai Bahasa Arab')
                 //     ->numeric()
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('bobot_nilai_akademik')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Bobot Nilai Akademik')
                 //     ->numeric()
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('bobot_nilai_praktik')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Bobot Nilai Praktik')
                 //     ->numeric()
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('nilai_akademik')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Nilai Akademik')
                 //     ->numeric()
                 //     ->toggleable(isToggledHiddenByDefault: true)
                 //     ,
                 // TextColumn::make('nilai_praktik')
-                //     ->visible(Auth::user()->username === 'administrator')
+                //     ->visible(Auth::user()->roles->first()->name === 'administrator')
                 //     ->label('Nilai Praktik')
                 //     ->numeric()
                 //     ->toggleable(isToggledHiddenByDefault: true)
@@ -2247,14 +2247,13 @@ class CalonSiswaResource extends Resource
                 //
                 //     ->toggleable(isToggledHiddenByDefault: true),
             ])
-
             ->filters([
                 TrashedFilter::make()
-                    ->visible(Auth::user()->username === 'administrator'),
+                    ->visible(Auth::user()->roles->first()->name === 'administrator'),
                 SelectFilter::make('jalur_pendaftaran')
                     ->label('Jalur Pendaftaran')
-                    ->relationship('jalurPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif')) // Menampilkan data jalurPendaftaran dengan kondisi statusnya aktif saja
-                    ->visible(Auth::user()->username === 'administrator'),
+                    ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif')) // Menampilkan data jalurPendaftaran dengan kondisi statusnya aktif saja
+                    ->visible(Auth::user()->roles->first()->name !== 'peserta'),
                 SelectFilter::make('status_pendaftaran')
                     ->label('Status Pendaftaran')
                     ->options([
@@ -2266,32 +2265,18 @@ class CalonSiswaResource extends Resource
                         'Diterima Di Kelas Reguler' => 'Diterima Di Kelas Reguler',
                         'Diterima Di Kelas Unggulan' => 'Diterima Di Kelas Unggulan',
                     ])
-                    ->visible(Auth::user()->username === 'administrator'),
+                    ->visible(Auth::user()->roles->first()->name !== 'peserta'),
                 SelectFilter::make('kelas')
                     ->label('Kelas')
                     ->relationship('kelas', 'nama')
-                    ->visible(Auth::user()->username === 'administrator'),
+                    ->visible(Auth::user()->roles->first()->name !== 'peserta'),
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
-                    // Tables\Actions\ViewAction::make(),
-                    Tables\Actions\EditAction::make()
-                        ->visible(fn (): string => CalonSiswa::count() > 0 && Auth::user()->username === 'administrator'),
+                    Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
-                    // ->visible(fn(): string => CalonSiswa::count() > 0 && Auth::user()->username === 'administrator'),
                     Tables\Actions\ForceDeleteAction::make(),
-                    // ->visible(fn(): string => CalonSiswa::count() > 0 && Auth::user()->username === 'administrator'),
                     Tables\Actions\RestoreAction::make(),
-                    // ->visible(fn(): string => CalonSiswa::count() > 0 && Auth::user()->username === 'administrator'),
-
-                    // Export
-                    // ExportAction::make('Ekspor')
-                    //     ->label('Ekspor')
-                    //     ->icon('heroicon-m-cloud-arrow-down')
-                    //     ->color('success')
-                    //     ->exporter(CalonSiswaExporter::class)
-                    //     ->chunkSize(250)
-                    //     ->visible(fn(): string => CalonSiswa::count() > 0 && Auth::user()->username === 'administrator'),
 
                     // Formulir
                     Html2MediaAction::make('cetak_formulir')
@@ -2310,8 +2295,7 @@ class CalonSiswaResource extends Resource
                         ->format('a4', 'mm') // A4 format with mm units
                         ->enableLinks() // Enable links in PDF
                         ->margin([10, 10, 10, 10]) // Set custom margins
-                        ->content(fn ($record) => view('formulir', ['record' => $record])) // Set Content
-                        ->visible(fn (): string => CalonSiswa::count() > 0 && Auth::user()->username === 'administrator'),
+                        ->content(fn($record) => view('formulir', ['record' => $record])),
 
                     // Kartu Tes
                     Html2MediaAction::make('cetak_kartu_tes')
@@ -2329,33 +2313,7 @@ class CalonSiswaResource extends Resource
                         ->format('a4', 'mm') // A4 format with mm units
                         ->enableLinks() // Enable links in PDF
                         ->margin([10, 10, 10, 10]) // Set custom margins
-                        ->content(fn ($record) => view('kartu-tes', ['record' => $record])) // Set content
-                        ->visible(fn (): string => CalonSiswa::count() > 0 && Auth::user()->username === 'administrator'),
-                    // ->visible(function () {
-                    //     $tahunPendaftaran = DB::table('tahun_pendaftarans')
-                    //         ->where('status', 'Aktif')
-                    //         ->first();
-
-                    //     // Pastikan $tahunPendaftaran valid
-                    //     if (!$tahunPendaftaran || empty($tahunPendaftaran->tanggal_penerbitan_kartu_tes_mulai) || empty($tahunPendaftaran->tanggal_penerbitan_kartu_tes_selesai)) {
-                    //         return false;
-                    //     }
-
-                    //     try {
-                    //         $startDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_penerbitan_kartu_tes_mulai));
-                    //         $endDate = Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_penerbitan_kartu_tes_selesai));
-                    //     } catch (\Exception $e) {
-                    //         return false; // Kembalikan false jika terjadi error format
-                    //     }
-
-                    //     $currentDate = Carbon::now();
-
-                    //     if ($currentDate->lt($startDate) || $currentDate->gt($endDate)) {
-                    //         return false;
-                    //     }
-
-                    //     return true;
-                    // }),
+                        ->content(fn($record) => view('kartu-tes', ['record' => $record])),
 
                     // SKL/Hasil
                     Html2MediaAction::make('cetak_skl')
@@ -2374,71 +2332,7 @@ class CalonSiswaResource extends Resource
                         ->format('a4', 'mm') // A4 format with mm units
                         ->enableLinks() // Enable links in PDF
                         ->margin([10, 10, 10, 10]) // Set custom margins
-                        ->content(fn ($record) => view('skl', ['record' => $record])) // Set content
-                        ->visible(fn (): string => CalonSiswa::count() > 0 && Auth::user()->username === 'administrator'),
-                    // ->hidden(function () {
-                    //     $tahunPendaftaran = DB::table('tahun_pendaftarans')
-                    //         ->where('status', 'Aktif')
-                    //         ->first();
-
-                    //     $sekarang = Carbon::now();
-
-                    //     $mulaiPengumumanPrestasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_mulai)
-                    //         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_mulai))
-                    //         : null;
-
-                    //     $akhirPengumumanPrestasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_selesai)
-                    //         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_selesai))
-                    //         : null;
-
-                    //     $mulaiPengumumanReguler = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_mulai)
-                    //         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_mulai))
-                    //         : null;
-
-                    //     $akhirPengumumanReguler = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_selesai)
-                    //         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_selesai))
-                    //         : null;
-
-                    //     $mulaiPengumumanAfirmasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai)
-                    //         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai))
-                    //         : null;
-
-                    //     $akhirPengumumanAfirmasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_selesai)
-                    //         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_selesai))
-                    //         : null;
-
-                    //     $mulaiPengumumanZonasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai)
-                    //         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai))
-                    //         : null;
-
-                    //     $akhirPengumumanZonasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_selesai)
-                    //         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_selesai))
-                    //         : null;
-
-                    //     $mulaiPengumumanMutasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai)
-                    //         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai))
-                    //         : null;
-
-                    //     $akhirPengumumanMutasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai)
-                    //         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai))
-                    //         : null;
-
-                    //     $periodePengumuman = [
-                    //         [$mulaiPengumumanPrestasi, $akhirPengumumanPrestasi],
-                    //         [$mulaiPengumumanReguler, $akhirPengumumanReguler],
-                    //         [$mulaiPengumumanAfirmasi, $akhirPengumumanAfirmasi],
-                    //         [$mulaiPengumumanZonasi, $akhirPengumumanZonasi],
-                    //         [$mulaiPengumumanMutasi, $akhirPengumumanMutasi],
-                    //     ];
-
-                    //     foreach ($periodePengumuman as [$mulai, $selesai]) {
-                    //         if ($sekarang >= $mulai && $sekarang <= $selesai) {
-                    //             return false;
-                    //         }
-                    //     }
-
-                    //     return true;
-                    // }),
+                        ->content(fn($record) => view('skl', ['record' => $record])),
 
                     // Pakta Integritas dan Tata Tertib
                     Html2MediaAction::make('cetak_pakta_integritas')
@@ -2457,75 +2351,9 @@ class CalonSiswaResource extends Resource
                         ->format('a4', 'mm') // A4 format with mm units
                         ->enableLinks() // Enable links in PDF
                         ->margin([10, 10, 10, 10]) // Set custom margins
-                        ->content(fn ($record) => view('pakta-integritas', ['record' => $record])) // Set content
-                        ->visible(fn (): string => CalonSiswa::count() > 0 && Auth::user()->username === 'administrator'),
-                    // ->hidden(function () {
-                    //     $tahunPendaftaran = DB::table('tahun_pendaftarans')
-                    //         ->where('status', 'Aktif')
-                    //         ->first();
-                    //     $sekarang = Carbon::now();
-
-                    //     $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
-                    //     $status = $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Unggulan' ||
-                    //         $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Reguler';
-
-                    //     $mulaiPengumumanPrestasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_mulai)
-                    //         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_mulai))
-                    //         : null;
-
-                    //     $akhirPengumumanPrestasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_selesai)
-                    //         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_selesai))
-                    //         : null;
-
-                    //     $mulaiPengumumanReguler = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_mulai)
-                    //         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_mulai))
-                    //         : null;
-
-                    //     $akhirPengumumanReguler = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_selesai)
-                    //         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_selesai))
-                    //         : null;
-
-                    //     $mulaiPengumumanAfirmasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai)
-                    //         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai))
-                    //         : null;
-
-                    //     $akhirPengumumanAfirmasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_selesai)
-                    //         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_selesai))
-                    //         : null;
-
-                    //     $mulaiPengumumanZonasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai)
-                    //         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai))
-                    //         : null;
-
-                    //     $akhirPengumumanZonasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_selesai)
-                    //         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_selesai))
-                    //         : null;
-
-                    //     $mulaiPengumumanMutasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai)
-                    //         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai))
-                    //         : null;
-
-                    //     $akhirPengumumanMutasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai)
-                    //         ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai))
-                    //         : null;
-
-                    //     $periodePengumuman = [
-                    //         [$mulaiPengumumanPrestasi, $akhirPengumumanPrestasi],
-                    //         [$mulaiPengumumanReguler, $akhirPengumumanReguler],
-                    //         [$mulaiPengumumanAfirmasi, $akhirPengumumanAfirmasi],
-                    //         [$mulaiPengumumanZonasi, $akhirPengumumanZonasi],
-                    //         [$mulaiPengumumanMutasi, $akhirPengumumanMutasi],
-                    //     ];
-
-                    //     foreach ($periodePengumuman as [$mulai, $selesai]) {
-                    //         if ($sekarang >= $mulai && $sekarang <= $selesai && $status) {
-                    //             return false;
-                    //         }
-                    //     }
-
-                    //     return true;
-                    // }),
-                ]),
+                        ->content(fn($record) => view('pakta-integritas', ['record' => $record])),
+                ])
+                    ->visible(Auth::user()->roles->first()->name !== 'peserta'),
             ], ActionsPosition::BeforeColumns)
 
             ->bulkActions([
@@ -2539,7 +2367,6 @@ class CalonSiswaResource extends Resource
                         ->color('success')
                         ->exporter(CalonSiswaExporter::class)
                         ->chunkSize(250),
-
                     BulkAction::make('set_jalur_pendaftaran')
                         ->label('Set Jalur Pendaftaran')
                         ->icon('heroicon-o-sparkles')
@@ -2548,7 +2375,7 @@ class CalonSiswaResource extends Resource
                         ->form([
                             Select::make('jalur_pendaftaran')
                                 ->label('Jalur Pendaftaran')
-                                ->relationship('jalurPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif'))
+                                ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
                                 ->required(),
                         ])
                         ->action(function (Collection $records, array $data) {
@@ -2605,7 +2432,7 @@ class CalonSiswaResource extends Resource
                             });
                         }),
                 ])
-                    ->visible(Auth::user()->username === 'administrator'),
+                    ->visible(Auth::user()->roles->first()->name === 'administrator'),
             ])
             ->striped()
             ->filtersLayout(FiltersLayout::AboveContentCollapsible)
@@ -2614,11 +2441,6 @@ class CalonSiswaResource extends Resource
 
     public static function getPages(): array
     {
-        $user = Auth::user() && Auth::user()->username !== 'administrator';
-        if ($user) {
-            return [];
-        }
-
         return [
             'index' => Pages\ListCalonSiswas::route('/'),
             'create' => Pages\CreateCalonSiswa::route('/create'),
