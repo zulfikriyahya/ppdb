@@ -28,7 +28,6 @@ class ListCalonSiswas extends ListRecords
                 $urlEdit = "/formulir/{$calonSiswa->id}/edit";
             }
         }
-
         return [
             // Daftar Sekarang
             Action::make('buat_formulir_pendaftaran')
@@ -63,7 +62,7 @@ class ListCalonSiswas extends ListRecords
                 ->successRedirectUrl($urlView),
 
             // Export
-            ExportAction::make('Ekspor')
+            ExportAction::make('export')
                 ->label('Ekspor')
                 ->icon('heroicon-m-cloud-arrow-down')
                 ->color('success')
