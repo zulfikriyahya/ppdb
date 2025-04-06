@@ -5,7 +5,9 @@ namespace App\Filament\Resources\CalonSiswaResource\Pages;
 use App\Models\CalonSiswa;
 use Filament\Actions\Action;
 use Filament\Actions\ExportAction;
+use Filament\Actions\ImportAction;
 use Filament\Support\Colors\Color;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Filament\Resources\Pages\ListRecords;
 use App\Filament\Exports\CalonSiswaExporter;
@@ -64,11 +66,46 @@ class ListCalonSiswas extends ListRecords
             // Export
             ExportAction::make('export')
                 ->label('Ekspor')
+                ->outlined()
                 ->icon('heroicon-m-cloud-arrow-down')
                 ->color('success')
                 ->exporter(CalonSiswaExporter::class)
                 ->chunkSize(250)
                 ->visible(fn(): string => CalonSiswa::count() > 0 && Auth::user()->roles->first()->name !== 'peserta'),
+
+            // Import Kartu Tes
+            ImportAction::make('import_kartu_tes')
+                ->label('Impor Kartu Tes')
+                ->outlined()
+                ->icon('heroicon-m-cloud-arrow-up')
+                ->color(Color::Cyan)
+                // ->importer(KartuTesImporter::class)
+                ->chunkSize(250)
+                ->visible(function () {
+                    $tahunPendaftaran = DB::table('tahun_pendaftarans')
+                        ->where('status', 'Aktif')
+                        ->first();
+
+                    // Pastikan hanya menampilkan jika tahun pendaftaran aktif ditemukan
+                    return $tahunPendaftaran && CalonSiswa::count() > 0 && optional(Auth::user()->roles->first())->name === 'administrator';
+                }),
+
+            // Import Nilai
+            ImportAction::make('import_kartu_tes')
+                ->label('Impor Nilai Tes')
+                ->outlined()
+                ->icon('heroicon-m-cloud-arrow-up')
+                ->color(Color::Cyan)
+                // ->importer(NilaiTesImporter::class)
+                ->chunkSize(250)
+                ->visible(function () {
+                    $tahunPendaftaran = DB::table('tahun_pendaftarans')
+                        ->where('status', 'Aktif')
+                        ->first();
+
+                    // Pastikan hanya menampilkan jika tahun pendaftaran aktif ditemukan
+                    return $tahunPendaftaran && CalonSiswa::count() > 0 && optional(Auth::user()->roles->first())->name === 'administrator';
+                })
         ];
     }
 }

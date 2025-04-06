@@ -96,7 +96,7 @@ class EditInformasi extends EditRecord
                             //     'strike',
                             // ])
                             // ->fileAttachmentsDisk('s3')
-                            ->fileAttachmentsDirectory('lampiran-informasi')
+                            ->fileAttachmentsDirectory('assets/lampiran-informasi')
                             ->fileAttachmentsVisibility('private')
                             ->disableGrammarly()
                             ->columnSpanFull(),

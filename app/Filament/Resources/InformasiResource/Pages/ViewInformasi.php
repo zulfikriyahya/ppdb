@@ -94,7 +94,7 @@ class ViewInformasi extends ViewRecord
                             // ])
                             ->formatStateUsing(fn($state) => str($state)->sanitizeHtml())
                             // ->fileAttachmentsDisk('s3')
-                            ->fileAttachmentsDirectory('lampiran-informasi')
+                            ->fileAttachmentsDirectory('assets/lampiran-informasi')
                             ->fileAttachmentsVisibility('private')
                             ->disableGrammarly()
                             ->columnSpanFull(),

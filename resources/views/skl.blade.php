@@ -19,7 +19,11 @@ use Illuminate\Support\Facades\Storage;
     <table width="100%">
         <tr>
             <td align="center">
-                <img src="{{ $instansi->logo_institusi ? Storage::url($instansi->logo_institusi) : asset('img/logo-institusi.png') }}" alt="Logo Instansi" width="90px">
+                <img src="{{ optional($instansi)->logo_institusi
+                ? Storage::url($instansi->logo_institusi)
+                : Storage::url(optional($instansi)->logo ?? '') }}"
+                alt="Logo Institusi/Instansi"
+                width="90px">
             </td>
 
             <td align="center">
@@ -35,7 +39,11 @@ use Illuminate\Support\Facades\Storage;
             </td>
 
             <td align="center">
-                <img src="{{ $instansi->logo ? Storage::url($instansi->logo) : asset('img/logo.png') }}" alt="Logo Instansi" width="90px">
+                <img src="{{ optional($instansi)->logo && optional($instansi)->logo_institusi 
+                ? Storage::url($instansi->logo) 
+                : (optional($instansi)->logo ?: '') }}" 
+                alt="Logo Instansi" 
+                width="90px">
             </td>
         </tr>
     </table>
@@ -66,7 +74,7 @@ use Illuminate\Support\Facades\Storage;
 
     <span style="text-align: justify">
         <p>
-            Berdasarkan hasil <b>Sidang Panitia Penerimaan Peserta Didik Baru Madrasah (PPDBM)</b> Tahun Pelajaran {{ $tahunPendaftaran->nama }} yang mengacu pada hasil Tes Akademik, Praktik Ibadah, dan Baca Tulis Al-Qur'an (BTQ), memutuskan:
+            Berdasarkan hasil <b>Sidang Panitia Penerimaan Peserta Didik Baru Madrasah (PPDBM)</b> Tahun Pelajaran {{ $tahunPendaftaran->nama ?? ''}} yang mengacu pada hasil Tes Akademik, Praktik Ibadah, dan Baca Tulis Al-Qur'an (BTQ), memutuskan:
         </p>
     </span>
     {{-- Tabel Identitas --}}

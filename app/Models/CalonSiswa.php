@@ -2,12 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class CalonSiswa extends Model
 {
@@ -87,10 +86,6 @@ class CalonSiswa extends Model
         'siswa_prestasi_id',
         'ekstrakurikuler_id',
         'mata_pelajaran_id',
-        'nilai_ipa',
-        'nilai_ips',
-        'nilai_bind',
-        'nilai_mtk',
         'bobot_nilai_akademik',
         'bobot_nilai_praktik',
         'nilai_akademik',
@@ -137,33 +132,33 @@ class CalonSiswa extends Model
         'wali_kelurahan_id' => 'integer',
         'sekolah_asal_id' => 'integer',
         'jalur_pendaftaran_id' => 'integer',
-        'prestasi_id' => 'integer',
         'kelas_id' => 'integer',
         'tes_akademik' => 'datetime',
         'tes_praktik' => 'datetime',
-        'mata_pelajaran_id' => 'integer',
         'ekstrakurikuler_id' => 'integer',
-        'berkas_prestasi' => 'array',
-        // 'nik' => 'hashed',
-        // 'kk' => 'hashed',
-        // 'ibu_nik' => 'hashed',
-        // 'ayah_nik' => 'hashed',
-        // 'wali_nik' => 'hashed',
-        // 'siswa_telepon' => 'hashed',
-        // 'ibu_telepon' => 'hashed',
-        // 'ayah_telepon' => 'hashed',
-        // 'wali_telepon' => 'hashed',
+        'mata_pelajaran_id' => 'integer',
+        'prestasi_id' => 'integer',
+
+        'nik' => 'encrypted',
+        'kk' => 'encrypted',
+        'ibu_nik' => 'encrypted',
+        'ayah_nik' => 'encrypted',
+        'wali_nik' => 'encrypted',
+        'siswa_telepon' => 'encrypted',
+        'ibu_telepon' => 'encrypted',
+        'ayah_telepon' => 'encrypted',
+        'wali_telepon' => 'encrypted',
 
     ];
-
-    public function jalurPrestasi(): HasOneThrough
-    {
-        return $this->hasOneThrough(JalurPendaftaran::class, 'jalur_pendaftaran_id', 'prestasi_id');
-    }
 
     public function prestasi(): BelongsTo
     {
         return $this->belongsTo(Prestasi::class, 'prestasi_id');
+    }
+
+    public function mataPelajaran(): BelongsTo
+    {
+        return $this->belongsTo(MataPelajaran::class, 'mata_pelajaran_id');
     }
 
     public function jalurPendaftaran(): BelongsTo
@@ -191,11 +186,6 @@ class CalonSiswa extends Model
     public function ekstrakurikuler(): BelongsTo
     {
         return $this->belongsTo(Ekstrakurikuler::class, 'ekstrakurikuler_id');
-    }
-
-    public function mataPelajaran(): BelongsTo
-    {
-        return $this->belongsTo(MataPelajaran::class, 'mata_pelajaran_id');
     }
 
     public function ibuNegara(): BelongsTo

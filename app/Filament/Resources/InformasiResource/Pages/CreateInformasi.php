@@ -86,7 +86,7 @@ class CreateInformasi extends CreateRecord
                             //     'strike',
                             // ])
                             // ->fileAttachmentsDisk('s3')
-                            ->fileAttachmentsDirectory('lampiran-informasi')
+                            ->fileAttachmentsDirectory('assets/lampiran-informasi')
                             ->fileAttachmentsVisibility('private')
                             ->disableGrammarly()
                             ->columnSpanFull(),

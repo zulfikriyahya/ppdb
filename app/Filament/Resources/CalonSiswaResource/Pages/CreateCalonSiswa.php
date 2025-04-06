@@ -10,6 +10,7 @@ use App\Models\Kabupaten;
 use App\Models\Kecamatan;
 use App\Models\Kelurahan;
 use Filament\Facades\Filament;
+use App\Models\JalurPendaftaran;
 use Illuminate\Support\Collection;
 use Illuminate\Support\HtmlString;
 use Filament\Forms\Components\Tabs;
@@ -64,10 +65,14 @@ class CreateCalonSiswa extends CreateRecord
                                 ->relationship('kelas', 'nama')
                                 ->native(false),
                         ])
-                        ->hidden(function () {
-                            return Auth::user()->roles->first()->name === 'peserta';
-                        })
-                        ->columns(2),
+                        ->visible(Auth::user()->roles->first()->name !== 'peserta')
+                        ->columns([
+                            'sm' => '100%',
+                            'md' => 2,
+                            'lg' => 2,
+                            'xl' => 2,
+                            '2xl' => 2,
+                        ]),
 
                     Tabs::make('Biodata')
                         ->tabs([
@@ -354,362 +359,327 @@ class CreateCalonSiswa extends CreateRecord
                                             Wizard::make([
                                                 Step::make('Data Instansi')
                                                     ->schema([
-                                                        Section::make('Instansi')
-                                                            ->schema([
-                                                                TextInput::make('nama')
-                                                                    ->label('Nama Instansi')
-                                                                    ->prefixIcon('heroicon-o-building-library')
-                                                                    ->required()
-                                                                    ->validationMessages([
-                                                                        'required' => 'Form ini wajib diisi.',
-                                                                    ])
-                                                                    ->columnSpanFull(),
-                                                                TextInput::make('npsn')
-                                                                    ->label('NPSN')
-                                                                    ->numeric()
-                                                                    ->minLength(8)
-                                                                    ->maxLength(8)
-                                                                    ->required()
-                                                                    ->validationMessages([
-                                                                        'min_digits' => 'NPSN harus terdiri dari minimal 8 digit.',
-                                                                        'max_digits' => 'NPSN tidak boleh lebih dari 8 digit.',
-                                                                        'required' => 'Form ini wajib diisi.',
-                                                                    ]),
-                                                                TextInput::make('nss')
-                                                                    ->label('NSS/NSM')
-                                                                    ->required()
-                                                                    ->numeric()
-                                                                    ->minLength(12)
-                                                                    ->maxLength(12)
-                                                                    ->validationMessages([
-                                                                        'min_digits' => 'Nomor NSS/NSM harus terdiri dari minimal 12 digit.',
-                                                                        'max_digits' => 'Nomor NSS/NSM tidak boleh lebih dari 12 digit.',
-                                                                        'required' => 'Form ini wajib diisi.',
-                                                                    ]),
-                                                                Select::make('akreditasi')
-                                                                    ->label('Akreditasi')
-                                                                    ->native(false)
-                                                                    ->required()
-                                                                    ->validationMessages([
-                                                                        'required' => 'Form ini wajib diisi.',
-                                                                    ])
-                                                                    ->options(['A' => 'A (Sangat Baik)', 'B' => 'B (Baik)', 'C' => 'C (Cukup)', 'D' => 'D (Kurang)']),
-                                                                Select::make('jenjang')
-                                                                    ->label('Jenjang')
-                                                                    ->native(false)
-                                                                    ->required()
-                                                                    ->validationMessages([
-                                                                        'required' => 'Form ini wajib diisi.',
-                                                                    ])
-                                                                    ->options(function () {
-                                                                        $sekolah = Sekolah::first(); // Ambil satu instance model Sekolah
-                                                                        if (! $sekolah) {
-                                                                            // Jika tidak ada data, kembalikan opsi default
-                                                                            return [
-                                                                                'PAUD' => 'PAUD',
-                                                                                'TK' => 'TK',
-                                                                                'SD' => 'SD',
-                                                                                'MI' => 'MI',
-                                                                                'SMP' => 'SMP',
-                                                                                'MTS' => 'MTS',
-                                                                                'SMA' => 'SMA',
-                                                                                'SMK' => 'SMK',
-                                                                                'MA' => 'MA',
-                                                                            ];
-                                                                        }
-
-                                                                        $jenjang = $sekolah->jenjang; // Mengakses properti `jenjang` dari model
-
-                                                                        if ($jenjang === 'TK') {
-                                                                            return ['PAUD' => 'PAUD'];
-                                                                        } elseif ($jenjang === 'SD' || $jenjang === 'MI') {
-                                                                            return ['TK' => 'TK'];
-                                                                        } elseif ($jenjang === 'SMP' || $jenjang === 'MTS') {
-                                                                            return ['SD' => 'SD', 'MI' => 'MI'];
-                                                                        } elseif (in_array($jenjang, ['SMA', 'SMK', 'MA'])) {
-                                                                            return ['SMP' => 'SMP', 'MTS' => 'MTS'];
-                                                                        }
-
-                                                                        return [
-                                                                            'PAUD' => 'PAUD',
-                                                                            'TK' => 'TK',
-                                                                            'SD' => 'SD',
-                                                                            'MI' => 'MI',
-                                                                            'SMP' => 'SMP',
-                                                                            'MTS' => 'MTS',
-                                                                            'SMA' => 'SMA',
-                                                                            'SMK' => 'SMK',
-                                                                            'MA' => 'MA',
-                                                                        ];
-                                                                    }),
-                                                                Select::make('status')
-                                                                    ->label('Status')
-                                                                    ->native(false)
-                                                                    ->required()
-                                                                    ->validationMessages([
-                                                                        'required' => 'Form ini wajib diisi.',
-                                                                    ])
-                                                                    ->options(['NEGERI' => 'NEGERI', 'SWASTA' => 'SWASTA']),
+                                                        // Section::make('Instansi')
+                                                        //     ->schema([
+                                                        TextInput::make('nama')
+                                                            ->label('Nama Instansi')
+                                                            ->prefixIcon('heroicon-o-building-library')
+                                                            ->required()
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
                                                             ])
-                                                            ->columns([
-                                                                'sm' => '100%',
-                                                                'md' => 3,
-                                                                'lg' => 3,
-                                                            ]),
-                                                        Section::make('Logo')
-                                                            ->schema([
-                                                                FileUpload::make('logo_institusi')
-                                                                    ->label('Logo Institusi')
-                                                                    ->image()
-                                                                    ->imageEditor()
-                                                                    ->imageEditorAspectRatios([
-                                                                        null,
-                                                                        '1:1' => '1:1',
-                                                                    ])
-                                                                    ->fetchFileInformation(false)
-                                                                    ->directory('assets/institusi')
-                                                                    ->downloadable()
-                                                                    ->openable()
-                                                                    ->maxSize(500)
-                                                                    ->minSize(10)
-                                                                    ->visibility('private'),
-                                                                FileUpload::make('logo')
-                                                                    ->label('Logo Instansi')
-                                                                    ->image()
-                                                                    ->imageEditor()
-                                                                    ->imageEditorAspectRatios([
-                                                                        null,
-                                                                        '1:1' => '1:1',
-                                                                    ])
-                                                                    ->fetchFileInformation(false)
-                                                                    ->directory('assets/instansi-lain')
-                                                                    ->downloadable()
-                                                                    ->openable()
-                                                                    ->maxSize(500)
-                                                                    ->minSize(10)
-                                                                    ->visibility('private')
-                                                                    ->required()
-                                                                    ->validationMessages([
-                                                                        'required' => 'Form ini wajib diisi.',
-                                                                    ]),
+                                                            ->columnSpanFull(),
+                                                        Select::make('jenjang')
+                                                            ->label('Jenjang')
+                                                            ->native(false)
+                                                            ->required()
+                                                            ->live()
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
                                                             ])
-                                                            ->columns([
-                                                                'sm' => '100%',
-                                                                'md' => 2,
-                                                                'lg' => 2,
+                                                            ->options(function () {
+                                                                $sekolah = Sekolah::first(); // Ambil satu instance model Sekolah
+                                                                $jenjang = optional($sekolah)->jenjang; // Menghindari error jika null
+
+                                                                return match ($jenjang) {
+                                                                    'TK' => ['PAUD' => 'PAUD'],
+                                                                    'SD', 'MI' => ['TK' => 'TK'],
+                                                                    'SMP', 'MTS' => ['SD' => 'SD', 'MI' => 'MI'],
+                                                                    'SMA', 'SMK', 'MA' => ['SMP' => 'SMP', 'MTS' => 'MTS'],
+                                                                    default => [
+                                                                        'PAUD' => 'PAUD',
+                                                                        'TK' => 'TK',
+                                                                        'SD' => 'SD',
+                                                                        'MI' => 'MI',
+                                                                        'SMP' => 'SMP',
+                                                                        'MTS' => 'MTS',
+                                                                        'SMA' => 'SMA',
+                                                                        'SMK' => 'SMK',
+                                                                        'MA' => 'MA',
+                                                                    ],
+                                                                };
+                                                            }),
+                                                        TextInput::make('npsn')
+                                                            ->label('NPSN')
+                                                            ->numeric()
+                                                            ->minLength(8)
+                                                            ->maxLength(8)
+                                                            ->required()
+                                                            ->validationMessages([
+                                                                'min_digits' => 'NPSN harus terdiri dari minimal 8 digit.',
+                                                                'max_digits' => 'NPSN tidak boleh lebih dari 8 digit.',
+                                                                'required' => 'Form ini wajib diisi.',
                                                             ]),
+                                                        TextInput::make('nss')
+                                                            ->visible(fn($get) => in_array($get('jenjang'), ['MI', 'MTS', 'MA']))
+                                                            ->label('NSS/NSM')
+                                                            ->required()
+                                                            ->numeric()
+                                                            ->minLength(12)
+                                                            ->maxLength(12)
+                                                            ->validationMessages([
+                                                                'min_digits' => 'Nomor NSS/NSM harus terdiri dari minimal 12 digit.',
+                                                                'max_digits' => 'Nomor NSS/NSM tidak boleh lebih dari 12 digit.',
+                                                                'required' => 'Form ini wajib diisi.',
+                                                            ]),
+                                                        Select::make('akreditasi')
+                                                            ->label('Akreditasi')
+                                                            ->native(false)
+                                                            ->required()
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
+                                                            ])
+                                                            ->options(['A' => 'A (Sangat Baik)', 'B' => 'B (Baik)', 'C' => 'C (Cukup)', 'D' => 'D (Kurang)']),
+
+                                                        Select::make('status')
+                                                            ->label('Status')
+                                                            ->native(false)
+                                                            ->required()
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
+                                                            ])
+                                                            ->options(['NEGERI' => 'NEGERI', 'SWASTA' => 'SWASTA']),
+                                                        FileUpload::make('logo')
+                                                            ->label('Logo Instansi')
+                                                            ->image()
+                                                            ->imageEditor()
+                                                            ->imageEditorAspectRatios([
+                                                                null,
+                                                                '1:1' => '1:1',
+                                                            ])
+                                                            ->fetchFileInformation(false)
+                                                            ->directory('assets/instansi-lain')
+                                                            ->downloadable()
+                                                            ->openable()
+                                                            ->maxSize(500)
+                                                            ->minSize(10)
+                                                            ->visibility('private')
+                                                            ->required()
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
+                                                            ])
+                                                    ])
+                                                    ->columns([
+                                                        'sm' => '100%',
+                                                        'md' => 3,
+                                                        'lg' => 3,
                                                     ]),
+                                                // ]),
                                                 Step::make('Data Alamat')
                                                     ->schema([
-                                                        Section::make('Alamat')
-                                                            ->schema([
-                                                                Select::make('negara_id')
-                                                                    ->label('Negara')
-                                                                    ->relationship('negara', 'nama')
-                                                                    ->required()
-                                                                    ->validationMessages([
-                                                                        'required' => 'Form ini wajib diisi.',
-                                                                    ])
-                                                                    ->native(false)
-                                                                    ->preload()
-                                                                    ->live()
-                                                                    ->afterStateUpdated(function (Set $set) {
-                                                                        $set('provinsi_id', null);
-                                                                        $set('kabupaten_id', null);
-                                                                        $set('kecamatan_id', null);
-                                                                        $set('kelurahan_id', null);
-                                                                    }),
-                                                                Select::make('provinsi_id')
-                                                                    ->label('Provinsi')
-                                                                    ->options(fn(Get $get): Collection => Provinsi::query()
-                                                                        ->where('negara_id', $get('negara_id'))
-                                                                        ->pluck('nama', 'id'))
-                                                                    ->required()
-                                                                    ->validationMessages([
-                                                                        'required' => 'Form ini wajib diisi.',
-                                                                    ])
-                                                                    ->native(false)
-                                                                    ->preload()
-                                                                    ->live()
-                                                                    ->afterStateUpdated(function (Set $set) {
-                                                                        $set('kabupaten_id', null);
-                                                                        $set('kecamatan_id', null);
-                                                                        $set('kelurahan_id', null);
-                                                                    }),
-                                                                Select::make('kabupaten_id')
-                                                                    ->label('Kabupaten/Kota')
-                                                                    ->options(fn(Get $get): Collection => Kabupaten::query()
-                                                                        ->where('provinsi_id', $get('provinsi_id'))
-                                                                        ->pluck('nama', 'id'))
-                                                                    ->required()
-                                                                    ->validationMessages([
-                                                                        'required' => 'Form ini wajib diisi.',
-                                                                    ])
-                                                                    ->native(false)
-                                                                    ->preload()
-                                                                    ->live()
-                                                                    ->afterStateUpdated(function (Set $set) {
-                                                                        $set('kecamatan_id', null);
-                                                                        $set('kelurahan_id', null);
-                                                                    }),
-                                                                Select::make('kecamatan_id')
-                                                                    ->label('Kecamatan')
-                                                                    ->options(fn(Get $get): Collection => Kecamatan::query()
-                                                                        ->where('kabupaten_id', $get('kabupaten_id'))
-                                                                        ->pluck('nama', 'id'))
-                                                                    ->required()
-                                                                    ->validationMessages([
-                                                                        'required' => 'Form ini wajib diisi.',
-                                                                    ])
-                                                                    ->native(false)
-                                                                    ->preload()
-                                                                    ->live()
-                                                                    ->afterStateUpdated(function (Set $set) {
-                                                                        $set('kelurahan_id', null);
-                                                                    }),
-                                                                Select::make('kelurahan_id')
-                                                                    ->label('Kelurahan/Desa')
-                                                                    ->options(fn(Get $get): Collection => Kelurahan::query()
-                                                                        ->where('kecamatan_id', $get('kecamatan_id'))
-                                                                        ->pluck('nama', 'id'))
-                                                                    ->required()
-                                                                    ->validationMessages([
-                                                                        'required' => 'Form ini wajib diisi.',
-                                                                    ])
-                                                                    ->native(false),
-                                                                TextInput::make('alamat')
-                                                                    ->label('Jalan/Kampung/Dusun')
-                                                                    ->required()
-                                                                    ->placeholder('KP KEBON CAU RT 001 RW 005')
-                                                                    ->validationMessages([
-                                                                        'required' => 'Form ini wajib diisi.',
-                                                                    ]),
+                                                        // Section::make('Alamat')
+                                                        //     ->schema([
+                                                        Select::make('negara_id')
+                                                            ->label('Negara')
+                                                            ->relationship('negara', 'nama')
+                                                            ->required()
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
                                                             ])
-                                                            ->columns([
-                                                                'sm' => '100%',
-                                                                'md' => 3,
-                                                                'lg' => 3,
+                                                            ->native(false)
+                                                            ->preload()
+                                                            ->live()
+                                                            ->afterStateUpdated(function (Set $set) {
+                                                                $set('provinsi_id', null);
+                                                                $set('kabupaten_id', null);
+                                                                $set('kecamatan_id', null);
+                                                                $set('kelurahan_id', null);
+                                                            }),
+                                                        Select::make('provinsi_id')
+                                                            ->label('Provinsi')
+                                                            ->options(fn(Get $get): Collection => Provinsi::query()
+                                                                ->where('negara_id', $get('negara_id'))
+                                                                ->pluck('nama', 'id'))
+                                                            ->required()
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
+                                                            ])
+                                                            ->native(false)
+                                                            ->preload()
+                                                            ->live()
+                                                            ->afterStateUpdated(function (Set $set) {
+                                                                $set('kabupaten_id', null);
+                                                                $set('kecamatan_id', null);
+                                                                $set('kelurahan_id', null);
+                                                            }),
+                                                        Select::make('kabupaten_id')
+                                                            ->label('Kabupaten/Kota')
+                                                            ->options(fn(Get $get): Collection => Kabupaten::query()
+                                                                ->where('provinsi_id', $get('provinsi_id'))
+                                                                ->pluck('nama', 'id'))
+                                                            ->required()
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
+                                                            ])
+                                                            ->native(false)
+                                                            ->preload()
+                                                            ->live()
+                                                            ->afterStateUpdated(function (Set $set) {
+                                                                $set('kecamatan_id', null);
+                                                                $set('kelurahan_id', null);
+                                                            }),
+                                                        Select::make('kecamatan_id')
+                                                            ->label('Kecamatan')
+                                                            ->options(fn(Get $get): Collection => Kecamatan::query()
+                                                                ->where('kabupaten_id', $get('kabupaten_id'))
+                                                                ->pluck('nama', 'id'))
+                                                            ->required()
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
+                                                            ])
+                                                            ->native(false)
+                                                            ->preload()
+                                                            ->live()
+                                                            ->afterStateUpdated(function (Set $set) {
+                                                                $set('kelurahan_id', null);
+                                                            }),
+                                                        Select::make('kelurahan_id')
+                                                            ->label('Kelurahan/Desa')
+                                                            ->options(fn(Get $get): Collection => Kelurahan::query()
+                                                                ->where('kecamatan_id', $get('kecamatan_id'))
+                                                                ->pluck('nama', 'id'))
+                                                            ->required()
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
+                                                            ])
+                                                            ->native(false),
+                                                        TextInput::make('alamat')
+                                                            ->label('Jalan/Kampung/Dusun')
+                                                            ->required()
+                                                            ->placeholder('KP KEBON CAU RT 001 RW 005')
+                                                            ->validationMessages([
+                                                                'required' => 'Form ini wajib diisi.',
                                                             ]),
+                                                    ])
+                                                    ->columns([
+                                                        'sm' => '100%',
+                                                        'md' => 3,
+                                                        'lg' => 3,
                                                     ]),
+                                                // ]),
                                                 Step::make('Data Kontak')
                                                     ->schema([
-                                                        Section::make('Kontak')
-                                                            ->schema([
-                                                                TextInput::make('website')
-                                                                    ->label('Website')
-                                                                    ->url()
-                                                                    ->prefixIcon('heroicon-m-globe-alt')
-                                                                    // ->required()
-                                                                    // ->validationMessages([
-                                                                    //     'required' => 'Form ini wajib diisi.',
-                                                                    // ])
-                                                                    ->placeholder('https://mtsn1pandeglang.sch.id'),
-                                                                TextInput::make('telepon')
-                                                                    ->label('Telepon')
-                                                                    // ->required()
-                                                                    // ->validationMessages([
-                                                                    //     'required' => 'Form ini wajib diisi.',
-                                                                    // ])
-                                                                    ->tel()
-                                                                    ->placeholder('08**********')
-                                                                    ->prefixIcon('heroicon-m-phone'),
-                                                                TextInput::make('email')
-                                                                    ->label('Email')
-                                                                    // ->required()
-                                                                    // ->validationMessages([
-                                                                    //     'required' => 'Form ini wajib diisi.',
-                                                                    // ])
-                                                                    ->placeholder('adm@mtsn1pandeglang.sch.id')
-                                                                    ->email()
-                                                                    ->prefixIcon('heroicon-m-envelope'),
-                                                            ])
-                                                            ->columns([
-                                                                'sm' => '100%',
-                                                                'md' => 3,
-                                                                'lg' => 3,
-                                                            ]),
+                                                        // Section::make('Kontak')
+                                                        //     ->schema([
+                                                        TextInput::make('website')
+                                                            ->label('Website')
+                                                            ->url()
+                                                            ->prefixIcon('heroicon-m-globe-alt')
+                                                            // ->required()
+                                                            // ->validationMessages([
+                                                            //     'required' => 'Form ini wajib diisi.',
+                                                            // ])
+                                                            ->placeholder('https://mtsn1pandeglang.sch.id'),
+                                                        TextInput::make('telepon')
+                                                            ->label('Telepon')
+                                                            // ->required()
+                                                            // ->validationMessages([
+                                                            //     'required' => 'Form ini wajib diisi.',
+                                                            // ])
+                                                            ->tel()
+                                                            ->placeholder('08**********')
+                                                            ->prefixIcon('heroicon-m-phone'),
+                                                        TextInput::make('email')
+                                                            ->label('Email')
+                                                            // ->required()
+                                                            // ->validationMessages([
+                                                            //     'required' => 'Form ini wajib diisi.',
+                                                            // ])
+                                                            ->placeholder('adm@mtsn1pandeglang.sch.id')
+                                                            ->email()
+                                                            ->prefixIcon('heroicon-m-envelope'),
+                                                    ])
+                                                    ->columns([
+                                                        'sm' => '100%',
+                                                        'md' => 3,
+                                                        'lg' => 3,
                                                     ]),
+                                                // ]),
                                             ]),
                                         ]),
                                     // Data Prestasi Calon Peserta Didik Baru
                                     Select::make('prestasi_id')
+                                        ->visible(fn($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
                                         ->label('Prestasi')
-                                        ->helperText(new HtmlString('<small><i>Pilih prestasi yang paling tinggi jika memiliki lebih dari satu prestasi.<br>Abaikan jika Jalur Pendaftaran yang dipilih bukan Jalur Prestasi.<sup style="color:red">*</sup></i></small>'))
+                                        ->helperText(new HtmlString('<small><i>Pilih prestasi yang paling tinggi jika memiliki lebih dari satu prestasi.</i></small>'))
                                         ->relationship('prestasi', 'nama')
-                                        // ->multiple() // array tipe data
                                         ->preload()
                                         ->createOptionForm([
                                             // Prestasi
-                                            Section::make('Prestasi')
-                                                ->collapsible()
+                                            // Section::make('Prestasi')
+                                            //     ->collapsible()
+                                            //     ->schema([
+                                            Section::make('')
                                                 ->schema([
-                                                    Section::make('')
-                                                        ->schema([
-                                                            TextInput::make('nama')
-                                                                ->label('Nama Prestasi')
-                                                                ->required()
-                                                                ->validationMessages([
-                                                                    'required' => 'Form ini wajib diisi.',
-                                                                ]),
-                                                            Select::make('jenis')
-                                                                ->label('Jenis Prestasi')
-                                                                ->options([
-                                                                    'Hafalan Al-Quran' => 'Hafalan Al-Quran (Minimal 3 Juz)',
-                                                                    'Olimpiade/Kejuaraan' => 'Olimpiade/Kejuaraan',
-                                                                ])
-                                                                ->required()
-                                                                ->native(false)
-                                                                ->validationMessages([
-                                                                    'required' => 'Form ini wajib diisi.',
-                                                                ])
-                                                                ->live(),
-                                                        ])
-                                                        ->columns([
-                                                            'sm' => '100%',
-                                                            'md' => 2,
-                                                            'lg' => 2,
+                                                    TextInput::make('nama')
+                                                        ->label('Nama Prestasi')
+                                                        ->required()
+                                                        ->validationMessages([
+                                                            'required' => 'Form ini wajib diisi.',
                                                         ]),
+                                                    Select::make('jenis')
+                                                        ->label('Jenis Prestasi')
+                                                        ->options([
+                                                            'Hafalan Al-Quran' => 'Hafalan Al-Quran (Minimal 3 Juz)',
+                                                            'Olimpiade/Kejuaraan' => 'Olimpiade/Kejuaraan',
+                                                        ])
+                                                        ->required()
+                                                        ->native(false)
+                                                        ->validationMessages([
+                                                            'required' => 'Form ini wajib diisi.',
+                                                        ])
+                                                        ->live(),
+                                                ])
+                                                ->columns([
+                                                    'sm' => '100%',
+                                                    'md' => 2,
+                                                    'lg' => 2,
+                                                ]),
 
-                                                    Section::make('')
-                                                        ->schema([
-                                                            Select::make('tingkat')
-                                                                ->label('Tingkat')
-                                                                ->native(false)
-                                                                ->options([
-                                                                    'Nasional' => 'Nasional',
-                                                                    'Provinsi' => 'Provinsi',
-                                                                    'Kabupaten/Kota' => 'Kabupaten/Kota',
-                                                                ])
-                                                                ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
-                                                            Select::make('kategori')
-                                                                ->label('Kategori')
-                                                                ->native(false)
-                                                                ->options([
-                                                                    'Regu/Kelompok' => 'Regu/Kelompok',
-                                                                    'Individu' => 'Individu',
-                                                                ])
-                                                                ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
-                                                            Select::make('peringkat')
-                                                                ->label('Peringkat')
-                                                                ->options([
-                                                                    '1' => '1',
-                                                                    '2' => '2',
-                                                                    '3' => '3',
-                                                                ])
-                                                                ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                            Section::make('')
+                                                ->schema([
+                                                    Select::make('tingkat')
+                                                        ->label('Tingkat')
+                                                        ->native(false)
+                                                        ->options([
+                                                            'Nasional' => 'Nasional',
+                                                            'Provinsi' => 'Provinsi',
+                                                            'Kabupaten/Kota' => 'Kabupaten/Kota',
                                                         ])
-                                                        ->columns([
-                                                            'sm' => '100%',
-                                                            'md' => 3,
-                                                            'lg' => 3,
+                                                        ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                                    Select::make('kategori')
+                                                        ->label('Kategori')
+                                                        ->native(false)
+                                                        ->options([
+                                                            'Regu/Kelompok' => 'Regu/Kelompok',
+                                                            'Individu' => 'Individu',
                                                         ])
-                                                        ->visible(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                                        ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                                    Select::make('peringkat')
+                                                        ->label('Peringkat')
+                                                        ->options([
+                                                            '1' => '1',
+                                                            '2' => '2',
+                                                            '3' => '3',
+                                                        ])
+                                                        ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
                                                 ])
                                                 ->columns([
                                                     'sm' => '100%',
                                                     'md' => 3,
                                                     'lg' => 3,
-                                                ]),
+                                                ])
+                                                ->visible(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                        ])
+                                        ->columns([
+                                            'sm' => '100%',
+                                            'md' => 3,
+                                            'lg' => 3,
+                                            // ]),
+                                        ])
+                                        ->required()
+                                        ->validationMessages([
+                                            'required' => 'Form ini wajib diisi.',
                                         ])
                                         ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->jenis} | {$record->nama} | {$record->tingkat} | {$record->kategori} | {$record->peringkat}")
                                         ->searchable()
@@ -727,6 +697,7 @@ class CreateCalonSiswa extends CreateRecord
                                         ]),
                                     // Data Peminatan Pelajaran Calon Peserta Didik Baru
                                     Select::make('mata_pelajaran_id')
+                                        ->visible(fn($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
                                         ->label('Peminatan Mata Pelajaran')
                                         ->searchable()
                                         ->preload()
@@ -735,7 +706,7 @@ class CreateCalonSiswa extends CreateRecord
                                         ->relationship('mataPelajaran', 'nama')
                                         ->validationMessages([
                                             'required' => 'Form ini wajib diisi.',
-                                        ]),
+                                        ])
                                 ]),
 
                             // Tab Alamat Calon Peserta Didik Baru
@@ -895,6 +866,59 @@ class CreateCalonSiswa extends CreateRecord
                                         ->validationMessages([
                                             'required' => 'Form ini wajib diisi.',
                                         ]),
+
+                                    // Berkas NISN Calon Peserta Didik Baru
+                                    FileUpload::make('berkas_nisn')
+                                        ->label('Kartu NISN/Tangkapan Layar NISN (Web)')
+                                        ->image()
+                                        ->imageEditor()
+                                        ->imageEditorAspectRatios([
+                                            null,
+                                            '1:1' => '1:1',
+                                            '3:4' => '3:4',
+                                        ])
+                                        ->fetchFileInformation(false)
+                                        ->directory(fn($get) => 'berkas/nisn/' . $get('nisn')) // Dinamis berdasarkan NISN
+                                        ->downloadable()
+                                        ->openable()
+                                        ->maxSize(500)
+                                        ->minSize(10)
+                                        ->required()
+                                        ->validationMessages([
+                                            'required' => 'Form ini wajib diisi.',
+                                        ])
+                                        ->visibility('private'),
+                                    // Berkas Surat Keterangan Berkelakuan Baik Calon Peserta Didik Baru
+                                    FileUpload::make('berkas_skbb')
+                                        ->label('Surat Keterangan Berkelakuan Baik')
+                                        ->required()
+                                        ->validationMessages([
+                                            'required' => 'Form ini wajib diisi.',
+                                        ])
+                                        ->fetchFileInformation(false)
+                                        ->directory(fn($get) => 'berkas/skbb/' . $get('nisn')) // Dinamis berdasarkan NISN
+                                        ->downloadable()
+                                        ->openable()
+                                        ->acceptedFileTypes(['application/pdf'])
+                                        ->maxSize(500)
+                                        ->minSize(10)
+                                        ->visibility('private'),
+                                    // Berkas Surat Keterangan Aktif Belajar Calon Peserta Didik Baru
+                                    FileUpload::make('berkas_skab')
+                                        ->label('Surat Keterangan Aktif Belajar')
+                                        ->required()
+                                        ->validationMessages([
+                                            'required' => 'Form ini wajib diisi.',
+                                        ])
+                                        ->fetchFileInformation(false)
+                                        ->directory(fn($get) => 'berkas/skab/' . $get('nisn')) // Dinamis berdasarkan NISN
+                                        ->downloadable()
+                                        ->openable()
+                                        ->acceptedFileTypes(['application/pdf'])
+                                        ->maxSize(500)
+                                        ->minSize(10)
+                                        ->visibility('private'),
+
                                     // Berkas KIP Calon Peserta Didik Baru
                                     FileUpload::make('berkas_kip')
                                         ->label('Kartu Indonesia Pintar')
@@ -949,65 +973,19 @@ class CreateCalonSiswa extends CreateRecord
                                         ->maxSize(500)
                                         ->minSize(10)
                                         ->visibility('private'),
-                                    // Berkas NISN Calon Peserta Didik Baru
-                                    FileUpload::make('berkas_nisn')
-                                        ->label('Kartu NISN/Tangkapan Layar NISN (Web)')
-                                        ->image()
-                                        ->imageEditor()
-                                        ->imageEditorAspectRatios([
-                                            null,
-                                            '1:1' => '1:1',
-                                            '3:4' => '3:4',
-                                        ])
-                                        ->fetchFileInformation(false)
-                                        ->directory(fn($get) => 'berkas/nisn/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                        ->downloadable()
-                                        ->openable()
-                                        ->maxSize(500)
-                                        ->minSize(10)
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->visibility('private'),
-                                    // Berkas Surat Keterangan Berkelakuan Baik Calon Peserta Didik Baru
-                                    FileUpload::make('berkas_skbb')
-                                        ->label('Surat Keterangan Berkelakuan Baik')
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->fetchFileInformation(false)
-                                        ->directory(fn($get) => 'berkas/skbb/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                        ->downloadable()
-                                        ->openable()
-                                        ->acceptedFileTypes(['application/pdf'])
-                                        ->maxSize(500)
-                                        ->minSize(10)
-                                        ->visibility('private'),
-                                    // Berkas Surat Keterangan Aktif Belajar Calon Peserta Didik Baru
-                                    FileUpload::make('berkas_skab')
-                                        ->label('Surat Keterangan Aktif Belajar')
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->fetchFileInformation(false)
-                                        ->directory(fn($get) => 'berkas/skab/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                        ->downloadable()
-                                        ->openable()
-                                        ->acceptedFileTypes(['application/pdf'])
-                                        ->maxSize(500)
-                                        ->minSize(10)
-                                        ->visibility('private'),
                                     // Berkas Prestasi Belajar Calon Peserta Didik Baru
                                     FileUpload::make('berkas_prestasi')
+                                        ->visible(fn($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
                                         ->label('Berkas Prestasi')
-                                        ->helperText(new HtmlString('<small><i>Gabungkan semua berkas jika memiliki lebih dari satu prestasi.<br>Abaikan jika Jalur Pendaftaran yang dipilih bukan Jalur Prestasi.<sup style="color:red">*</sup></i></small>'))
+                                        ->helperText(new HtmlString('<small><i>Gabungkan semua berkas jika memiliki lebih dari satu prestasi.</i></small>'))
                                         ->fetchFileInformation(false)
                                         ->directory(fn($get) => 'berkas/prestasi/' . $get('nisn')) // Dinamis berdasarkan NISN
                                         ->downloadable()
                                         ->openable()
+                                        ->required()
+                                        ->validationMessages([
+                                            'required' => 'Form ini wajib diisi.',
+                                        ])
                                         ->acceptedFileTypes(['application/pdf'])
                                         ->maxSize(500)
                                         ->minSize(10)
@@ -1023,6 +1001,7 @@ class CreateCalonSiswa extends CreateRecord
                 ]),
 
             Step::make('Data Orang Tua')
+
                 ->schema([
                     // Tab Ibu
                     Tabs::make('Data Ibu Kandung')
@@ -1582,101 +1561,6 @@ class CreateCalonSiswa extends CreateRecord
                                 ])
                                 ->native(false),
                         ]),
-                ]),
-
-            Step::make('Data Tes')
-                ->hidden(function () {
-                    return Auth::user()->roles->first()->name === 'peserta';
-                })
-                ->schema([
-                    Tabs::make('Data Kartu Tes')
-                        ->hidden(function () {
-                            return Auth::user()->roles->first()->name === 'peserta';
-                        })
-                        ->tabs([
-                            Tabs\Tab::make('Data Kartu Tes')
-                                ->icon('heroicon-m-bell')
-                                ->iconPosition(IconPosition::After)
-                                ->schema([
-                                    // Data Kartu Tes
-                                    TextInput::make('tes_sesi')
-                                        ->label('Sesi Tes'),
-                                    TextInput::make('tes_ruang')
-                                        ->label('Ruang Tes'),
-                                    DateTimePicker::make('tes_akademik')
-                                        ->label('Tanggal Tes Akademik'),
-                                    DateTimePicker::make('tes_praktik')
-                                        ->label('Tanggal Tes Praktik'),
-                                ]),
-                        ])
-                        ->columns([
-                            'sm' => '100%',
-                            'md' => 2,
-                            'lg' => 2,
-                        ]),
-
-                    // Tab Nilai Calon Peserta Didik Baru
-                    Tabs::make('Data Nilai Tes')
-                        ->hidden(function () {
-                            return Auth::user()->roles->first()->name === 'peserta';
-                        })
-                        ->tabs([
-                            Tabs\Tab::make('Data Nilai Tes')
-                                ->icon('heroicon-m-bell')
-                                ->iconPosition(IconPosition::After)
-                                ->schema([
-                                    // Data Nilai Tes Akademik IPA Calon Peserta Didik Baru
-                                    TextInput::make('nilai_ipa')
-                                        ->label('Nilai Tes IPA')
-                                        ->numeric(),
-                                    // Data Nilai Tes Akademik IPS Calon Peserta Didik Baru
-                                    TextInput::make('nilai_ips')
-                                        ->label('Nilai Tes IPS')
-                                        ->numeric(),
-                                    // Data Nilai Tes Akademik Matematika Calon Peserta Didik Baru
-                                    TextInput::make('nilai_matematika')
-                                        ->label('Nilai Tes Matematika')
-                                        ->numeric(),
-                                    // Data Nilai Tes Akademik Bahasa Indonesia Calon Peserta Didik Baru
-                                    TextInput::make('nilai_indonesia')
-                                        ->label('Nilai Tes Bahasa Indonesia')
-                                        ->numeric(),
-                                    // Data Nilai Tes Akademik Bahasa Inggris Calon Peserta Didik Baru
-                                    TextInput::make('nilai_inggris')
-                                        ->label('Nilai Tes Bahasa Inggris')
-                                        ->numeric(),
-                                    // Data Nilai Tes Akademik Bahasa Arab Calon Peserta Didik Baru
-                                    TextInput::make('nilai_arab')
-                                        ->label('Nilai Tes Bahasa Arab')
-                                        ->numeric(),
-                                    // Data Bobot Nilai Tes Akademik Calon Peserta Didik Baru
-                                    TextInput::make('bobot_nilai_akademik')
-                                        ->label('Bobot Nilai Tes Akademik')
-                                        ->numeric(),
-                                    // Data Bobot Nilai Tes Praktik Calon Peserta Didik Baru
-                                    TextInput::make('bobot_nilai_praktik')
-                                        ->label('Bobot Nilai Tes Praktik')
-                                        ->numeric(),
-                                    // Data Nilai Tes Akademik Calon Peserta Didik Baru
-                                    TextInput::make('nilai_akademik')
-                                        ->label('Nilai Tes Akademik')
-                                        ->numeric(),
-                                    // Data Nilai Tes Praktik Calon Peserta Didik Baru
-                                    TextInput::make('nilai_praktik')
-                                        ->label('Nilai Tes Praktik')
-                                        ->numeric(),
-                                ]),
-                        ])
-                        ->columns([
-                            'sm' => '100%',
-                            'md' => 2,
-                            'lg' => 2,
-                        ]),
-                ])
-                ->columns([
-                    'sm' => '100%',
-                    'md' => '100%',
-                    'lg' => 2,
                 ])
                 ->columnSpanFull(),
         ];
