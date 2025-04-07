@@ -4,7 +4,6 @@ namespace App\Filament\Resources\CalonSiswaResource\Pages;
 
 use Carbon\Carbon;
 use App\Models\CalonSiswa;
-use Filament\Support\Colors\Color;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Filament\Resources\Pages\ViewRecord;
