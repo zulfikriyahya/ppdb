@@ -14,12 +14,10 @@ class CalonSiswaExporter extends Exporter
     public static function getColumns(): array
     {
         return [
-            // ExportColumn::make('id')
-            //     ->label('ID'),
-            ExportColumn::make('nama')
-                ->label('Nama Lengkap'),
             ExportColumn::make('nisn')
                 ->label('NISN'),
+            ExportColumn::make('nama')
+                ->label('Nama Lengkap'),
             ExportColumn::make('sekolahAsal.nama')
                 ->label('Sekolah Asal'),
             ExportColumn::make('sekolahAsal.npsn')
@@ -67,67 +65,61 @@ class CalonSiswaExporter extends Exporter
             ExportColumn::make('siswa_telepon')
                 ->label('Nomor Telepon'),
 
-            // Alamat Peserta
+            // // Alamat Peserta
             ExportColumn::make('siswa_alamat')
-                ->label('Alamat'),
+                ->label('Alamat Peserta'),
             ExportColumn::make('siswaKelurahan.nama')
-                ->label('Kelurahan/Desa'),
+                ->label('Kelurahan/Desa Peserta'),
             ExportColumn::make('siswaKecamatan.nama')
-                ->label('Kecamatan'),
+                ->label('Kecamatan Peserta'),
             ExportColumn::make('siswaKabupaten.nama')
-                ->label('Kabupaten/Kota'),
+                ->label('Kabupaten/Kota Peserta'),
             ExportColumn::make('siswaProvinsi.nama')
-                ->label('Provinsi'),
+                ->label('Provinsi Peserta'),
             ExportColumn::make('siswaNegara.nama')
-                ->label('Negara'),
-            ExportColumn::make('kode_pos')
-                ->label('Kode Pos'),
+                ->label('Negara Peserta'),
+            ExportColumn::make('siswaKelurahan.kode_pos')
+                ->label('Kode Pos Peserta'),
 
-            // Jadwal Tes
-            ExportColumn::make('tes_sesi')
-                ->label('Sesi Tes'),
-            ExportColumn::make('tes_ruang')
-                ->label('Ruang Tes'),
-            ExportColumn::make('tes_akademik')
-                ->label('Tanggal Tes Akademik'),
-            ExportColumn::make('tes_praktik')
-                ->label('Tanggal Tes Praktik'),
-
-            // Lainnya
+            // // Lainnya
+            ExportColumn::make('prestasi.jenis')
+                ->label('Jenis Prestasi'),
             ExportColumn::make('prestasi.nama')
-                ->label('Prestasi'),
+                ->label('Nama Prestasi'),
+            ExportColumn::make('prestasi.tingkat')
+                ->label('Tingkat Prestasi'),
+            ExportColumn::make('prestasi.kategori')
+                ->label('Kategori Prestasi'),
+            ExportColumn::make('prestasi.peringkat')
+                ->label('Peringkat Prestasi'),
             ExportColumn::make('ekstrakurikuler.nama')
                 ->label('Peminatan Ekstrakurikuler'),
             ExportColumn::make('mataPelajaran.nama')
                 ->label('Peminatan Mata Pelajaran'),
-            ExportColumn::make('status_pendaftaran')
-                ->label('Status'),
-            ExportColumn::make('kelas.nama')
-                ->label('Kelas'),
 
-            // Berkas
-            // ExportColumn::make('berkas_foto')
-            //     ->label('Foto'),
-            // ExportColumn::make('berkas_kk')
-            //     ->label('Berkas KK'),
-            // ExportColumn::make('berkas_akta')
-            //     ->label('Berkas Akta'),
-            // ExportColumn::make('berkas_kip')
-            //     ->label('Berkas KIP'),
-            // ExportColumn::make('berkas_kks')
-            //     ->label('Berkas KKS'),
-            // ExportColumn::make('berkas_pkh')
-            //     ->label('Berkas PKH'),
-            // ExportColumn::make('berkas_nisn')
-            //     ->label('Berkas NISN'),
-            // ExportColumn::make('berkas_skbb')
-            //     ->label('Berkas SKBB'),
-            // ExportColumn::make('berkas_skab')
-            //     ->label('Berkas SKAB'),
-            // ExportColumn::make('berkas_prestasi')
-            //     ->label('Berkas Prestasi'),
+            // // Berkas
+            ExportColumn::make('berkas_foto')
+                ->label('Foto'),
+            ExportColumn::make('berkas_kk')
+                ->label('Berkas KK'),
+            ExportColumn::make('berkas_akta')
+                ->label('Berkas Akta'),
+            ExportColumn::make('berkas_kip')
+                ->label('Berkas KIP'),
+            ExportColumn::make('berkas_kks')
+                ->label('Berkas KKS'),
+            ExportColumn::make('berkas_pkh')
+                ->label('Berkas PKH'),
+            ExportColumn::make('berkas_nisn')
+                ->label('Berkas NISN'),
+            ExportColumn::make('berkas_skbb')
+                ->label('Berkas SKBB'),
+            ExportColumn::make('berkas_skab')
+                ->label('Berkas SKAB'),
+            ExportColumn::make('berkas_prestasi')
+                ->label('Berkas Prestasi'),
 
-            // Data Ibu
+            // // Data Ibu
             ExportColumn::make('ibu_nama')
                 ->label('Nama Ibu'),
             ExportColumn::make('ibu_nik')
@@ -141,21 +133,23 @@ class CalonSiswaExporter extends Exporter
             ExportColumn::make('ibu_penghasilan')
                 ->label('Penghasilan Bulanan Ibu'),
             ExportColumn::make('ibu_status')
-                ->label('Status'),
+                ->label('Status Ibu'),
             ExportColumn::make('ibu_alamat')
                 ->label('Alamat Ibu'),
             ExportColumn::make('ibuKelurahan.nama')
-                ->label('Kelurahan/Desa'),
+                ->label('Kelurahan/Desa Ibu'),
             ExportColumn::make('ibuKecamatan.nama')
-                ->label('Kecamatan'),
+                ->label('Kecamatan Ibu'),
             ExportColumn::make('ibuKabupaten.nama')
-                ->label('Kabupaten/Kota'),
+                ->label('Kabupaten/Kota Ibu'),
             ExportColumn::make('ibuProvinsi.nama')
-                ->label('Provinsi'),
+                ->label('Provinsi Ibu'),
             ExportColumn::make('ibuNegara.nama')
-                ->label('Negara'),
+                ->label('Negara Ibu'),
+            ExportColumn::make('ibuKelurahan.kode_pos')
+                ->label('Kode Pos Ibu'),
 
-            // Data Ayah
+            // // Data Ayah
             ExportColumn::make('ayah_nama')
                 ->label('Nama Ayah'),
             ExportColumn::make('ayah_nik')
@@ -169,21 +163,23 @@ class CalonSiswaExporter extends Exporter
             ExportColumn::make('ayah_penghasilan')
                 ->label('Penghasilan Bulanan Ayah'),
             ExportColumn::make('ayah_status')
-                ->label('Status'),
+                ->label('Status Ayah'),
             ExportColumn::make('ayah_alamat')
                 ->label('Alamat Ayah'),
             ExportColumn::make('ayahKelurahan.nama')
-                ->label('Kelurahan/Desa'),
+                ->label('Kelurahan/Desa Ayah'),
             ExportColumn::make('ayahKecamatan.nama')
-                ->label('Kecamatan'),
+                ->label('Kecamatan Ayah'),
             ExportColumn::make('ayahKabupaten.nama')
-                ->label('Kabupaten/Kota'),
+                ->label('Kabupaten/Kota Ayah'),
             ExportColumn::make('ayahProvinsi.nama')
-                ->label('Provinsi'),
+                ->label('Provinsi Ayah'),
             ExportColumn::make('ayahNegara.nama')
-                ->label('Negara'),
+                ->label('Negara Ayah'),
+            ExportColumn::make('ayahKelurahan.kode_pos')
+                ->label('Kode Pos Ayah'),
 
-            // Data Wali
+            // // Data Wali
             ExportColumn::make('wali_nama')
                 ->label('Nama Wali'),
             ExportColumn::make('wali_nik')
@@ -197,42 +193,45 @@ class CalonSiswaExporter extends Exporter
             ExportColumn::make('wali_penghasilan')
                 ->label('Penghasilan Wali'),
             ExportColumn::make('wali_status')
-                ->label('Status'),
+                ->label('Status Wali'),
             ExportColumn::make('wali_alamat')
                 ->label('Alamat Wali'),
             ExportColumn::make('waliKelurahan.nama')
-                ->label('Kelurahan/Desa'),
+                ->label('Kelurahan/Desa Wali'),
             ExportColumn::make('waliKecamatan.nama')
-                ->label('Kecamatan'),
+                ->label('Kecamatan Wali'),
             ExportColumn::make('waliKabupaten.nama')
-                ->label('Kabupaten/Kota'),
+                ->label('Kabupaten/Kota Wali'),
             ExportColumn::make('waliProvinsi.nama')
-                ->label('Provinsi'),
+                ->label('Provinsi Wali'),
             ExportColumn::make('waliNegara.nama')
-                ->label('Negara'),
+                ->label('Negara Wali'),
+            ExportColumn::make('waliKelurahan.kode_pos')
+                ->label('Kode Pos Wali'),
+
+            // Jadwal Tes
+            ExportColumn::make('tes_sesi')
+                ->label('Sesi Tes'),
+            ExportColumn::make('tes_ruang')
+                ->label('Ruang Tes'),
+            ExportColumn::make('tes_akademik')
+                ->label('Tanggal Tes Akademik'),
+            ExportColumn::make('tes_praktik')
+                ->label('Tanggal Tes Praktik'),
 
             // Nilai Tes
-            // ExportColumn::make('nilai_ipa')
-            //     ->label('Nilai IPA'),
-            // ExportColumn::make('nilai_ips')
-            //     ->label('Nilai IPS'),
-            // ExportColumn::make('nilai_matematika')
-            //     ->label('Nilai Matematika'),
-            // ExportColumn::make('nilai_indonesia')
-            //     ->label('Nilai Bahasa Indonesia'),
-            // ExportColumn::make('nilai_inggris')
-            //     ->label('Nilai Bahasa Inggris'),
-            // ExportColumn::make('nilai_arab')
-            //     ->label('Nilai Bahasa Arab'),
-            // ExportColumn::make('bobot_nilai_akademik')
-            //     ->label('Bobot Nilai Tes Akademik'),
-            // ExportColumn::make('bobot_nilai_praktik')
-            //     ->label('Bobot Nilai Tes Praktik'),
-            // ExportColumn::make('nilai_akademik')
-            //     ->label('Nilai Tes Akademik'),
-            // ExportColumn::make('nilai_praktik')
-            //     ->label('Nilai Tes Praktik'),
-
+            ExportColumn::make('bobot_nilai_akademik')
+                ->label('Bobot Nilai Tes Akademik'),
+            ExportColumn::make('bobot_nilai_praktik')
+                ->label('Bobot Nilai Tes Praktik'),
+            ExportColumn::make('nilai_akademik')
+                ->label('Nilai Tes Akademik'),
+            ExportColumn::make('nilai_praktik')
+                ->label('Nilai Tes Praktik'),
+            ExportColumn::make('status_pendaftaran')
+                ->label('Status Pendaftaran'),
+            ExportColumn::make('kelas_id')
+                ->label('Kelas'),
             // Timestamp
             // ExportColumn::make('created_at')
             //     ->label('Dibuat'),

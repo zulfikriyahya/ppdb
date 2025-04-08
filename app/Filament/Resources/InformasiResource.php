@@ -26,6 +26,11 @@ class InformasiResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-information-circle';
 
+    public static function getNavigationBadge(): ?string
+    {
+        return Informasi::count();
+    }
+
     public static function getPages(): array
     {
         return [

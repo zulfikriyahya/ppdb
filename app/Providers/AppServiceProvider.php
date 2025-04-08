@@ -2,10 +2,8 @@
 
 namespace App\Providers;
 
-use Filament\Facades\Filament;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\ServiceProvider;
-use Filament\Support\Facades\FilamentColor;
 
 class AppServiceProvider extends ServiceProvider
 {

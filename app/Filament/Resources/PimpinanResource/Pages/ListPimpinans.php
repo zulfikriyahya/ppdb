@@ -37,7 +37,7 @@ class ListPimpinans extends ListRecords
                 ImageColumn::make('berkas_foto')
                     ->label('Foto')
                     ->circular()
-                    ->defaultImageUrl('/img/avatar.png'),
+                    ->defaultImageUrl('img/avatar.png'),
                 TextColumn::make('nama')
                     ->label('Nama Lengkap')
                     ->searchable(Pimpinan::count() > 10),
@@ -48,7 +48,7 @@ class ListPimpinans extends ListRecords
                     ->sortable(Pimpinan::count() > 10),
                 ImageColumn::make('berkas_tte')
                     ->label('TTE')
-                    ->defaultImageUrl('/img/tte.png'),
+                    ->defaultImageUrl('img/tte.png'),
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()

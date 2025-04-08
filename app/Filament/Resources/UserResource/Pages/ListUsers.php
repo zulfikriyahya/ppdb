@@ -41,7 +41,7 @@ class ListUsers extends ListRecords
                 ImageColumn::make('avatar')
                     ->label('Avatar')
                     ->circular()
-                    ->defaultImageUrl('/img/avatar.png'),
+                    ->defaultImageUrl('img/avatar.png'),
                 TextColumn::make('name')
                     ->label('Nama Lengkap')
                     ->searchable(),

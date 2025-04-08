@@ -2,18 +2,18 @@
 
 namespace App\Filament\Resources\InformasiResource\Widgets;
 
-use Carbon\Carbon;
-use App\Models\Informasi;
 use App\Models\CalonSiswa;
-use Filament\Tables\Table;
-use Illuminate\Support\Str;
-use Filament\Widgets\TableWidget;
-use Illuminate\Support\Facades\DB;
+use App\Models\Informasi;
+use Carbon\Carbon;
 use Filament\Tables\Actions\Action;
-use Illuminate\Support\Facades\Auth;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Table;
+use Filament\Widgets\TableWidget;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class InformasiPublished extends TableWidget
 {
@@ -37,7 +37,7 @@ class InformasiPublished extends TableWidget
 
             if ($calonSiswa) {
                 $urlFormulir = '/formulir';
-                $urlViewFormulir = '/formulir/' . $calonSiswa->id;
+                $urlViewFormulir = '/formulir/'.$calonSiswa->id;
                 $urlInformasi = '/informasi';
             }
         }
@@ -310,7 +310,7 @@ class InformasiPublished extends TableWidget
             ->columns([
                 TextColumn::make('judul')
                     ->label('Informasi')
-                    ->description(fn(Informasi $record): string => Str::limit($record->isi, 50))
+                    ->description(fn (Informasi $record): string => Str::limit($record->isi, 50))
                     ->icon('heroicon-o-information-circle')
                     ->iconColor('info'),
                 ImageColumn::make('gambar')

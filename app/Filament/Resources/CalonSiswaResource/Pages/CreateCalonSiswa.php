@@ -2,32 +2,30 @@
 
 namespace App\Filament\Resources\CalonSiswaResource\Pages;
 
-use App\Models\Sekolah;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
-use App\Models\Provinsi;
+use App\Filament\Resources\CalonSiswaResource;
+use App\Models\JalurPendaftaran;
 use App\Models\Kabupaten;
 use App\Models\Kecamatan;
 use App\Models\Kelurahan;
-use Filament\Facades\Filament;
-use App\Models\JalurPendaftaran;
-use Illuminate\Support\Collection;
-use Illuminate\Support\HtmlString;
-use Filament\Forms\Components\Tabs;
-use Illuminate\Support\Facades\Auth;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Wizard;
-use Filament\Forms\Components\Section;
-use Illuminate\Database\Eloquent\Model;
-use Filament\Forms\Components\TextInput;
-use Filament\Support\Enums\IconPosition;
+use App\Models\Provinsi;
+use App\Models\Sekolah;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Tabs;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Wizard;
 use Filament\Forms\Components\Wizard\Step;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Resources\Pages\CreateRecord;
-use Filament\Forms\Components\DateTimePicker;
-use App\Filament\Resources\CalonSiswaResource;
 use Filament\Resources\Pages\CreateRecord\Concerns\HasWizard;
+use Filament\Support\Enums\IconPosition;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\HtmlString;
 
 class CreateCalonSiswa extends CreateRecord
 {
@@ -40,40 +38,6 @@ class CreateCalonSiswa extends CreateRecord
         return [
             Step::make('Data Calon Siswa')
                 ->schema([
-                    // Section Formulir
-                    Section::make('Formulir Pendaftaran')
-                        // ->collapsible()
-                        ->schema([
-                            // Data Status Pendaftaran Calon Peserta Didik Baru
-                            Select::make('status_pendaftaran')
-                                ->label('Status Pendaftaran')
-                                ->options([
-                                    'Diproses' => 'Diproses',
-                                    'Berkas Tidak Lengkap' => 'Berkas Tidak Lengkap',
-                                    'Diverifikasi' => 'Diverifikasi',
-                                    'Ditolak' => 'Ditolak',
-                                    'Diterima' => 'Diterima',
-                                    'Diterima Di Kelas Reguler' => 'Diterima Di Kelas Reguler',
-                                    'Diterima Di Kelas Unggulan' => 'Diterima Di Kelas Unggulan',
-                                ])
-                                ->native(false)
-                                ->live()
-                                ->default('Diproses'),
-                            // Data Kelas Pendaftaran Calon Peserta Didik Baru
-                            Select::make('kelas_id')
-                                ->label('Kelas')
-                                ->relationship('kelas', 'nama')
-                                ->native(false),
-                        ])
-                        ->visible(Auth::user()->roles->first()->name !== 'peserta')
-                        ->columns([
-                            'sm' => '100%',
-                            'md' => 2,
-                            'lg' => 2,
-                            'xl' => 2,
-                            '2xl' => 2,
-                        ]),
-
                     Tabs::make('Biodata')
                         ->tabs([
                             Tabs\Tab::make('Biodata')
@@ -83,21 +47,21 @@ class CreateCalonSiswa extends CreateRecord
                                     // Jalur Pendaftaran
                                     Select::make('jalur_pendaftaran_id')
                                         ->label('Jalur Pendaftaran')
-                                        ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif')) // Menampilkan data jalurPendaftaran dengan kondisi statusnya aktif saja
+                                        ->relationship('jalurPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif')) // Menampilkan data jalurPendaftaran dengan kondisi statusnya aktif saja
                                         ->required()
                                         ->validationMessages([
                                             'required' => 'Form ini wajib diisi.',
                                         ])
                                         ->native(false)
                                         ->live()
-                                        ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->nama} | {$record->tahunPendaftaran->nama}"),
+                                        ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->nama} | {$record->tahunPendaftaran->nama}"),
                                     // Nama Lengkap Calon Peserta Didik Baru
                                     TextInput::make('nama')
                                         ->label('Nama Lengkap')
                                         ->required()
                                         ->disabledOn('create')
                                         ->dehydrated()
-                                        ->default(fn() => Auth::user()->name)
+                                        ->default(fn () => Auth::user()->name)
                                         ->validationMessages([
                                             'required' => 'Form ini wajib diisi.',
                                         ]),
@@ -106,8 +70,8 @@ class CreateCalonSiswa extends CreateRecord
                                         ->label('Nomor Induk Kependudukan (NIK)')
                                         ->required()
                                         ->unique(ignoreRecord: true)
-                                        ->rule(fn($record) => $record === null ? 'unique:calon_siswas,nik' : 'unique:calon_siswas,nik,' . $record->id)
-                                        ->dehydrateStateUsing(fn($state) => $state ? $state : null)
+                                        ->rule(fn ($record) => $record === null ? 'unique:calon_siswas,nik' : 'unique:calon_siswas,nik,'.$record->id)
+                                        ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
                                         ->numeric()
                                         ->maxLength(16)
                                         ->minLength(16)
@@ -135,10 +99,10 @@ class CreateCalonSiswa extends CreateRecord
                                         ->required()
                                         ->disabledOn('create')
                                         ->dehydrated()
-                                        ->default(fn() => Auth::user()->username)
+                                        ->default(fn () => Auth::user()->username)
                                         ->unique(ignoreRecord: true)
-                                        ->rule(fn($record) => $record === null ? 'unique:calon_siswas,nisn' : 'unique:calon_siswas,nisn,' . $record->id)
-                                        ->dehydrateStateUsing(fn($state) => $state ? $state : null)
+                                        ->rule(fn ($record) => $record === null ? 'unique:calon_siswas,nisn' : 'unique:calon_siswas,nisn,'.$record->id)
+                                        ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
                                         ->numeric()
                                         ->maxLength(10)
                                         ->minLength(10)
@@ -302,10 +266,11 @@ class CreateCalonSiswa extends CreateRecord
                                         ->label('Nomor Kartu Indonesia Pintar')
                                         ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Indonesia Pintar (KIP).<sup style="color:red">*</sup></i></small>'))
                                         ->unique(ignoreRecord: true)
-                                        ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_kip' : 'unique:calon_siswas,no_kip,' . $record->id)
-                                        ->dehydrateStateUsing(fn($state) => $state ? $state : null)
+                                        ->rule(fn ($record) => $record === null ? 'unique:calon_siswas,no_kip' : 'unique:calon_siswas,no_kip,'.$record->id)
+                                        ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
                                         ->maxLength(6)
                                         ->minLength(6)
+                                        ->live()
                                         ->validationMessages([
                                             'max' => 'KIP: Masukkan maksimal 6 Karakter.',
                                             'min' => 'KIP: Masukkan minimal 6 Karakter.',
@@ -316,10 +281,11 @@ class CreateCalonSiswa extends CreateRecord
                                         ->label('Nomor Kartu Keluarga Sejahtera')
                                         ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Keluarga Sejahtera (KKS).<sup style="color:red">*</sup></i></small>'))
                                         ->unique(ignoreRecord: true)
-                                        ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_kks' : 'unique:calon_siswas,no_kks,' . $record->id)
-                                        ->dehydrateStateUsing(fn($state) => $state ? $state : null)
+                                        ->rule(fn ($record) => $record === null ? 'unique:calon_siswas,no_kks' : 'unique:calon_siswas,no_kks,'.$record->id)
+                                        ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
                                         ->maxLength(6)
                                         ->minLength(6)
+                                        ->live()
                                         ->validationMessages([
                                             'max' => 'KKS: Masukkan maksimal 6 Karakter.',
                                             'min' => 'KKS: Masukkan minimal 6 Karakter.',
@@ -330,10 +296,11 @@ class CreateCalonSiswa extends CreateRecord
                                         ->label('Nomor Kartu Program Keluarga Harapan')
                                         ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Program Keluarga Harapan (PKH).<sup style="color:red">*</sup></i></small>'))
                                         ->unique(ignoreRecord: true)
-                                        ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_pkh' : 'unique:calon_siswas,no_pkh,' . $record->id)
-                                        ->dehydrateStateUsing(fn($state) => $state ? $state : null)
+                                        ->rule(fn ($record) => $record === null ? 'unique:calon_siswas,no_pkh' : 'unique:calon_siswas,no_pkh,'.$record->id)
+                                        ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
                                         ->maxLength(6)
                                         ->minLength(6)
+                                        ->live()
                                         ->validationMessages([
                                             'max' => 'PKH: Masukkan maksimal 6 Karakter.',
                                             'min' => 'PKH: Masukkan minimal 6 Karakter.',
@@ -354,7 +321,7 @@ class CreateCalonSiswa extends CreateRecord
                                         ->native(false)
                                         ->searchable()
                                         ->preload()
-                                        ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->nama} | NPSN: {$record->npsn}")
+                                        ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->nama} | NPSN: {$record->npsn}")
                                         ->createOptionForm([
                                             Wizard::make([
                                                 Step::make('Data Instansi')
@@ -411,7 +378,7 @@ class CreateCalonSiswa extends CreateRecord
                                                                 'required' => 'Form ini wajib diisi.',
                                                             ]),
                                                         TextInput::make('nss')
-                                                            ->visible(fn($get) => in_array($get('jenjang'), ['MI', 'MTS', 'MA']))
+                                                            ->visible(fn ($get) => in_array($get('jenjang'), ['MI', 'MTS', 'MA']))
                                                             ->label('NSS/NSM')
                                                             ->required()
                                                             ->numeric()
@@ -457,7 +424,7 @@ class CreateCalonSiswa extends CreateRecord
                                                             ->required()
                                                             ->validationMessages([
                                                                 'required' => 'Form ini wajib diisi.',
-                                                            ])
+                                                            ]),
                                                     ])
                                                     ->columns([
                                                         'sm' => '100%',
@@ -487,7 +454,7 @@ class CreateCalonSiswa extends CreateRecord
                                                             }),
                                                         Select::make('provinsi_id')
                                                             ->label('Provinsi')
-                                                            ->options(fn(Get $get): Collection => Provinsi::query()
+                                                            ->options(fn (Get $get): Collection => Provinsi::query()
                                                                 ->where('negara_id', $get('negara_id'))
                                                                 ->pluck('nama', 'id'))
                                                             ->required()
@@ -504,7 +471,7 @@ class CreateCalonSiswa extends CreateRecord
                                                             }),
                                                         Select::make('kabupaten_id')
                                                             ->label('Kabupaten/Kota')
-                                                            ->options(fn(Get $get): Collection => Kabupaten::query()
+                                                            ->options(fn (Get $get): Collection => Kabupaten::query()
                                                                 ->where('provinsi_id', $get('provinsi_id'))
                                                                 ->pluck('nama', 'id'))
                                                             ->required()
@@ -520,7 +487,7 @@ class CreateCalonSiswa extends CreateRecord
                                                             }),
                                                         Select::make('kecamatan_id')
                                                             ->label('Kecamatan')
-                                                            ->options(fn(Get $get): Collection => Kecamatan::query()
+                                                            ->options(fn (Get $get): Collection => Kecamatan::query()
                                                                 ->where('kabupaten_id', $get('kabupaten_id'))
                                                                 ->pluck('nama', 'id'))
                                                             ->required()
@@ -535,7 +502,7 @@ class CreateCalonSiswa extends CreateRecord
                                                             }),
                                                         Select::make('kelurahan_id')
                                                             ->label('Kelurahan/Desa')
-                                                            ->options(fn(Get $get): Collection => Kelurahan::query()
+                                                            ->options(fn (Get $get): Collection => Kelurahan::query()
                                                                 ->where('kecamatan_id', $get('kecamatan_id'))
                                                                 ->pluck('nama', 'id'))
                                                             ->required()
@@ -599,7 +566,7 @@ class CreateCalonSiswa extends CreateRecord
                                         ]),
                                     // Data Prestasi Calon Peserta Didik Baru
                                     Select::make('prestasi_id')
-                                        ->visible(fn($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
+                                        ->visible(fn ($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
                                         ->label('Prestasi')
                                         ->helperText(new HtmlString('<small><i>Pilih prestasi yang paling tinggi jika memiliki lebih dari satu prestasi.</i></small>'))
                                         ->relationship('prestasi', 'nama')
@@ -646,7 +613,7 @@ class CreateCalonSiswa extends CreateRecord
                                                             'Provinsi' => 'Provinsi',
                                                             'Kabupaten/Kota' => 'Kabupaten/Kota',
                                                         ])
-                                                        ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                                        ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
                                                     Select::make('kategori')
                                                         ->label('Kategori')
                                                         ->native(false)
@@ -654,7 +621,7 @@ class CreateCalonSiswa extends CreateRecord
                                                             'Regu/Kelompok' => 'Regu/Kelompok',
                                                             'Individu' => 'Individu',
                                                         ])
-                                                        ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                                        ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
                                                     Select::make('peringkat')
                                                         ->label('Peringkat')
                                                         ->options([
@@ -662,14 +629,14 @@ class CreateCalonSiswa extends CreateRecord
                                                             '2' => '2',
                                                             '3' => '3',
                                                         ])
-                                                        ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                                        ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
                                                 ])
                                                 ->columns([
                                                     'sm' => '100%',
                                                     'md' => 3,
                                                     'lg' => 3,
                                                 ])
-                                                ->visible(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                                ->visible(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
                                         ])
                                         ->columns([
                                             'sm' => '100%',
@@ -681,7 +648,7 @@ class CreateCalonSiswa extends CreateRecord
                                         ->validationMessages([
                                             'required' => 'Form ini wajib diisi.',
                                         ])
-                                        ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->jenis} | {$record->nama} | {$record->tingkat} | {$record->kategori} | {$record->peringkat}")
+                                        ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->jenis} | {$record->nama} | {$record->tingkat} | {$record->kategori} | {$record->peringkat}")
                                         ->searchable()
                                         ->native(false),
                                     // Data Peminatan Ekstrakurikuler Calon Peserta Didik Baru
@@ -697,7 +664,7 @@ class CreateCalonSiswa extends CreateRecord
                                         ]),
                                     // Data Peminatan Pelajaran Calon Peserta Didik Baru
                                     Select::make('mata_pelajaran_id')
-                                        ->visible(fn($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
+                                        // ->visible(fn($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
                                         ->label('Peminatan Mata Pelajaran')
                                         ->searchable()
                                         ->preload()
@@ -706,7 +673,7 @@ class CreateCalonSiswa extends CreateRecord
                                         ->relationship('mataPelajaran', 'nama')
                                         ->validationMessages([
                                             'required' => 'Form ini wajib diisi.',
-                                        ])
+                                        ]),
                                 ]),
 
                             // Tab Alamat Calon Peserta Didik Baru
@@ -733,7 +700,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('siswa_provinsi_id')
                                         ->label('Provinsi')
-                                        ->options(fn(Get $get): Collection => Provinsi::query()
+                                        ->options(fn (Get $get): Collection => Provinsi::query()
                                             ->where('negara_id', $get('siswa_negara_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -750,7 +717,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('siswa_kabupaten_id')
                                         ->label('Kabupaten')
-                                        ->options(fn(Get $get): Collection => Kabupaten::query()
+                                        ->options(fn (Get $get): Collection => Kabupaten::query()
                                             ->where('provinsi_id', $get('siswa_provinsi_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -766,7 +733,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('siswa_kecamatan_id')
                                         ->label('Kecamatan')
-                                        ->options(fn(Get $get): Collection => Kecamatan::query()
+                                        ->options(fn (Get $get): Collection => Kecamatan::query()
                                             ->where('kabupaten_id', $get('siswa_kabupaten_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -781,7 +748,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('siswa_kelurahan_id')
                                         ->label('Kelurahan')
-                                        ->options(fn(Get $get): Collection => Kelurahan::query()
+                                        ->options(fn (Get $get): Collection => Kelurahan::query()
                                             ->where('kecamatan_id', $get('siswa_kecamatan_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -814,7 +781,7 @@ class CreateCalonSiswa extends CreateRecord
                                             '3:4' => '3:4',
                                         ])
                                         ->fetchFileInformation(false)
-                                        ->directory(fn($get) => 'berkas/foto/' . $get('nisn')) // Dinamis berdasarkan NISN
+                                        ->directory(fn ($get) => 'berkas/foto/'.$get('nisn')) // Dinamis berdasarkan NISN
                                         ->downloadable()
                                         ->openable()
                                         ->maxSize(500)
@@ -835,7 +802,7 @@ class CreateCalonSiswa extends CreateRecord
                                             '3:4' => '3:4',
                                         ])
                                         ->fetchFileInformation(false)
-                                        ->directory(fn($get) => 'berkas/kk/' . $get('nisn')) // Dinamis berdasarkan NISN
+                                        ->directory(fn ($get) => 'berkas/kk/'.$get('nisn')) // Dinamis berdasarkan NISN
                                         ->downloadable()
                                         ->openable()
                                         ->maxSize(500)
@@ -856,7 +823,7 @@ class CreateCalonSiswa extends CreateRecord
                                             '3:4' => '3:4',
                                         ])
                                         ->fetchFileInformation(false)
-                                        ->directory(fn($get) => 'berkas/akta/' . $get('nisn')) // Dinamis berdasarkan NISN
+                                        ->directory(fn ($get) => 'berkas/akta/'.$get('nisn')) // Dinamis berdasarkan NISN
                                         ->downloadable()
                                         ->openable()
                                         ->maxSize(500)
@@ -878,7 +845,7 @@ class CreateCalonSiswa extends CreateRecord
                                             '3:4' => '3:4',
                                         ])
                                         ->fetchFileInformation(false)
-                                        ->directory(fn($get) => 'berkas/nisn/' . $get('nisn')) // Dinamis berdasarkan NISN
+                                        ->directory(fn ($get) => 'berkas/nisn/'.$get('nisn')) // Dinamis berdasarkan NISN
                                         ->downloadable()
                                         ->openable()
                                         ->maxSize(500)
@@ -896,7 +863,7 @@ class CreateCalonSiswa extends CreateRecord
                                             'required' => 'Form ini wajib diisi.',
                                         ])
                                         ->fetchFileInformation(false)
-                                        ->directory(fn($get) => 'berkas/skbb/' . $get('nisn')) // Dinamis berdasarkan NISN
+                                        ->directory(fn ($get) => 'berkas/skbb/'.$get('nisn')) // Dinamis berdasarkan NISN
                                         ->downloadable()
                                         ->openable()
                                         ->acceptedFileTypes(['application/pdf'])
@@ -911,7 +878,7 @@ class CreateCalonSiswa extends CreateRecord
                                             'required' => 'Form ini wajib diisi.',
                                         ])
                                         ->fetchFileInformation(false)
-                                        ->directory(fn($get) => 'berkas/skab/' . $get('nisn')) // Dinamis berdasarkan NISN
+                                        ->directory(fn ($get) => 'berkas/skab/'.$get('nisn')) // Dinamis berdasarkan NISN
                                         ->downloadable()
                                         ->openable()
                                         ->acceptedFileTypes(['application/pdf'])
@@ -921,6 +888,8 @@ class CreateCalonSiswa extends CreateRecord
 
                                     // Berkas KIP Calon Peserta Didik Baru
                                     FileUpload::make('berkas_kip')
+                                        ->required(fn ($get) => $get('no_kip') !== null)
+                                        ->visible(fn ($get) => $get('no_kip') !== null)
                                         ->label('Kartu Indonesia Pintar')
                                         ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Indonesia Pintar (KIP).<sup style="color:red">*</sup></i></small>'))
                                         ->image()
@@ -931,7 +900,7 @@ class CreateCalonSiswa extends CreateRecord
                                             '3:4' => '3:4',
                                         ])
                                         ->fetchFileInformation(false)
-                                        ->directory(fn($get) => 'berkas/kip/' . $get('nisn')) // Dinamis berdasarkan NISN
+                                        ->directory(fn ($get) => 'berkas/kip/'.$get('nisn')) // Dinamis berdasarkan NISN
                                         ->downloadable()
                                         ->openable()
                                         ->maxSize(500)
@@ -939,6 +908,8 @@ class CreateCalonSiswa extends CreateRecord
                                         ->visibility('private'),
                                     // Berkas KKS Calon Peserta Didik Baru
                                     FileUpload::make('berkas_kks')
+                                        ->required(fn ($get) => $get('no_kks') !== null)
+                                        ->visible(fn ($get) => $get('no_kks') !== null)
                                         ->label('Kartu Keluarga Sejahtera')
                                         ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Keluarga Sejahtera (KKS).<sup style="color:red">*</sup></i></small>'))
                                         ->image()
@@ -949,7 +920,7 @@ class CreateCalonSiswa extends CreateRecord
                                             '3:4' => '3:4',
                                         ])
                                         ->fetchFileInformation(false)
-                                        ->directory(fn($get) => 'berkas/kks/' . $get('nisn')) // Dinamis berdasarkan NISN
+                                        ->directory(fn ($get) => 'berkas/kks/'.$get('nisn')) // Dinamis berdasarkan NISN
                                         ->downloadable()
                                         ->openable()
                                         ->maxSize(500)
@@ -957,6 +928,8 @@ class CreateCalonSiswa extends CreateRecord
                                         ->visibility('private'),
                                     // Berkas PKH Calon Peserta Didik Baru
                                     FileUpload::make('berkas_pkh')
+                                        ->required(fn ($get) => $get('no_pkh') !== null)
+                                        ->visible(fn ($get) => $get('no_pkh') !== null)
                                         ->label('Kartu Program Keluarga Harapan')
                                         ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Program Keluarga Harapan (PKH).<sup style="color:red">*</sup></i></small>'))
                                         ->image()
@@ -967,7 +940,7 @@ class CreateCalonSiswa extends CreateRecord
                                             '3:4' => '3:4',
                                         ])
                                         ->fetchFileInformation(false)
-                                        ->directory(fn($get) => 'berkas/pkh/' . $get('nisn')) // Dinamis berdasarkan NISN
+                                        ->directory(fn ($get) => 'berkas/pkh/'.$get('nisn')) // Dinamis berdasarkan NISN
                                         ->downloadable()
                                         ->openable()
                                         ->maxSize(500)
@@ -975,14 +948,14 @@ class CreateCalonSiswa extends CreateRecord
                                         ->visibility('private'),
                                     // Berkas Prestasi Belajar Calon Peserta Didik Baru
                                     FileUpload::make('berkas_prestasi')
-                                        ->visible(fn($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
+                                        ->required(fn ($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
+                                        ->visible(fn ($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
                                         ->label('Berkas Prestasi')
                                         ->helperText(new HtmlString('<small><i>Gabungkan semua berkas jika memiliki lebih dari satu prestasi.</i></small>'))
                                         ->fetchFileInformation(false)
-                                        ->directory(fn($get) => 'berkas/prestasi/' . $get('nisn')) // Dinamis berdasarkan NISN
+                                        ->directory(fn ($get) => 'berkas/prestasi/'.$get('nisn')) // Dinamis berdasarkan NISN
                                         ->downloadable()
                                         ->openable()
-                                        ->required()
                                         ->validationMessages([
                                             'required' => 'Form ini wajib diisi.',
                                         ])
@@ -1128,7 +1101,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('ibu_provinsi_id')
                                         ->label('Provinsi')
-                                        ->options(fn(Get $get): Collection => Provinsi::query()
+                                        ->options(fn (Get $get): Collection => Provinsi::query()
                                             ->where('negara_id', $get('ibu_negara_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -1145,7 +1118,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('ibu_kabupaten_id')
                                         ->label('Kabupaten')
-                                        ->options(fn(Get $get): Collection => Kabupaten::query()
+                                        ->options(fn (Get $get): Collection => Kabupaten::query()
                                             ->where('provinsi_id', $get('ibu_provinsi_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -1161,7 +1134,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('ibu_kecamatan_id')
                                         ->label('Kecamatan')
-                                        ->options(fn(Get $get): Collection => Kecamatan::query()
+                                        ->options(fn (Get $get): Collection => Kecamatan::query()
                                             ->where('kabupaten_id', $get('ibu_kabupaten_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -1176,7 +1149,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('ibu_kelurahan_id')
                                         ->label('Kelurahan')
-                                        ->options(fn(Get $get): Collection => Kelurahan::query()
+                                        ->options(fn (Get $get): Collection => Kelurahan::query()
                                             ->where('kecamatan_id', $get('ibu_kecamatan_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -1323,7 +1296,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('ayah_provinsi_id')
                                         ->label('Provinsi')
-                                        ->options(fn(Get $get): Collection => Provinsi::query()
+                                        ->options(fn (Get $get): Collection => Provinsi::query()
                                             ->where('negara_id', $get('ayah_negara_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -1340,7 +1313,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('ayah_kabupaten_id')
                                         ->label('Kabupaten')
-                                        ->options(fn(Get $get): Collection => Kabupaten::query()
+                                        ->options(fn (Get $get): Collection => Kabupaten::query()
                                             ->where('provinsi_id', $get('ayah_provinsi_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -1356,7 +1329,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('ayah_kecamatan_id')
                                         ->label('Kecamatan')
-                                        ->options(fn(Get $get): Collection => Kecamatan::query()
+                                        ->options(fn (Get $get): Collection => Kecamatan::query()
                                             ->where('kabupaten_id', $get('ayah_kabupaten_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -1371,7 +1344,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('ayah_kelurahan_id')
                                         ->label('Kelurahan')
-                                        ->options(fn(Get $get): Collection => Kelurahan::query()
+                                        ->options(fn (Get $get): Collection => Kelurahan::query()
                                             ->where('kecamatan_id', $get('ayah_kecamatan_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -1487,7 +1460,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('wali_provinsi_id')
                                         ->label('Provinsi')
-                                        ->options(fn(Get $get): Collection => Provinsi::query()
+                                        ->options(fn (Get $get): Collection => Provinsi::query()
                                             ->where('negara_id', $get('wali_negara_id'))
                                             ->pluck('nama', 'id'))
                                         ->native(false)
@@ -1500,7 +1473,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('wali_kabupaten_id')
                                         ->label('Kabupaten')
-                                        ->options(fn(Get $get): Collection => Kabupaten::query()
+                                        ->options(fn (Get $get): Collection => Kabupaten::query()
                                             ->where('provinsi_id', $get('wali_provinsi_id'))
                                             ->pluck('nama', 'id'))
                                         ->native(false)
@@ -1512,7 +1485,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('wali_kecamatan_id')
                                         ->label('Kecamatan')
-                                        ->options(fn(Get $get): Collection => Kecamatan::query()
+                                        ->options(fn (Get $get): Collection => Kecamatan::query()
                                             ->where('kabupaten_id', $get('wali_kabupaten_id'))
                                             ->pluck('nama', 'id'))
                                         ->native(false)
@@ -1523,7 +1496,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('wali_kelurahan_id')
                                         ->label('Kelurahan')
-                                        ->options(fn(Get $get): Collection => Kelurahan::query()
+                                        ->options(fn (Get $get): Collection => Kelurahan::query()
                                             ->where('kecamatan_id', $get('wali_kecamatan_id'))
                                             ->pluck('nama', 'id'))
                                         ->native(false),

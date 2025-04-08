@@ -2,17 +2,17 @@
 
 namespace App\Filament\Resources\InformasiResource\Pages;
 
+use App\Filament\Resources\InformasiResource;
 use Filament\Actions;
-use Filament\Forms\Get;
-use Filament\Forms\Form;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\TextInput;
-use Filament\Resources\Pages\ViewRecord;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
-use App\Filament\Resources\InformasiResource;
-use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Resources\Pages\ViewRecord;
 
 class ViewInformasi extends ViewRecord
 {
@@ -33,7 +33,7 @@ class ViewInformasi extends ViewRecord
                     ->schema([
                         Select::make('tahun_pendaftaran_id')
                             ->label('Tahun Pendaftaran')
-                            ->relationship('tahunPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
+                            ->relationship('tahunPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif'))
                             ->required()
                             ->native(false)
                             ->live()
@@ -43,7 +43,7 @@ class ViewInformasi extends ViewRecord
                             ->columnSpanFull(),
                     ]),
                 Section::make()
-                    ->visible(fn($get) => $get('tahun_pendaftaran_id') !== null)
+                    ->visible(fn ($get) => $get('tahun_pendaftaran_id') !== null)
                     ->schema([
                         TextInput::make('judul')
                             ->label('Judul')
@@ -68,7 +68,7 @@ class ViewInformasi extends ViewRecord
                             ->label('Tanggal')
                             ->default(now())
                             ->required()
-                            ->hidden(fn(Get $get) => $get('status') !== 'Publish')
+                            ->hidden(fn (Get $get) => $get('status') !== 'Publish')
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
                             ]),
@@ -92,7 +92,7 @@ class ViewInformasi extends ViewRecord
                             //     'blockquote',
                             //     'strike',
                             // ])
-                            ->formatStateUsing(fn($state) => str($state)->sanitizeHtml())
+                            ->formatStateUsing(fn ($state) => str($state)->sanitizeHtml())
                             // ->fileAttachmentsDisk('s3')
                             ->fileAttachmentsDirectory('assets/lampiran-informasi')
                             ->fileAttachmentsVisibility('private')

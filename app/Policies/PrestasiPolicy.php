@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\User;
 use App\Models\Prestasi;
+use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class PrestasiPolicy

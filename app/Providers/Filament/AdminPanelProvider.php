@@ -2,38 +2,38 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\EditProfileCustom;
+use App\Filament\Pages\Auth\LoginCustom;
+use App\Filament\Pages\Auth\RegisterCustom;
+use App\Filament\Resources\CalonSiswaResource\Widgets\FormulirOverview;
+use App\Filament\Resources\InformasiResource\Widgets\InformasiPublished;
+use App\Filament\Resources\UserResource;
+use App\Filament\Resources\UserResource\Widgets\UserRegisters;
+use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Carbon\Carbon;
+use Devonab\FilamentEasyFooter\EasyFooterPlugin;
+use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
+use Filament\Enums\ThemeMode;
+use Filament\Http\Middleware\Authenticate;
+use Filament\Http\Middleware\AuthenticateSession;
+use Filament\Http\Middleware\DisableBladeIconComponents;
+use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\MenuItem;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
-use Filament\Enums\ThemeMode;
-use Filament\Navigation\MenuItem;
 use Filament\Support\Colors\Color;
+use Filament\Support\Enums\MaxWidth;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Cookie\Middleware\EncryptCookies;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Filament\Support\Enums\MaxWidth;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
-use App\Filament\Pages\Auth\LoginCustom;
-use App\Filament\Resources\UserResource;
-use Filament\Http\Middleware\Authenticate;
-use App\Filament\Pages\Auth\RegisterCustom;
-use App\Filament\Pages\Auth\EditProfileCustom;
-use Illuminate\Session\Middleware\StartSession;
-use Devonab\FilamentEasyFooter\EasyFooterPlugin;
-use Illuminate\Cookie\Middleware\EncryptCookies;
-use Filament\Http\Middleware\AuthenticateSession;
-use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
-use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
-use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use Filament\Http\Middleware\DisableBladeIconComponents;
-use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
-use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
-use App\Filament\Resources\UserResource\Widgets\UserRegisters;
-use App\Filament\Resources\CalonSiswaResource\Widgets\FormulirOverview;
-use App\Filament\Resources\InformasiResource\Widgets\InformasiPublished;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -41,8 +41,8 @@ class AdminPanelProvider extends PanelProvider
     {
         // Variabel default untuk halaman registrasi
         $registerClass = $this->handleRegistrationRedirect();
+
         return $panel
-            ->defaultThemeMode(ThemeMode::Dark)
             ->id('admin')
             ->path('')
             ->default()
@@ -57,7 +57,10 @@ class AdminPanelProvider extends PanelProvider
             ->maxContentWidth(MaxWidth::Full)
             ->unsavedChangesAlerts()
             ->databaseNotifications()
-            ->brandLogo(asset('/img/brand.png'))
+            ->defaultThemeMode(ThemeMode::Dark)
+            ->favicon(asset('/favicon.ico'))
+            ->darkModeBrandLogo(asset('/img/brand-darkmode.png'))
+            ->brandLogo(asset('/img/brand-lightmode.png'))
             ->brandLogoHeight('2.6rem')
             ->colors([
                 'primary' => Color::Green,
@@ -65,9 +68,10 @@ class AdminPanelProvider extends PanelProvider
             ->userMenuItems([
                 MenuItem::make()
                     ->label('Manajemen Pengguna')
-                    ->url(fn(): string => UserResource::getUrl())
+                    ->url(fn (): string => UserResource::getUrl())
                     ->icon('heroicon-o-identification')
-                    ->visible(fn() => Auth::user()->username === 'administrator'),
+                    // ->visible(fn() => Auth::user()?->roles?->first()?->name === 'administrator'),
+                    ->visible(fn () => Auth::user()?->roles?->where('name', 'administrator')->first() !== null),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -126,9 +130,9 @@ class AdminPanelProvider extends PanelProvider
 
                 AuthUIEnhancerPlugin::make()
                     ->formPanelPosition('left')
-                    ->formPanelWidth('50%')
+                    ->formPanelWidth('45%')
                     ->formPanelBackgroundColor(Color::hex('#010101'))
-                    ->emptyPanelBackgroundImageUrl('/img/wallpaper.png')
+                    ->emptyPanelBackgroundImageUrl('img/wallpaper.png')
                     ->emptyPanelBackgroundColor(Color::hex('#010101'))
                     ->showEmptyPanelOnMobile(false),
             ]);
@@ -168,10 +172,11 @@ class AdminPanelProvider extends PanelProvider
             }
         } catch (\Exception $e) {
             // Tangani error (misalnya, masalah parsing tanggal atau database tidak tersedia)
-            Log::error('Error memproses tanggal atau database: ' . $e->getMessage());
+            Log::error('Error memproses tanggal atau database: '.$e->getMessage());
 
             return LoginCustom::class;
         }
+
         return RegisterCustom::class;
     }
 }

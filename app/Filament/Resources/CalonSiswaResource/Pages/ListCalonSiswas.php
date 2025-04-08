@@ -2,16 +2,17 @@
 
 namespace App\Filament\Resources\CalonSiswaResource\Pages;
 
+use App\Filament\Exports\CalonSiswaExporter;
+use App\Filament\Imports\CalonSiswaImporter;
+use App\Filament\Resources\CalonSiswaResource;
 use App\Models\CalonSiswa;
 use Filament\Actions\Action;
 use Filament\Actions\ExportAction;
 use Filament\Actions\ImportAction;
-use Filament\Support\Colors\Color;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 use Filament\Resources\Pages\ListRecords;
-use App\Filament\Exports\CalonSiswaExporter;
-use App\Filament\Resources\CalonSiswaResource;
+use Filament\Support\Colors\Color;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ListCalonSiswas extends ListRecords
 {
@@ -30,6 +31,7 @@ class ListCalonSiswas extends ListRecords
                 $urlEdit = "/formulir/{$calonSiswa->id}/edit";
             }
         }
+
         return [
             // Daftar Sekarang
             Action::make('buat_formulir_pendaftaran')
@@ -71,15 +73,15 @@ class ListCalonSiswas extends ListRecords
                 ->color('success')
                 ->exporter(CalonSiswaExporter::class)
                 ->chunkSize(250)
-                ->visible(fn(): string => CalonSiswa::count() > 0 && Auth::user()->roles->first()->name !== 'peserta'),
+                ->visible(fn (): string => CalonSiswa::count() > 0 && Auth::user()->roles->first()->name !== 'peserta'),
 
-            // Import Kartu Tes
-            ImportAction::make('import_kartu_tes')
-                ->label('Impor Kartu Tes')
+            // Import
+            ImportAction::make('import')
+                ->label('Import')
                 ->outlined()
                 ->icon('heroicon-m-cloud-arrow-up')
                 ->color(Color::Cyan)
-                // ->importer(KartuTesImporter::class)
+                ->importer(CalonSiswaImporter::class)
                 ->chunkSize(250)
                 ->visible(function () {
                     $tahunPendaftaran = DB::table('tahun_pendaftarans')
@@ -89,23 +91,6 @@ class ListCalonSiswas extends ListRecords
                     // Pastikan hanya menampilkan jika tahun pendaftaran aktif ditemukan
                     return $tahunPendaftaran && CalonSiswa::count() > 0 && optional(Auth::user()->roles->first())->name === 'administrator';
                 }),
-
-            // Import Nilai
-            ImportAction::make('import_kartu_tes')
-                ->label('Impor Nilai Tes')
-                ->outlined()
-                ->icon('heroicon-m-cloud-arrow-up')
-                ->color(Color::Cyan)
-                // ->importer(NilaiTesImporter::class)
-                ->chunkSize(250)
-                ->visible(function () {
-                    $tahunPendaftaran = DB::table('tahun_pendaftarans')
-                        ->where('status', 'Aktif')
-                        ->first();
-
-                    // Pastikan hanya menampilkan jika tahun pendaftaran aktif ditemukan
-                    return $tahunPendaftaran && CalonSiswa::count() > 0 && optional(Auth::user()->roles->first())->name === 'administrator';
-                })
         ];
     }
 }
