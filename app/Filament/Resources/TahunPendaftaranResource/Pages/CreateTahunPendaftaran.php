@@ -2,15 +2,16 @@
 
 namespace App\Filament\Resources\TahunPendaftaranResource\Pages;
 
-use App\Filament\Resources\TahunPendaftaranResource;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
-use Filament\Resources\Pages\CreateRecord;
+use App\Models\JalurPendaftaran;
 use Illuminate\Support\HtmlString;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\DatePicker;
+use Filament\Resources\Pages\CreateRecord;
+use Filament\Forms\Components\DateTimePicker;
+use App\Filament\Resources\TahunPendaftaranResource;
 
 class CreateTahunPendaftaran extends CreateRecord
 {
@@ -21,7 +22,6 @@ class CreateTahunPendaftaran extends CreateRecord
         return $form
             ->schema([
                 Section::make('Tahun Pendaftaran')
-                    ->collapsible()
                     ->description('Data Tahun Pendaftaran.')
                     ->schema([
                         TextInput::make('nama')
@@ -65,7 +65,6 @@ class CreateTahunPendaftaran extends CreateRecord
                         '2xl' => 3,
                     ]),
                 Section::make('Daftar Akun')
-                    ->collapsible()
                     ->description('Tanggal Daftar Akun PPDB.')
                     ->schema([
                         DatePicker::make('tanggal_ppdb_mulai')
@@ -89,11 +88,11 @@ class CreateTahunPendaftaran extends CreateRecord
                         '2xl' => 2,
                     ]),
                 Section::make('Penerbitan Kartu Tes')
-                    ->collapsible()
                     ->description('Tanggal penerbitan kartu tes.')
                     ->schema([
                         DateTimePicker::make('tanggal_penerbitan_kartu_tes_mulai')
                             ->label('Tanggal Mulai Penerbitan Kartu Tes')
+                            ->live()
                             ->required()
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
@@ -113,7 +112,6 @@ class CreateTahunPendaftaran extends CreateRecord
                         '2xl' => 2,
                     ]),
                 Section::make('Registrasi Berkas')
-                    ->collapsible()
                     ->description('Tanggal registrasi berkas.')
                     ->schema([
                         DateTimePicker::make('tanggal_registrasi_berkas_mulai')
@@ -137,12 +135,23 @@ class CreateTahunPendaftaran extends CreateRecord
                         '2xl' => 2,
                     ]),
                 Section::make('Pendaftaran Jalur Prestasi')
-                    ->collapsed()
+                    ->visible(function () {
+                        $statusJalur = JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', 'Prestasi')->exists();
+                        return $statusJalur;
+                    })
                     ->description('Tanggal pendaftaran untuk jalur prestasi.')
                     ->schema([
                         DateTimePicker::make('tanggal_pendaftaran_jalur_prestasi_mulai')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->label('Tanggal Mulai Pendaftaran Jalur Prestasi'),
                         DateTimePicker::make('tanggal_pendaftaran_jalur_prestasi_selesai')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->label('Tanggal Selesai Pendaftaran Jalur Prestasi'),
                     ])
                     ->columns([
@@ -153,12 +162,24 @@ class CreateTahunPendaftaran extends CreateRecord
                         '2xl' => 2,
                     ]),
                 Section::make('Pengumuman Jalur Prestasi')
-                    ->collapsed()
+
+                    ->visible(function () {
+                        $statusJalur = JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', 'Prestasi')->exists();
+                        return $statusJalur;
+                    })
                     ->description('Tanggal pengumuman untuk jalur prestasi.')
                     ->schema([
                         DateTimePicker::make('tanggal_pengumuman_jalur_prestasi_mulai')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->label('Tanggal Mulai Pengumuman Jalur Prestasi'),
                         DateTimePicker::make('tanggal_pengumuman_jalur_prestasi_selesai')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->label('Tanggal Selesai Pengumuman Jalur Prestasi'),
                     ])
                     ->columns([
@@ -169,12 +190,24 @@ class CreateTahunPendaftaran extends CreateRecord
                         '2xl' => 2,
                     ]),
                 Section::make('Pendaftaran Jalur Reguler')
-                    ->collapsed()
+
+                    ->visible(function () {
+                        $statusJalur = JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', 'Reguler')->exists();
+                        return $statusJalur;
+                    })
                     ->description('Tanggal pendaftaran untuk jalur reguler.')
                     ->schema([
                         DateTimePicker::make('tanggal_pendaftaran_jalur_reguler_mulai')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->label('Tanggal Mulai Pendaftaran Jalur Reguler'),
                         DateTimePicker::make('tanggal_pendaftaran_jalur_reguler_selesai')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->label('Tanggal Selesai Pendaftaran Jalur Reguler'),
                     ])
                     ->columns([
@@ -185,12 +218,24 @@ class CreateTahunPendaftaran extends CreateRecord
                         '2xl' => 2,
                     ]),
                 Section::make('Pengumuman Jalur Reguler')
-                    ->collapsed()
+
+                    ->visible(function () {
+                        $statusJalur = JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', 'Reguler')->exists();
+                        return $statusJalur;
+                    })
                     ->description('Tanggal pengumuman untuk jalur reguler.')
                     ->schema([
                         DateTimePicker::make('tanggal_pengumuman_jalur_reguler_mulai')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->label('Tanggal Mulai Pengumuman Jalur Reguler'),
                         DateTimePicker::make('tanggal_pengumuman_jalur_reguler_selesai')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->label('Tanggal Selesai Pengumuman Jalur Reguler'),
                     ])
                     ->columns([
@@ -201,12 +246,24 @@ class CreateTahunPendaftaran extends CreateRecord
                         '2xl' => 2,
                     ]),
                 Section::make('Pendaftaran Jalur Afirmasi')
-                    ->collapsed()
+
+                    ->visible(function () {
+                        $statusJalur = JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', 'Afirmasi')->exists();
+                        return $statusJalur;
+                    })
                     ->description('Tanggal pendaftaran untuk jalur Afirmasi.')
                     ->schema([
                         DateTimePicker::make('tanggal_pendaftaran_jalur_afirmasi_mulai')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->label('Tanggal Mulai Pendaftaran Jalur Afirmasi'),
                         DateTimePicker::make('tanggal_pendaftaran_jalur_afirmasi_selesai')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->label('Tanggal Selesai Pendaftaran Jalur Afirmasi'),
                     ])
                     ->columns([
@@ -217,12 +274,24 @@ class CreateTahunPendaftaran extends CreateRecord
                         '2xl' => 2,
                     ]),
                 Section::make('Pengumuman Jalur Afirmasi')
-                    ->collapsed()
+
+                    ->visible(function () {
+                        $statusJalur = JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', 'Afirmasi')->exists();
+                        return $statusJalur;
+                    })
                     ->description('Tanggal pengumuman untuk jalur Afirmasi.')
                     ->schema([
                         DateTimePicker::make('tanggal_pengumuman_jalur_afirmasi_mulai')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->label('Tanggal Mulai Pengumuman Jalur Afirmasi'),
                         DateTimePicker::make('tanggal_pengumuman_jalur_afirmasi_selesai')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->label('Tanggal Selesai Pengumuman Jalur Afirmasi'),
                     ])
                     ->columns([
@@ -233,12 +302,24 @@ class CreateTahunPendaftaran extends CreateRecord
                         '2xl' => 2,
                     ]),
                 Section::make('Pendaftaran Jalur Zonasi')
-                    ->collapsed()
+
+                    ->visible(function () {
+                        $statusJalur = JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', 'Zonasi')->exists();
+                        return $statusJalur;
+                    })
                     ->description('Tanggal pendaftaran untuk jalur Zonasi.')
                     ->schema([
                         DateTimePicker::make('tanggal_pendaftaran_jalur_zonasi_mulai')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->label('Tanggal Mulai Pendaftaran Jalur Zonasi'),
                         DateTimePicker::make('tanggal_pendaftaran_jalur_zonasi_selesai')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->label('Tanggal Selesai Pendaftaran Jalur Zonasi'),
                     ])
                     ->columns([
@@ -249,12 +330,24 @@ class CreateTahunPendaftaran extends CreateRecord
                         '2xl' => 2,
                     ]),
                 Section::make('Pengumuman Jalur Zonasi')
-                    ->collapsed()
+
+                    ->visible(function () {
+                        $statusJalur = JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', 'Zonasi')->exists();
+                        return $statusJalur;
+                    })
                     ->description('Tanggal pengumuman untuk jalur Zonasi.')
                     ->schema([
                         DateTimePicker::make('tanggal_pengumuman_jalur_zonasi_mulai')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->label('Tanggal Mulai Pengumuman Jalur Zonasi'),
                         DateTimePicker::make('tanggal_pengumuman_jalur_zonasi_selesai')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->label('Tanggal Selesai Pengumuman Jalur Zonasi'),
                     ])
                     ->columns([
@@ -265,12 +358,24 @@ class CreateTahunPendaftaran extends CreateRecord
                         '2xl' => 2,
                     ]),
                 Section::make('Pendaftaran Jalur Mutasi')
-                    ->collapsed()
+
+                    ->visible(function () {
+                        $statusJalur = JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', 'Mutasi')->exists();
+                        return $statusJalur;
+                    })
                     ->description('Tanggal pendaftaran untuk jalur Mutasi.')
                     ->schema([
                         DateTimePicker::make('tanggal_pendaftaran_jalur_mutasi_mulai')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->label('Tanggal Mulai Pendaftaran Jalur Mutasi'),
                         DateTimePicker::make('tanggal_pendaftaran_jalur_mutasi_selesai')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->label('Tanggal Selesai Pendaftaran Jalur Mutasi'),
                     ])
                     ->columns([
@@ -281,12 +386,24 @@ class CreateTahunPendaftaran extends CreateRecord
                         '2xl' => 2,
                     ]),
                 Section::make('Pengumuman Jalur Mutasi')
-                    ->collapsed()
+
+                    ->visible(function () {
+                        $statusJalur = JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', 'Mutasi')->exists();
+                        return $statusJalur;
+                    })
                     ->description('Tanggal pengumuman untuk jalur Mutasi.')
                     ->schema([
                         DateTimePicker::make('tanggal_pengumuman_jalur_mutasi_mulai')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->label('Tanggal Mulai Pengumuman Jalur Mutasi'),
                         DateTimePicker::make('tanggal_pengumuman_jalur_mutasi_selesai')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->label('Tanggal Selesai Pengumuman Jalur Mutasi'),
                     ])
                     ->columns([
@@ -297,12 +414,21 @@ class CreateTahunPendaftaran extends CreateRecord
                         '2xl' => 2,
                     ]),
                 Section::make('Tes Akademik')
-                    ->collapsed()
+                    ->visible(fn($get) => $get('tanggal_penerbitan_kartu_tes_mulai'))
+
                     ->description('Tanggal tes akademik.')
                     ->schema([
                         DateTimePicker::make('tanggal_tes_akademik_mulai')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->label('Tanggal Mulai Tes Akademik'),
                         DateTimePicker::make('tanggal_tes_akademik_selesai')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->label('Tanggal Selesai Tes Akademik'),
                     ])
                     ->columns([
@@ -313,12 +439,21 @@ class CreateTahunPendaftaran extends CreateRecord
                         '2xl' => 2,
                     ]),
                 Section::make('Tes Praktik')
-                    ->collapsed()
+
+                    ->visible(fn($get) => $get('tanggal_penerbitan_kartu_tes_mulai'))
                     ->description('Tanggal tes praktik.')
                     ->schema([
                         DateTimePicker::make('tanggal_tes_praktik_mulai')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->label('Tanggal Mulai Tes Praktik'),
                         DateTimePicker::make('tanggal_tes_praktik_selesai')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                            ])
                             ->label('Tanggal Selesai Tes Praktik'),
                     ])
                     ->columns([
