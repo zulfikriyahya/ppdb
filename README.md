@@ -6,13 +6,13 @@ Sebuah aplikasi berbasis web untuk proses penerimaan siswa baru di MTs Negeri 1 
 
 - Pendaftaran online untuk calon siswa
 - Validasi data pendaftaran
-- Pengelolaan data pendaftaran oleh admin
+- Pengelolaan data pendaftaran oleh admin dan panitia
 - Pengiriman notifikasi email
 - Laporan dan statistik pendaftaran
 
-## Persyaratan
+## Persyaratan Pengembangan
 
-- PHP >= 8.2
+- PHP >= 8.3
 - Composer
 - Nodejs
 - MySQL/SQLite
@@ -60,17 +60,12 @@ Sebuah aplikasi berbasis web untuk proses penerimaan siswa baru di MTs Negeri 1 
     php artisan storage:link
     ```
 
-9. Jalankan shield super admin:
-    ```bash
-    php artisan shield:super-admin
-    ```
-
-10. Jalankan aplikasi:
+9. Jalankan aplikasi:
     ```bash
     php artisan serve
     ```
 
-11. Jalankan service:
+10. Jalankan service:
     ```bash
     php artisan queue:work --daemon
     ```
