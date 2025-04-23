@@ -1,6 +1,6 @@
 # PPDB MTs Negeri 1 Pandeglang
 
-Sebuah aplikasi berbasis web untuk proses penerimaan siswa baru di MTs Negeri 1 Pandeglang, dibangun menggunakan framework Laravel 12 (FilamentPHP).
+Sebuah aplikasi berbasis web untuk proses penerimaan siswa baru dan buku induk di MTs Negeri 1 Pandeglang, dibangun menggunakan framework Laravel 12 (FilamentPHP).
 
 ## Fitur
 
@@ -16,7 +16,7 @@ Sebuah aplikasi berbasis web untuk proses penerimaan siswa baru di MTs Negeri 1 
 - Composer
 - Nodejs
 - MySQL/SQLite
-- Web server (Apache, Nginx, dll.)
+- Web server (Apache/Nginx/Lainnya.)
 
 ## Instalasi
 
