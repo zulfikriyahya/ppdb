@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class CalonSiswa extends Model
 {
@@ -106,7 +106,6 @@ class CalonSiswa extends Model
         'wali_penghasilan',
         'wali_pendidikan',
         'kepemilikan_rumah',
-        'verifikator',
     ];
 
     protected $casts = [
@@ -173,19 +172,9 @@ class CalonSiswa extends Model
     }
 
     // Users
-    // public function user(): BelongsTo
-    // {
-    //     return $this->belongsTo(User::class);
-    // }
-
-    public function namaUser()
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'nama', 'name');
-    }
-
-    public function verifikatorUser()
-    {
-        return $this->belongsTo(User::class, 'verifikator', 'name');
+        return $this->belongsTo(User::class);
     }
 
     // Negara

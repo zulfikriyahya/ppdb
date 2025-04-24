@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
@@ -13,8 +13,6 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('nama', 50);
             $table->foreign('nama')->references('name')->on('users')->onUpdate('cascade');
-            $table->string('verifikator', 50)->nullable();
-            // $table->foreign('verifikator')->references('name')->on('users')->onUpdate('cascade');
             $table->string('nik')->unique();
             $table->string('kk');
             $table->string('nisn', 10)->unique();

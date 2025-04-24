@@ -9,7 +9,7 @@ Terima kasih telah tertarik untuk berkontribusi pada proyek ini! Dengan berkontr
 3. Buat perubahan dan pastikan kode Anda bersih dan terformat dengan baik.
 4. Lakukan **commit** terhadap perubahan Anda dengan pesan yang jelas dan deskriptif.
 5. **Push** branch Anda ke fork Anda.
-6. Buat **pull request** ke branch `main` repositori ini.
+6. Buat **pull request** ke branch `dev` repositori ini.
 
 ## Pedoman Kode
 
