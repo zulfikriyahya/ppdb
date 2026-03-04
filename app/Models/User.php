@@ -55,7 +55,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
 
     public function getFilamentAvatarUrl(): ?string
     {
-        $peserta = CalonSiswa::first();
+        $peserta = $this->calonSiswas()->first();
 
         return $this->avatar
             ? asset('storage/'.($this->avatar ?? $peserta->berkas_foto))

@@ -290,7 +290,7 @@ FK: tahun_pendaftaran_id, jalur_pendaftaran_id, sekolah_asal_id,
 'Diproses'
 'Berkas Tidak Lengkap'
 'Diverifikasi'
-'Ditolak'
+'Tidak Diterima'
 'Diterima'
 'Diterima Di Kelas Reguler'
 'Diterima Di Kelas Unggulan'

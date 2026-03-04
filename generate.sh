@@ -1,5 +1,5 @@
 #!/bin/bash
-# generate.sh - Generator Blueprint Otomatis (Revised)
+# generate.sh - Generator Blueprint Otomatis
 # Hanya menghasilkan file yang benar-benar dibutuhkan untuk membangun ulang project.
 
 set -euo pipefail
@@ -9,12 +9,12 @@ ROOT="."
 
 # ===========================================================================
 # WHITELIST — Hanya file dalam path ini yang akan diinclude.
-# Tambah/hapus sesuai kebutuhan project.
 # ===========================================================================
 INCLUDE_PATHS=(
   # --- Domain / Business Logic ---
   "app/Models"
   "app/Policies"
+  "app/Services"
   "app/Http/Controllers"
 
   # --- Filament (Admin Panel) ---
@@ -23,6 +23,9 @@ INCLUDE_PATHS=(
   "app/Filament/Exports"
   "app/Filament/Imports"
   "app/Providers/Filament"
+
+  # --- App Providers ---
+  "app/Providers/AppServiceProvider.php"
 
   # --- Database ---
   "database/migrations"
@@ -37,13 +40,14 @@ INCLUDE_PATHS=(
   "resources/views/formulir.blade.php"
   "resources/views/kartu-tes.blade.php"
   "resources/views/skl.blade.php"
+  "resources/views/filament/pages/auth"
 
   # --- Config yang sudah dikustomisasi ---
   "config/filament-shield.php"
   "config/permission.php"
+  "config/services.php"
 
   # --- App Bootstrap ---
-  "app/Providers/AppServiceProvider.php"
   "bootstrap/app.php"
 
   # --- Project Root ---
@@ -135,6 +139,7 @@ write_file() {
 declare -A SECTION_LABELS=(
   ["app/Models"]="## 🗃️ Models"
   ["app/Policies"]="## 🔐 Policies"
+  ["app/Services"]="## ⚙️ Services"
   ["app/Http/Controllers"]="## 🎮 Controllers"
   ["app/Filament/Resources"]="## 🧩 Filament Resources"
   ["app/Filament/Pages"]="## 📄 Filament Pages"
@@ -147,6 +152,7 @@ declare -A SECTION_LABELS=(
   ["routes"]="## 🛣️ Routes"
   ["resources/views"]="## 🖼️ Views (Custom)"
   ["config"]="## ⚙️ Config (Custom)"
+  ["bootstrap"]="## 🚀 Bootstrap"
   ["root"]="## 📦 Root Config Files"
 )
 
@@ -154,6 +160,7 @@ declare -A SECTION_LABELS=(
 SECTION_ORDER=(
   "app/Models"
   "app/Policies"
+  "app/Services"
   "app/Http/Controllers"
   "app/Filament/Resources"
   "app/Filament/Pages"
@@ -166,6 +173,7 @@ SECTION_ORDER=(
   "routes"
   "resources/views"
   "config"
+  "bootstrap"
   "root"
 )
 
@@ -180,7 +188,6 @@ classify() {
       return
     fi
   done
-  # root-level files
   printf "root"
 }
 
@@ -193,13 +200,11 @@ for inc in "${INCLUDE_PATHS[@]}"; do
   full_path="$ROOT/$inc"
 
   if [ -f "$full_path" ]; then
-    # Single file
     is_excluded "$full_path" && continue
     section="$(classify "$inc")"
     section_files[$section]="${section_files[$section]:-}"$'\n'"$inc"
 
   elif [ -d "$full_path" ]; then
-    # Directory — cari semua file di dalamnya secara rekursif
     while IFS= read -r -d '' f; do
       rel="${f#$ROOT/}"
       is_excluded "$f" && continue
@@ -215,7 +220,7 @@ done
 : > "$OUT"
 
 cat >> "$OUT" << 'EOF'
-# Laravel Project Blueprint
+# Laravel Project Blueprint — PPDB MTsN 1 Pandeglang
 
 > Auto-generated. Berisi file-file inti yang dibutuhkan untuk membangun ulang project.
 > File boilerplate, vendor, compiled assets, dan cache **tidak disertakan**.
@@ -244,7 +249,6 @@ for section in "${SECTION_ORDER[@]}"; do
   label="${SECTION_LABELS[$section]:-## 📁 $section}"
   printf "%s\n\n" "$label" >> "$OUT"
 
-  # Baca daftar file, skip baris kosong
   while IFS= read -r rel; do
     [[ -z "$rel" ]] && continue
     write_file "$ROOT/$rel"

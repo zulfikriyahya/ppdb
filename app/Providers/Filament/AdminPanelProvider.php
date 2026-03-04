@@ -53,7 +53,6 @@ class AdminPanelProvider extends PanelProvider
             ->registration($registerClass)
             ->passwordReset(ForgotPasswordCustom::class)
             ->emailVerification()
-            // ->passwordReset()
             ->profile(EditProfileCustom::class)
             ->globalSearch(false)
             ->maxContentWidth(MaxWidth::Full)
@@ -70,10 +69,10 @@ class AdminPanelProvider extends PanelProvider
             ->userMenuItems([
                 MenuItem::make()
                     ->label('Manajemen Pengguna')
-                    ->url(fn (): string => UserResource::getUrl())
+                    ->url(fn(): string => UserResource::getUrl())
                     ->icon('heroicon-o-identification')
                     // ->visible(fn() => Auth::user()?->roles?->first()?->name === 'super_admin'),
-                    ->visible(fn () => Auth::user()?->roles?->where('name', 'super_admin')->first() !== null),
+                    ->visible(fn() => Auth::user()?->roles?->where('name', 'super_admin')->first() !== null),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -125,7 +124,7 @@ class AdminPanelProvider extends PanelProvider
                 EasyFooterPlugin::make()
                     ->withFooterPosition('footer')
                     ->withLinks([
-                        ['title' => 'Dibuat dan dikembangkan dengan ❤ oleh Yahya Zulfikri', 'url' => 'https://instagram.com/zulfikriyahya_'],
+                        ['title' => 'Dibuat dan dikembangkan dengan ❤ oleh Yahya Zulfikri', 'url' => 'https://github.com/zulfikriyahya', 'open_in_new_tab' => true],
                     ])
                     ->withLoadTime('Halaman ini dimuat dalam')
                     ->withBorder(),
@@ -174,7 +173,7 @@ class AdminPanelProvider extends PanelProvider
             }
         } catch (\Exception $e) {
             // Tangani error (misalnya, masalah parsing tanggal atau database tidak tersedia)
-            Log::error('Error memproses tanggal atau database: '.$e->getMessage());
+            Log::error('Error memproses tanggal atau database: ' . $e->getMessage());
 
             return LoginCustom::class;
         }

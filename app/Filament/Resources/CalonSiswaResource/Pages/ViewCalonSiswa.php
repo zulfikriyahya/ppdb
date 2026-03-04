@@ -43,20 +43,20 @@ class ViewCalonSiswa extends ViewRecord
                 ->label('Formulir')
                 ->outlined()
                 ->icon('heroicon-o-printer')
-                ->filename(fn ($record) => 'Formulir_'.$record->nama.'_'.$record->nisn.'.pdf')
+                ->filename(fn($record) => 'Formulir_' . $record->nama . '_' . $record->nisn . '.pdf')
                 ->savePdf()
                 ->orientation('portrait')
                 ->format('a4', 'mm')
                 ->enableLinks()
                 ->margin([10, 10, 10, 10])
-                ->content(fn ($record) => view('formulir', ['record' => $record]))
+                ->content(fn($record) => view('formulir', ['record' => $record]))
                 ->visible(function () {
                     $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
                     if (! $calonSiswa) {
                         return false;
                     }
 
-                    return ! in_array($calonSiswa->status_pendaftaran, ['Diproses', 'Ditolak', 'Berkas Tidak Lengkap']);
+                    return ! in_array($calonSiswa->status_pendaftaran, ['Diproses', 'Tidak Diterima', 'Berkas Tidak Lengkap']);
                 }),
 
             // Kartu Tes
@@ -64,17 +64,17 @@ class ViewCalonSiswa extends ViewRecord
                 ->label('Kartu Tes')
                 ->outlined()
                 ->icon('heroicon-o-printer')
-                ->filename(fn ($record) => 'Kartu Tes_'.$record->nama.'_'.$record->nisn.'.pdf')
+                ->filename(fn($record) => 'Kartu Tes_' . $record->nama . '_' . $record->nisn . '.pdf')
                 ->savePdf()
                 ->orientation('portrait')
                 ->format('a4', 'mm')
                 ->enableLinks()
                 ->margin([10, 10, 10, 10])
-                ->content(fn ($record) => view('kartu-tes', ['record' => $record]))
+                ->content(fn($record) => view('kartu-tes', ['record' => $record]))
                 ->visible(function () {
                     $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
 
-                    if (! $calonSiswa || in_array($calonSiswa->status_pendaftaran, ['Diproses', 'Ditolak', 'Berkas Tidak Lengkap', 'Diterima Di Kelas Reguler', 'Diterima Di Kelas Unggulan'])) {
+                    if (! $calonSiswa || in_array($calonSiswa->status_pendaftaran, ['Diproses', 'Tidak Diterima', 'Berkas Tidak Lengkap', 'Diterima Di Kelas Reguler', 'Diterima Di Kelas Unggulan'])) {
                         return false;
                     }
 
@@ -97,13 +97,13 @@ class ViewCalonSiswa extends ViewRecord
                 ->label('Hasil')
                 ->outlined()
                 ->icon('heroicon-o-printer')
-                ->filename(fn ($record) => 'Hasil_'.$record->nama.'_'.$record->nisn.'.pdf')
+                ->filename(fn($record) => 'Hasil_' . $record->nama . '_' . $record->nisn . '.pdf')
                 ->savePdf()
                 ->orientation('portrait')
                 ->format('a4', 'mm')
                 ->enableLinks()
                 ->margin([10, 10, 10, 10])
-                ->content(fn ($record) => view('skl', ['record' => $record]))
+                ->content(fn($record) => view('skl', ['record' => $record]))
                 ->visible(function () {
                     $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
                     if (! $calonSiswa || in_array($calonSiswa->status_pendaftaran, ['Diproses', 'Diverifikasi', 'Berkas Tidak Lengkap'])) {
@@ -119,12 +119,12 @@ class ViewCalonSiswa extends ViewRecord
                         ['tanggal_pengumuman_jalur_afirmasi_mulai', 'tanggal_pengumuman_jalur_afirmasi_selesai'],
                         ['tanggal_pengumuman_jalur_zonasi_mulai', 'tanggal_pengumuman_jalur_zonasi_selesai'],
                         ['tanggal_pengumuman_jalur_mutasi_mulai', 'tanggal_pengumuman_jalur_mutasi_selesai'],
-                    ])->map(fn ($dates) => [
+                    ])->map(fn($dates) => [
                         optional($tahunPendaftaran)->{$dates[0]} ? Carbon::parse($tahunPendaftaran->{$dates[0]}) : null,
                         optional($tahunPendaftaran)->{$dates[1]} ? Carbon::parse($tahunPendaftaran->{$dates[1]}) : null,
                     ]);
 
-                    return $periodePengumuman->contains(fn ($range) => now()->between(...$range));
+                    return $periodePengumuman->contains(fn($range) => now()->between(...$range));
                 }),
 
         ];
@@ -148,7 +148,7 @@ class ViewCalonSiswa extends ViewRecord
                                             'Diproses' => 'Diproses',
                                             'Berkas Tidak Lengkap' => 'Berkas Tidak Lengkap',
                                             'Diverifikasi' => 'Diverifikasi',
-                                            'Ditolak' => 'Ditolak',
+                                            'Tidak Diterima' => 'Tidak Diterima',
                                             'Diterima' => 'Diterima',
                                             'Diterima Di Kelas Reguler' => 'Diterima Di Kelas Reguler',
                                             'Diterima Di Kelas Unggulan' => 'Diterima Di Kelas Unggulan',
@@ -180,21 +180,21 @@ class ViewCalonSiswa extends ViewRecord
                                             // Jalur Pendaftaran
                                             Select::make('jalur_pendaftaran_id')
                                                 ->label('Jalur Pendaftaran')
-                                                ->relationship('jalurPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif')) // Menampilkan data jalurPendaftaran dengan kondisi statusnya aktif saja
+                                                ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif')) // Menampilkan data jalurPendaftaran dengan kondisi statusnya aktif saja
                                                 ->required()
                                                 ->validationMessages([
                                                     'required' => 'Form ini wajib diisi.',
                                                 ])
                                                 ->native(false)
                                                 ->live()
-                                                ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->nama} | {$record->tahunPendaftaran->nama}"),
+                                                ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->nama} | {$record->tahunPendaftaran->nama}"),
                                             // Nama Lengkap Calon Peserta Didik Baru
                                             TextInput::make('nama')
                                                 ->label('Nama Lengkap')
                                                 ->required()
                                                 ->disabledOn('create')
                                                 ->dehydrated()
-                                                ->default(fn () => Auth::user()->name)
+                                                ->default(fn() => Auth::user()->name)
                                                 ->validationMessages([
                                                     'required' => 'Form ini wajib diisi.',
                                                 ]),
@@ -203,8 +203,8 @@ class ViewCalonSiswa extends ViewRecord
                                                 ->label('Nomor Induk Kependudukan (NIK)')
                                                 ->required()
                                                 ->unique(ignoreRecord: true)
-                                                ->rule(fn ($record) => $record === null ? 'unique:calon_siswas,nik' : 'unique:calon_siswas,nik,'.$record->id)
-                                                ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
+                                                ->rule(fn($record) => $record === null ? 'unique:calon_siswas,nik' : 'unique:calon_siswas,nik,' . $record->id)
+                                                ->dehydrateStateUsing(fn($state) => $state ? $state : null)
                                                 ->numeric()
                                                 ->maxLength(16)
                                                 ->minLength(16)
@@ -232,10 +232,10 @@ class ViewCalonSiswa extends ViewRecord
                                                 ->required()
                                                 ->disabledOn('create')
                                                 ->dehydrated()
-                                                ->default(fn () => Auth::user()->username)
+                                                ->default(fn() => Auth::user()->username)
                                                 ->unique(ignoreRecord: true)
-                                                ->rule(fn ($record) => $record === null ? 'unique:calon_siswas,nisn' : 'unique:calon_siswas,nisn,'.$record->id)
-                                                ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
+                                                ->rule(fn($record) => $record === null ? 'unique:calon_siswas,nisn' : 'unique:calon_siswas,nisn,' . $record->id)
+                                                ->dehydrateStateUsing(fn($state) => $state ? $state : null)
                                                 ->numeric()
                                                 ->maxLength(10)
                                                 ->minLength(10)
@@ -399,8 +399,8 @@ class ViewCalonSiswa extends ViewRecord
                                                 ->label('Nomor Kartu Indonesia Pintar')
                                                 ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Indonesia Pintar (KIP).<sup style="color:red">*</sup></i></small>'))
                                                 ->unique(ignoreRecord: true)
-                                                ->rule(fn ($record) => $record === null ? 'unique:calon_siswas,no_kip' : 'unique:calon_siswas,no_kip,'.$record->id)
-                                                ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
+                                                ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_kip' : 'unique:calon_siswas,no_kip,' . $record->id)
+                                                ->dehydrateStateUsing(fn($state) => $state ? $state : null)
                                                 ->maxLength(6)
                                                 ->minLength(6)
                                                 ->live()
@@ -414,8 +414,8 @@ class ViewCalonSiswa extends ViewRecord
                                                 ->label('Nomor Kartu Keluarga Sejahtera')
                                                 ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Keluarga Sejahtera (KKS).<sup style="color:red">*</sup></i></small>'))
                                                 ->unique(ignoreRecord: true)
-                                                ->rule(fn ($record) => $record === null ? 'unique:calon_siswas,no_kks' : 'unique:calon_siswas,no_kks,'.$record->id)
-                                                ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
+                                                ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_kks' : 'unique:calon_siswas,no_kks,' . $record->id)
+                                                ->dehydrateStateUsing(fn($state) => $state ? $state : null)
                                                 ->maxLength(6)
                                                 ->minLength(6)
                                                 ->live()
@@ -429,8 +429,8 @@ class ViewCalonSiswa extends ViewRecord
                                                 ->label('Nomor Kartu Program Keluarga Harapan')
                                                 ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Program Keluarga Harapan (PKH).<sup style="color:red">*</sup></i></small>'))
                                                 ->unique(ignoreRecord: true)
-                                                ->rule(fn ($record) => $record === null ? 'unique:calon_siswas,no_pkh' : 'unique:calon_siswas,no_pkh,'.$record->id)
-                                                ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
+                                                ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_pkh' : 'unique:calon_siswas,no_pkh,' . $record->id)
+                                                ->dehydrateStateUsing(fn($state) => $state ? $state : null)
                                                 ->maxLength(6)
                                                 ->minLength(6)
                                                 ->live()
@@ -454,7 +454,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 ->native(false)
                                                 ->searchable()
                                                 ->preload()
-                                                ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->nama} | NPSN: {$record->npsn}")
+                                                ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->nama} | NPSN: {$record->npsn}")
                                                 ->createOptionForm([
                                                     Wizard::make([
                                                         Step::make('Data Instansi')
@@ -511,7 +511,7 @@ class ViewCalonSiswa extends ViewRecord
                                                                         'required' => 'Form ini wajib diisi.',
                                                                     ]),
                                                                 TextInput::make('nss')
-                                                                    ->visible(fn ($get) => in_array($get('jenjang'), ['MI', 'MTS', 'MA']))
+                                                                    ->visible(fn($get) => in_array($get('jenjang'), ['MI', 'MTS', 'MA']))
                                                                     ->label('NSS/NSM')
                                                                     ->required()
                                                                     ->numeric()
@@ -587,7 +587,7 @@ class ViewCalonSiswa extends ViewRecord
                                                                     }),
                                                                 Select::make('provinsi_id')
                                                                     ->label('Provinsi')
-                                                                    ->options(fn (Get $get): Collection => Provinsi::query()
+                                                                    ->options(fn(Get $get): Collection => Provinsi::query()
                                                                         ->where('negara_id', $get('negara_id'))
                                                                         ->pluck('nama', 'id'))
                                                                     ->required()
@@ -604,7 +604,7 @@ class ViewCalonSiswa extends ViewRecord
                                                                     }),
                                                                 Select::make('kabupaten_id')
                                                                     ->label('Kabupaten/Kota')
-                                                                    ->options(fn (Get $get): Collection => Kabupaten::query()
+                                                                    ->options(fn(Get $get): Collection => Kabupaten::query()
                                                                         ->where('provinsi_id', $get('provinsi_id'))
                                                                         ->pluck('nama', 'id'))
                                                                     ->required()
@@ -620,7 +620,7 @@ class ViewCalonSiswa extends ViewRecord
                                                                     }),
                                                                 Select::make('kecamatan_id')
                                                                     ->label('Kecamatan')
-                                                                    ->options(fn (Get $get): Collection => Kecamatan::query()
+                                                                    ->options(fn(Get $get): Collection => Kecamatan::query()
                                                                         ->where('kabupaten_id', $get('kabupaten_id'))
                                                                         ->pluck('nama', 'id'))
                                                                     ->required()
@@ -635,7 +635,7 @@ class ViewCalonSiswa extends ViewRecord
                                                                     }),
                                                                 Select::make('kelurahan_id')
                                                                     ->label('Kelurahan/Desa')
-                                                                    ->options(fn (Get $get): Collection => Kelurahan::query()
+                                                                    ->options(fn(Get $get): Collection => Kelurahan::query()
                                                                         ->where('kecamatan_id', $get('kecamatan_id'))
                                                                         ->pluck('nama', 'id'))
                                                                     ->required()
@@ -699,7 +699,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 ]),
                                             // Data Prestasi Calon Peserta Didik Baru
                                             Select::make('prestasi_id')
-                                                ->visible(fn ($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
+                                                ->visible(fn($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
                                                 ->label('Prestasi')
                                                 ->helperText(new HtmlString('<small><i>Pilih prestasi yang paling tinggi jika memiliki lebih dari satu prestasi.</i></small>'))
                                                 ->relationship('prestasi', 'nama')
@@ -746,7 +746,7 @@ class ViewCalonSiswa extends ViewRecord
                                                                     'Provinsi' => 'Provinsi',
                                                                     'Kabupaten/Kota' => 'Kabupaten/Kota',
                                                                 ])
-                                                                ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                                                ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
                                                             Select::make('kategori')
                                                                 ->label('Kategori')
                                                                 ->native(false)
@@ -754,7 +754,7 @@ class ViewCalonSiswa extends ViewRecord
                                                                     'Regu/Kelompok' => 'Regu/Kelompok',
                                                                     'Individu' => 'Individu',
                                                                 ])
-                                                                ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                                                ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
                                                             Select::make('peringkat')
                                                                 ->label('Peringkat')
                                                                 ->options([
@@ -762,14 +762,14 @@ class ViewCalonSiswa extends ViewRecord
                                                                     '2' => '2',
                                                                     '3' => '3',
                                                                 ])
-                                                                ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                                                ->required(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
                                                         ])
                                                         ->columns([
                                                             'sm' => '100%',
                                                             'md' => 3,
                                                             'lg' => 3,
                                                         ])
-                                                        ->visible(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                                        ->visible(fn($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
                                                 ])
                                                 ->columns([
                                                     'sm' => '100%',
@@ -781,7 +781,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 ->validationMessages([
                                                     'required' => 'Form ini wajib diisi.',
                                                 ])
-                                                ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->jenis} | {$record->nama} | {$record->tingkat} | {$record->kategori} | {$record->peringkat}")
+                                                ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->jenis} | {$record->nama} | {$record->tingkat} | {$record->kategori} | {$record->peringkat}")
                                                 ->searchable()
                                                 ->native(false),
                                             // Data Peminatan Ekstrakurikuler Calon Peserta Didik Baru
@@ -797,7 +797,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 ]),
                                             // Data Peminatan Pelajaran Calon Peserta Didik Baru
                                             Select::make('mata_pelajaran_id')
-                                                ->visible(fn ($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
+                                                ->visible(fn($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
                                                 ->label('Peminatan Mata Pelajaran')
                                                 ->searchable()
                                                 ->preload()
@@ -833,7 +833,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('siswa_provinsi_id')
                                                 ->label('Provinsi')
-                                                ->options(fn (Get $get): Collection => Provinsi::query()
+                                                ->options(fn(Get $get): Collection => Provinsi::query()
                                                     ->where('negara_id', $get('siswa_negara_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->required()
@@ -850,7 +850,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('siswa_kabupaten_id')
                                                 ->label('Kabupaten')
-                                                ->options(fn (Get $get): Collection => Kabupaten::query()
+                                                ->options(fn(Get $get): Collection => Kabupaten::query()
                                                     ->where('provinsi_id', $get('siswa_provinsi_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->required()
@@ -866,7 +866,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('siswa_kecamatan_id')
                                                 ->label('Kecamatan')
-                                                ->options(fn (Get $get): Collection => Kecamatan::query()
+                                                ->options(fn(Get $get): Collection => Kecamatan::query()
                                                     ->where('kabupaten_id', $get('siswa_kabupaten_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->required()
@@ -881,7 +881,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('siswa_kelurahan_id')
                                                 ->label('Kelurahan')
-                                                ->options(fn (Get $get): Collection => Kelurahan::query()
+                                                ->options(fn(Get $get): Collection => Kelurahan::query()
                                                     ->where('kecamatan_id', $get('siswa_kecamatan_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->required()
@@ -914,7 +914,7 @@ class ViewCalonSiswa extends ViewRecord
                                                     '3:4' => '3:4',
                                                 ])
                                                 ->fetchFileInformation(false)
-                                                ->directory(fn ($get) => 'berkas/foto/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                                ->directory(fn($get) => 'berkas/foto/' . $get('nisn')) // Dinamis berdasarkan NISN
                                                 ->downloadable()
                                                 ->openable()
                                                 ->maxSize(500)
@@ -935,7 +935,7 @@ class ViewCalonSiswa extends ViewRecord
                                                     '3:4' => '3:4',
                                                 ])
                                                 ->fetchFileInformation(false)
-                                                ->directory(fn ($get) => 'berkas/kk/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                                ->directory(fn($get) => 'berkas/kk/' . $get('nisn')) // Dinamis berdasarkan NISN
                                                 ->downloadable()
                                                 ->openable()
                                                 ->maxSize(500)
@@ -956,7 +956,7 @@ class ViewCalonSiswa extends ViewRecord
                                                     '3:4' => '3:4',
                                                 ])
                                                 ->fetchFileInformation(false)
-                                                ->directory(fn ($get) => 'berkas/akta/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                                ->directory(fn($get) => 'berkas/akta/' . $get('nisn')) // Dinamis berdasarkan NISN
                                                 ->downloadable()
                                                 ->openable()
                                                 ->maxSize(500)
@@ -978,7 +978,7 @@ class ViewCalonSiswa extends ViewRecord
                                                     '3:4' => '3:4',
                                                 ])
                                                 ->fetchFileInformation(false)
-                                                ->directory(fn ($get) => 'berkas/nisn/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                                ->directory(fn($get) => 'berkas/nisn/' . $get('nisn')) // Dinamis berdasarkan NISN
                                                 ->downloadable()
                                                 ->openable()
                                                 ->maxSize(500)
@@ -996,7 +996,7 @@ class ViewCalonSiswa extends ViewRecord
                                                     'required' => 'Form ini wajib diisi.',
                                                 ])
                                                 ->fetchFileInformation(false)
-                                                ->directory(fn ($get) => 'berkas/skbb/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                                ->directory(fn($get) => 'berkas/skbb/' . $get('nisn')) // Dinamis berdasarkan NISN
                                                 ->downloadable()
                                                 ->openable()
                                                 ->acceptedFileTypes(['application/pdf'])
@@ -1011,7 +1011,7 @@ class ViewCalonSiswa extends ViewRecord
                                                     'required' => 'Form ini wajib diisi.',
                                                 ])
                                                 ->fetchFileInformation(false)
-                                                ->directory(fn ($get) => 'berkas/skab/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                                ->directory(fn($get) => 'berkas/skab/' . $get('nisn')) // Dinamis berdasarkan NISN
                                                 ->downloadable()
                                                 ->openable()
                                                 ->acceptedFileTypes(['application/pdf'])
@@ -1021,8 +1021,8 @@ class ViewCalonSiswa extends ViewRecord
 
                                             // Berkas KIP Calon Peserta Didik Baru
                                             FileUpload::make('berkas_kip')
-                                                ->required(fn ($get) => $get('no_kip') !== null)
-                                                ->visible(fn ($get) => $get('no_kip') !== null)
+                                                ->required(fn($get) => $get('no_kip') !== null)
+                                                ->visible(fn($get) => $get('no_kip') !== null)
                                                 ->label('Kartu Indonesia Pintar')
                                                 ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Indonesia Pintar (KIP).<sup style="color:red">*</sup></i></small>'))
                                                 ->image()
@@ -1033,7 +1033,7 @@ class ViewCalonSiswa extends ViewRecord
                                                     '3:4' => '3:4',
                                                 ])
                                                 ->fetchFileInformation(false)
-                                                ->directory(fn ($get) => 'berkas/kip/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                                ->directory(fn($get) => 'berkas/kip/' . $get('nisn')) // Dinamis berdasarkan NISN
                                                 ->downloadable()
                                                 ->openable()
                                                 ->maxSize(500)
@@ -1041,8 +1041,8 @@ class ViewCalonSiswa extends ViewRecord
                                                 ->visibility('private'),
                                             // Berkas KKS Calon Peserta Didik Baru
                                             FileUpload::make('berkas_kks')
-                                                ->required(fn ($get) => $get('no_kks') !== null)
-                                                ->visible(fn ($get) => $get('no_kks') !== null)
+                                                ->required(fn($get) => $get('no_kks') !== null)
+                                                ->visible(fn($get) => $get('no_kks') !== null)
                                                 ->label('Kartu Keluarga Sejahtera')
                                                 ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Keluarga Sejahtera (KKS).<sup style="color:red">*</sup></i></small>'))
                                                 ->image()
@@ -1053,7 +1053,7 @@ class ViewCalonSiswa extends ViewRecord
                                                     '3:4' => '3:4',
                                                 ])
                                                 ->fetchFileInformation(false)
-                                                ->directory(fn ($get) => 'berkas/kks/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                                ->directory(fn($get) => 'berkas/kks/' . $get('nisn')) // Dinamis berdasarkan NISN
                                                 ->downloadable()
                                                 ->openable()
                                                 ->maxSize(500)
@@ -1061,8 +1061,8 @@ class ViewCalonSiswa extends ViewRecord
                                                 ->visibility('private'),
                                             // Berkas PKH Calon Peserta Didik Baru
                                             FileUpload::make('berkas_pkh')
-                                                ->required(fn ($get) => $get('no_pkh') !== null)
-                                                ->visible(fn ($get) => $get('no_pkh') !== null)
+                                                ->required(fn($get) => $get('no_pkh') !== null)
+                                                ->visible(fn($get) => $get('no_pkh') !== null)
                                                 ->label('Kartu Program Keluarga Harapan')
                                                 ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Program Keluarga Harapan (PKH).<sup style="color:red">*</sup></i></small>'))
                                                 ->image()
@@ -1073,7 +1073,7 @@ class ViewCalonSiswa extends ViewRecord
                                                     '3:4' => '3:4',
                                                 ])
                                                 ->fetchFileInformation(false)
-                                                ->directory(fn ($get) => 'berkas/pkh/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                                ->directory(fn($get) => 'berkas/pkh/' . $get('nisn')) // Dinamis berdasarkan NISN
                                                 ->downloadable()
                                                 ->openable()
                                                 ->maxSize(500)
@@ -1081,12 +1081,12 @@ class ViewCalonSiswa extends ViewRecord
                                                 ->visibility('private'),
                                             // Berkas Prestasi Belajar Calon Peserta Didik Baru
                                             FileUpload::make('berkas_prestasi')
-                                                ->required(fn ($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
-                                                ->visible(fn ($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
+                                                ->required(fn($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
+                                                ->visible(fn($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
                                                 ->label('Berkas Prestasi')
                                                 ->helperText(new HtmlString('<small><i>Gabungkan semua berkas jika memiliki lebih dari satu prestasi.</i></small>'))
                                                 ->fetchFileInformation(false)
-                                                ->directory(fn ($get) => 'berkas/prestasi/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                                ->directory(fn($get) => 'berkas/prestasi/' . $get('nisn')) // Dinamis berdasarkan NISN
                                                 ->downloadable()
                                                 ->openable()
                                                 ->validationMessages([
@@ -1233,7 +1233,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('ibu_provinsi_id')
                                                 ->label('Provinsi')
-                                                ->options(fn (Get $get): Collection => Provinsi::query()
+                                                ->options(fn(Get $get): Collection => Provinsi::query()
                                                     ->where('negara_id', $get('ibu_negara_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->required()
@@ -1250,7 +1250,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('ibu_kabupaten_id')
                                                 ->label('Kabupaten')
-                                                ->options(fn (Get $get): Collection => Kabupaten::query()
+                                                ->options(fn(Get $get): Collection => Kabupaten::query()
                                                     ->where('provinsi_id', $get('ibu_provinsi_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->required()
@@ -1266,7 +1266,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('ibu_kecamatan_id')
                                                 ->label('Kecamatan')
-                                                ->options(fn (Get $get): Collection => Kecamatan::query()
+                                                ->options(fn(Get $get): Collection => Kecamatan::query()
                                                     ->where('kabupaten_id', $get('ibu_kabupaten_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->required()
@@ -1281,7 +1281,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('ibu_kelurahan_id')
                                                 ->label('Kelurahan')
-                                                ->options(fn (Get $get): Collection => Kelurahan::query()
+                                                ->options(fn(Get $get): Collection => Kelurahan::query()
                                                     ->where('kecamatan_id', $get('ibu_kecamatan_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->required()
@@ -1428,7 +1428,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('ayah_provinsi_id')
                                                 ->label('Provinsi')
-                                                ->options(fn (Get $get): Collection => Provinsi::query()
+                                                ->options(fn(Get $get): Collection => Provinsi::query()
                                                     ->where('negara_id', $get('ayah_negara_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->required()
@@ -1445,7 +1445,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('ayah_kabupaten_id')
                                                 ->label('Kabupaten')
-                                                ->options(fn (Get $get): Collection => Kabupaten::query()
+                                                ->options(fn(Get $get): Collection => Kabupaten::query()
                                                     ->where('provinsi_id', $get('ayah_provinsi_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->required()
@@ -1461,7 +1461,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('ayah_kecamatan_id')
                                                 ->label('Kecamatan')
-                                                ->options(fn (Get $get): Collection => Kecamatan::query()
+                                                ->options(fn(Get $get): Collection => Kecamatan::query()
                                                     ->where('kabupaten_id', $get('ayah_kabupaten_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->required()
@@ -1476,7 +1476,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('ayah_kelurahan_id')
                                                 ->label('Kelurahan')
-                                                ->options(fn (Get $get): Collection => Kelurahan::query()
+                                                ->options(fn(Get $get): Collection => Kelurahan::query()
                                                     ->where('kecamatan_id', $get('ayah_kecamatan_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->required()
@@ -1592,7 +1592,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('wali_provinsi_id')
                                                 ->label('Provinsi')
-                                                ->options(fn (Get $get): Collection => Provinsi::query()
+                                                ->options(fn(Get $get): Collection => Provinsi::query()
                                                     ->where('negara_id', $get('wali_negara_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->native(false)
@@ -1605,7 +1605,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('wali_kabupaten_id')
                                                 ->label('Kabupaten')
-                                                ->options(fn (Get $get): Collection => Kabupaten::query()
+                                                ->options(fn(Get $get): Collection => Kabupaten::query()
                                                     ->where('provinsi_id', $get('wali_provinsi_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->native(false)
@@ -1617,7 +1617,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('wali_kecamatan_id')
                                                 ->label('Kecamatan')
-                                                ->options(fn (Get $get): Collection => Kecamatan::query()
+                                                ->options(fn(Get $get): Collection => Kecamatan::query()
                                                     ->where('kabupaten_id', $get('wali_kabupaten_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->native(false)
@@ -1628,7 +1628,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('wali_kelurahan_id')
                                                 ->label('Kelurahan')
-                                                ->options(fn (Get $get): Collection => Kelurahan::query()
+                                                ->options(fn(Get $get): Collection => Kelurahan::query()
                                                     ->where('kecamatan_id', $get('wali_kecamatan_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->native(false),

@@ -59,7 +59,7 @@ class ForgotPasswordCustom extends SimplePage implements HasForms
         // Selalu tampilkan pesan sukses untuk mencegah user enumeration
         if (! $user) {
             Notification::make()
-                ->title('Jika data ditemukan, kode OTP akan dikirim ke WhatsApp Anda.')
+                ->title('Data tidak ditemukan.')
                 ->success()
                 ->send();
 
@@ -94,9 +94,9 @@ class ForgotPasswordCustom extends SimplePage implements HasForms
         Redis::setex($cooldownKey, 60, 1);                    // cooldown 60 detik
 
         $message = "Halo {$user->name},\n\n"
-            ."Kode OTP reset password PPDB MTsN 1 Pandeglang Anda:\n\n"
-            ."*{$otp}*\n\n"
-            .'Kode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.';
+            . "Kode OTP reset password PPDB MTsN 1 Pandeglang Anda:\n\n"
+            . "*{$otp}*\n\n"
+            . 'Kode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.';
 
         app(WhatsAppService::class)->send($user->telepon, $message);
 

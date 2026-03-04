@@ -37,7 +37,7 @@ class InformasiPublished extends TableWidget
 
             if ($calonSiswa) {
                 $urlFormulir = '/formulir';
-                $urlViewFormulir = '/formulir/'.$calonSiswa->id;
+                $urlViewFormulir = '/formulir/' . $calonSiswa->id;
                 $urlInformasi = '/informasi';
             }
         }
@@ -50,7 +50,7 @@ class InformasiPublished extends TableWidget
                     ->color('gray')
                     ->disabled()
                     ->size('sm')
-                    ->hidden(Auth::user()->roles->first()->name !== 'calon_siswa' || $calonSiswa === null || $calonSiswa->status_pendaftaran === 'Diterima' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Unggulan' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Reguler' || $calonSiswa->status_pendaftaran === 'Ditolak'),
+                    ->hidden(Auth::user()->roles->first()->name !== 'calon_siswa' || $calonSiswa === null || $calonSiswa->status_pendaftaran === 'Diterima' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Unggulan' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Reguler' || $calonSiswa->status_pendaftaran === 'Tidak Diterima'),
                 Action::make('status_pendaftaran')
                     ->label($label)
                     ->color(function () {
@@ -68,7 +68,7 @@ class InformasiPublished extends TableWidget
                             return 'success';
                         } elseif ($status === 'Berkas Tidak Lengkap') {
                             return 'warning';
-                        } elseif ($status === 'Ditolak') {
+                        } elseif ($status === 'Tidak Diterima') {
                             return 'danger';
                         } elseif ($status === 'Diterima') {
                             return 'success';
@@ -95,7 +95,7 @@ class InformasiPublished extends TableWidget
                             return 'heroicon-o-clipboard-document-check';
                         } elseif ($status === 'Berkas Tidak Lengkap') {
                             return 'heroicon-o-document-minus';
-                        } elseif ($status === 'Ditolak') {
+                        } elseif ($status === 'Tidak Diterima') {
                             return 'heroicon-o-no-symbol';
                         } elseif ($status === 'Diterima') {
                             return 'heroicon-o-check-circle';
@@ -110,7 +110,7 @@ class InformasiPublished extends TableWidget
                     ->outlined()
                     ->size('sm')
                     ->url($urlFormulir)
-                    ->hidden(Auth::user()->roles->first()->name !== 'calon_siswa' || $calonSiswa === null || $calonSiswa->status_pendaftaran === 'Diterima' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Unggulan' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Reguler' || $calonSiswa->status_pendaftaran === 'Ditolak'),
+                    ->hidden(Auth::user()->roles->first()->name !== 'calon_siswa' || $calonSiswa === null || $calonSiswa->status_pendaftaran === 'Diterima' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Unggulan' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Reguler' || $calonSiswa->status_pendaftaran === 'Tidak Diterima'),
 
                 Action::make('label_status_kelulusan')
                     ->label('Status Pendaftaran :')
@@ -197,7 +197,7 @@ class InformasiPublished extends TableWidget
                             return 'success';
                         } elseif ($status === 'Berkas Tidak Lengkap') {
                             return 'warning';
-                        } elseif ($status === 'Ditolak') {
+                        } elseif ($status === 'Tidak Diterima') {
                             return 'danger';
                         } elseif ($status === 'Diterima') {
                             return 'success';
@@ -224,7 +224,7 @@ class InformasiPublished extends TableWidget
                             return 'heroicon-o-clipboard-document-check';
                         } elseif ($status === 'Berkas Tidak Lengkap') {
                             return 'heroicon-o-document-minus';
-                        } elseif ($status === 'Ditolak') {
+                        } elseif ($status === 'Tidak Diterima') {
                             return 'heroicon-o-no-symbol';
                         } elseif ($status === 'Diterima') {
                             return 'heroicon-o-check-circle';
@@ -310,7 +310,7 @@ class InformasiPublished extends TableWidget
             ->columns([
                 TextColumn::make('judul')
                     ->label('Informasi')
-                    ->description(fn (Informasi $record): string => Str::limit($record->isi, 50))
+                    ->description(fn(Informasi $record): string => Str::limit($record->isi, 50))
                     ->icon('heroicon-o-information-circle')
                     ->iconColor('info'),
                 ImageColumn::make('gambar')

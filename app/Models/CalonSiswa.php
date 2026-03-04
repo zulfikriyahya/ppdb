@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Permission\Models\Role;
 
 class CalonSiswa extends Model
 {
@@ -17,6 +16,7 @@ class CalonSiswa extends Model
     protected $fillable = [
         'user_id',
         'tahun_pendaftaran_id',
+        'nomor_pendaftaran',        // ← baru
         'nama',
         'nik',
         'kk',
@@ -34,7 +34,10 @@ class CalonSiswa extends Model
         'disabilitas',
         'tinggi_badan',
         'berat_badan',
+        'penerima_kip',             // ← baru
         'no_kip',
+        'no_kks',                   // ← baru (fix inkonsistensi exporter)
+        'no_pkh',                   // ← baru
         'siswa_telepon',
         'siswa_alamat',
         'siswa_negara_id',
@@ -101,6 +104,7 @@ class CalonSiswa extends Model
         'nilai_akademik',
         'nilai_praktik',
         'status_pendaftaran',
+        'status_formulir',          // ← baru
         'kelas_id',
         'tes_sesi',
         'tes_ruang',
@@ -110,47 +114,48 @@ class CalonSiswa extends Model
     ];
 
     protected $casts = [
-        'tanggal_lahir' => 'date',
-        'tahun_pendaftaran_id' => 'integer',
-        'user_id' => 'integer',
-        'siswa_negara_id' => 'integer',
-        'siswa_provinsi_id' => 'integer',
-        'siswa_kabupaten_id' => 'integer',
-        'siswa_kecamatan_id' => 'integer',
-        'siswa_kelurahan_id' => 'integer',
-        'ibu_negara_id' => 'integer',
-        'ibu_provinsi_id' => 'integer',
-        'ibu_kabupaten_id' => 'integer',
-        'ibu_kecamatan_id' => 'integer',
-        'ibu_kelurahan_id' => 'integer',
-        'ayah_negara_id' => 'integer',
-        'ayah_provinsi_id' => 'integer',
-        'ayah_kabupaten_id' => 'integer',
-        'ayah_kecamatan_id' => 'integer',
-        'ayah_kelurahan_id' => 'integer',
-        'wali_negara_id' => 'integer',
-        'wali_provinsi_id' => 'integer',
-        'wali_kabupaten_id' => 'integer',
-        'wali_kecamatan_id' => 'integer',
-        'wali_kelurahan_id' => 'integer',
-        'sekolah_asal_id' => 'integer',
-        'jalur_pendaftaran_id' => 'integer',
-        'kelas_id' => 'integer',
-        'tes_akademik' => 'datetime',
-        'tes_praktik' => 'datetime',
-        'ekstrakurikuler_id' => 'integer',
-        'mata_pelajaran_id' => 'integer',
-        'prestasi_id' => 'integer',
+        'tanggal_lahir'          => 'date',
+        'penerima_kip'           => 'boolean',  // ← baru
+        'tahun_pendaftaran_id'   => 'integer',
+        'user_id'                => 'integer',
+        'siswa_negara_id'        => 'integer',
+        'siswa_provinsi_id'      => 'integer',
+        'siswa_kabupaten_id'     => 'integer',
+        'siswa_kecamatan_id'     => 'integer',
+        'siswa_kelurahan_id'     => 'integer',
+        'ibu_negara_id'          => 'integer',
+        'ibu_provinsi_id'        => 'integer',
+        'ibu_kabupaten_id'       => 'integer',
+        'ibu_kecamatan_id'       => 'integer',
+        'ibu_kelurahan_id'       => 'integer',
+        'ayah_negara_id'         => 'integer',
+        'ayah_provinsi_id'       => 'integer',
+        'ayah_kabupaten_id'      => 'integer',
+        'ayah_kecamatan_id'      => 'integer',
+        'ayah_kelurahan_id'      => 'integer',
+        'wali_negara_id'         => 'integer',
+        'wali_provinsi_id'       => 'integer',
+        'wali_kabupaten_id'      => 'integer',
+        'wali_kecamatan_id'      => 'integer',
+        'wali_kelurahan_id'      => 'integer',
+        'sekolah_asal_id'        => 'integer',
+        'jalur_pendaftaran_id'   => 'integer',
+        'kelas_id'               => 'integer',
+        'tes_akademik'           => 'datetime',
+        'tes_praktik'            => 'datetime',
+        'ekstrakurikuler_id'     => 'integer',
+        'mata_pelajaran_id'      => 'integer',
+        'prestasi_id'            => 'integer',
 
-        'nik' => 'encrypted',
-        'kk' => 'encrypted',
-        'ibu_nik' => 'encrypted',
-        'ayah_nik' => 'encrypted',
-        'wali_nik' => 'encrypted',
+        'nik'           => 'encrypted',
+        'kk'            => 'encrypted',
+        'ibu_nik'       => 'encrypted',
+        'ayah_nik'      => 'encrypted',
+        'wali_nik'      => 'encrypted',
         'siswa_telepon' => 'encrypted',
-        'ibu_telepon' => 'encrypted',
-        'ayah_telepon' => 'encrypted',
-        'wali_telepon' => 'encrypted',
+        'ibu_telepon'   => 'encrypted',
+        'ayah_telepon'  => 'encrypted',
+        'wali_telepon'  => 'encrypted',
     ];
 
     // -----------------------------------------------------------------------
@@ -160,22 +165,50 @@ class CalonSiswa extends Model
     protected static function booted(): void
     {
         // Scope 1: Isolasi per tahun pendaftaran aktif.
-        // Dapat dinonaktifkan via: CalonSiswa::withoutGlobalScope('tahun_aktif')
         static::addGlobalScope('tahun_aktif', function (Builder $builder) {
-            $tahun = TahunPendaftaran::where('status', 'Aktif')->first();
+            // Cache di request lifecycle — hindari N+1 query per model load
+            $tahun = once(fn() => TahunPendaftaran::where('status', 'Aktif')->first());
             if ($tahun) {
                 $builder->where('tahun_pendaftaran_id', $tahun->id);
             }
         });
 
         // Scope 2: calon_siswa hanya bisa lihat data milik sendiri.
-        // Role lain (admin, panitia, verifikator, super_admin) lihat semua.
-        // Dapat dinonaktifkan via: CalonSiswa::withoutGlobalScope('milik_sendiri')
         static::addGlobalScope('milik_sendiri', function (Builder $builder) {
             if (auth()->check() && auth()->user()->hasRole('calon_siswa')) {
                 $builder->where('user_id', auth()->id());
             }
         });
+
+        // Auto-generate nomor_pendaftaran saat creating
+        static::creating(function (CalonSiswa $model) {
+            if (empty($model->nomor_pendaftaran)) {
+                $model->nomor_pendaftaran = static::generateNomorPendaftaran();
+            }
+        });
+    }
+
+    // -----------------------------------------------------------------------
+    // Nomor Pendaftaran Generator
+    // Format: PPDB-{TAHUN}-{6 digit sequence}
+    // Contoh: PPDB-2025-000001
+    // -----------------------------------------------------------------------
+
+    public static function generateNomorPendaftaran(): string
+    {
+        $tahun = TahunPendaftaran::where('status', 'Aktif')->first();
+        $prefix = 'PPDB-' . ($tahun ? substr($tahun->nama, 0, 4) : date('Y'));
+
+        // Ambil nomor urut terakhir untuk tahun ini, bypass global scope
+        $last = static::withoutGlobalScopes()
+            ->where('nomor_pendaftaran', 'like', $prefix . '-%')
+            ->orderByDesc('nomor_pendaftaran')
+            ->lockForUpdate()
+            ->value('nomor_pendaftaran');
+
+        $seq = $last ? ((int) substr($last, -6)) + 1 : 1;
+
+        return $prefix . '-' . str_pad($seq, 6, '0', STR_PAD_LEFT);
     }
 
     // -----------------------------------------------------------------------
@@ -242,131 +275,89 @@ class CalonSiswa extends Model
         return $this->belongsTo(Bendahara::class);
     }
 
-    // Negara
-    public function negara(): BelongsTo
-    {
-        return $this->belongsTo(Negara::class, 'negara_id');
-    }
-
+    // Wilayah — Siswa
     public function siswaNegara(): BelongsTo
     {
         return $this->belongsTo(Negara::class, 'siswa_negara_id');
     }
-
-    public function ibuNegara(): BelongsTo
-    {
-        return $this->belongsTo(Negara::class, 'ibu_negara_id');
-    }
-
-    public function ayahNegara(): BelongsTo
-    {
-        return $this->belongsTo(Negara::class, 'ayah_negara_id');
-    }
-
-    public function waliNegara(): BelongsTo
-    {
-        return $this->belongsTo(Negara::class, 'wali_negara_id');
-    }
-
-    // Provinsi
-    public function provinsi(): BelongsTo
-    {
-        return $this->belongsTo(Provinsi::class, 'provinsi_id');
-    }
-
     public function siswaProvinsi(): BelongsTo
     {
         return $this->belongsTo(Provinsi::class, 'siswa_provinsi_id');
     }
-
-    public function ibuProvinsi(): BelongsTo
-    {
-        return $this->belongsTo(Provinsi::class, 'ibu_provinsi_id');
-    }
-
-    public function ayahProvinsi(): BelongsTo
-    {
-        return $this->belongsTo(Provinsi::class, 'ayah_provinsi_id');
-    }
-
-    public function waliProvinsi(): BelongsTo
-    {
-        return $this->belongsTo(Provinsi::class, 'wali_provinsi_id');
-    }
-
-    // Kabupaten
-    public function kabupaten(): BelongsTo
-    {
-        return $this->belongsTo(Kabupaten::class, 'kabupaten_id');
-    }
-
     public function siswaKabupaten(): BelongsTo
     {
         return $this->belongsTo(Kabupaten::class, 'siswa_kabupaten_id');
     }
-
-    public function ibuKabupaten(): BelongsTo
-    {
-        return $this->belongsTo(Kabupaten::class, 'ibu_kabupaten_id');
-    }
-
-    public function ayahKabupaten(): BelongsTo
-    {
-        return $this->belongsTo(Kabupaten::class, 'ayah_kabupaten_id');
-    }
-
-    public function waliKabupaten(): BelongsTo
-    {
-        return $this->belongsTo(Kabupaten::class, 'wali_kabupaten_id');
-    }
-
-    // Kecamatan
-    public function kecamatan(): BelongsTo
-    {
-        return $this->belongsTo(Kecamatan::class, 'kecamatan_id');
-    }
-
     public function siswaKecamatan(): BelongsTo
     {
         return $this->belongsTo(Kecamatan::class, 'siswa_kecamatan_id');
     }
-
-    public function ibuKecamatan(): BelongsTo
-    {
-        return $this->belongsTo(Kecamatan::class, 'ibu_kecamatan_id');
-    }
-
-    public function ayahKecamatan(): BelongsTo
-    {
-        return $this->belongsTo(Kecamatan::class, 'ayah_kecamatan_id');
-    }
-
-    public function waliKecamatan(): BelongsTo
-    {
-        return $this->belongsTo(Kecamatan::class, 'wali_kecamatan_id');
-    }
-
-    // Kelurahan
-    public function kelurahan(): BelongsTo
-    {
-        return $this->belongsTo(Kelurahan::class, 'kelurahan_id');
-    }
-
     public function siswaKelurahan(): BelongsTo
     {
         return $this->belongsTo(Kelurahan::class, 'siswa_kelurahan_id');
     }
 
+    // Wilayah — Ibu
+    public function ibuNegara(): BelongsTo
+    {
+        return $this->belongsTo(Negara::class, 'ibu_negara_id');
+    }
+    public function ibuProvinsi(): BelongsTo
+    {
+        return $this->belongsTo(Provinsi::class, 'ibu_provinsi_id');
+    }
+    public function ibuKabupaten(): BelongsTo
+    {
+        return $this->belongsTo(Kabupaten::class, 'ibu_kabupaten_id');
+    }
+    public function ibuKecamatan(): BelongsTo
+    {
+        return $this->belongsTo(Kecamatan::class, 'ibu_kecamatan_id');
+    }
     public function ibuKelurahan(): BelongsTo
     {
         return $this->belongsTo(Kelurahan::class, 'ibu_kelurahan_id');
     }
 
+    // Wilayah — Ayah
+    public function ayahNegara(): BelongsTo
+    {
+        return $this->belongsTo(Negara::class, 'ayah_negara_id');
+    }
+    public function ayahProvinsi(): BelongsTo
+    {
+        return $this->belongsTo(Provinsi::class, 'ayah_provinsi_id');
+    }
+    public function ayahKabupaten(): BelongsTo
+    {
+        return $this->belongsTo(Kabupaten::class, 'ayah_kabupaten_id');
+    }
+    public function ayahKecamatan(): BelongsTo
+    {
+        return $this->belongsTo(Kecamatan::class, 'ayah_kecamatan_id');
+    }
     public function ayahKelurahan(): BelongsTo
     {
         return $this->belongsTo(Kelurahan::class, 'ayah_kelurahan_id');
     }
 
+    // Wilayah — Wali
+    public function waliNegara(): BelongsTo
+    {
+        return $this->belongsTo(Negara::class, 'wali_negara_id');
+    }
+    public function waliProvinsi(): BelongsTo
+    {
+        return $this->belongsTo(Provinsi::class, 'wali_provinsi_id');
+    }
+    public function waliKabupaten(): BelongsTo
+    {
+        return $this->belongsTo(Kabupaten::class, 'wali_kabupaten_id');
+    }
+    public function waliKecamatan(): BelongsTo
+    {
+        return $this->belongsTo(Kecamatan::class, 'wali_kecamatan_id');
+    }
     public function waliKelurahan(): BelongsTo
     {
         return $this->belongsTo(Kelurahan::class, 'wali_kelurahan_id');

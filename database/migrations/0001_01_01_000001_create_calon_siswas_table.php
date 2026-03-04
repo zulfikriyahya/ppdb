@@ -14,8 +14,8 @@ return new class extends Migration
 
             // Relasi ke users via FK standar (user_id), bukan FK ke kolom non-PK
             $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete()->cascadeOnUpdate();
+            $table->string('nomor_pendaftaran', 20)->nullable()->unique();
             $table->foreignId('tahun_pendaftaran_id')->nullable()->constrained('tahun_pendaftarans')->cascadeOnUpdate();
-
             $table->string('nama', 50);
             $table->string('nik')->unique();
             $table->string('kk');
@@ -33,6 +33,7 @@ return new class extends Migration
             $table->enum('disabilitas', ['Non Disabilitas', 'Fisik', 'Penglihatan', 'Pendengaran', 'Kognitif', 'Mental', 'Lainnya']);
             $table->integer('tinggi_badan')->nullable();
             $table->integer('berat_badan')->nullable();
+            $table->boolean('penerima_kip')->default(false);
             $table->string('no_kip')->unique()->nullable();
             $table->string('no_kks')->unique()->nullable();
             $table->string('no_pkh')->unique()->nullable();
@@ -43,7 +44,6 @@ return new class extends Migration
             $table->foreignId('siswa_kabupaten_id')->constrained('kabupatens')->cascadeOnUpdate();
             $table->foreignId('siswa_kecamatan_id')->constrained('kecamatans')->cascadeOnUpdate();
             $table->foreignId('siswa_kelurahan_id')->constrained('kelurahans')->cascadeOnUpdate();
-
             $table->string('berkas_foto');
             $table->string('berkas_kk');
             $table->string('berkas_akta')->nullable();
@@ -115,11 +115,18 @@ return new class extends Migration
                 'Diproses',
                 'Berkas Tidak Lengkap',
                 'Diverifikasi',
-                'Ditolak',
+                'Tidak Diterima',
                 'Diterima',
                 'Diterima Di Kelas Reguler',
                 'Diterima Di Kelas Unggulan',
             ])->default('Diproses')->nullable();
+            $table->enum('status_formulir', [
+                'Diproses',
+                'Disetujui',
+                'Ditolak',
+            ])->default('Diproses');
+
+
             $table->foreignId('kelas_id')->nullable()->constrained('kelas')->cascadeOnUpdate();
             $table->string('tes_sesi')->nullable();
             $table->string('tes_ruang')->nullable();

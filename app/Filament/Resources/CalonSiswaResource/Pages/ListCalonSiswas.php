@@ -61,7 +61,7 @@ class ListCalonSiswas extends ListRecords
                 ->color('success')
                 ->outlined()
                 ->hidden(
-                    Auth::user()->roles->first()->name !== 'calon_siswa' || $calonSiswa === null || $calonSiswa->status_pendaftaran === 'Diterima' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Unggulan' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Reguler' || $calonSiswa->status_pendaftaran === 'Diverifikasi' || $calonSiswa->status_pendaftaran === 'Ditolak'
+                    Auth::user()->roles->first()->name !== 'calon_siswa' || $calonSiswa === null || $calonSiswa->status_pendaftaran === 'Diterima' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Unggulan' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Reguler' || $calonSiswa->status_pendaftaran === 'Diverifikasi' || $calonSiswa->status_pendaftaran === 'Tidak Diterima'
                 )
                 ->successRedirectUrl($urlView),
 
@@ -73,7 +73,7 @@ class ListCalonSiswas extends ListRecords
                 ->color('success')
                 ->exporter(CalonSiswaExporter::class)
                 ->chunkSize(250)
-                ->visible(fn (): string => CalonSiswa::count() > 0 && Auth::user()->roles->first()->name !== 'calon_siswa'),
+                ->visible(fn(): string => CalonSiswa::count() > 0 && Auth::user()->roles->first()->name !== 'calon_siswa'),
 
             // Import
             ImportAction::make('import')
