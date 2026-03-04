@@ -1,6 +1,7 @@
 <?php
 
 use App\Filament\Pages\Auth\ForgotPasswordCustom;
+use App\Filament\Pages\Auth\NewPassword;
 use App\Filament\Pages\Auth\ResetPasswordOtp;
 use App\Filament\Pages\Auth\VerifikasiOtp;
 use Illuminate\Support\Facades\Route;
@@ -16,4 +17,7 @@ Route::middleware('web')->group(function () {
 
     Route::get('/reset-password', ResetPasswordOtp::class)
         ->name('otp.reset-password');
+
+    Route::get('/new-password', NewPassword::class)
+        ->name('otp.new-password');
 });
