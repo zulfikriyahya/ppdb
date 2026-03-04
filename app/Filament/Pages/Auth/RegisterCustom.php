@@ -8,8 +8,8 @@ use Filament\Forms\Components\Component;
 use Filament\Forms\Components\TextInput;
 use Filament\Http\Responses\Auth\Contracts\RegistrationResponse;
 use Filament\Pages\Auth\Register;
-use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Validation\Rules\Password;
 
 class RegisterCustom extends Register
@@ -56,8 +56,8 @@ class RegisterCustom extends Register
             ->validationMessages([
                 'max_digits' => 'NISN: Masukkan maksimal 10 Angka.',
                 'min_digits' => 'NISN: Masukkan minimal 10 Angka.',
-                'unique'     => 'NISN: Nomor ini sudah pernah diisi.',
-                'required'   => 'Form ini wajib diisi.',
+                'unique' => 'NISN: Nomor ini sudah pernah diisi.',
+                'required' => 'Form ini wajib diisi.',
             ])
             ->unique($this->getUserModel());
     }
@@ -74,7 +74,7 @@ class RegisterCustom extends Register
             ->helperText('Nomor ini akan digunakan untuk mengirim kode OTP verifikasi.')
             ->validationMessages([
                 'required' => 'Nomor WhatsApp wajib diisi.',
-                'max'      => 'Nomor WhatsApp maksimal 15 karakter.',
+                'max' => 'Nomor WhatsApp maksimal 15 karakter.',
             ]);
     }
 
@@ -87,8 +87,8 @@ class RegisterCustom extends Register
             ->suffixIcon('heroicon-o-envelope')
             ->maxLength(50)
             ->validationMessages([
-                'max'      => 'Email: Masukkan maksimal 50 Karakter.',
-                'unique'   => 'Email: Email ini sudah pernah diisi.',
+                'max' => 'Email: Masukkan maksimal 50 Karakter.',
+                'unique' => 'Email: Email ini sudah pernah diisi.',
                 'required' => 'Form ini wajib diisi.',
             ])
             ->unique($this->getUserModel());
@@ -102,11 +102,11 @@ class RegisterCustom extends Register
             ->revealable(filament()->arePasswordsRevealable())
             ->required()
             ->rule(Password::default())
-            ->dehydrateStateUsing(fn($state) => Hash::make($state))
+            ->dehydrateStateUsing(fn ($state) => Hash::make($state))
             ->same('passwordConfirmation')
             ->validationMessages([
-                'same'     => 'Password: Password tidak sesuai dengan isian password konfirmasi.',
-                'min'      => 'Password: Masukkan minimal 8 karakter alfanumerik.',
+                'same' => 'Password: Password tidak sesuai dengan isian password konfirmasi.',
+                'min' => 'Password: Masukkan minimal 8 karakter alfanumerik.',
                 'required' => 'Form ini wajib diisi.',
             ])
             ->validationAttribute(__('filament-panels::pages/auth/register.form.password.validation_attribute'));
@@ -138,9 +138,9 @@ class RegisterCustom extends Register
         Redis::setex("otp:{$user->id}", $ttl, $otp);
 
         $message = "Halo {$user->name},\n\n"
-            . "Kode OTP verifikasi akun PPDB MTsN 1 Pandeglang Anda:\n\n"
-            . "*{$otp}*\n\n"
-            . "Kode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.";
+            ."Kode OTP verifikasi akun PPDB MTsN 1 Pandeglang Anda:\n\n"
+            ."*{$otp}*\n\n"
+            .'Kode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.';
 
         app(WhatsAppService::class)->send($user->telepon, $message);
 

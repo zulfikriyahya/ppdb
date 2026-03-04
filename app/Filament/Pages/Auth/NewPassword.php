@@ -19,6 +19,7 @@ class NewPassword extends SimplePage implements HasForms
     use InteractsWithForms;
 
     protected static string $view = 'filament.pages.auth.new-password';
+
     protected static bool $shouldRegisterNavigation = false;
 
     public ?array $data = [];
@@ -29,6 +30,7 @@ class NewPassword extends SimplePage implements HasForms
 
         if (! $userId || ! Redis::exists("reset_token:{$userId}")) {
             $this->redirect(route('otp.forgot-password'));
+
             return;
         }
 
@@ -49,8 +51,8 @@ class NewPassword extends SimplePage implements HasForms
                     ->autofocus()
                     ->validationMessages([
                         'required' => 'Password wajib diisi.',
-                        'same'     => 'Password tidak sesuai dengan konfirmasi.',
-                        'min'      => 'Password minimal 8 karakter.',
+                        'same' => 'Password tidak sesuai dengan konfirmasi.',
+                        'min' => 'Password minimal 8 karakter.',
                     ]),
 
                 TextInput::make('password_confirmation')
@@ -65,12 +67,13 @@ class NewPassword extends SimplePage implements HasForms
 
     public function simpanPassword(): void
     {
-        $data   = $this->form->getState();
+        $data = $this->form->getState();
         $userId = session('reset_otp_user_id');
 
         if (! Redis::exists("reset_token:{$userId}")) {
             Notification::make()->title('Sesi reset password sudah kadaluarsa.')->body('Silakan ulangi proses lupa password.')->danger()->send();
             $this->redirect(route('otp.forgot-password'));
+
             return;
         }
 
@@ -78,6 +81,7 @@ class NewPassword extends SimplePage implements HasForms
 
         if (! $user) {
             $this->redirect(route('otp.forgot-password'));
+
             return;
         }
 
@@ -90,8 +94,8 @@ class NewPassword extends SimplePage implements HasForms
         session()->forget('reset_otp_user_id');
 
         $message = "Halo {$user->name},\n\n"
-            . "Password akun PPDB MTsN 1 Pandeglang Anda telah berhasil diubah.\n\n"
-            . "Jika Anda tidak merasa melakukan perubahan ini, segera hubungi panitia PPDB.";
+            ."Password akun PPDB MTsN 1 Pandeglang Anda telah berhasil diubah.\n\n"
+            .'Jika Anda tidak merasa melakukan perubahan ini, segera hubungi panitia PPDB.';
 
         app(WhatsAppService::class)->send($user->telepon, $message);
 

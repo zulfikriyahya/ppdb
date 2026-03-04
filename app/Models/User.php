@@ -39,7 +39,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     {
         return [
             'email_verified_at' => 'datetime',
-            'password'          => 'hashed',
+            'password' => 'hashed',
         ];
     }
 
@@ -58,7 +58,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         $peserta = CalonSiswa::first();
 
         return $this->avatar
-            ? asset('storage/' . ($this->avatar ?? $peserta->berkas_foto))
+            ? asset('storage/'.($this->avatar ?? $peserta->berkas_foto))
             : null;
     }
 
