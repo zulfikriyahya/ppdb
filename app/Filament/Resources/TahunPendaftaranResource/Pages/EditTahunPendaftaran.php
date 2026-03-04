@@ -2,17 +2,17 @@
 
 namespace App\Filament\Resources\TahunPendaftaranResource\Pages;
 
-use Filament\Forms\Form;
+use App\Filament\Resources\TahunPendaftaranResource;
 use App\Models\JalurPendaftaran;
-use Illuminate\Support\HtmlString;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Section;
-use Illuminate\Database\Eloquent\Model;
-use Filament\Forms\Components\TextInput;
-use Filament\Resources\Pages\EditRecord;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
-use App\Filament\Resources\TahunPendaftaranResource;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\HtmlString;
 
 class EditTahunPendaftaran extends EditRecord
 {
@@ -147,6 +147,7 @@ class EditTahunPendaftaran extends EditRecord
                 Section::make('Pendaftaran Jalur Prestasi')
                     ->visible(function () {
                         $statusJalur = JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', 'Prestasi')->exists();
+
                         return $statusJalur;
                     })
                     ->description('Tanggal pendaftaran untuk jalur prestasi.')
@@ -175,6 +176,7 @@ class EditTahunPendaftaran extends EditRecord
 
                     ->visible(function () {
                         $statusJalur = JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', 'Prestasi')->exists();
+
                         return $statusJalur;
                     })
                     ->description('Tanggal pengumuman untuk jalur prestasi.')
@@ -203,6 +205,7 @@ class EditTahunPendaftaran extends EditRecord
 
                     ->visible(function () {
                         $statusJalur = JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', 'Reguler')->exists();
+
                         return $statusJalur;
                     })
                     ->description('Tanggal pendaftaran untuk jalur reguler.')
@@ -231,6 +234,7 @@ class EditTahunPendaftaran extends EditRecord
 
                     ->visible(function () {
                         $statusJalur = JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', 'Reguler')->exists();
+
                         return $statusJalur;
                     })
                     ->description('Tanggal pengumuman untuk jalur reguler.')
@@ -259,6 +263,7 @@ class EditTahunPendaftaran extends EditRecord
 
                     ->visible(function () {
                         $statusJalur = JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', 'Afirmasi')->exists();
+
                         return $statusJalur;
                     })
                     ->description('Tanggal pendaftaran untuk jalur Afirmasi.')
@@ -287,6 +292,7 @@ class EditTahunPendaftaran extends EditRecord
 
                     ->visible(function () {
                         $statusJalur = JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', 'Afirmasi')->exists();
+
                         return $statusJalur;
                     })
                     ->description('Tanggal pengumuman untuk jalur Afirmasi.')
@@ -315,6 +321,7 @@ class EditTahunPendaftaran extends EditRecord
 
                     ->visible(function () {
                         $statusJalur = JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', 'Zonasi')->exists();
+
                         return $statusJalur;
                     })
                     ->description('Tanggal pendaftaran untuk jalur Zonasi.')
@@ -343,6 +350,7 @@ class EditTahunPendaftaran extends EditRecord
 
                     ->visible(function () {
                         $statusJalur = JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', 'Zonasi')->exists();
+
                         return $statusJalur;
                     })
                     ->description('Tanggal pengumuman untuk jalur Zonasi.')
@@ -371,6 +379,7 @@ class EditTahunPendaftaran extends EditRecord
 
                     ->visible(function () {
                         $statusJalur = JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', 'Mutasi')->exists();
+
                         return $statusJalur;
                     })
                     ->description('Tanggal pendaftaran untuk jalur Mutasi.')
@@ -399,6 +408,7 @@ class EditTahunPendaftaran extends EditRecord
 
                     ->visible(function () {
                         $statusJalur = JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', 'Mutasi')->exists();
+
                         return $statusJalur;
                     })
                     ->description('Tanggal pengumuman untuk jalur Mutasi.')
@@ -424,7 +434,7 @@ class EditTahunPendaftaran extends EditRecord
                         '2xl' => 2,
                     ]),
                 Section::make('Tes Akademik')
-                    ->visible(fn($get) => $get('tanggal_penerbitan_kartu_tes_mulai'))
+                    ->visible(fn ($get) => $get('tanggal_penerbitan_kartu_tes_mulai'))
 
                     ->description('Tanggal tes akademik.')
                     ->schema([
@@ -450,7 +460,7 @@ class EditTahunPendaftaran extends EditRecord
                     ]),
                 Section::make('Tes Praktik')
 
-                    ->visible(fn($get) => $get('tanggal_penerbitan_kartu_tes_mulai'))
+                    ->visible(fn ($get) => $get('tanggal_penerbitan_kartu_tes_mulai'))
                     ->description('Tanggal tes praktik.')
                     ->schema([
                         DateTimePicker::make('tanggal_tes_praktik_mulai')

@@ -6,7 +6,6 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Spatie\Permission\Models\Role;
 
 class UserSeeder extends Seeder
 {
@@ -21,29 +20,26 @@ class UserSeeder extends Seeder
                 'email_verified_at' => now(),
                 'password' => Hash::make('password'),
                 'remember_token' => Str::random(10),
-                'role' => 'administrator',
-            ]
+                'role' => 'super_admin',
+            ],
         ];
 
         foreach ($dataUser as $data) {
-            // Buat pengguna
-            $user = User::create([
-                'name' => $data['name'],
-                'username' => $data['username'],
-                'status' => $data['status'],
-                'email' => $data['email'],
-                'email_verified_at' => $data['email_verified_at'],
-                'password' => $data['password'],
-                'remember_token' => $data['remember_token'],
-            ]);
+            $role = $data['role'];
 
-            // Assign role ke pengguna
-            if (isset($data['role'])) {
-                $role = Role::where('name', $data['role'])->first();
-                if ($role) {
-                    $user->assignRole($role);
-                }
-            }
+            $user = User::withoutEvents(function () use ($data) {
+                return User::create([
+                    'name' => $data['name'],
+                    'username' => $data['username'],
+                    'status' => $data['status'],
+                    'email' => $data['email'],
+                    'email_verified_at' => $data['email_verified_at'],
+                    'password' => $data['password'],
+                    'remember_token' => $data['remember_token'],
+                ]);
+            });
+
+            $user->assignRole($role);
         }
     }
 }

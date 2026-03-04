@@ -19,7 +19,6 @@ class Anggota extends Model
         'berkas_tte',
         'berkas_sk',
         'status',
-        'data',
     ];
 
     protected $casts = [

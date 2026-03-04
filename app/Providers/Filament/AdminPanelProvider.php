@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Auth\EditProfileCustom;
+use App\Filament\Pages\Auth\ForgotPasswordCustom;
 use App\Filament\Pages\Auth\LoginCustom;
 use App\Filament\Pages\Auth\RegisterCustom;
 use App\Filament\Resources\CalonSiswaResource\Widgets\FormulirOverview;
@@ -50,8 +51,9 @@ class AdminPanelProvider extends PanelProvider
             ->topNavigation()
             ->login(LoginCustom::class)
             ->registration($registerClass)
+            ->passwordReset(ForgotPasswordCustom::class)
             ->emailVerification()
-            ->passwordReset()
+            // ->passwordReset()
             ->profile(EditProfileCustom::class)
             ->globalSearch(false)
             ->maxContentWidth(MaxWidth::Full)
@@ -70,8 +72,8 @@ class AdminPanelProvider extends PanelProvider
                     ->label('Manajemen Pengguna')
                     ->url(fn (): string => UserResource::getUrl())
                     ->icon('heroicon-o-identification')
-                    // ->visible(fn() => Auth::user()?->roles?->first()?->name === 'administrator'),
-                    ->visible(fn () => Auth::user()?->roles?->where('name', 'administrator')->first() !== null),
+                    // ->visible(fn() => Auth::user()?->roles?->first()?->name === 'super_admin'),
+                    ->visible(fn () => Auth::user()?->roles?->where('name', 'super_admin')->first() !== null),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')

@@ -24,7 +24,7 @@ class UserRegisters extends TableWidget
         return $table
             ->query(
                 User::whereHas('roles', function ($query) {
-                    $query->where('name', 'peserta');
+                    $query->where('name', 'calon_siswa');
                 })->latest('email_verified_at')
             )
             ->columns([

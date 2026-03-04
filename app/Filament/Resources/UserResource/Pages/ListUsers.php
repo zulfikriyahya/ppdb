@@ -84,7 +84,7 @@ class ListUsers extends ListRecords
                 SelectFilter::make('role')
                     ->label('Peran')
                     ->relationship('roles', 'name')
-                    ->visible(Auth::user()->username === 'administrator'),
+                    ->visible(Auth::user()->username === 'super_admin'),
             ])
             ->actions([
                 ActionGroup::make([
@@ -94,7 +94,7 @@ class ListUsers extends ListRecords
                     RestoreAction::make(),
                 ])
                     ->hidden(function ($record) {
-                        if ($record->username === 'administrator') {
+                        if ($record->username === 'super_admin') {
                             return $record;
                         }
                     }),

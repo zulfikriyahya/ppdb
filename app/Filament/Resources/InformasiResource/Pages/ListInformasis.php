@@ -36,7 +36,7 @@ class ListInformasis extends ListRecords
 
     public function table(Table $table): Table
     {
-        $userView = Auth::user()->username === 'administrator';
+        $userView = Auth::user()->username === 'super_admin';
         if ($userView) {
             return $table
                 ->columns([

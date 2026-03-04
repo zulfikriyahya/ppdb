@@ -21,9 +21,9 @@ return [
 
     'super_admin' => [
         'enabled' => true,
-        'name' => 'administrator',
+        'name' => 'super_admin', // ← disesuaikan dengan nama role di Spatie
         'define_via_gate' => true,
-        'intercept_gate' => 'before', // after
+        'intercept_gate' => 'before',
     ],
 
     'panel_user' => [
@@ -46,7 +46,6 @@ return [
             'force_delete',
             'force_delete_any',
         ],
-
         'page' => 'page',
         'widget' => 'widget',
     ],
@@ -66,16 +65,13 @@ return [
 
     'exclude' => [
         'enabled' => true,
-
         'pages' => [
             'Dashboard',
         ],
-
         'widgets' => [
             'AccountWidget',
             'FilamentInfoWidget',
         ],
-
         'resources' => [],
     ],
 
@@ -88,5 +84,4 @@ return [
     'register_role_policy' => [
         'enabled' => true,
     ],
-
 ];

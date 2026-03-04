@@ -24,6 +24,6 @@ class Prestasi extends Model
 
     public function calonSiswas(): HasMany
     {
-        return $this->hasMany(CalonSiswa::class, 'calon_siswa_id');
+        return $this->hasMany(CalonSiswa::class, 'prestasi_id');
     }
 }

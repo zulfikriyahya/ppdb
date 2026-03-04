@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -11,12 +11,15 @@ return new class extends Migration
         Schema::disableForeignKeyConstraints();
         Schema::create('calon_siswas', function (Blueprint $table) {
             $table->uuid('id')->primary();
+
+            // Relasi ke users via FK standar (user_id), bukan FK ke kolom non-PK
+            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete()->cascadeOnUpdate();
+            $table->foreignId('tahun_pendaftaran_id')->nullable()->constrained('tahun_pendaftarans')->cascadeOnUpdate();
+
             $table->string('nama', 50);
-            $table->foreign('nama')->references('name')->on('users')->onUpdate('cascade');
             $table->string('nik')->unique();
             $table->string('kk');
             $table->string('nisn', 10)->unique();
-            $table->foreign('nisn')->references('username')->on('users')->onUpdate('cascade');
             $table->string('tempat_lahir')->nullable();
             $table->date('tanggal_lahir')->nullable();
             $table->string('tahun_lulus')->nullable();
@@ -40,6 +43,7 @@ return new class extends Migration
             $table->foreignId('siswa_kabupaten_id')->constrained('kabupatens')->cascadeOnUpdate();
             $table->foreignId('siswa_kecamatan_id')->constrained('kecamatans')->cascadeOnUpdate();
             $table->foreignId('siswa_kelurahan_id')->constrained('kelurahans')->cascadeOnUpdate();
+
             $table->string('berkas_foto');
             $table->string('berkas_kk');
             $table->string('berkas_akta')->nullable();
@@ -50,6 +54,8 @@ return new class extends Migration
             $table->string('berkas_skbb')->nullable();
             $table->string('berkas_skab')->nullable();
             $table->string('berkas_prestasi')->nullable();
+
+            // Data Ibu
             $table->string('ibu_nama');
             $table->string('ibu_nik');
             $table->string('ibu_telepon')->nullable();
@@ -63,6 +69,8 @@ return new class extends Migration
             $table->foreignId('ibu_kabupaten_id')->nullable()->constrained('kabupatens')->cascadeOnUpdate();
             $table->foreignId('ibu_kecamatan_id')->nullable()->constrained('kecamatans')->cascadeOnUpdate();
             $table->foreignId('ibu_kelurahan_id')->nullable()->constrained('kelurahans')->cascadeOnUpdate();
+
+            // Data Ayah
             $table->string('ayah_nama');
             $table->string('ayah_nik');
             $table->string('ayah_telepon')->nullable();
@@ -77,6 +85,8 @@ return new class extends Migration
             $table->foreignId('ayah_kabupaten_id')->nullable()->constrained('kabupatens')->cascadeOnUpdate();
             $table->foreignId('ayah_kecamatan_id')->nullable()->constrained('kecamatans')->cascadeOnUpdate();
             $table->foreignId('ayah_kelurahan_id')->nullable()->constrained('kelurahans')->cascadeOnUpdate();
+
+            // Data Wali
             $table->string('wali_nama')->nullable();
             $table->string('wali_nik')->nullable();
             $table->string('wali_telepon')->nullable();
@@ -90,16 +100,26 @@ return new class extends Migration
             $table->foreignId('wali_kabupaten_id')->nullable()->constrained('kabupatens')->cascadeOnUpdate();
             $table->foreignId('wali_kecamatan_id')->nullable()->constrained('kecamatans')->cascadeOnUpdate();
             $table->foreignId('wali_kelurahan_id')->nullable()->constrained('kelurahans')->cascadeOnUpdate();
+
             $table->foreignId('sekolah_asal_id')->nullable()->constrained()->cascadeOnUpdate();
             $table->foreignId('jalur_pendaftaran_id')->nullable()->constrained()->cascadeOnUpdate();
             $table->foreignId('prestasi_id')->nullable()->constrained('prestasis')->cascadeOnUpdate();
             $table->foreignId('ekstrakurikuler_id')->nullable()->constrained('ekstrakurikulers')->cascadeOnUpdate();
             $table->foreignId('mata_pelajaran_id')->nullable()->constrained('mata_pelajarans')->cascadeOnUpdate();
+
             $table->integer('bobot_nilai_akademik')->nullable();
             $table->integer('bobot_nilai_praktik')->nullable();
             $table->integer('nilai_akademik')->nullable();
             $table->integer('nilai_praktik')->nullable();
-            $table->enum('status_pendaftaran', ['Diproses', 'Berkas Tidak Lengkap', 'Diverifikasi', 'Ditolak', 'Diterima', 'Diterima Di Kelas Reguler', 'Diterima Di Kelas Unggulan'])->default('Diproses')->nullable();
+            $table->enum('status_pendaftaran', [
+                'Diproses',
+                'Berkas Tidak Lengkap',
+                'Diverifikasi',
+                'Ditolak',
+                'Diterima',
+                'Diterima Di Kelas Reguler',
+                'Diterima Di Kelas Unggulan',
+            ])->default('Diproses')->nullable();
             $table->foreignId('kelas_id')->nullable()->constrained('kelas')->cascadeOnUpdate();
             $table->string('tes_sesi')->nullable();
             $table->string('tes_ruang')->nullable();

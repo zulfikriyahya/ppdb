@@ -2,17 +2,21 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Permission\Models\Role;
 
 class CalonSiswa extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
 
     protected $fillable = [
+        'user_id',
+        'tahun_pendaftaran_id',
         'nama',
         'nik',
         'kk',
@@ -52,6 +56,8 @@ class CalonSiswa extends Model
         'ibu_nik',
         'ibu_telepon',
         'ibu_pekerjaan',
+        'ibu_penghasilan',
+        'ibu_pendidikan',
         'ibu_status',
         'ibu_alamat',
         'ibu_negara_id',
@@ -63,6 +69,8 @@ class CalonSiswa extends Model
         'ayah_nik',
         'ayah_telepon',
         'ayah_pekerjaan',
+        'ayah_penghasilan',
+        'ayah_pendidikan',
         'ayah_status',
         'ayah_alamat',
         'ayah_negara_id',
@@ -74,6 +82,8 @@ class CalonSiswa extends Model
         'wali_nik',
         'wali_telepon',
         'wali_pekerjaan',
+        'wali_penghasilan',
+        'wali_pendidikan',
         'wali_status',
         'wali_alamat',
         'wali_negara_id',
@@ -83,7 +93,7 @@ class CalonSiswa extends Model
         'wali_kelurahan_id',
         'sekolah_asal_id',
         'jalur_pendaftaran_id',
-        'siswa_prestasi_id',
+        'prestasi_id',
         'ekstrakurikuler_id',
         'mata_pelajaran_id',
         'bobot_nilai_akademik',
@@ -96,20 +106,13 @@ class CalonSiswa extends Model
         'tes_ruang',
         'tes_akademik',
         'tes_praktik',
-        'ibu_pekerjaan',
-        'ibu_penghasilan',
-        'ibu_pendidikan',
-        'ayah_pekerjaan',
-        'ayah_penghasilan',
-        'ayah_pendidikan',
-        'wali_pekerjaan',
-        'wali_penghasilan',
-        'wali_pendidikan',
         'kepemilikan_rumah',
     ];
 
     protected $casts = [
         'tanggal_lahir' => 'date',
+        'tahun_pendaftaran_id' => 'integer',
+        'user_id' => 'integer',
         'siswa_negara_id' => 'integer',
         'siswa_provinsi_id' => 'integer',
         'siswa_kabupaten_id' => 'integer',
@@ -148,12 +151,45 @@ class CalonSiswa extends Model
         'ibu_telepon' => 'encrypted',
         'ayah_telepon' => 'encrypted',
         'wali_telepon' => 'encrypted',
-
     ];
+
+    // -----------------------------------------------------------------------
+    // Global Scopes
+    // -----------------------------------------------------------------------
+
+    protected static function booted(): void
+    {
+        // Scope 1: Isolasi per tahun pendaftaran aktif.
+        // Dapat dinonaktifkan via: CalonSiswa::withoutGlobalScope('tahun_aktif')
+        static::addGlobalScope('tahun_aktif', function (Builder $builder) {
+            $tahun = TahunPendaftaran::where('status', 'Aktif')->first();
+            if ($tahun) {
+                $builder->where('tahun_pendaftaran_id', $tahun->id);
+            }
+        });
+
+        // Scope 2: calon_siswa hanya bisa lihat data milik sendiri.
+        // Role lain (admin, panitia, verifikator, super_admin) lihat semua.
+        // Dapat dinonaktifkan via: CalonSiswa::withoutGlobalScope('milik_sendiri')
+        static::addGlobalScope('milik_sendiri', function (Builder $builder) {
+            if (auth()->check() && auth()->user()->hasRole('calon_siswa')) {
+                $builder->where('user_id', auth()->id());
+            }
+        });
+    }
+
+    // -----------------------------------------------------------------------
+    // Relationships
+    // -----------------------------------------------------------------------
 
     public function tahunPendaftaran(): BelongsTo
     {
         return $this->belongsTo(TahunPendaftaran::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function prestasi(): BelongsTo
@@ -171,10 +207,39 @@ class CalonSiswa extends Model
         return $this->belongsTo(JalurPendaftaran::class, 'jalur_pendaftaran_id');
     }
 
-    // Users
-    public function user(): BelongsTo
+    public function ekstrakurikuler(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Ekstrakurikuler::class, 'ekstrakurikuler_id');
+    }
+
+    public function kelas(): BelongsTo
+    {
+        return $this->belongsTo(Kelas::class, 'kelas_id');
+    }
+
+    public function sekolahAsal(): BelongsTo
+    {
+        return $this->belongsTo(SekolahAsal::class, 'sekolah_asal_id');
+    }
+
+    public function pimpinan(): BelongsTo
+    {
+        return $this->belongsTo(Pimpinan::class);
+    }
+
+    public function ketua(): BelongsTo
+    {
+        return $this->belongsTo(Ketua::class);
+    }
+
+    public function sekretaris(): BelongsTo
+    {
+        return $this->belongsTo(Sekretaris::class);
+    }
+
+    public function bendahara(): BelongsTo
+    {
+        return $this->belongsTo(Bendahara::class);
     }
 
     // Negara
@@ -186,11 +251,6 @@ class CalonSiswa extends Model
     public function siswaNegara(): BelongsTo
     {
         return $this->belongsTo(Negara::class, 'siswa_negara_id');
-    }
-
-    public function ekstrakurikuler(): BelongsTo
-    {
-        return $this->belongsTo(Ekstrakurikuler::class, 'ekstrakurikuler_id');
     }
 
     public function ibuNegara(): BelongsTo
@@ -310,35 +370,5 @@ class CalonSiswa extends Model
     public function waliKelurahan(): BelongsTo
     {
         return $this->belongsTo(Kelurahan::class, 'wali_kelurahan_id');
-    }
-
-    public function kelas(): BelongsTo
-    {
-        return $this->belongsTo(Kelas::class, 'kelas_id');
-    }
-
-    public function sekolahAsal(): BelongsTo
-    {
-        return $this->belongsTo(SekolahAsal::class, 'sekolah_asal_id');
-    }
-
-    public function pimpinan(): BelongsTo
-    {
-        return $this->belongsTo(Pimpinan::class);
-    }
-
-    public function ketua(): BelongsTo
-    {
-        return $this->belongsTo(Ketua::class);
-    }
-
-    public function sekretaris(): BelongsTo
-    {
-        return $this->belongsTo(Sekretaris::class);
-    }
-
-    public function bendahara(): BelongsTo
-    {
-        return $this->belongsTo(Bendahara::class);
     }
 }

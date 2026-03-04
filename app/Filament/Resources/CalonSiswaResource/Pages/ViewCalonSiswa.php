@@ -162,7 +162,7 @@ class ViewCalonSiswa extends ViewRecord
                                         ->relationship('kelas', 'nama')
                                         ->native(false),
                                 ])
-                                ->visible(Auth::user()->roles->first()->name !== 'peserta')
+                                ->visible(Auth::user()->roles->first()->name !== 'calon_siswa')
                                 ->columns([
                                     'sm' => '100%',
                                     'md' => 2,

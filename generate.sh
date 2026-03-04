@@ -26,7 +26,7 @@ INCLUDE_PATHS=(
 
   # --- Database ---
   "database/migrations"
-#   "database/seeders"
+  "database/seeders"
 
   # --- Routing ---
   "routes/web.php"

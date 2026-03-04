@@ -2,16 +2,16 @@
 
 namespace App\Filament\Resources\TahunPendaftaranResource\Pages;
 
-use Filament\Forms\Form;
-use App\Models\JalurPendaftaran;
-use Illuminate\Support\HtmlString;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\DatePicker;
-use Filament\Resources\Pages\CreateRecord;
-use Filament\Forms\Components\DateTimePicker;
 use App\Filament\Resources\TahunPendaftaranResource;
+use App\Models\JalurPendaftaran;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Support\HtmlString;
 
 class CreateTahunPendaftaran extends CreateRecord
 {
@@ -137,6 +137,7 @@ class CreateTahunPendaftaran extends CreateRecord
                 Section::make('Pendaftaran Jalur Prestasi')
                     ->visible(function () {
                         $statusJalur = JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', 'Prestasi')->exists();
+
                         return $statusJalur;
                     })
                     ->description('Tanggal pendaftaran untuk jalur prestasi.')
@@ -165,6 +166,7 @@ class CreateTahunPendaftaran extends CreateRecord
 
                     ->visible(function () {
                         $statusJalur = JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', 'Prestasi')->exists();
+
                         return $statusJalur;
                     })
                     ->description('Tanggal pengumuman untuk jalur prestasi.')
@@ -193,6 +195,7 @@ class CreateTahunPendaftaran extends CreateRecord
 
                     ->visible(function () {
                         $statusJalur = JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', 'Reguler')->exists();
+
                         return $statusJalur;
                     })
                     ->description('Tanggal pendaftaran untuk jalur reguler.')
@@ -221,6 +224,7 @@ class CreateTahunPendaftaran extends CreateRecord
 
                     ->visible(function () {
                         $statusJalur = JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', 'Reguler')->exists();
+
                         return $statusJalur;
                     })
                     ->description('Tanggal pengumuman untuk jalur reguler.')
@@ -249,6 +253,7 @@ class CreateTahunPendaftaran extends CreateRecord
 
                     ->visible(function () {
                         $statusJalur = JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', 'Afirmasi')->exists();
+
                         return $statusJalur;
                     })
                     ->description('Tanggal pendaftaran untuk jalur Afirmasi.')
@@ -277,6 +282,7 @@ class CreateTahunPendaftaran extends CreateRecord
 
                     ->visible(function () {
                         $statusJalur = JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', 'Afirmasi')->exists();
+
                         return $statusJalur;
                     })
                     ->description('Tanggal pengumuman untuk jalur Afirmasi.')
@@ -305,6 +311,7 @@ class CreateTahunPendaftaran extends CreateRecord
 
                     ->visible(function () {
                         $statusJalur = JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', 'Zonasi')->exists();
+
                         return $statusJalur;
                     })
                     ->description('Tanggal pendaftaran untuk jalur Zonasi.')
@@ -333,6 +340,7 @@ class CreateTahunPendaftaran extends CreateRecord
 
                     ->visible(function () {
                         $statusJalur = JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', 'Zonasi')->exists();
+
                         return $statusJalur;
                     })
                     ->description('Tanggal pengumuman untuk jalur Zonasi.')
@@ -361,6 +369,7 @@ class CreateTahunPendaftaran extends CreateRecord
 
                     ->visible(function () {
                         $statusJalur = JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', 'Mutasi')->exists();
+
                         return $statusJalur;
                     })
                     ->description('Tanggal pendaftaran untuk jalur Mutasi.')
@@ -389,6 +398,7 @@ class CreateTahunPendaftaran extends CreateRecord
 
                     ->visible(function () {
                         $statusJalur = JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', 'Mutasi')->exists();
+
                         return $statusJalur;
                     })
                     ->description('Tanggal pengumuman untuk jalur Mutasi.')
@@ -414,7 +424,7 @@ class CreateTahunPendaftaran extends CreateRecord
                         '2xl' => 2,
                     ]),
                 Section::make('Tes Akademik')
-                    ->visible(fn($get) => $get('tanggal_penerbitan_kartu_tes_mulai'))
+                    ->visible(fn ($get) => $get('tanggal_penerbitan_kartu_tes_mulai'))
 
                     ->description('Tanggal tes akademik.')
                     ->schema([
@@ -440,7 +450,7 @@ class CreateTahunPendaftaran extends CreateRecord
                     ]),
                 Section::make('Tes Praktik')
 
-                    ->visible(fn($get) => $get('tanggal_penerbitan_kartu_tes_mulai'))
+                    ->visible(fn ($get) => $get('tanggal_penerbitan_kartu_tes_mulai'))
                     ->description('Tanggal tes praktik.')
                     ->schema([
                         DateTimePicker::make('tanggal_tes_praktik_mulai')

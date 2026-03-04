@@ -40,7 +40,7 @@ class ListCalonSiswas extends ListRecords
                 ->outlined()
                 ->color('primary')
                 ->url($urlCreate)
-                ->hidden(Auth::user()->roles->first()->name !== 'peserta' || $calonSiswa !== null),
+                ->hidden(Auth::user()->roles->first()->name !== 'calon_siswa' || $calonSiswa !== null),
 
             // Lihat Formulir
             Action::make('lihat_formulir_pendaftaran')
@@ -50,7 +50,7 @@ class ListCalonSiswas extends ListRecords
                 ->url($urlView)
                 ->color(Color::Zinc)
                 ->hidden(
-                    Auth::user()->roles->first()->name !== 'peserta' || $calonSiswa === null || $calonSiswa->status_pendaftaran === 'Diproses' || $calonSiswa->status_pendaftaran === 'Berkas Tidak Lengkap'
+                    Auth::user()->roles->first()->name !== 'calon_siswa' || $calonSiswa === null || $calonSiswa->status_pendaftaran === 'Diproses' || $calonSiswa->status_pendaftaran === 'Berkas Tidak Lengkap'
                 ),
 
             // Edit Formulir
@@ -61,7 +61,7 @@ class ListCalonSiswas extends ListRecords
                 ->color('success')
                 ->outlined()
                 ->hidden(
-                    Auth::user()->roles->first()->name !== 'peserta' || $calonSiswa === null || $calonSiswa->status_pendaftaran === 'Diterima' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Unggulan' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Reguler' || $calonSiswa->status_pendaftaran === 'Diverifikasi' || $calonSiswa->status_pendaftaran === 'Ditolak'
+                    Auth::user()->roles->first()->name !== 'calon_siswa' || $calonSiswa === null || $calonSiswa->status_pendaftaran === 'Diterima' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Unggulan' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Reguler' || $calonSiswa->status_pendaftaran === 'Diverifikasi' || $calonSiswa->status_pendaftaran === 'Ditolak'
                 )
                 ->successRedirectUrl($urlView),
 
@@ -73,7 +73,7 @@ class ListCalonSiswas extends ListRecords
                 ->color('success')
                 ->exporter(CalonSiswaExporter::class)
                 ->chunkSize(250)
-                ->visible(fn (): string => CalonSiswa::count() > 0 && Auth::user()->roles->first()->name !== 'peserta'),
+                ->visible(fn (): string => CalonSiswa::count() > 0 && Auth::user()->roles->first()->name !== 'calon_siswa'),
 
             // Import
             ImportAction::make('import')
@@ -89,7 +89,7 @@ class ListCalonSiswas extends ListRecords
                         ->first();
 
                     // Pastikan hanya menampilkan jika tahun pendaftaran aktif ditemukan
-                    return $tahunPendaftaran && CalonSiswa::count() > 0 && optional(Auth::user()->roles->first())->name === 'administrator';
+                    return $tahunPendaftaran && CalonSiswa::count() > 0 && optional(Auth::user()->roles->first())->name === 'super_admin';
                 }),
         ];
     }

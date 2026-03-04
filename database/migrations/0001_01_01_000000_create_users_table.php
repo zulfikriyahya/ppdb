@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('name', 50)->index();
             $table->string('username', 13)->unique()->index();
+            $table->string('telepon', 20)->nullable();
             $table->enum('status', ['Aktif', 'Nonaktif'])->default('Aktif');
             $table->string('email', 50)->unique();
             $table->timestamp('email_verified_at')->nullable();

@@ -20,6 +20,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     protected $fillable = [
         'name',
         'username',
+        'telepon',
         'status',
         'email',
         'email_verified_at',
@@ -61,11 +62,12 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
             : null;
     }
 
-    protected static function booted()
+    protected static function booted(): void
     {
         static::created(function ($user) {
-            $defaultRole = 'peserta';
-            $user->assignRole($defaultRole);
+            if (! $user->hasAnyRole(Role::all())) {
+                $user->assignRole('calon_siswa');
+            }
         });
     }
 }

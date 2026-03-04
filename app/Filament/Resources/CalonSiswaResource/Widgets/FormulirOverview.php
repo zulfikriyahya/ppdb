@@ -19,7 +19,7 @@ class FormulirOverview extends BaseWidget
 
     protected function getStats(): array
     {
-        if (Auth::user()->roles->first()->name !== 'peserta') {
+        if (Auth::user()->roles->first()->name !== 'calon_siswa') {
             return [
                 Stat::make('', CalonSiswa::count().' Peserta')
                     ->description('Total Pendaftar')
