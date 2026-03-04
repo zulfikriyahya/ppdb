@@ -364,7 +364,6 @@ class Bendahara extends Model
 
 namespace App\Models;
 
-use App\Models\FormulirPrestasi;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -812,7 +811,7 @@ class FormulirPrestasi extends Model
     ];
 
     protected $casts = [
-        'prestasi_id'    => 'integer',
+        'prestasi_id' => 'integer',
         'tahun_prestasi' => 'integer',
     ];
 
@@ -1796,7 +1795,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     {
         return [
             'email_verified_at' => 'datetime',
-            'password'          => 'hashed',
+            'password' => 'hashed',
         ];
     }
 
@@ -1831,13 +1830,13 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     {
         // Prioritas 1: avatar yang di-upload langsung di profil user
         if ($this->avatar) {
-            return asset('storage/' . $this->avatar);
+            return asset('storage/'.$this->avatar);
         }
 
         // Prioritas 2: foto formal dari formulir pendaftaran (khusus calon_siswa)
         $foto = $this->calonSiswa?->berkas_foto;
         if ($foto) {
-            return asset('storage/' . $foto);
+            return asset('storage/'.$foto);
         }
 
         return null;
@@ -4516,28 +4515,28 @@ class WhatsAppService
             $response = Http::withHeaders([
                 'X-Api-Key' => config('services.whatsapp.api_key'),
             ])->post(config('services.whatsapp.endpoint'), [
-                'number'  => $normalized,
+                'number' => $normalized,
                 'message' => $message,
             ]);
 
             Log::info('WhatsApp send', [
-                'phone'    => $normalized,
+                'phone' => $normalized,
                 'endpoint' => config('services.whatsapp.endpoint'),
-                'status'   => $response->status(),
-                'body'     => $response->body(),
+                'status' => $response->status(),
+                'body' => $response->body(),
             ]);
 
             if (! $response->successful()) {
                 Log::warning('WhatsApp send failed', [
-                    'phone'  => $normalized,
+                    'phone' => $normalized,
                     'status' => $response->status(),
-                    'body'   => $response->body(),
+                    'body' => $response->body(),
                 ]);
             }
 
             return $response->successful();
         } catch (\Throwable $e) {
-            Log::error('WhatsApp service error: ' . $e->getMessage());
+            Log::error('WhatsApp service error: '.$e->getMessage());
 
             return false;
         }
@@ -4551,11 +4550,11 @@ class WhatsAppService
         $phone = preg_replace('/\D/', '', $phone);
 
         if (str_starts_with($phone, '0')) {
-            $phone = '62' . substr($phone, 1);
+            $phone = '62'.substr($phone, 1);
         }
 
         if (! str_starts_with($phone, '62')) {
-            $phone = '62' . $phone;
+            $phone = '62'.$phone;
         }
 
         return $phone;
@@ -11539,7 +11538,9 @@ class EkstrakurikulerResource extends Resource
 
 ```php
 <?php
+
 // CreateFormulirPrestasi.php
+
 namespace App\Filament\Resources\FormulirPrestasiResource\Pages;
 
 use App\Filament\Resources\FormulirPrestasiResource;
@@ -11575,7 +11576,9 @@ class CreateFormulirPrestasi extends CreateRecord
 
 ```php
 <?php
+
 // EditFormulirPrestasi.php
+
 namespace App\Filament\Resources\FormulirPrestasiResource\Pages;
 
 use App\Filament\Resources\FormulirPrestasiResource;
@@ -11609,7 +11612,9 @@ class EditFormulirPrestasi extends EditRecord
 
 ```php
 <?php
+
 // ListFormulirPrestasis.php
+
 namespace App\Filament\Resources\FormulirPrestasiResource\Pages;
 
 use App\Filament\Resources\FormulirPrestasiResource;
@@ -11637,7 +11642,9 @@ class ListFormulirPrestasis extends ListRecords
 
 ```php
 <?php
+
 // ViewFormulirPrestasi.php
+
 namespace App\Filament\Resources\FormulirPrestasiResource\Pages;
 
 use App\Filament\Resources\FormulirPrestasiResource;
@@ -11749,8 +11756,8 @@ class FormulirPrestasiResource extends Resource
             Select::make('prestasi_id')
                 ->label('Jenis Prestasi')
                 ->options(
-                    Prestasi::all()->mapWithKeys(fn($p) => [
-                        $p->id => "{$p->jenis} — {$p->nama}" . ($p->tingkat ? " ({$p->tingkat})" : ''),
+                    Prestasi::all()->mapWithKeys(fn ($p) => [
+                        $p->id => "{$p->jenis} — {$p->nama}".($p->tingkat ? " ({$p->tingkat})" : ''),
                     ])
                 )
                 ->searchable()
@@ -11818,11 +11825,11 @@ class FormulirPrestasiResource extends Resource
                 TextColumn::make('prestasi.tingkat')
                     ->label('Tingkat')
                     ->badge()
-                    ->color(fn($state) => match ($state) {
-                        'Nasional'       => 'danger',
-                        'Provinsi'       => 'warning',
+                    ->color(fn ($state) => match ($state) {
+                        'Nasional' => 'danger',
+                        'Provinsi' => 'warning',
                         'Kabupaten/Kota' => 'info',
-                        default          => 'gray',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('tahun_prestasi')
@@ -11836,9 +11843,9 @@ class FormulirPrestasiResource extends Resource
 
                 TextColumn::make('berkas_prestasi')
                     ->label('Berkas')
-                    ->formatStateUsing(fn($state) => $state ? '✅ Ada' : '❌ Belum upload')
+                    ->formatStateUsing(fn ($state) => $state ? '✅ Ada' : '❌ Belum upload')
                     ->badge()
-                    ->color(fn($state) => $state ? 'success' : 'danger'),
+                    ->color(fn ($state) => $state ? 'success' : 'danger'),
 
                 TextColumn::make('updated_at')
                     ->label('Diperbarui')
@@ -11874,10 +11881,10 @@ class FormulirPrestasiResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListFormulirPrestasis::route('/'),
+            'index' => Pages\ListFormulirPrestasis::route('/'),
             'create' => Pages\CreateFormulirPrestasi::route('/create'),
-            'view'   => Pages\ViewFormulirPrestasi::route('/{record}'),
-            'edit'   => Pages\EditFormulirPrestasi::route('/{record}/edit'),
+            'view' => Pages\ViewFormulirPrestasi::route('/{record}'),
+            'edit' => Pages\EditFormulirPrestasi::route('/{record}/edit'),
         ];
     }
 }
@@ -21323,13 +21330,13 @@ class RegisterCustom extends Register
                     return false;
                 }
 
-                $now   = Carbon::now();
+                $now = Carbon::now();
                 $start = Carbon::parse($tahun->tanggal_ppdb_mulai);
-                $end   = Carbon::parse($tahun->tanggal_ppdb_selesai);
+                $end = Carbon::parse($tahun->tanggal_ppdb_selesai);
 
                 return $now->between($start, $end);
             } catch (\Throwable $e) {
-                Log::error('RegisterCustom::isRegistrationOpen error: ' . $e->getMessage());
+                Log::error('RegisterCustom::isRegistrationOpen error: '.$e->getMessage());
 
                 return false;
             }
@@ -21380,8 +21387,8 @@ class RegisterCustom extends Register
             ->validationMessages([
                 'max_digits' => 'NISN: Masukkan maksimal 10 Angka.',
                 'min_digits' => 'NISN: Masukkan minimal 10 Angka.',
-                'unique'     => 'NISN: Nomor ini sudah pernah diisi.',
-                'required'   => 'Form ini wajib diisi.',
+                'unique' => 'NISN: Nomor ini sudah pernah diisi.',
+                'required' => 'Form ini wajib diisi.',
             ])
             ->unique($this->getUserModel());
     }
@@ -21398,7 +21405,7 @@ class RegisterCustom extends Register
             ->helperText('Nomor ini akan digunakan untuk mengirim kode OTP verifikasi.')
             ->validationMessages([
                 'required' => 'Nomor WhatsApp wajib diisi.',
-                'max'      => 'Nomor WhatsApp maksimal 15 karakter.',
+                'max' => 'Nomor WhatsApp maksimal 15 karakter.',
             ]);
     }
 
@@ -21411,8 +21418,8 @@ class RegisterCustom extends Register
             ->suffixIcon('heroicon-o-envelope')
             ->maxLength(50)
             ->validationMessages([
-                'max'      => 'Email: Masukkan maksimal 50 Karakter.',
-                'unique'   => 'Email: Email ini sudah pernah diisi.',
+                'max' => 'Email: Masukkan maksimal 50 Karakter.',
+                'unique' => 'Email: Email ini sudah pernah diisi.',
                 'required' => 'Form ini wajib diisi.',
             ])
             ->unique($this->getUserModel());
@@ -21426,11 +21433,11 @@ class RegisterCustom extends Register
             ->revealable(filament()->arePasswordsRevealable())
             ->required()
             ->rule(Password::default())
-            ->dehydrateStateUsing(fn($state) => Hash::make($state))
+            ->dehydrateStateUsing(fn ($state) => Hash::make($state))
             ->same('passwordConfirmation')
             ->validationMessages([
-                'same'     => 'Password: Password tidak sesuai dengan isian password konfirmasi.',
-                'min'      => 'Password: Masukkan minimal 8 karakter alfanumerik.',
+                'same' => 'Password: Password tidak sesuai dengan isian password konfirmasi.',
+                'min' => 'Password: Masukkan minimal 8 karakter alfanumerik.',
                 'required' => 'Form ini wajib diisi.',
             ])
             ->validationAttribute(__('filament-panels::pages/auth/register.form.password.validation_attribute'));
@@ -21462,9 +21469,9 @@ class RegisterCustom extends Register
         Redis::setex("otp:{$user->id}", $ttl, $otp);
 
         $message = "Halo {$user->name},\n\n"
-            . "Kode OTP verifikasi akun PPDB MTsN 1 Pandeglang Anda:\n\n"
-            . "*{$otp}*\n\n"
-            . 'Kode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.';
+            ."Kode OTP verifikasi akun PPDB MTsN 1 Pandeglang Anda:\n\n"
+            ."*{$otp}*\n\n"
+            .'Kode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.';
 
         app(WhatsAppService::class)->send($user->telepon, $message);
 
@@ -22156,14 +22163,14 @@ class CalonSiswaImporter extends Importer
     public static function getCompletedNotificationBody(Import $import): string
     {
         $body = 'Import calon siswa selesai. '
-            . number_format($import->successful_rows) . ' '
-            . str('baris')->plural($import->successful_rows)
-            . ' berhasil diimport.';
+            .number_format($import->successful_rows).' '
+            .str('baris')->plural($import->successful_rows)
+            .' berhasil diimport.';
 
         if ($failedRowsCount = $import->getFailedRowsCount()) {
-            $body .= ' ' . number_format($failedRowsCount) . ' '
-                . str('baris')->plural($failedRowsCount)
-                . ' gagal diimport.';
+            $body .= ' '.number_format($failedRowsCount).' '
+                .str('baris')->plural($failedRowsCount)
+                .' gagal diimport.';
         }
 
         return $body;
@@ -22243,9 +22250,9 @@ class AdminPanelProvider extends PanelProvider
             ->userMenuItems([
                 MenuItem::make()
                     ->label('Manajemen Pengguna')
-                    ->url(fn(): string => UserResource::getUrl())
+                    ->url(fn (): string => UserResource::getUrl())
                     ->icon('heroicon-o-identification')
-                    ->visible(fn() => Auth::user()?->roles?->where('name', 'super_admin')->first() !== null),
+                    ->visible(fn () => Auth::user()?->roles?->where('name', 'super_admin')->first() !== null),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -22278,18 +22285,18 @@ class AdminPanelProvider extends PanelProvider
                 FilamentShieldPlugin::make()
                     ->gridColumns([
                         'default' => 1,
-                        'sm'      => 2,
-                        'lg'      => 3,
+                        'sm' => 2,
+                        'lg' => 3,
                     ])
                     ->sectionColumnSpan(1)
                     ->checkboxListColumns([
                         'default' => 1,
-                        'sm'      => 2,
-                        'lg'      => 4,
+                        'sm' => 2,
+                        'lg' => 4,
                     ])
                     ->resourceCheckboxListColumns([
                         'default' => 1,
-                        'sm'      => 2,
+                        'sm' => 2,
                     ]),
 
                 EasyFooterPlugin::make()
@@ -68458,7 +68465,7 @@ return [
         'token' => env('POSTMARK_TOKEN'),
     ],
     'ses' => [
-        'key'    => env('AWS_ACCESS_KEY_ID'),
+        'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
@@ -68468,7 +68475,7 @@ return [
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
-            'channel'              => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
+            'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
 
@@ -68484,7 +68491,7 @@ return [
     */
     'whatsapp' => [
         'endpoint' => env('WHATSAPP_ENDPOINT'),
-        'api_key'  => env('WHATSAPP_API_KEY'),
+        'api_key' => env('WHATSAPP_API_KEY'),
     ],
 ];
 
@@ -68505,9 +68512,9 @@ use Illuminate\Foundation\Configuration\Middleware;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
-        web: __DIR__ . '/../routes/web.php',
-        api: __DIR__ . '/../routes/api.php',
-        commands: __DIR__ . '/../routes/console.php',
+        web: __DIR__.'/../routes/web.php',
+        api: __DIR__.'/../routes/api.php',
+        commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
