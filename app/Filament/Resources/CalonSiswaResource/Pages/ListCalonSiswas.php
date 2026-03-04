@@ -73,7 +73,7 @@ class ListCalonSiswas extends ListRecords
                 ->color('success')
                 ->exporter(CalonSiswaExporter::class)
                 ->chunkSize(250)
-                ->visible(fn(): string => CalonSiswa::count() > 0 && Auth::user()->roles->first()->name !== 'calon_siswa'),
+                ->visible(fn (): string => CalonSiswa::count() > 0 && Auth::user()->roles->first()->name !== 'calon_siswa'),
 
             // Import
             ImportAction::make('import')

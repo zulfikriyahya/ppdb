@@ -118,14 +118,14 @@ class CalonSiswaResource extends Resource
                 TextColumn::make('jalurPendaftaran.nama')
                     ->label('Jalur Pendaftaran')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'Reguler' => 'success',
                         'Prestasi' => 'primary',
                         'Afirmasi' => 'warning',
                         'Zonasi' => 'danger',
                         'Mutasi' => 'info',
                     })
-                    ->icon(fn(string $state): string => match ($state) {
+                    ->icon(fn (string $state): string => match ($state) {
                         'Reguler' => 'heroicon-o-sparkles',
                         'Prestasi' => 'heroicon-o-trophy',
                         'Afirmasi' => 'heroicon-o-gift',
@@ -136,7 +136,7 @@ class CalonSiswaResource extends Resource
                 TextColumn::make('status_pendaftaran')
                     ->label('Status Pendaftaran')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'Diproses' => 'warning',
                         'Diverifikasi' => 'success',
                         'Berkas Tidak Lengkap' => 'warning',
@@ -145,7 +145,7 @@ class CalonSiswaResource extends Resource
                         'Diterima Di Kelas Reguler' => 'success',
                         'Diterima Di Kelas Unggulan' => 'primary',
                     })
-                    ->icon(fn(string $state): string => match ($state) {
+                    ->icon(fn (string $state): string => match ($state) {
                         'Diproses' => 'heroicon-o-arrow-path',
                         'Diverifikasi' => 'heroicon-o-clipboard-document-check',
                         'Berkas Tidak Lengkap' => 'heroicon-o-document-minus',
@@ -407,7 +407,7 @@ class CalonSiswaResource extends Resource
                     ->visible(Auth::user()->roles->first()->name === 'super_admin'),
                 SelectFilter::make('jalur_pendaftaran')
                     ->label('Jalur Pendaftaran')
-                    ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
+                    ->relationship('jalurPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif'))
                     ->visible(optional(Auth::user()->roles->first())->name !== 'calon_siswa'),
                 SelectFilter::make('status_pendaftaran')
                     ->label('Status Pendaftaran')
@@ -437,40 +437,40 @@ class CalonSiswaResource extends Resource
                     Html2MediaAction::make('cetak_formulir')
                         ->label('Formulir')
                         ->icon('heroicon-o-printer')
-                        ->filename(fn($record) => 'Formulir_' . $record->nama . '_' . $record->nisn . '.pdf')
+                        ->filename(fn ($record) => 'Formulir_'.$record->nama.'_'.$record->nisn.'.pdf')
                         ->savePdf()
                         // ->pagebreak('section', ['css', 'legacy'])
                         ->orientation('portrait')
                         ->format('a4', 'mm')
                         ->enableLinks()
                         ->margin([10, 10, 10, 10])
-                        ->content(fn($record) => view('formulir', ['record' => $record])),
+                        ->content(fn ($record) => view('formulir', ['record' => $record])),
 
                     // Kartu Tes
                     Html2MediaAction::make('cetak_kartu_tes')
                         ->label('Kartu Tes')
                         ->icon('heroicon-o-printer')
-                        ->filename(fn($record) => 'Kartu Tes_' . $record->nama . '_' . $record->nisn . '.pdf')
+                        ->filename(fn ($record) => 'Kartu Tes_'.$record->nama.'_'.$record->nisn.'.pdf')
                         ->savePdf()
                         // ->pagebreak('section', ['css', 'legacy'])
                         ->orientation('portrait')
                         ->format('a4', 'mm')
                         ->enableLinks()
                         ->margin([10, 10, 10, 10])
-                        ->content(fn($record) => view('kartu-tes', ['record' => $record])),
+                        ->content(fn ($record) => view('kartu-tes', ['record' => $record])),
 
                     // SKL/Hasil
                     Html2MediaAction::make('cetak_skl')
                         ->label('Hasil')
                         ->icon('heroicon-o-printer')
-                        ->filename(fn($record) => 'Hasil_' . $record->nama . '_' . $record->nisn . '.pdf')
+                        ->filename(fn ($record) => 'Hasil_'.$record->nama.'_'.$record->nisn.'.pdf')
                         ->savePdf()
                         // ->pagebreak('section', ['css', 'legacy'])
                         ->orientation('portrait')
                         ->format('a4', 'mm')
                         ->enableLinks()
                         ->margin([10, 10, 10, 10])
-                        ->content(fn($record) => view('skl', ['record' => $record])),
+                        ->content(fn ($record) => view('skl', ['record' => $record])),
                 ])
                     ->visible(optional(Auth::user()->roles->first())->name !== 'calon_siswa'),
             ], ActionsPosition::BeforeColumns)
@@ -494,7 +494,7 @@ class CalonSiswaResource extends Resource
                         ->form([
                             Select::make('jalur_pendaftaran')
                                 ->label('Jalur Pendaftaran')
-                                ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
+                                ->relationship('jalurPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif'))
                                 ->required(),
                         ])
                         ->action(function (Collection $records, array $data) {

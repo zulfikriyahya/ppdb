@@ -114,48 +114,48 @@ class CalonSiswa extends Model
     ];
 
     protected $casts = [
-        'tanggal_lahir'          => 'date',
-        'penerima_kip'           => 'boolean',  // ← baru
-        'tahun_pendaftaran_id'   => 'integer',
-        'user_id'                => 'integer',
-        'siswa_negara_id'        => 'integer',
-        'siswa_provinsi_id'      => 'integer',
-        'siswa_kabupaten_id'     => 'integer',
-        'siswa_kecamatan_id'     => 'integer',
-        'siswa_kelurahan_id'     => 'integer',
-        'ibu_negara_id'          => 'integer',
-        'ibu_provinsi_id'        => 'integer',
-        'ibu_kabupaten_id'       => 'integer',
-        'ibu_kecamatan_id'       => 'integer',
-        'ibu_kelurahan_id'       => 'integer',
-        'ayah_negara_id'         => 'integer',
-        'ayah_provinsi_id'       => 'integer',
-        'ayah_kabupaten_id'      => 'integer',
-        'ayah_kecamatan_id'      => 'integer',
-        'ayah_kelurahan_id'      => 'integer',
-        'wali_negara_id'         => 'integer',
-        'wali_provinsi_id'       => 'integer',
-        'wali_kabupaten_id'      => 'integer',
-        'wali_kecamatan_id'      => 'integer',
-        'wali_kelurahan_id'      => 'integer',
-        'sekolah_asal_id'        => 'integer',
-        'jalur_pendaftaran_id'   => 'integer',
-        'kelas_id'               => 'integer',
-        'tes_akademik'           => 'datetime',
-        'tes_praktik'            => 'datetime',
-        'ekstrakurikuler_id'     => 'integer',
-        'mata_pelajaran_id'      => 'integer',
-        'prestasi_id'            => 'integer',
+        'tanggal_lahir' => 'date',
+        'penerima_kip' => 'boolean',  // ← baru
+        'tahun_pendaftaran_id' => 'integer',
+        'user_id' => 'integer',
+        'siswa_negara_id' => 'integer',
+        'siswa_provinsi_id' => 'integer',
+        'siswa_kabupaten_id' => 'integer',
+        'siswa_kecamatan_id' => 'integer',
+        'siswa_kelurahan_id' => 'integer',
+        'ibu_negara_id' => 'integer',
+        'ibu_provinsi_id' => 'integer',
+        'ibu_kabupaten_id' => 'integer',
+        'ibu_kecamatan_id' => 'integer',
+        'ibu_kelurahan_id' => 'integer',
+        'ayah_negara_id' => 'integer',
+        'ayah_provinsi_id' => 'integer',
+        'ayah_kabupaten_id' => 'integer',
+        'ayah_kecamatan_id' => 'integer',
+        'ayah_kelurahan_id' => 'integer',
+        'wali_negara_id' => 'integer',
+        'wali_provinsi_id' => 'integer',
+        'wali_kabupaten_id' => 'integer',
+        'wali_kecamatan_id' => 'integer',
+        'wali_kelurahan_id' => 'integer',
+        'sekolah_asal_id' => 'integer',
+        'jalur_pendaftaran_id' => 'integer',
+        'kelas_id' => 'integer',
+        'tes_akademik' => 'datetime',
+        'tes_praktik' => 'datetime',
+        'ekstrakurikuler_id' => 'integer',
+        'mata_pelajaran_id' => 'integer',
+        'prestasi_id' => 'integer',
 
-        'nik'           => 'encrypted',
-        'kk'            => 'encrypted',
-        'ibu_nik'       => 'encrypted',
-        'ayah_nik'      => 'encrypted',
-        'wali_nik'      => 'encrypted',
+        'nik' => 'encrypted',
+        'kk' => 'encrypted',
+        'ibu_nik' => 'encrypted',
+        'ayah_nik' => 'encrypted',
+        'wali_nik' => 'encrypted',
         'siswa_telepon' => 'encrypted',
-        'ibu_telepon'   => 'encrypted',
-        'ayah_telepon'  => 'encrypted',
-        'wali_telepon'  => 'encrypted',
+        'ibu_telepon' => 'encrypted',
+        'ayah_telepon' => 'encrypted',
+        'wali_telepon' => 'encrypted',
     ];
 
     // -----------------------------------------------------------------------
@@ -167,7 +167,7 @@ class CalonSiswa extends Model
         // Scope 1: Isolasi per tahun pendaftaran aktif.
         static::addGlobalScope('tahun_aktif', function (Builder $builder) {
             // Cache di request lifecycle — hindari N+1 query per model load
-            $tahun = once(fn() => TahunPendaftaran::where('status', 'Aktif')->first());
+            $tahun = once(fn () => TahunPendaftaran::where('status', 'Aktif')->first());
             if ($tahun) {
                 $builder->where('tahun_pendaftaran_id', $tahun->id);
             }
@@ -197,18 +197,18 @@ class CalonSiswa extends Model
     public static function generateNomorPendaftaran(): string
     {
         $tahun = TahunPendaftaran::where('status', 'Aktif')->first();
-        $prefix = 'PPDB-' . ($tahun ? substr($tahun->nama, 0, 4) : date('Y'));
+        $prefix = 'PPDB-'.($tahun ? substr($tahun->nama, 0, 4) : date('Y'));
 
         // Ambil nomor urut terakhir untuk tahun ini, bypass global scope
         $last = static::withoutGlobalScopes()
-            ->where('nomor_pendaftaran', 'like', $prefix . '-%')
+            ->where('nomor_pendaftaran', 'like', $prefix.'-%')
             ->orderByDesc('nomor_pendaftaran')
             ->lockForUpdate()
             ->value('nomor_pendaftaran');
 
         $seq = $last ? ((int) substr($last, -6)) + 1 : 1;
 
-        return $prefix . '-' . str_pad($seq, 6, '0', STR_PAD_LEFT);
+        return $prefix.'-'.str_pad($seq, 6, '0', STR_PAD_LEFT);
     }
 
     // -----------------------------------------------------------------------
@@ -280,18 +280,22 @@ class CalonSiswa extends Model
     {
         return $this->belongsTo(Negara::class, 'siswa_negara_id');
     }
+
     public function siswaProvinsi(): BelongsTo
     {
         return $this->belongsTo(Provinsi::class, 'siswa_provinsi_id');
     }
+
     public function siswaKabupaten(): BelongsTo
     {
         return $this->belongsTo(Kabupaten::class, 'siswa_kabupaten_id');
     }
+
     public function siswaKecamatan(): BelongsTo
     {
         return $this->belongsTo(Kecamatan::class, 'siswa_kecamatan_id');
     }
+
     public function siswaKelurahan(): BelongsTo
     {
         return $this->belongsTo(Kelurahan::class, 'siswa_kelurahan_id');
@@ -302,18 +306,22 @@ class CalonSiswa extends Model
     {
         return $this->belongsTo(Negara::class, 'ibu_negara_id');
     }
+
     public function ibuProvinsi(): BelongsTo
     {
         return $this->belongsTo(Provinsi::class, 'ibu_provinsi_id');
     }
+
     public function ibuKabupaten(): BelongsTo
     {
         return $this->belongsTo(Kabupaten::class, 'ibu_kabupaten_id');
     }
+
     public function ibuKecamatan(): BelongsTo
     {
         return $this->belongsTo(Kecamatan::class, 'ibu_kecamatan_id');
     }
+
     public function ibuKelurahan(): BelongsTo
     {
         return $this->belongsTo(Kelurahan::class, 'ibu_kelurahan_id');
@@ -324,18 +332,22 @@ class CalonSiswa extends Model
     {
         return $this->belongsTo(Negara::class, 'ayah_negara_id');
     }
+
     public function ayahProvinsi(): BelongsTo
     {
         return $this->belongsTo(Provinsi::class, 'ayah_provinsi_id');
     }
+
     public function ayahKabupaten(): BelongsTo
     {
         return $this->belongsTo(Kabupaten::class, 'ayah_kabupaten_id');
     }
+
     public function ayahKecamatan(): BelongsTo
     {
         return $this->belongsTo(Kecamatan::class, 'ayah_kecamatan_id');
     }
+
     public function ayahKelurahan(): BelongsTo
     {
         return $this->belongsTo(Kelurahan::class, 'ayah_kelurahan_id');
@@ -346,18 +358,22 @@ class CalonSiswa extends Model
     {
         return $this->belongsTo(Negara::class, 'wali_negara_id');
     }
+
     public function waliProvinsi(): BelongsTo
     {
         return $this->belongsTo(Provinsi::class, 'wali_provinsi_id');
     }
+
     public function waliKabupaten(): BelongsTo
     {
         return $this->belongsTo(Kabupaten::class, 'wali_kabupaten_id');
     }
+
     public function waliKecamatan(): BelongsTo
     {
         return $this->belongsTo(Kecamatan::class, 'wali_kecamatan_id');
     }
+
     public function waliKelurahan(): BelongsTo
     {
         return $this->belongsTo(Kelurahan::class, 'wali_kelurahan_id');

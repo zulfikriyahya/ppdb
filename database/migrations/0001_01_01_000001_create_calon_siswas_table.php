@@ -126,7 +126,6 @@ return new class extends Migration
                 'Ditolak',
             ])->default('Diproses');
 
-
             $table->foreignId('kelas_id')->nullable()->constrained('kelas')->cascadeOnUpdate();
             $table->string('tes_sesi')->nullable();
             $table->string('tes_ruang')->nullable();
