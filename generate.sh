@@ -2,7 +2,7 @@
 # generate.sh - Generator Blueprint Otomatis
 # Hanya menghasilkan file yang benar-benar dibutuhkan untuk membangun ulang project.
 
-set -euo pipefail
+set -uo pipefail
 
 OUT="draft.md"
 ROOT="."
@@ -19,6 +19,7 @@ INCLUDE_PATHS=(
 
   # --- Filament (Admin Panel) ---
   "app/Filament/Resources"
+  "app/Filament/Widgets"
   "app/Filament/Pages"
   "app/Filament/Exports"
   "app/Filament/Imports"
@@ -142,6 +143,7 @@ declare -A SECTION_LABELS=(
   ["app/Services"]="## ⚙️ Services"
   ["app/Http/Controllers"]="## 🎮 Controllers"
   ["app/Filament/Resources"]="## 🧩 Filament Resources"
+  ["app/Filament/Widgets"]="## 📊 Filament Widgets (Global)"
   ["app/Filament/Pages"]="## 📄 Filament Pages"
   ["app/Filament/Exports"]="## 📤 Filament Exports"
   ["app/Filament/Imports"]="## 📥 Filament Imports"
@@ -163,6 +165,7 @@ SECTION_ORDER=(
   "app/Services"
   "app/Http/Controllers"
   "app/Filament/Resources"
+  "app/Filament/Widgets"
   "app/Filament/Pages"
   "app/Filament/Exports"
   "app/Filament/Imports"

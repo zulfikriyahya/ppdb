@@ -6,9 +6,8 @@ use App\Filament\Pages\Auth\ResetPasswordOtp;
 use App\Filament\Pages\Auth\VerifikasiOtp;
 use Illuminate\Support\Facades\Route;
 
-// Semua route auth custom — accessible tanpa login,
-// diproteksi via session check di masing-masing Page::mount()
 Route::middleware('web')->group(function () {
+    // OTP routes — diproteksi via session check di masing-masing Page::mount()
     Route::get('/verifikasi-otp', VerifikasiOtp::class)
         ->name('otp.verifikasi');
 

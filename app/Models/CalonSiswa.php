@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CalonSiswa extends Model
@@ -377,5 +378,11 @@ class CalonSiswa extends Model
     public function waliKelurahan(): BelongsTo
     {
         return $this->belongsTo(Kelurahan::class, 'wali_kelurahan_id');
+    }
+
+    // Prestasi
+    public function formulirPrestasis(): HasMany
+    {
+        return $this->hasMany(FormulirPrestasi::class, 'calon_siswa_id');
     }
 }

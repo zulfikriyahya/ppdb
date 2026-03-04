@@ -18,6 +18,17 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | WhatsApp Gateway — zedlabs.id
+    |--------------------------------------------------------------------------
+    | Header : X-Api-Key
+    | Body   : number (628xx...), message
+    |
+    | Endpoint : WHATSAPP_ENDPOINT=https://wapi.zedlabs.id/api/messages/send
+    | API Key  : WHATSAPP_API_KEY=<your_key>
+    */
     'whatsapp' => [
         'endpoint' => env('WHATSAPP_ENDPOINT'),
         'api_key' => env('WHATSAPP_API_KEY'),

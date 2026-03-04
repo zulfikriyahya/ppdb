@@ -11,7 +11,6 @@ use App\Filament\Resources\InformasiResource\Widgets\InformasiPublished;
 use App\Filament\Resources\UserResource;
 use App\Filament\Resources\UserResource\Widgets\UserRegisters;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
-use Carbon\Carbon;
 use Devonab\FilamentEasyFooter\EasyFooterPlugin;
 use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
 use Filament\Enums\ThemeMode;
@@ -31,18 +30,12 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
-        // Variabel default untuk halaman registrasi
-        $registerClass = $this->handleRegistrationRedirect();
-
         return $panel
             ->id('admin')
             ->path('')
@@ -50,7 +43,7 @@ class AdminPanelProvider extends PanelProvider
             ->spa()
             ->topNavigation()
             ->login(LoginCustom::class)
-            ->registration($registerClass)
+            ->registration(RegisterCustom::class)
             ->passwordReset(ForgotPasswordCustom::class)
             ->emailVerification()
             ->profile(EditProfileCustom::class)
@@ -71,7 +64,6 @@ class AdminPanelProvider extends PanelProvider
                     ->label('Manajemen Pengguna')
                     ->url(fn (): string => UserResource::getUrl())
                     ->icon('heroicon-o-identification')
-                    // ->visible(fn() => Auth::user()?->roles?->first()?->name === 'super_admin'),
                     ->visible(fn () => Auth::user()?->roles?->where('name', 'super_admin')->first() !== null),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
@@ -81,7 +73,6 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                // AccountWidget::class,
                 FormulirOverview::class,
                 InformasiPublished::class,
                 UserRegisters::class,
@@ -100,7 +91,6 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-
             ->theme(asset('css/filament/admin/theme.css'))
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->plugins([
@@ -137,47 +127,5 @@ class AdminPanelProvider extends PanelProvider
                     ->emptyPanelBackgroundColor(Color::hex('#010101'))
                     ->showEmptyPanelOnMobile(false),
             ]);
-    }
-
-    /**
-     * Fungsi untuk menangani redirect berdasarkan tanggal pendaftaran
-     * Aktifkan setelah proses migrasi database
-     */
-    protected function handleRegistrationRedirect(): string
-    {
-        try {
-            // Cek apakah koneksi database tersedia
-            if (! Schema::hasTable('tahun_pendaftarans')) {
-                // Jika tabel tidak ada, arahkan langsung ke LoginCustom
-                return LoginCustom::class;
-            }
-
-            $tahunPendaftaran = DB::table('tahun_pendaftarans')
-                ->where('status', 'Aktif')
-                ->first();
-
-            if (! $tahunPendaftaran) {
-                // Jika data tidak ditemukan, arahkan ke LoginCustom
-                return LoginCustom::class;
-            }
-
-            // Parsing tanggal pendaftaran
-            $startDate = Carbon::createFromFormat('Y-m-d H:i:s', $tahunPendaftaran->tanggal_ppdb_mulai);
-            $endDate = Carbon::createFromFormat('Y-m-d H:i:s', $tahunPendaftaran->tanggal_ppdb_selesai);
-            $currentDate = Carbon::now();
-
-            // Cek apakah tanggal sekarang berada di dalam rentang pendaftaran
-            if ($currentDate->lt($startDate) || $currentDate->gt($endDate)) {
-                // Jika di luar rentang, arahkan ke LoginCustom
-                return LoginCustom::class;
-            }
-        } catch (\Exception $e) {
-            // Tangani error (misalnya, masalah parsing tanggal atau database tidak tersedia)
-            Log::error('Error memproses tanggal atau database: '.$e->getMessage());
-
-            return LoginCustom::class;
-        }
-
-        return RegisterCustom::class;
     }
 }

@@ -18,63 +18,79 @@ class CalonSiswaImporter extends Importer
                 ->label('NISN')
                 ->requiredMapping()
                 ->rules(['required', 'max:10']),
+
             ImportColumn::make('nama')
                 ->label('Nama Lengkap')
                 ->requiredMapping()
                 ->rules(['required', 'max:50']),
+
             ImportColumn::make('tes_sesi')
                 ->label('Sesi Tes')
-                ->rules(['max:50']),
+                ->rules(['nullable', 'max:50']),
+
             ImportColumn::make('tes_ruang')
                 ->label('Ruang Tes')
-                ->rules(['max:50']),
+                ->rules(['nullable', 'max:50']),
+
             ImportColumn::make('tes_akademik')
                 ->label('Tanggal Tes Akademik')
-                ->rules(['datetime']),
+                ->rules(['nullable', 'date']),
+
             ImportColumn::make('tes_praktik')
                 ->label('Tanggal Tes Praktik')
-                ->rules(['datetime']),
+                ->rules(['nullable', 'date']),
+
             ImportColumn::make('bobot_nilai_akademik')
                 ->label('Bobot Nilai Akademik')
                 ->numeric()
-                ->rules(['integer']),
+                ->rules(['nullable', 'integer']),
+
             ImportColumn::make('bobot_nilai_praktik')
                 ->label('Bobot Nilai Praktik')
                 ->numeric()
-                ->rules(['integer']),
+                ->rules(['nullable', 'integer']),
+
             ImportColumn::make('nilai_akademik')
                 ->label('Nilai Akademik')
                 ->numeric()
-                ->rules(['integer']),
+                ->rules(['nullable', 'integer']),
+
             ImportColumn::make('nilai_praktik')
                 ->label('Nilai Praktik')
                 ->numeric()
-                ->rules(['integer']),
+                ->rules(['nullable', 'integer']),
+
             ImportColumn::make('status_pendaftaran')
-                ->label('Status Pendaftaran'),
-            ImportColumn::make('kelas.nama')
+                ->label('Status Pendaftaran')
+                ->rules(['nullable', 'in:Diproses,Berkas Tidak Lengkap,Diverifikasi,Ditolak,Diterima,Diterima Di Kelas Reguler,Diterima Di Kelas Unggulan']),
+
+            ImportColumn::make('kelas')
                 ->label('Kelas')
-                ->relationship('kelas')
-                ->rules(['exists:kelas,nama']),
+                ->relationship('kelas', 'nama')
+                ->rules(['nullable', 'exists:kelas,nama']),
         ];
     }
 
     public function resolveRecord(): ?CalonSiswa
     {
-        return CalonSiswa::firstOrNew([
-            // Update existing records, matching them by `$this->data['column_name']`
-            'nisn' => $this->data['nisn'],
-        ]);
-
-        return new CalonSiswa;
+        // Update existing record jika NISN sudah ada,
+        // buat baru jika belum — bypass global scope agar
+        // bisa update data lintas tahun pendaftaran
+        return CalonSiswa::withoutGlobalScopes()
+            ->firstOrNew(['nisn' => $this->data['nisn']]);
     }
 
     public static function getCompletedNotificationBody(Import $import): string
     {
-        $body = 'Your calon siswa import has completed and '.number_format($import->successful_rows).' '.str('row')->plural($import->successful_rows).' imported.';
+        $body = 'Import calon siswa selesai. '
+            .number_format($import->successful_rows).' '
+            .str('baris')->plural($import->successful_rows)
+            .' berhasil diimport.';
 
         if ($failedRowsCount = $import->getFailedRowsCount()) {
-            $body .= ' '.number_format($failedRowsCount).' '.str('row')->plural($failedRowsCount).' failed to import.';
+            $body .= ' '.number_format($failedRowsCount).' '
+                .str('baris')->plural($failedRowsCount)
+                .' gagal diimport.';
         }
 
         return $body;

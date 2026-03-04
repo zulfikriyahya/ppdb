@@ -3,18 +3,79 @@
 namespace App\Filament\Pages\Auth;
 
 use App\Services\WhatsAppService;
+use Carbon\Carbon;
 use DiogoGPinto\AuthUIEnhancer\Pages\Auth\Concerns\HasCustomLayout;
 use Filament\Forms\Components\Component;
 use Filament\Forms\Components\TextInput;
 use Filament\Http\Responses\Auth\Contracts\RegistrationResponse;
+use Filament\Notifications\Notification;
 use Filament\Pages\Auth\Register;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rules\Password;
 
 class RegisterCustom extends Register
 {
     use HasCustomLayout;
+
+    // -----------------------------------------------------------------------
+    // Guard: cek jadwal PPDB setiap kali halaman di-render
+    // Octane-safe karena mount() dipanggil per-request
+    // -----------------------------------------------------------------------
+
+    public function mount(): void
+    {
+        if (! $this->isRegistrationOpen()) {
+            Notification::make()
+                ->title('Pendaftaran Ditutup')
+                ->body('Pendaftaran belum dibuka atau sudah ditutup.')
+                ->warning()
+                ->send();
+
+            $this->redirect(filament()->getLoginUrl());
+
+            return;
+        }
+
+        parent::mount();
+    }
+
+    protected function isRegistrationOpen(): bool
+    {
+        return Cache::remember('ppdb:registration_open', 60, function () {
+            try {
+                if (! Schema::hasTable('tahun_pendaftarans')) {
+                    return false;
+                }
+
+                $tahun = DB::table('tahun_pendaftarans')
+                    ->where('status', 'Aktif')
+                    ->first();
+
+                if (! $tahun) {
+                    return false;
+                }
+
+                $now = Carbon::now();
+                $start = Carbon::parse($tahun->tanggal_ppdb_mulai);
+                $end = Carbon::parse($tahun->tanggal_ppdb_selesai);
+
+                return $now->between($start, $end);
+            } catch (\Throwable $e) {
+                Log::error('RegisterCustom::isRegistrationOpen error: '.$e->getMessage());
+
+                return false;
+            }
+        });
+    }
+
+    // -----------------------------------------------------------------------
+    // Form
+    // -----------------------------------------------------------------------
 
     protected function getForms(): array
     {
@@ -122,10 +183,10 @@ class RegisterCustom extends Register
             ->dehydrated(false);
     }
 
-    /**
-     * Override register() — intercept setelah user dibuat,
-     * kirim OTP, redirect ke halaman verifikasi (bukan dashboard).
-     */
+    // -----------------------------------------------------------------------
+    // Register — kirim OTP setelah user dibuat
+    // -----------------------------------------------------------------------
+
     public function register(): ?RegistrationResponse
     {
         $data = $this->form->getState();
@@ -133,7 +194,7 @@ class RegisterCustom extends Register
         $user = $this->getUserModel()::create($data);
 
         $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-        $ttl = 300; // 5 menit
+        $ttl = 300;
 
         Redis::setex("otp:{$user->id}", $ttl, $otp);
 
