@@ -375,6 +375,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Cache;
 
 class CalonSiswa extends Model
 {
@@ -383,7 +384,7 @@ class CalonSiswa extends Model
     protected $fillable = [
         'user_id',
         'tahun_pendaftaran_id',
-        'nomor_pendaftaran',        // ← baru
+        'nomor_pendaftaran',
         'nama',
         'nik',
         'kk',
@@ -401,10 +402,10 @@ class CalonSiswa extends Model
         'disabilitas',
         'tinggi_badan',
         'berat_badan',
-        'penerima_kip',             // ← baru
+        'penerima_kip',
         'no_kip',
-        'no_kks',                   // ← baru (fix inkonsistensi exporter)
-        'no_pkh',                   // ← baru
+        'no_kks',
+        'no_pkh',
         'siswa_telepon',
         'siswa_alamat',
         'siswa_negara_id',
@@ -471,7 +472,7 @@ class CalonSiswa extends Model
         'nilai_akademik',
         'nilai_praktik',
         'status_pendaftaran',
-        'status_formulir',          // ← baru
+        'status_formulir',
         'kelas_id',
         'tes_sesi',
         'tes_ruang',
@@ -482,7 +483,7 @@ class CalonSiswa extends Model
 
     protected $casts = [
         'tanggal_lahir' => 'date',
-        'penerima_kip' => 'boolean',  // ← baru
+        'penerima_kip' => 'boolean',
         'tahun_pendaftaran_id' => 'integer',
         'user_id' => 'integer',
         'siswa_negara_id' => 'integer',
@@ -513,7 +514,6 @@ class CalonSiswa extends Model
         'ekstrakurikuler_id' => 'integer',
         'mata_pelajaran_id' => 'integer',
         'prestasi_id' => 'integer',
-
         'nik' => 'encrypted',
         'kk' => 'encrypted',
         'ibu_nik' => 'encrypted',
@@ -525,36 +525,24 @@ class CalonSiswa extends Model
         'wali_telepon' => 'encrypted',
     ];
 
-    // -----------------------------------------------------------------------
-    // Global Scopes
-    // -----------------------------------------------------------------------
-
     protected static function booted(): void
     {
-        // ── Scope 1: Isolasi per tahun pendaftaran aktif ─────────────────────
-        // once() harus dipanggil di luar closure agar cache berlaku
-        // di seluruh request lifecycle, bukan per-instance.
+        // Scope 1: Isolasi per tahun pendaftaran aktif menggunakan Cache Forever
         static::addGlobalScope('tahun_aktif', function (Builder $builder) {
-            // Cache::remember lebih aman untuk Octane (worker persist antar request)
-            $tahun = \Illuminate\Support\Facades\Cache::remember(
-                'tahun_pendaftaran_aktif',
-                now()->addSeconds(60),
-                fn() => TahunPendaftaran::where('status', 'Aktif')->first()
-            );
-
+            $tahun = Cache::rememberForever('tahun_pendaftaran_aktif', fn() => TahunPendaftaran::where('status', 'Aktif')->first());
             if ($tahun) {
                 $builder->where('tahun_pendaftaran_id', $tahun->id);
             }
         });
 
-        // ── Scope 2: calon_siswa hanya bisa lihat data milik sendiri ────────
+        // Scope 2: calon_siswa hanya bisa lihat data milik sendiri
         static::addGlobalScope('milik_sendiri', function (Builder $builder) {
             if (auth()->check() && auth()->user()->hasRole('calon_siswa')) {
                 $builder->where('user_id', auth()->id());
             }
         });
 
-        // ── Auto-generate nomor_pendaftaran ──────────────────────────────────
+        // Auto-generate nomor_pendaftaran
         static::creating(function (CalonSiswa $model) {
             if (empty($model->nomor_pendaftaran)) {
                 $model->nomor_pendaftaran = static::generateNomorPendaftaran();
@@ -562,18 +550,11 @@ class CalonSiswa extends Model
         });
     }
 
-    // -----------------------------------------------------------------------
-    // Nomor Pendaftaran Generator
-    // Format: PPDB-{TAHUN}-{6 digit sequence}
-    // Contoh: PPDB-2025-000001
-    // -----------------------------------------------------------------------
-
     public static function generateNomorPendaftaran(): string
     {
-        $tahun = TahunPendaftaran::where('status', 'Aktif')->first();
+        $tahun = Cache::rememberForever('tahun_pendaftaran_aktif', fn() => TahunPendaftaran::where('status', 'Aktif')->first());
         $prefix = 'PPDB-' . ($tahun ? substr($tahun->nama, 0, 4) : date('Y'));
 
-        // Ambil nomor urut terakhir untuk tahun ini, bypass global scope
         $last = static::withoutGlobalScopes()
             ->where('nomor_pendaftaran', 'like', $prefix . '-%')
             ->orderByDesc('nomor_pendaftaran')
@@ -581,7 +562,6 @@ class CalonSiswa extends Model
             ->value('nomor_pendaftaran');
 
         $seq = $last ? ((int) substr($last, -6)) + 1 : 1;
-
         return $prefix . '-' . str_pad($seq, 6, '0', STR_PAD_LEFT);
     }
 
@@ -1676,6 +1656,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 
 class TahunPendaftaran extends Model
 {
@@ -1750,6 +1731,13 @@ class TahunPendaftaran extends Model
         'tanggal_registrasi_berkas_mulai' => 'datetime',
         'tanggal_registrasi_berkas_selesai' => 'datetime',
     ];
+
+    protected static function booted(): void
+    {
+        $flushCache = fn() => Cache::forget('tahun_pendaftaran_aktif');
+        static::saved($flushCache);
+        static::deleted($flushCache);
+    }
 
     public function calonSiswas(): HasMany
     {
@@ -5520,1546 +5508,28 @@ class BendaharaResource extends Resource
 namespace App\Filament\Resources\CalonSiswaResource\Pages;
 
 use App\Filament\Resources\CalonSiswaResource;
-use App\Models\JalurPendaftaran;
-use App\Models\Kabupaten;
-use App\Models\Kecamatan;
-use App\Models\Kelurahan;
-use App\Models\Provinsi;
-use App\Models\Sekolah;
+use App\Filament\Traits\CalonSiswaFormTrait;
 use App\Models\TahunPendaftaran;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Tabs;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Wizard;
-use Filament\Forms\Components\Wizard\Step;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Resources\Pages\CreateRecord\Concerns\HasWizard;
-use Filament\Support\Enums\IconPosition;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\HtmlString;
 
 class CreateCalonSiswa extends CreateRecord
 {
-    protected static string $resource = CalonSiswaResource::class;
+    use HasWizard, CalonSiswaFormTrait;
 
-    use HasWizard;
+    protected static string $resource = CalonSiswaResource::class;
 
     protected function getSteps(): array
     {
-        return [
-            Step::make('Data Calon Siswa')
-                ->schema([
-                    Tabs::make('Biodata')
-                        ->tabs([
-                            Tabs\Tab::make('Biodata')
-                                ->icon('heroicon-m-bell')
-                                ->iconPosition(IconPosition::After)
-                                ->schema([
-                                    // Jalur Pendaftaran
-                                    Select::make('jalur_pendaftaran_id')
-                                        ->label('Jalur Pendaftaran')
-                                        ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif')) // Menampilkan data jalurPendaftaran dengan kondisi statusnya aktif saja
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false)
-                                        ->live()
-                                        ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->nama} | {$record->tahunPendaftaran->nama}"),
-                                    // Nama Lengkap Calon Peserta Didik Baru
-                                    TextInput::make('nama')
-                                        ->label('Nama Lengkap')
-                                        ->required()
-                                        ->disabledOn('create')
-                                        ->dehydrated()
-                                        ->default(fn() => Auth::user()->name)
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                    // NIK Calon Peserta Didik Baru
-                                    TextInput::make('nik')
-                                        ->label('Nomor Induk Kependudukan (NIK)')
-                                        ->required()
-                                        ->unique(ignoreRecord: true)
-                                        ->rule(fn($record) => $record === null ? 'unique:calon_siswas,nik' : 'unique:calon_siswas,nik,' . $record->id)
-                                        ->dehydrateStateUsing(fn($state) => $state ? $state : null)
-                                        ->numeric()
-                                        ->maxLength(16)
-                                        ->minLength(16)
-                                        ->validationMessages([
-                                            'max_digits' => 'NIK: Masukkan maksimal 16 Angka.',
-                                            'min_digits' => 'NIK: Masukkan minimal 16 Angka.',
-                                            'unique' => 'NIK: Nomor ini sudah pernah di isi.',
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                    // KK Calon Peserta Didik Baru
-                                    TextInput::make('kk')
-                                        ->label('Nomor Kartu Keluarga (KK)')
-                                        ->required()
-                                        ->maxLength(16)
-                                        ->numeric()
-                                        ->minLength(16)
-                                        ->validationMessages([
-                                            'max_digits' => 'NIK: Masukkan maksimal 16 Angka.',
-                                            'min_digits' => 'NIK: Masukkan minimal 16 Angka.',
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                    // NISN Calon Peserta Didik Baru
-                                    TextInput::make('nisn')
-                                        ->label('Nomor Induk Siswa Nasional (NISN)')
-                                        ->required()
-                                        ->disabledOn('create')
-                                        ->dehydrated()
-                                        ->default(fn() => Auth::user()->username)
-                                        ->unique(ignoreRecord: true)
-                                        ->rule(fn($record) => $record === null ? 'unique:calon_siswas,nisn' : 'unique:calon_siswas,nisn,' . $record->id)
-                                        ->dehydrateStateUsing(fn($state) => $state ? $state : null)
-                                        ->numeric()
-                                        ->maxLength(10)
-                                        ->minLength(10)
-                                        ->validationMessages([
-                                            'max_digits' => 'NISN: Masukkan maksimal 10 Angka.',
-                                            'min_digits' => 'NISN: Masukkan minimal 10 Angka.',
-                                            'unique' => 'NISN: Nomor ini sudah pernah di isi.',
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                    // Tempat Lahir Calon Peserta Didik Baru
-                                    TextInput::make('tempat_lahir')
-                                        ->label('Tempat Lahir')
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                    // Tanggal Lahir Calon Peserta Didik Baru
-                                    DatePicker::make('tanggal_lahir')
-                                        ->label('Tanggal Lahir')
-                                        ->maxDate(now())
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                    // Tahun Lulus Calon Peserta Didik Baru
-                                    Select::make('tahun_lulus')
-                                        ->label('Tahun Lulus')
-                                        ->options(function () {
-                                            $tahun = range(date('Y'), date('Y') - 2);
-
-                                            return array_combine($tahun, $tahun);
-                                        })
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-                                    // Jenis Kelamin Calon Peserta Didik Baru
-                                    Select::make('jenis_kelamin')
-                                        ->label('Jenis Kelamin')
-                                        ->options([
-                                            'Pria' => 'Laki-laki',
-                                            'Wanita' => 'Perempuan',
-                                        ])
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-                                    // Golongan Darah Calon Peserta Didik Baru
-                                    Select::make('golongan_darah')
-                                        ->label('Golongan Darah')
-                                        ->options([
-                                            'A-' => 'A-',
-                                            'A+' => 'A+',
-                                            'B-' => 'B-',
-                                            'B+' => 'B+',
-                                            'AB-' => 'AB-',
-                                            'AB+' => 'AB+',
-                                            'O-' => 'O-',
-                                            'O+' => 'O+',
-                                        ])
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-                                    // Agama Calon Peserta Didik Baru
-                                    Select::make('agama')
-                                        ->label('Agama')
-                                        ->options([
-                                            'Islam' => 'Islam',
-                                            'Kristen Katholik' => 'Kristen Katholik',
-                                            'Kristen Protestan' => 'Kristen Protestan',
-                                            'Hindu' => 'Hindu',
-                                            'Buddha' => 'Buddha',
-                                            'Konghucu' => 'Konghucu',
-                                        ])
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-                                    // Anak Ke Calon Peserta Didik Baru
-                                    TextInput::make('anak_ke')
-                                        ->label('Anak Ke')
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->numeric(),
-                                    // Jumlah Saudara Calon Peserta Didik Baru
-                                    TextInput::make('jumlah_saudara')
-                                        ->label('Dari (Jumlah Anak)')
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->numeric(),
-                                    // Tinggal Bersama Calon Peserta Didik Baru
-                                    Select::make('tinggal_bersama')
-                                        ->label('Tinggal Bersama')
-                                        ->options([
-                                            'Orang Tua' => 'Orang Tua',
-                                            'Saudara' => 'Saudara',
-                                            'Panti Asuhan' => 'Panti Asuhan',
-                                            'Kost' => 'Kost',
-                                            'Lainnya' => 'Lainnya',
-                                        ])
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-                                    // Jarak Ke Sekolah Calon Peserta Didik Baru
-                                    Select::make('jarak_ke_sekolah')
-                                        ->label('Jarak Ke Sekolah')
-                                        ->options([
-                                            '0 - 1 Km' => '0 - 1 Km',
-                                            '1 - 5 Km' => '1 - 5 Km',
-                                            '5 - 10 Km' => '5 - 10 Km',
-                                            '10 - 15 Km' => '10 - 15 Km',
-                                            '15 - 20 Km' => '15 - 20 Km',
-                                            '20 - 25 Km' => '20 - 25 Km',
-                                            '25 - 30 Km' => '25 - 30 Km',
-                                        ])
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-                                    // Disabilitas Calon Peserta Didik Baru
-                                    Select::make('disabilitas')
-                                        ->label('Disabilitas')
-                                        ->options([
-                                            'Non Disabilitas' => 'Non Disabilitas',
-                                            'Fisik' => 'Fisik',
-                                            'Penglihatan' => 'Penglihatan',
-                                            'Pendengaran' => 'Pendengaran',
-                                            'Kognitif' => 'Kognitif',
-                                            'Mental' => 'Mental',
-                                            'Lainnya' => 'Lainnya',
-                                        ])
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-                                    // Tinggi Badan Calon Peserta Didik Baru
-                                    TextInput::make('tinggi_badan')
-                                        ->label('Tinggi Badan')
-                                        ->postFix('Cm')
-                                        ->numeric(),
-                                    // Berat Badan Calon Peserta Didik Baru
-                                    TextInput::make('berat_badan')
-                                        ->label('Berat Badan')
-                                        ->postFix('Kg')
-                                        ->numeric(),
-                                    // No KIP Calon Peserta Didik Baru
-                                    TextInput::make('no_kip')
-                                        ->label('Nomor Kartu Indonesia Pintar')
-                                        ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Indonesia Pintar (KIP).<sup style="color:red">*</sup></i></small>'))
-                                        ->unique(ignoreRecord: true)
-                                        ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_kip' : 'unique:calon_siswas,no_kip,' . $record->id)
-                                        ->dehydrateStateUsing(fn($state) => $state ? $state : null)
-                                        ->maxLength(6)
-                                        ->minLength(6)
-                                        ->live()
-                                        ->validationMessages([
-                                            'max' => 'KIP: Masukkan maksimal 6 Karakter.',
-                                            'min' => 'KIP: Masukkan minimal 6 Karakter.',
-                                            'unique' => 'KIP: Nomor ini sudah pernah di isi.',
-                                        ]),
-                                    // No KIP Calon Peserta Didik Baru
-                                    TextInput::make('no_kks')
-                                        ->label('Nomor Kartu Keluarga Sejahtera')
-                                        ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Keluarga Sejahtera (KKS).<sup style="color:red">*</sup></i></small>'))
-                                        ->unique(ignoreRecord: true)
-                                        ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_kks' : 'unique:calon_siswas,no_kks,' . $record->id)
-                                        ->dehydrateStateUsing(fn($state) => $state ? $state : null)
-                                        ->maxLength(6)
-                                        ->minLength(6)
-                                        ->live()
-                                        ->validationMessages([
-                                            'max' => 'KKS: Masukkan maksimal 6 Karakter.',
-                                            'min' => 'KKS: Masukkan minimal 6 Karakter.',
-                                            'unique' => 'KKS: Nomor ini sudah pernah di isi.',
-                                        ]),
-                                    // No KIP Calon Peserta Didik Baru
-                                    TextInput::make('no_pkh')
-                                        ->label('Nomor Kartu Program Keluarga Harapan')
-                                        ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Program Keluarga Harapan (PKH).<sup style="color:red">*</sup></i></small>'))
-                                        ->unique(ignoreRecord: true)
-                                        ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_pkh' : 'unique:calon_siswas,no_pkh,' . $record->id)
-                                        ->dehydrateStateUsing(fn($state) => $state ? $state : null)
-                                        ->maxLength(6)
-                                        ->minLength(6)
-                                        ->live()
-                                        ->validationMessages([
-                                            'max' => 'PKH: Masukkan maksimal 6 Karakter.',
-                                            'min' => 'PKH: Masukkan minimal 6 Karakter.',
-                                            'unique' => 'PKH: Nomor ini sudah pernah di isi.',
-                                        ]),
-                                    TextInput::make('siswa_telepon')
-                                        ->label('Nomor Telepon')
-                                        ->numeric()
-                                        ->tel(),
-                                    // Data Sekolah Asal Calon Peserta Didik Baru
-                                    Select::make('sekolah_asal_id')
-                                        ->label('Sekolah Asal')
-                                        ->relationship('sekolahAsal', 'nama')
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false)
-                                        ->searchable()
-                                        ->preload()
-                                        ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->nama} | NPSN: {$record->npsn}")
-                                        ->createOptionForm([
-                                            Wizard::make([
-                                                Step::make('Data Instansi')
-                                                    ->schema([
-                                                        // Section::make('Instansi')
-                                                        //     ->schema([
-                                                        TextInput::make('nama')
-                                                            ->label('Nama Instansi')
-                                                            ->prefixIcon('heroicon-o-building-library')
-                                                            ->required()
-                                                            ->validationMessages([
-                                                                'required' => 'Form ini wajib diisi.',
-                                                            ])
-                                                            ->columnSpanFull(),
-                                                        Select::make('jenjang')
-                                                            ->label('Jenjang')
-                                                            ->native(false)
-                                                            ->required()
-                                                            ->live()
-                                                            ->validationMessages([
-                                                                'required' => 'Form ini wajib diisi.',
-                                                            ])
-                                                            ->options(function () {
-                                                                $sekolah = Sekolah::first(); // Ambil satu instance model Sekolah
-                                                                $jenjang = optional($sekolah)->jenjang; // Menghindari error jika null
-
-                                                                return match ($jenjang) {
-                                                                    'TK' => ['PAUD' => 'PAUD'],
-                                                                    'SD', 'MI' => ['TK' => 'TK'],
-                                                                    'SMP', 'MTS' => ['SD' => 'SD', 'MI' => 'MI'],
-                                                                    'SMA', 'SMK', 'MA' => ['SMP' => 'SMP', 'MTS' => 'MTS'],
-                                                                    default => [
-                                                                        'PAUD' => 'PAUD',
-                                                                        'TK' => 'TK',
-                                                                        'SD' => 'SD',
-                                                                        'MI' => 'MI',
-                                                                        'SMP' => 'SMP',
-                                                                        'MTS' => 'MTS',
-                                                                        'SMA' => 'SMA',
-                                                                        'SMK' => 'SMK',
-                                                                        'MA' => 'MA',
-                                                                    ],
-                                                                };
-                                                            }),
-                                                        TextInput::make('npsn')
-                                                            ->label('NPSN')
-                                                            ->numeric()
-                                                            ->minLength(8)
-                                                            ->maxLength(8)
-                                                            ->required()
-                                                            ->validationMessages([
-                                                                'min_digits' => 'NPSN harus terdiri dari minimal 8 digit.',
-                                                                'max_digits' => 'NPSN tidak boleh lebih dari 8 digit.',
-                                                                'required' => 'Form ini wajib diisi.',
-                                                            ]),
-                                                        TextInput::make('nss')
-                                                            ->visible(fn($get) => in_array($get('jenjang'), ['MI', 'MTS', 'MA']))
-                                                            ->label('NSS/NSM')
-                                                            ->required()
-                                                            ->numeric()
-                                                            ->minLength(12)
-                                                            ->maxLength(12)
-                                                            ->validationMessages([
-                                                                'min_digits' => 'Nomor NSS/NSM harus terdiri dari minimal 12 digit.',
-                                                                'max_digits' => 'Nomor NSS/NSM tidak boleh lebih dari 12 digit.',
-                                                                'required' => 'Form ini wajib diisi.',
-                                                            ]),
-                                                        Select::make('akreditasi')
-                                                            ->label('Akreditasi')
-                                                            ->native(false)
-                                                            ->required()
-                                                            ->validationMessages([
-                                                                'required' => 'Form ini wajib diisi.',
-                                                            ])
-                                                            ->options(['A' => 'A (Sangat Baik)', 'B' => 'B (Baik)', 'C' => 'C (Cukup)', 'D' => 'D (Kurang)']),
-
-                                                        Select::make('status')
-                                                            ->label('Status')
-                                                            ->native(false)
-                                                            ->required()
-                                                            ->validationMessages([
-                                                                'required' => 'Form ini wajib diisi.',
-                                                            ])
-                                                            ->options(['NEGERI' => 'NEGERI', 'SWASTA' => 'SWASTA']),
-                                                        FileUpload::make('logo')
-                                                            ->label('Logo Instansi')
-                                                            ->image()
-                                                            ->imageEditor()
-                                                            ->imageEditorAspectRatios([
-                                                                null,
-                                                                '1:1' => '1:1',
-                                                            ])
-                                                            ->fetchFileInformation(false)
-                                                            ->directory('assets/instansi-lain')
-                                                            ->downloadable()
-                                                            ->openable()
-                                                            ->maxSize(500)
-                                                            ->minSize(10)
-                                                            ->visibility('private')
-                                                            ->required()
-                                                            ->validationMessages([
-                                                                'required' => 'Form ini wajib diisi.',
-                                                            ]),
-                                                    ])
-                                                    ->columns([
-                                                        'sm' => '100%',
-                                                        'md' => 3,
-                                                        'lg' => 3,
-                                                    ]),
-                                                // ]),
-                                                Step::make('Data Alamat')
-                                                    ->schema([
-                                                        // Section::make('Alamat')
-                                                        //     ->schema([
-                                                        Select::make('negara_id')
-                                                            ->label('Negara')
-                                                            ->relationship('negara', 'nama')
-                                                            ->required()
-                                                            ->validationMessages([
-                                                                'required' => 'Form ini wajib diisi.',
-                                                            ])
-                                                            ->native(false)
-                                                            ->preload()
-                                                            ->live()
-                                                            ->afterStateUpdated(function (Set $set) {
-                                                                $set('provinsi_id', null);
-                                                                $set('kabupaten_id', null);
-                                                                $set('kecamatan_id', null);
-                                                                $set('kelurahan_id', null);
-                                                            }),
-                                                        Select::make('provinsi_id')
-                                                            ->label('Provinsi')
-                                                            ->options(fn(Get $get): Collection => Provinsi::query()
-                                                                ->where('negara_id', $get('negara_id'))
-                                                                ->pluck('nama', 'id'))
-                                                            ->required()
-                                                            ->validationMessages([
-                                                                'required' => 'Form ini wajib diisi.',
-                                                            ])
-                                                            ->native(false)
-                                                            ->preload()
-                                                            ->live()
-                                                            ->afterStateUpdated(function (Set $set) {
-                                                                $set('kabupaten_id', null);
-                                                                $set('kecamatan_id', null);
-                                                                $set('kelurahan_id', null);
-                                                            }),
-                                                        Select::make('kabupaten_id')
-                                                            ->label('Kabupaten/Kota')
-                                                            ->options(fn(Get $get): Collection => Kabupaten::query()
-                                                                ->where('provinsi_id', $get('provinsi_id'))
-                                                                ->pluck('nama', 'id'))
-                                                            ->required()
-                                                            ->validationMessages([
-                                                                'required' => 'Form ini wajib diisi.',
-                                                            ])
-                                                            ->native(false)
-                                                            ->preload()
-                                                            ->live()
-                                                            ->afterStateUpdated(function (Set $set) {
-                                                                $set('kecamatan_id', null);
-                                                                $set('kelurahan_id', null);
-                                                            }),
-                                                        Select::make('kecamatan_id')
-                                                            ->label('Kecamatan')
-                                                            ->options(fn(Get $get): Collection => Kecamatan::query()
-                                                                ->where('kabupaten_id', $get('kabupaten_id'))
-                                                                ->pluck('nama', 'id'))
-                                                            ->required()
-                                                            ->validationMessages([
-                                                                'required' => 'Form ini wajib diisi.',
-                                                            ])
-                                                            ->native(false)
-                                                            ->preload()
-                                                            ->live()
-                                                            ->afterStateUpdated(function (Set $set) {
-                                                                $set('kelurahan_id', null);
-                                                            }),
-                                                        Select::make('kelurahan_id')
-                                                            ->label('Kelurahan/Desa')
-                                                            ->options(fn(Get $get): Collection => Kelurahan::query()
-                                                                ->where('kecamatan_id', $get('kecamatan_id'))
-                                                                ->pluck('nama', 'id'))
-                                                            ->required()
-                                                            ->validationMessages([
-                                                                'required' => 'Form ini wajib diisi.',
-                                                            ])
-                                                            ->native(false),
-                                                        TextInput::make('alamat')
-                                                            ->label('Jalan/Kampung/Dusun')
-                                                            ->required()
-                                                            ->placeholder('KP KEBON CAU RT 001 RW 005')
-                                                            ->validationMessages([
-                                                                'required' => 'Form ini wajib diisi.',
-                                                            ]),
-                                                    ])
-                                                    ->columns([
-                                                        'sm' => '100%',
-                                                        'md' => 3,
-                                                        'lg' => 3,
-                                                    ]),
-                                                // ]),
-                                                Step::make('Data Kontak')
-                                                    ->schema([
-                                                        // Section::make('Kontak')
-                                                        //     ->schema([
-                                                        TextInput::make('website')
-                                                            ->label('Website')
-                                                            ->url()
-                                                            ->prefixIcon('heroicon-m-globe-alt')
-                                                            // ->required()
-                                                            // ->validationMessages([
-                                                            //     'required' => 'Form ini wajib diisi.',
-                                                            // ])
-                                                            ->placeholder('https://mtsn1pandeglang.sch.id'),
-                                                        TextInput::make('telepon')
-                                                            ->label('Telepon')
-                                                            // ->required()
-                                                            // ->validationMessages([
-                                                            //     'required' => 'Form ini wajib diisi.',
-                                                            // ])
-                                                            ->tel()
-                                                            ->placeholder('08**********')
-                                                            ->prefixIcon('heroicon-m-phone'),
-                                                        TextInput::make('email')
-                                                            ->label('Email')
-                                                            // ->required()
-                                                            // ->validationMessages([
-                                                            //     'required' => 'Form ini wajib diisi.',
-                                                            // ])
-                                                            ->placeholder('adm@mtsn1pandeglang.sch.id')
-                                                            ->email()
-                                                            ->prefixIcon('heroicon-m-envelope'),
-                                                    ])
-                                                    ->columns([
-                                                        'sm' => '100%',
-                                                        'md' => 3,
-                                                        'lg' => 3,
-                                                    ]),
-                                                // ]),
-                                            ]),
-                                        ]),
-                                    // Data Prestasi Calon Peserta Didik Baru
-                                    // Select::make('prestasi_id')
-                                    //     ->visible(fn ($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
-                                    //     ->label('Prestasi')
-                                    //     ->helperText(new HtmlString('<small><i>Pilih prestasi yang paling tinggi jika memiliki lebih dari satu prestasi.</i></small>'))
-                                    //     ->relationship('prestasi', 'nama')
-                                    //     ->preload()
-                                    //     ->createOptionForm([
-                                    //         // Prestasi
-                                    //         // Section::make('Prestasi')
-                                    //         //     ->collapsible()
-                                    //         //     ->schema([
-                                    //         Section::make('')
-                                    //             ->schema([
-                                    //                 TextInput::make('nama')
-                                    //                     ->label('Nama Prestasi')
-                                    //                     ->required()
-                                    //                     ->validationMessages([
-                                    //                         'required' => 'Form ini wajib diisi.',
-                                    //                     ]),
-                                    //                 Select::make('jenis')
-                                    //                     ->label('Jenis Prestasi')
-                                    //                     ->options([
-                                    //                         'Hafalan Al-Quran' => 'Hafalan Al-Quran (Minimal 3 Juz)',
-                                    //                         'Olimpiade/Kejuaraan' => 'Olimpiade/Kejuaraan',
-                                    //                     ])
-                                    //                     ->required()
-                                    //                     ->native(false)
-                                    //                     ->validationMessages([
-                                    //                         'required' => 'Form ini wajib diisi.',
-                                    //                     ])
-                                    //                     ->live(),
-                                    //             ])
-                                    //             ->columns([
-                                    //                 'sm' => '100%',
-                                    //                 'md' => 2,
-                                    //                 'lg' => 2,
-                                    //             ]),
-
-                                    //         Section::make('')
-                                    //             ->schema([
-                                    //                 Select::make('tingkat')
-                                    //                     ->label('Tingkat')
-                                    //                     ->native(false)
-                                    //                     ->options([
-                                    //                         'Nasional' => 'Nasional',
-                                    //                         'Provinsi' => 'Provinsi',
-                                    //                         'Kabupaten/Kota' => 'Kabupaten/Kota',
-                                    //                     ])
-                                    //                     ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
-                                    //                 Select::make('kategori')
-                                    //                     ->label('Kategori')
-                                    //                     ->native(false)
-                                    //                     ->options([
-                                    //                         'Regu/Kelompok' => 'Regu/Kelompok',
-                                    //                         'Individu' => 'Individu',
-                                    //                     ])
-                                    //                     ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
-                                    //                 Select::make('peringkat')
-                                    //                     ->label('Peringkat')
-                                    //                     ->options([
-                                    //                         '1' => '1',
-                                    //                         '2' => '2',
-                                    //                         '3' => '3',
-                                    //                     ])
-                                    //                     ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
-                                    //             ])
-                                    //             ->columns([
-                                    //                 'sm' => '100%',
-                                    //                 'md' => 3,
-                                    //                 'lg' => 3,
-                                    //             ])
-                                    //             ->visible(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
-                                    //     ])
-                                    //     ->columns([
-                                    //         'sm' => '100%',
-                                    //         'md' => 3,
-                                    //         'lg' => 3,
-                                    //         // ]),
-                                    //     ])
-                                    //     ->required()
-                                    //     ->validationMessages([
-                                    //         'required' => 'Form ini wajib diisi.',
-                                    //     ])
-                                    //     ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->jenis} | {$record->nama} | {$record->tingkat} | {$record->kategori} | {$record->peringkat}")
-                                    //     ->searchable()
-                                    //     ->native(false),
-                                    // // Data Peminatan Ekstrakurikuler Calon Peserta Didik Baru
-                                    // Select::make('ekstrakurikuler_id')
-                                    //     ->label('Peminatan Ekstrakurikuler')
-                                    //     ->required()
-                                    //     ->searchable()
-                                    //     ->preload()
-                                    //     ->native(false)
-                                    //     ->relationship('ekstrakurikuler', 'nama')
-                                    //     ->validationMessages([
-                                    //         'required' => 'Form ini wajib diisi.',
-                                    //     ]),
-                                    // // Data Peminatan Pelajaran Calon Peserta Didik Baru
-                                    // Select::make('mata_pelajaran_id')
-                                    //     // ->visible(fn($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
-                                    //     ->label('Peminatan Mata Pelajaran')
-                                    //     ->searchable()
-                                    //     ->preload()
-                                    //     ->required()
-                                    //     ->native(false)
-                                    //     ->relationship('mataPelajaran', 'nama')
-                                    //     ->validationMessages([
-                                    //         'required' => 'Form ini wajib diisi.',
-                                    //     ]),
-                                ]),
-
-                            // Tab Alamat Calon Peserta Didik Baru
-                            Tabs\Tab::make('Alamat')
-                                ->icon('heroicon-m-bell')
-                                ->iconPosition(IconPosition::After)
-                                ->schema([
-                                    // Alamat Calon Peserta Didik Baru
-                                    Select::make('siswa_negara_id')
-                                        ->label('Negara')
-                                        ->relationship('siswaNegara', 'nama')
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('siswa_provinsi_id', null);
-                                            $set('siswa_kabupaten_id', null);
-                                            $set('siswa_kecamatan_id', null);
-                                            $set('siswa_kelurahan_id', null);
-                                        }),
-                                    Select::make('siswa_provinsi_id')
-                                        ->label('Provinsi')
-                                        ->options(fn(Get $get): Collection => Provinsi::query()
-                                            ->where('negara_id', $get('siswa_negara_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('siswa_kabupaten_id', null);
-                                            $set('siswa_kecamatan_id', null);
-                                            $set('siswa_kelurahan_id', null);
-                                        }),
-                                    Select::make('siswa_kabupaten_id')
-                                        ->label('Kabupaten')
-                                        ->options(fn(Get $get): Collection => Kabupaten::query()
-                                            ->where('provinsi_id', $get('siswa_provinsi_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('siswa_kecamatan_id', null);
-                                            $set('siswa_kelurahan_id', null);
-                                        }),
-                                    Select::make('siswa_kecamatan_id')
-                                        ->label('Kecamatan')
-                                        ->options(fn(Get $get): Collection => Kecamatan::query()
-                                            ->where('kabupaten_id', $get('siswa_kabupaten_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('siswa_kelurahan_id', null);
-                                        }),
-                                    Select::make('siswa_kelurahan_id')
-                                        ->label('Kelurahan')
-                                        ->options(fn(Get $get): Collection => Kelurahan::query()
-                                            ->where('kecamatan_id', $get('siswa_kecamatan_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-                                    TextInput::make('siswa_alamat')
-                                        ->label('Jalan/Kampung/Dusun')
-                                        ->required()
-                                        ->placeholder('KP KEBON CAU RT 001 RW 005')
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                ]),
-
-                            // Tab Berkas Calon Peserta Didik Baru
-                            Tabs\Tab::make('Berkas')
-                                ->icon('heroicon-m-bell')
-                                ->iconPosition(IconPosition::After)
-                                ->schema([
-                                    // Berkas Foto Calon Peserta Didik Baru
-                                    FileUpload::make('berkas_foto')
-                                        ->label('Foto Latar Merah')
-                                        ->image()
-                                        ->imageEditor()
-                                        ->imageEditorAspectRatios([
-                                            null,
-                                            '1:1' => '1:1',
-                                            '3:4' => '3:4',
-                                        ])
-                                        ->fetchFileInformation(false)
-                                        ->directory(fn($get) => 'berkas/foto/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                        ->downloadable()
-                                        ->openable()
-                                        ->maxSize(500)
-                                        ->minSize(10)
-                                        ->visibility('private')
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                    // Berkas KK Calon Peserta Didik Baru
-                                    FileUpload::make('berkas_kk')
-                                        ->label('Kartu Keluarga')
-                                        ->image()
-                                        ->imageEditor()
-                                        ->imageEditorAspectRatios([
-                                            null,
-                                            '1:1' => '1:1',
-                                            '3:4' => '3:4',
-                                        ])
-                                        ->fetchFileInformation(false)
-                                        ->directory(fn($get) => 'berkas/kk/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                        ->downloadable()
-                                        ->openable()
-                                        ->maxSize(500)
-                                        ->minSize(10)
-                                        ->visibility('private')
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                    // Berkas Akta Calon Peserta Didik Baru
-                                    FileUpload::make('berkas_akta')
-                                        ->label('Akta Kelahiran')
-                                        ->image()
-                                        ->imageEditor()
-                                        ->imageEditorAspectRatios([
-                                            null,
-                                            '1:1' => '1:1',
-                                            '3:4' => '3:4',
-                                        ])
-                                        ->fetchFileInformation(false)
-                                        ->directory(fn($get) => 'berkas/akta/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                        ->downloadable()
-                                        ->openable()
-                                        ->maxSize(500)
-                                        ->minSize(10)
-                                        ->visibility('private')
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-
-                                    // Berkas NISN Calon Peserta Didik Baru
-                                    FileUpload::make('berkas_nisn')
-                                        ->label('Kartu NISN/Tangkapan Layar NISN (Web)')
-                                        ->image()
-                                        ->imageEditor()
-                                        ->imageEditorAspectRatios([
-                                            null,
-                                            '1:1' => '1:1',
-                                            '3:4' => '3:4',
-                                        ])
-                                        ->fetchFileInformation(false)
-                                        ->directory(fn($get) => 'berkas/nisn/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                        ->downloadable()
-                                        ->openable()
-                                        ->maxSize(500)
-                                        ->minSize(10)
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->visibility('private'),
-                                    // Berkas Surat Keterangan Berkelakuan Baik Calon Peserta Didik Baru
-                                    FileUpload::make('berkas_skbb')
-                                        ->label('Surat Keterangan Berkelakuan Baik')
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->fetchFileInformation(false)
-                                        ->directory(fn($get) => 'berkas/skbb/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                        ->downloadable()
-                                        ->openable()
-                                        ->acceptedFileTypes(['application/pdf'])
-                                        ->maxSize(500)
-                                        ->minSize(10)
-                                        ->visibility('private'),
-                                    // Berkas Surat Keterangan Aktif Belajar Calon Peserta Didik Baru
-                                    FileUpload::make('berkas_skab')
-                                        ->label('Surat Keterangan Aktif Belajar')
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->fetchFileInformation(false)
-                                        ->directory(fn($get) => 'berkas/skab/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                        ->downloadable()
-                                        ->openable()
-                                        ->acceptedFileTypes(['application/pdf'])
-                                        ->maxSize(500)
-                                        ->minSize(10)
-                                        ->visibility('private'),
-
-                                    // Berkas KIP Calon Peserta Didik Baru
-                                    FileUpload::make('berkas_kip')
-                                        ->required(fn($get) => $get('no_kip') !== null)
-                                        ->visible(fn($get) => $get('no_kip') !== null)
-                                        ->label('Kartu Indonesia Pintar')
-                                        ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Indonesia Pintar (KIP).<sup style="color:red">*</sup></i></small>'))
-                                        ->image()
-                                        ->imageEditor()
-                                        ->imageEditorAspectRatios([
-                                            null,
-                                            '1:1' => '1:1',
-                                            '3:4' => '3:4',
-                                        ])
-                                        ->fetchFileInformation(false)
-                                        ->directory(fn($get) => 'berkas/kip/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                        ->downloadable()
-                                        ->openable()
-                                        ->maxSize(500)
-                                        ->minSize(10)
-                                        ->visibility('private'),
-                                    // Berkas KKS Calon Peserta Didik Baru
-                                    FileUpload::make('berkas_kks')
-                                        ->required(fn($get) => $get('no_kks') !== null)
-                                        ->visible(fn($get) => $get('no_kks') !== null)
-                                        ->label('Kartu Keluarga Sejahtera')
-                                        ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Keluarga Sejahtera (KKS).<sup style="color:red">*</sup></i></small>'))
-                                        ->image()
-                                        ->imageEditor()
-                                        ->imageEditorAspectRatios([
-                                            null,
-                                            '1:1' => '1:1',
-                                            '3:4' => '3:4',
-                                        ])
-                                        ->fetchFileInformation(false)
-                                        ->directory(fn($get) => 'berkas/kks/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                        ->downloadable()
-                                        ->openable()
-                                        ->maxSize(500)
-                                        ->minSize(10)
-                                        ->visibility('private'),
-                                    // Berkas PKH Calon Peserta Didik Baru
-                                    FileUpload::make('berkas_pkh')
-                                        ->required(fn($get) => $get('no_pkh') !== null)
-                                        ->visible(fn($get) => $get('no_pkh') !== null)
-                                        ->label('Kartu Program Keluarga Harapan')
-                                        ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Program Keluarga Harapan (PKH).<sup style="color:red">*</sup></i></small>'))
-                                        ->image()
-                                        ->imageEditor()
-                                        ->imageEditorAspectRatios([
-                                            null,
-                                            '1:1' => '1:1',
-                                            '3:4' => '3:4',
-                                        ])
-                                        ->fetchFileInformation(false)
-                                        ->directory(fn($get) => 'berkas/pkh/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                        ->downloadable()
-                                        ->openable()
-                                        ->maxSize(500)
-                                        ->minSize(10)
-                                        ->visibility('private'),
-                                    // Berkas Prestasi Belajar Calon Peserta Didik Baru
-                                    // FileUpload::make('berkas_prestasi')
-                                    //     ->required(fn($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
-                                    //     ->visible(fn($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
-                                    //     ->label('Berkas Prestasi')
-                                    //     ->helperText(new HtmlString('<small><i>Gabungkan semua berkas jika memiliki lebih dari satu prestasi.</i></small>'))
-                                    //     ->fetchFileInformation(false)
-                                    //     ->directory(fn($get) => 'berkas/prestasi/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                    //     ->downloadable()
-                                    //     ->openable()
-                                    //     ->validationMessages([
-                                    //         'required' => 'Form ini wajib diisi.',
-                                    //     ])
-                                    //     ->acceptedFileTypes(['application/pdf'])
-                                    //     ->maxSize(500)
-                                    //     ->minSize(10)
-                                    //     ->visibility('private'),
-                                ]),
-
-                        ])
-                        ->columns([
-                            'sm' => '100%',
-                            'md' => 3,
-                            'lg' => 3,
-                        ]),
-                ]),
-
-            Step::make('Data Orang Tua')
-
-                ->schema([
-                    // Tab Ibu
-                    Tabs::make('Data Ibu Kandung')
-                        ->tabs([
-                            Tabs\Tab::make('Data Ibu')
-                                ->icon('heroicon-m-bell')
-                                ->iconPosition(IconPosition::After)
-                                ->schema([
-                                    // Biodata Ibu Calon Peserta Didik Baru
-                                    TextInput::make('ibu_nama')
-                                        ->label('Nama Lengkap Ibu Kandung')
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                    TextInput::make('ibu_nik')
-                                        ->label('NIK Ibu Kandung')
-                                        ->required()
-                                        ->maxLength(16)
-                                        ->minLength(16)
-                                        ->numeric()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                            'max_digits' => 'NIK: Masukkan maksimal 16 Angka.',
-                                            'min_digits' => 'NIK: Masukkan minimal 16 Angka.',
-                                        ]),
-
-                                    TextInput::make('ibu_telepon')
-                                        ->label('Nomor Telepon')
-                                        ->numeric()
-                                        ->tel()
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                    Select::make('ibu_pekerjaan')
-                                        ->label('Pekerjaan')
-                                        ->options([
-                                            'Tidak Bekerja' => 'Tidak Bekerja',
-                                            'ASN' => 'ASN',
-                                            'TNI/POLRI' => 'TNI/POLRI',
-                                            'Karyawan Swasta' => 'Karyawan Swasta',
-                                            'Pegawai Honorer' => 'Pegawai Honorer',
-                                            'Wirausaha' => 'Wirausaha',
-                                            'Wiraswasta' => 'Wiraswasta',
-                                            'Buruh' => 'Buruh',
-                                        ])
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-
-                                    Select::make('ibu_penghasilan')
-                                        ->label('Penghasilan Bulanan')
-                                        ->options([
-                                            'Kurang dari Rp. 500.000' => 'Kurang dari Rp. 500.000',
-                                            'Rp. 500.000 - Rp. 1.000.000' => 'Rp. 500.000 - Rp. 1.000.000',
-                                            'Rp. 1.000.001 - Rp. 2.000.000' => 'Rp. 1.000.001 - Rp. 2.000.000',
-                                            'Rp. 2.000.001 - Rp. 3.000.000' => 'Rp. 2.000.001 - Rp. 3.000.000',
-                                            'Rp. 3.000.001 - Rp. 4.000.000' => 'Rp. 3.000.001 - Rp. 4.000.000',
-                                            'Rp. 4.000.001 - Rp. 5.000.000' => 'Rp. 4.000.001 - Rp. 5.000.000',
-                                            'Lebih dari Rp. 5.000.000' => 'Lebih dari Rp. 5.000.000',
-                                        ])
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-
-                                    Select::make('ibu_pendidikan')
-                                        ->label('Pendidikan')
-                                        ->options([
-                                            'Tidak Sekolah' => 'Tidak Sekolah',
-                                            'SD/MI Sederajat' => 'SD/MI Sederajat',
-                                            'SMP/MTS Sederajat' => 'SMP/MTS Sederajat',
-                                            'SMA/SMK/MA Sederajat' => 'SMA/SMK/MA Sederajat',
-                                            'D1' => 'D1',
-                                            'D2' => 'D2',
-                                            'D3' => 'D3',
-                                            'D4' => 'D4',
-                                            'S1' => 'S1',
-                                            'S2' => 'S2',
-                                            'S3' => 'S3',
-                                        ])
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-
-                                    Select::make('ibu_status')
-                                        ->label('Status')
-                                        ->options([
-                                            'Hidup' => 'Hidup',
-                                            'Meninggal' => 'Meninggal',
-                                        ])
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-                                ]),
-
-                            Tabs\Tab::make('Alamat')
-                                ->icon('heroicon-m-bell')
-                                ->iconPosition(IconPosition::After)
-                                ->schema([
-                                    Select::make('ibu_negara_id')
-                                        ->label('Negara')
-                                        ->relationship('ibuNegara', 'nama')
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('ibu_provinsi_id', null);
-                                            $set('ibu_kabupaten_id', null);
-                                            $set('ibu_kecamatan_id', null);
-                                            $set('ibu_kelurahan_id', null);
-                                        }),
-                                    Select::make('ibu_provinsi_id')
-                                        ->label('Provinsi')
-                                        ->options(fn(Get $get): Collection => Provinsi::query()
-                                            ->where('negara_id', $get('ibu_negara_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('ibu_kabupaten_id', null);
-                                            $set('ibu_kecamatan_id', null);
-                                            $set('ibu_kelurahan_id', null);
-                                        }),
-                                    Select::make('ibu_kabupaten_id')
-                                        ->label('Kabupaten')
-                                        ->options(fn(Get $get): Collection => Kabupaten::query()
-                                            ->where('provinsi_id', $get('ibu_provinsi_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('ibu_kecamatan_id', null);
-                                            $set('ibu_kelurahan_id', null);
-                                        }),
-                                    Select::make('ibu_kecamatan_id')
-                                        ->label('Kecamatan')
-                                        ->options(fn(Get $get): Collection => Kecamatan::query()
-                                            ->where('kabupaten_id', $get('ibu_kabupaten_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('ibu_kelurahan_id', null);
-                                        }),
-                                    Select::make('ibu_kelurahan_id')
-                                        ->label('Kelurahan')
-                                        ->options(fn(Get $get): Collection => Kelurahan::query()
-                                            ->where('kecamatan_id', $get('ibu_kecamatan_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-                                    TextInput::make('ibu_alamat')
-                                        ->label('Jalan/Kampung/Dusun')
-                                        ->required()
-                                        ->placeholder('KP KEBON CAU RT 001 RW 005')
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                ]),
-                        ])
-                        ->columns([
-                            'sm' => '100%',
-                            'md' => 3,
-                            'lg' => 3,
-                        ]),
-
-                    // Tab Ayah
-                    Tabs::make('Data Ayah Kandung')
-                        ->tabs([
-                            Tabs\Tab::make('Data Ayah')
-                                ->icon('heroicon-m-bell')
-                                ->iconPosition(IconPosition::After)
-                                ->schema([
-                                    // Biodata Ayah Calon Peserta Didik Baru
-                                    TextInput::make('ayah_nama')
-                                        ->label('Nama Lengkap Ayah Kandung')
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                    TextInput::make('ayah_nik')
-                                        ->label('NIK Ayah Kandung')
-                                        ->required()
-                                        ->maxLength(16)
-                                        ->numeric()
-                                        ->minLength(16)
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                            'max_digits' => 'NIK: Masukkan maksimal 16 Angka.',
-                                            'min_digits' => 'NIK: Masukkan minimal 16 Angka.',
-                                        ]),
-                                    TextInput::make('ayah_telepon')
-                                        ->label('Nomor Telepon')
-                                        ->numeric()
-                                        ->tel()
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                    Select::make('ayah_pekerjaan')
-                                        ->label('Pekerjaan')
-                                        ->options([
-                                            'Tidak Bekerja' => 'Tidak Bekerja',
-                                            'ASN' => 'ASN',
-                                            'TNI/POLRI' => 'TNI/POLRI',
-                                            'Karyawan Swasta' => 'Karyawan Swasta',
-                                            'Pegawai Honorer' => 'Pegawai Honorer',
-                                            'Wirausaha' => 'Wirausaha',
-                                            'Wiraswasta' => 'Wiraswasta',
-                                            'Buruh' => 'Buruh',
-                                        ])
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-
-                                    Select::make('ayah_penghasilan')
-                                        ->label('Penghasilan Bulanan')
-                                        ->options([
-                                            'Kurang dari Rp. 500.000' => 'Kurang dari Rp. 500.000',
-                                            'Rp. 500.000 - Rp. 1.000.000' => 'Rp. 500.000 - Rp. 1.000.000',
-                                            'Rp. 1.000.001 - Rp. 2.000.000' => 'Rp. 1.000.001 - Rp. 2.000.000',
-                                            'Rp. 2.000.001 - Rp. 3.000.000' => 'Rp. 2.000.001 - Rp. 3.000.000',
-                                            'Rp. 3.000.001 - Rp. 4.000.000' => 'Rp. 3.000.001 - Rp. 4.000.000',
-                                            'Rp. 4.000.001 - Rp. 5.000.000' => 'Rp. 4.000.001 - Rp. 5.000.000',
-                                            'Lebih dari Rp. 5.000.000' => 'Lebih dari Rp. 5.000.000',
-                                        ])
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-
-                                    Select::make('ayah_pendidikan')
-                                        ->label('Pendidikan')
-                                        ->options([
-                                            'Tidak Sekolah' => 'Tidak Sekolah',
-                                            'SD/MI Sederajat' => 'SD/MI Sederajat',
-                                            'SMP/MTS Sederajat' => 'SMP/MTS Sederajat',
-                                            'SMA/SMK/MA Sederajat' => 'SMA/SMK/MA Sederajat',
-                                            'D1' => 'D1',
-                                            'D2' => 'D2',
-                                            'D3' => 'D3',
-                                            'D4' => 'D4',
-                                            'S1' => 'S1',
-                                            'S2' => 'S2',
-                                            'S3' => 'S3',
-                                        ])
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-
-                                    Select::make('ayah_status')
-                                        ->label('Status')
-                                        ->options([
-                                            'Hidup' => 'Hidup',
-                                            'Meninggal' => 'Meninggal',
-                                        ])
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-                                ]),
-
-                            Tabs\Tab::make('Alamat')
-                                ->icon('heroicon-m-bell')
-                                ->iconPosition(IconPosition::After)
-                                ->schema([
-                                    Select::make('ayah_negara_id')
-                                        ->label('Negara')
-                                        ->relationship('ayahNegara', 'nama')
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('ayah_provinsi_id', null);
-                                            $set('ayah_kabupaten_id', null);
-                                            $set('ayah_kecamatan_id', null);
-                                            $set('ayah_kelurahan_id', null);
-                                        }),
-                                    Select::make('ayah_provinsi_id')
-                                        ->label('Provinsi')
-                                        ->options(fn(Get $get): Collection => Provinsi::query()
-                                            ->where('negara_id', $get('ayah_negara_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('ayah_kabupaten_id', null);
-                                            $set('ayah_kecamatan_id', null);
-                                            $set('ayah_kelurahan_id', null);
-                                        }),
-                                    Select::make('ayah_kabupaten_id')
-                                        ->label('Kabupaten')
-                                        ->options(fn(Get $get): Collection => Kabupaten::query()
-                                            ->where('provinsi_id', $get('ayah_provinsi_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('ayah_kecamatan_id', null);
-                                            $set('ayah_kelurahan_id', null);
-                                        }),
-                                    Select::make('ayah_kecamatan_id')
-                                        ->label('Kecamatan')
-                                        ->options(fn(Get $get): Collection => Kecamatan::query()
-                                            ->where('kabupaten_id', $get('ayah_kabupaten_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('ayah_kelurahan_id', null);
-                                        }),
-                                    Select::make('ayah_kelurahan_id')
-                                        ->label('Kelurahan')
-                                        ->options(fn(Get $get): Collection => Kelurahan::query()
-                                            ->where('kecamatan_id', $get('ayah_kecamatan_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-                                    TextInput::make('ayah_alamat')
-                                        ->label('Jalan/Kampung/Dusun')
-                                        ->required()
-                                        ->placeholder('KP KEBON CAU RT 001 RW 005')
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                ]),
-                        ])
-                        ->columns([
-                            'sm' => '100%',
-                            'md' => 3,
-                            'lg' => 3,
-                        ]),
-
-                    // Tab Wali
-                    Tabs::make('Data Wali')
-                        ->tabs([
-                            Tabs\Tab::make('Data Wali')
-                                ->icon('heroicon-m-bell')
-                                ->iconPosition(IconPosition::After)
-                                ->schema([
-                                    // Biodata Wali Calon Peserta Didik Baru
-                                    TextInput::make('wali_nama')
-                                        ->label('Nama Lengkap Wali'),
-                                    TextInput::make('wali_nik')
-                                        ->label('NIK Wali')
-                                        ->numeric()
-                                        ->maxLength(16)
-                                        ->minLength(16)
-                                        ->validationMessages([
-                                            'max_digits' => 'NIK: Masukkan maksimal 16 Angka.',
-                                            'min_digits' => 'NIK: Masukkan minimal 16 Angka.',
-                                        ]),
-                                    TextInput::make('wali_telepon')
-                                        ->label('Nomor Telepon')
-                                        ->numeric()
-                                        ->tel(),
-                                    Select::make('wali_pekerjaan')
-                                        ->label('Pekerjaan')
-                                        ->options([
-                                            'Tidak Bekerja' => 'Tidak Bekerja',
-                                            'ASN' => 'ASN',
-                                            'TNI/POLRI' => 'TNI/POLRI',
-                                            'Karyawan Swasta' => 'Karyawan Swasta',
-                                            'Pegawai Honorer' => 'Pegawai Honorer',
-                                            'Wirausaha' => 'Wirausaha',
-                                            'Wiraswasta' => 'Wiraswasta',
-                                            'Buruh' => 'Buruh',
-                                        ])
-                                        ->native(false),
-
-                                    Select::make('wali_penghasilan')
-                                        ->label('Penghasilan Bulanan')
-                                        ->options([
-                                            'Kurang dari Rp. 500.000' => 'Kurang dari Rp. 500.000',
-                                            'Rp. 500.000 - Rp. 1.000.000' => 'Rp. 500.000 - Rp. 1.000.000',
-                                            'Rp. 1.000.001 - Rp. 2.000.000' => 'Rp. 1.000.001 - Rp. 2.000.000',
-                                            'Rp. 2.000.001 - Rp. 3.000.000' => 'Rp. 2.000.001 - Rp. 3.000.000',
-                                            'Rp. 3.000.001 - Rp. 4.000.000' => 'Rp. 3.000.001 - Rp. 4.000.000',
-                                            'Rp. 4.000.001 - Rp. 5.000.000' => 'Rp. 4.000.001 - Rp. 5.000.000',
-                                            'Lebih dari Rp. 5.000.000' => 'Lebih dari Rp. 5.000.000',
-                                        ])
-                                        ->native(false),
-
-                                    Select::make('wali_pendidikan')
-                                        ->label('Pendidikan')
-                                        ->options([
-                                            'Tidak Sekolah' => 'Tidak Sekolah',
-                                            'SD/MI Sederajat' => 'SD/MI Sederajat',
-                                            'SMP/MTS Sederajat' => 'SMP/MTS Sederajat',
-                                            'SMA/SMK/MA Sederajat' => 'SMA/SMK/MA Sederajat',
-                                            'D1' => 'D1',
-                                            'D2' => 'D2',
-                                            'D3' => 'D3',
-                                            'D4' => 'D4',
-                                            'S1' => 'S1',
-                                            'S2' => 'S2',
-                                            'S3' => 'S3',
-                                        ])
-                                        ->native(false),
-                                    Select::make('wali_status')
-                                        ->label('Status')
-                                        ->options([
-                                            'Hidup' => 'Hidup',
-                                            'Meninggal' => 'Meninggal',
-                                        ])
-                                        ->native(false),
-                                ]),
-
-                            Tabs\Tab::make('Alamat')
-                                ->icon('heroicon-m-bell')
-                                ->iconPosition(IconPosition::After)
-                                ->schema([
-                                    Select::make('wali_negara_id')
-                                        ->label('Negara')
-                                        ->relationship('waliNegara', 'nama')
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('wali_provinsi_id', null);
-                                            $set('wali_kabupaten_id', null);
-                                            $set('wali_kecamatan_id', null);
-                                            $set('wali_kelurahan_id', null);
-                                        }),
-                                    Select::make('wali_provinsi_id')
-                                        ->label('Provinsi')
-                                        ->options(fn(Get $get): Collection => Provinsi::query()
-                                            ->where('negara_id', $get('wali_negara_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('wali_kabupaten_id', null);
-                                            $set('wali_kecamatan_id', null);
-                                            $set('wali_kelurahan_id', null);
-                                        }),
-                                    Select::make('wali_kabupaten_id')
-                                        ->label('Kabupaten')
-                                        ->options(fn(Get $get): Collection => Kabupaten::query()
-                                            ->where('provinsi_id', $get('wali_provinsi_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('wali_kecamatan_id', null);
-                                            $set('wali_kelurahan_id', null);
-                                        }),
-                                    Select::make('wali_kecamatan_id')
-                                        ->label('Kecamatan')
-                                        ->options(fn(Get $get): Collection => Kecamatan::query()
-                                            ->where('kabupaten_id', $get('wali_kabupaten_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('wali_kelurahan_id', null);
-                                        }),
-                                    Select::make('wali_kelurahan_id')
-                                        ->label('Kelurahan')
-                                        ->options(fn(Get $get): Collection => Kelurahan::query()
-                                            ->where('kecamatan_id', $get('wali_kecamatan_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->native(false),
-                                    TextInput::make('wali_alamat')
-                                        ->label('Jalan/Kampung/Dusun')
-                                        // ->required()
-                                        ->placeholder('KP KEBON CAU RT 001 RW 005'),
-                                    // ->validationMessages([
-                                    //     'required' => 'Form ini wajib diisi.',
-                                    // ]),
-                                ]),
-                        ])
-                        ->columns([
-                            'sm' => '100%',
-                            'md' => 3,
-                            'lg' => 3,
-                        ]),
-                    // Section Kepemilikan Rumah
-                    Section::make('Kepemilikan Rumah')
-                        ->icon('heroicon-m-bell')
-                        ->iconPosition(IconPosition::After)
-                        ->schema([
-                            // Status Kepemilikan Rumah
-                            Select::make('kepemilikan_rumah')
-                                ->label('Status Kepemilikan Rumah')
-                                ->options([
-                                    'Rumah Pribadi' => 'Rumah Pribadi',
-                                    'Kontrakan' => 'Kontrakan',
-                                    'Rumah Dinas' => 'Rumah Dinas',
-                                    'Menumpang Saudara' => 'Menumpang Saudara',
-                                ])
-                                ->required()
-                                ->validationMessages([
-                                    'required' => 'Form ini wajib diisi.',
-                                ])
-                                ->native(false),
-                        ]),
-                ])
-                ->columnSpanFull(),
-        ];
+        return $this->getAllSteps(
+            includeStatusSection: false,
+            includeDataTes: false
+        );
     }
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $data['user_id'] = auth()->id();
-
         $tahun = TahunPendaftaran::where('status', 'Aktif')->first();
         $data['tahun_pendaftaran_id'] = $tahun?->id;
 
@@ -7079,38 +5549,17 @@ class CreateCalonSiswa extends CreateRecord
 namespace App\Filament\Resources\CalonSiswaResource\Pages;
 
 use App\Filament\Resources\CalonSiswaResource;
-use App\Models\JalurPendaftaran;
-use App\Models\Kabupaten;
-use App\Models\Kecamatan;
-use App\Models\Kelurahan;
-use App\Models\Provinsi;
-use App\Models\Sekolah;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Tabs;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Wizard;
-use Filament\Forms\Components\Wizard\Step;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
+use App\Filament\Traits\CalonSiswaFormTrait;
 use Filament\Resources\Pages\CreateRecord\Concerns\HasWizard;
 use Filament\Resources\Pages\EditRecord;
-use Filament\Support\Enums\IconPosition;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\HtmlString;
 
 class EditCalonSiswa extends EditRecord
 {
+    use HasWizard, CalonSiswaFormTrait;
+
     protected static string $resource = CalonSiswaResource::class;
 
-    use HasWizard;
-
-    // Override handleRecordUpdate dengan tanda tangan yang sesuai
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
         $updatedRecord = parent::handleRecordUpdate($record, $data);
@@ -7121,1627 +5570,10 @@ class EditCalonSiswa extends EditRecord
 
     protected function getSteps(): array
     {
-        return [
-            Step::make('Data Calon Siswa')
-                ->schema([
-                    // Section Formulir
-                    Section::make('Formulir Pendaftaran')
-                        // ->collapsible()
-                        ->schema([
-                            // Data Status Pendaftaran Calon Peserta Didik Baru
-                            Select::make('status_pendaftaran')
-                                ->label('Status Pendaftaran')
-                                ->options(
-                                    function () {
-                                        if (Auth::user()->roles->first()->name === 'super_admin') {
-                                            return [
-                                                'Diproses' => 'Diproses',
-                                                'Berkas Tidak Lengkap' => 'Berkas Tidak Lengkap',
-                                                'Diverifikasi' => 'Diverifikasi',
-                                                'Tidak Diterima' => 'Tidak Diterima',
-                                                'Diterima' => 'Diterima',
-                                                'Diterima Di Kelas Reguler' => 'Diterima Di Kelas Reguler',
-                                                'Diterima Di Kelas Unggulan' => 'Diterima Di Kelas Unggulan',
-                                            ];
-                                        }
-
-                                        return [
-                                            'Diproses' => 'Diproses',
-                                            'Berkas Tidak Lengkap' => 'Berkas Tidak Lengkap',
-                                            'Diverifikasi' => 'Diverifikasi',
-                                        ];
-                                    }
-                                )
-                                ->native(false)
-                                ->live()
-                                ->default('Diproses'),
-                            // Data Kelas Pendaftaran Calon Peserta Didik Baru
-                            Select::make('kelas_id')
-                                ->label('Kelas')
-                                ->visible(fn($get) => in_array($get('status_pendaftaran'), [
-                                    'Diterima Di Kelas Reguler',
-                                    'Diterima Di Kelas Unggulan',
-                                ]))
-                                ->relationship('kelas', 'nama')
-                                ->native(false),
-                        ])
-                        ->visible(Auth::user()->roles->first()->name !== 'calon_siswa')
-                        ->columns([
-                            'sm' => '100%',
-                            'md' => 2,
-                            'lg' => 2,
-                            'xl' => 2,
-                            '2xl' => 2,
-                        ]),
-
-                    Tabs::make('Biodata')
-                        ->tabs([
-                            Tabs\Tab::make('Biodata')
-                                ->icon('heroicon-m-bell')
-                                ->iconPosition(IconPosition::After)
-                                ->schema([
-                                    // Jalur Pendaftaran
-                                    Select::make('jalur_pendaftaran_id')
-                                        ->label('Jalur Pendaftaran')
-                                        ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false)
-                                        ->live()
-                                        ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->nama} | {$record->tahunPendaftaran->nama}"),
-                                    // Nama Lengkap Calon Peserta Didik Baru
-                                    TextInput::make('nama')
-                                        ->label('Nama Lengkap')
-                                        ->required()
-                                        ->disabledOn('edit')
-                                        ->dehydrated()
-                                        ->default(fn() => Auth::user()->name)
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                    // NIK Calon Peserta Didik Baru
-                                    TextInput::make('nik')
-                                        ->label('Nomor Induk Kependudukan (NIK)')
-                                        ->required()
-                                        ->unique(ignoreRecord: true)
-                                        ->rule(fn($record) => $record === null ? 'unique:calon_siswas,nik' : 'unique:calon_siswas,nik,' . $record->id)
-                                        ->dehydrateStateUsing(fn($state) => $state ? $state : null)
-                                        ->numeric()
-                                        ->maxLength(16)
-                                        ->minLength(16)
-                                        ->validationMessages([
-                                            'max_digits' => 'NIK: Masukkan maksimal 16 Angka.',
-                                            'min_digits' => 'NIK: Masukkan minimal 16 Angka.',
-                                            'unique' => 'NIK: Nomor ini sudah pernah di isi.',
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                    // KK Calon Peserta Didik Baru
-                                    TextInput::make('kk')
-                                        ->label('Nomor Kartu Keluarga (KK)')
-                                        ->required()
-                                        ->maxLength(16)
-                                        ->numeric()
-                                        ->minLength(16)
-                                        ->validationMessages([
-                                            'max_digits' => 'NIK: Masukkan maksimal 16 Angka.',
-                                            'min_digits' => 'NIK: Masukkan minimal 16 Angka.',
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                    // NISN Calon Peserta Didik Baru
-                                    TextInput::make('nisn')
-                                        ->label('Nomor Induk Siswa Nasional (NISN)')
-                                        ->required()
-                                        ->disabledOn('edit')
-                                        ->dehydrated()
-                                        ->default(fn() => Auth::user()->username)
-                                        ->unique(ignoreRecord: true)
-                                        ->rule(fn($record) => $record === null ? 'unique:calon_siswas,nisn' : 'unique:calon_siswas,nisn,' . $record->id)
-                                        ->dehydrateStateUsing(fn($state) => $state ? $state : null)
-                                        ->numeric()
-                                        ->maxLength(10)
-                                        ->minLength(10)
-                                        ->validationMessages([
-                                            'max_digits' => 'NISN: Masukkan maksimal 10 Angka.',
-                                            'min_digits' => 'NISN: Masukkan minimal 10 Angka.',
-                                            'unique' => 'NISN: Nomor ini sudah pernah di isi.',
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                    // Tempat Lahir Calon Peserta Didik Baru
-                                    TextInput::make('tempat_lahir')
-                                        ->label('Tempat Lahir')
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                    // Tanggal Lahir Calon Peserta Didik Baru
-                                    DatePicker::make('tanggal_lahir')
-                                        ->label('Tanggal Lahir')
-                                        ->maxDate(now())
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                    // Tahun Lulus Calon Peserta Didik Baru
-                                    Select::make('tahun_lulus')
-                                        ->label('Tahun Lulus')
-                                        ->options(function () {
-                                            $tahun = range(date('Y'), date('Y') - 2);
-
-                                            return array_combine($tahun, $tahun);
-                                        })
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-                                    // Jenis Kelamin Calon Peserta Didik Baru
-                                    Select::make('jenis_kelamin')
-                                        ->label('Jenis Kelamin')
-                                        ->options([
-                                            'Pria' => 'Laki-laki',
-                                            'Wanita' => 'Perempuan',
-                                        ])
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-                                    // Golongan Darah Calon Peserta Didik Baru
-                                    Select::make('golongan_darah')
-                                        ->label('Golongan Darah')
-                                        ->options([
-                                            'A-' => 'A-',
-                                            'A+' => 'A+',
-                                            'B-' => 'B-',
-                                            'B+' => 'B+',
-                                            'AB-' => 'AB-',
-                                            'AB+' => 'AB+',
-                                            'O-' => 'O-',
-                                            'O+' => 'O+',
-                                        ])
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-                                    // Agama Calon Peserta Didik Baru
-                                    Select::make('agama')
-                                        ->label('Agama')
-                                        ->options([
-                                            'Islam' => 'Islam',
-                                            'Kristen Katholik' => 'Kristen Katholik',
-                                            'Kristen Protestan' => 'Kristen Protestan',
-                                            'Hindu' => 'Hindu',
-                                            'Buddha' => 'Buddha',
-                                            'Konghucu' => 'Konghucu',
-                                        ])
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-                                    // Anak Ke Calon Peserta Didik Baru
-                                    TextInput::make('anak_ke')
-                                        ->label('Anak Ke')
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->numeric(),
-                                    // Jumlah Saudara Calon Peserta Didik Baru
-                                    TextInput::make('jumlah_saudara')
-                                        ->label('Dari (Jumlah Anak)')
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->numeric(),
-                                    // Tinggal Bersama Calon Peserta Didik Baru
-                                    Select::make('tinggal_bersama')
-                                        ->label('Tinggal Bersama')
-                                        ->options([
-                                            'Orang Tua' => 'Orang Tua',
-                                            'Saudara' => 'Saudara',
-                                            'Panti Asuhan' => 'Panti Asuhan',
-                                            'Kost' => 'Kost',
-                                            'Lainnya' => 'Lainnya',
-                                        ])
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-                                    // Jarak Ke Sekolah Calon Peserta Didik Baru
-                                    Select::make('jarak_ke_sekolah')
-                                        ->label('Jarak Ke Sekolah')
-                                        ->options([
-                                            '0 - 1 Km' => '0 - 1 Km',
-                                            '1 - 5 Km' => '1 - 5 Km',
-                                            '5 - 10 Km' => '5 - 10 Km',
-                                            '10 - 15 Km' => '10 - 15 Km',
-                                            '15 - 20 Km' => '15 - 20 Km',
-                                            '20 - 25 Km' => '20 - 25 Km',
-                                            '25 - 30 Km' => '25 - 30 Km',
-                                        ])
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-                                    // Disabilitas Calon Peserta Didik Baru
-                                    Select::make('disabilitas')
-                                        ->label('Disabilitas')
-                                        ->options([
-                                            'Non Disabilitas' => 'Non Disabilitas',
-                                            'Fisik' => 'Fisik',
-                                            'Penglihatan' => 'Penglihatan',
-                                            'Pendengaran' => 'Pendengaran',
-                                            'Kognitif' => 'Kognitif',
-                                            'Mental' => 'Mental',
-                                            'Lainnya' => 'Lainnya',
-                                        ])
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-                                    // Tinggi Badan Calon Peserta Didik Baru
-                                    TextInput::make('tinggi_badan')
-                                        ->label('Tinggi Badan')
-                                        ->postFix('Cm')
-                                        ->numeric(),
-                                    // Berat Badan Calon Peserta Didik Baru
-                                    TextInput::make('berat_badan')
-                                        ->label('Berat Badan')
-                                        ->postFix('Kg')
-                                        ->numeric(),
-                                    // No KIP Calon Peserta Didik Baru
-                                    TextInput::make('no_kip')
-                                        ->label('Nomor Kartu Indonesia Pintar')
-                                        ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Indonesia Pintar (KIP).<sup style="color:red">*</sup></i></small>'))
-                                        ->unique(ignoreRecord: true)
-                                        ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_kip' : 'unique:calon_siswas,no_kip,' . $record->id)
-                                        ->dehydrateStateUsing(fn($state) => $state ? $state : null)
-                                        ->maxLength(6)
-                                        ->minLength(6)
-                                        ->live()
-                                        ->validationMessages([
-                                            'max' => 'KIP: Masukkan maksimal 6 Karakter.',
-                                            'min' => 'KIP: Masukkan minimal 6 Karakter.',
-                                            'unique' => 'KIP: Nomor ini sudah pernah di isi.',
-                                        ]),
-                                    // No KIP Calon Peserta Didik Baru
-                                    TextInput::make('no_kks')
-                                        ->label('Nomor Kartu Keluarga Sejahtera')
-                                        ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Keluarga Sejahtera (KKS).<sup style="color:red">*</sup></i></small>'))
-                                        ->unique(ignoreRecord: true)
-                                        ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_kks' : 'unique:calon_siswas,no_kks,' . $record->id)
-                                        ->dehydrateStateUsing(fn($state) => $state ? $state : null)
-                                        ->maxLength(6)
-                                        ->minLength(6)
-                                        ->live()
-                                        ->validationMessages([
-                                            'max' => 'KKS: Masukkan maksimal 6 Karakter.',
-                                            'min' => 'KKS: Masukkan minimal 6 Karakter.',
-                                            'unique' => 'KKS: Nomor ini sudah pernah di isi.',
-                                        ]),
-                                    // No KIP Calon Peserta Didik Baru
-                                    TextInput::make('no_pkh')
-                                        ->label('Nomor Kartu Program Keluarga Harapan')
-                                        ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Program Keluarga Harapan (PKH).<sup style="color:red">*</sup></i></small>'))
-                                        ->unique(ignoreRecord: true)
-                                        ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_pkh' : 'unique:calon_siswas,no_pkh,' . $record->id)
-                                        ->dehydrateStateUsing(fn($state) => $state ? $state : null)
-                                        ->maxLength(6)
-                                        ->minLength(6)
-                                        ->live()
-                                        ->validationMessages([
-                                            'max' => 'PKH: Masukkan maksimal 6 Karakter.',
-                                            'min' => 'PKH: Masukkan minimal 6 Karakter.',
-                                            'unique' => 'PKH: Nomor ini sudah pernah di isi.',
-                                        ]),
-                                    TextInput::make('siswa_telepon')
-                                        ->label('Nomor Telepon')
-                                        ->tel(),
-
-                                    Select::make('sekolah_asal_id')
-                                        ->label('Sekolah Asal')
-                                        ->relationship('sekolahAsal', 'nama')
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false)
-                                        ->searchable()
-                                        ->preload()
-                                        ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->nama} | NPSN: {$record->npsn}")
-                                        ->editOptionForm([
-                                            Wizard::make([
-                                                Step::make('Data Instansi')
-                                                    ->schema([
-                                                        // Section::make('Instansi')
-                                                        //     ->schema([
-                                                        TextInput::make('nama')
-                                                            ->label('Nama Instansi')
-                                                            ->prefixIcon('heroicon-o-building-library')
-                                                            ->required()
-                                                            ->validationMessages([
-                                                                'required' => 'Form ini wajib diisi.',
-                                                            ])
-                                                            ->columnSpanFull(),
-                                                        Select::make('jenjang')
-                                                            ->label('Jenjang')
-                                                            ->native(false)
-                                                            ->required()
-                                                            ->live()
-                                                            ->validationMessages([
-                                                                'required' => 'Form ini wajib diisi.',
-                                                            ])
-                                                            ->options(function () {
-                                                                $sekolah = Sekolah::first(); // Ambil satu instance model Sekolah
-                                                                $jenjang = optional($sekolah)->jenjang; // Menghindari error jika null
-
-                                                                return match ($jenjang) {
-                                                                    'TK' => ['PAUD' => 'PAUD'],
-                                                                    'SD', 'MI' => ['TK' => 'TK'],
-                                                                    'SMP', 'MTS' => ['SD' => 'SD', 'MI' => 'MI'],
-                                                                    'SMA', 'SMK', 'MA' => ['SMP' => 'SMP', 'MTS' => 'MTS'],
-                                                                    default => [
-                                                                        'PAUD' => 'PAUD',
-                                                                        'TK' => 'TK',
-                                                                        'SD' => 'SD',
-                                                                        'MI' => 'MI',
-                                                                        'SMP' => 'SMP',
-                                                                        'MTS' => 'MTS',
-                                                                        'SMA' => 'SMA',
-                                                                        'SMK' => 'SMK',
-                                                                        'MA' => 'MA',
-                                                                    ],
-                                                                };
-                                                            }),
-                                                        TextInput::make('npsn')
-                                                            ->label('NPSN')
-                                                            ->numeric()
-                                                            ->minLength(8)
-                                                            ->maxLength(8)
-                                                            ->required()
-                                                            ->validationMessages([
-                                                                'min_digits' => 'NPSN harus terdiri dari minimal 8 digit.',
-                                                                'max_digits' => 'NPSN tidak boleh lebih dari 8 digit.',
-                                                                'required' => 'Form ini wajib diisi.',
-                                                            ]),
-                                                        TextInput::make('nss')
-                                                            ->visible(fn($get) => in_array($get('jenjang'), ['MI', 'MTS', 'MA']))
-                                                            ->label('NSS/NSM')
-                                                            ->required()
-                                                            ->numeric()
-                                                            ->minLength(12)
-                                                            ->maxLength(12)
-                                                            ->validationMessages([
-                                                                'min_digits' => 'Nomor NSS/NSM harus terdiri dari minimal 12 digit.',
-                                                                'max_digits' => 'Nomor NSS/NSM tidak boleh lebih dari 12 digit.',
-                                                                'required' => 'Form ini wajib diisi.',
-                                                            ]),
-                                                        Select::make('akreditasi')
-                                                            ->label('Akreditasi')
-                                                            ->native(false)
-                                                            ->required()
-                                                            ->validationMessages([
-                                                                'required' => 'Form ini wajib diisi.',
-                                                            ])
-                                                            ->options(['A' => 'A (Sangat Baik)', 'B' => 'B (Baik)', 'C' => 'C (Cukup)', 'D' => 'D (Kurang)']),
-
-                                                        Select::make('status')
-                                                            ->label('Status')
-                                                            ->native(false)
-                                                            ->required()
-                                                            ->validationMessages([
-                                                                'required' => 'Form ini wajib diisi.',
-                                                            ])
-                                                            ->options(['NEGERI' => 'NEGERI', 'SWASTA' => 'SWASTA']),
-                                                        FileUpload::make('logo')
-                                                            ->label('Logo Instansi')
-                                                            ->image()
-                                                            ->imageEditor()
-                                                            ->imageEditorAspectRatios([
-                                                                null,
-                                                                '1:1' => '1:1',
-                                                            ])
-                                                            ->fetchFileInformation(false)
-                                                            ->directory('assets/instansi-lain')
-                                                            ->downloadable()
-                                                            ->openable()
-                                                            ->maxSize(500)
-                                                            ->minSize(10)
-                                                            ->visibility('private')
-                                                            ->required()
-                                                            ->validationMessages([
-                                                                'required' => 'Form ini wajib diisi.',
-                                                            ]),
-                                                    ])
-                                                    ->columns([
-                                                        'sm' => '100%',
-                                                        'md' => 3,
-                                                        'lg' => 3,
-                                                    ]),
-                                                // ]),
-                                                Step::make('Data Alamat')
-                                                    ->schema([
-                                                        // Section::make('Alamat')
-                                                        //     ->schema([
-                                                        Select::make('negara_id')
-                                                            ->label('Negara')
-                                                            ->relationship('negara', 'nama')
-                                                            ->required()
-                                                            ->validationMessages([
-                                                                'required' => 'Form ini wajib diisi.',
-                                                            ])
-                                                            ->native(false)
-                                                            ->preload()
-                                                            ->live()
-                                                            ->afterStateUpdated(function (Set $set) {
-                                                                $set('provinsi_id', null);
-                                                                $set('kabupaten_id', null);
-                                                                $set('kecamatan_id', null);
-                                                                $set('kelurahan_id', null);
-                                                            }),
-                                                        Select::make('provinsi_id')
-                                                            ->label('Provinsi')
-                                                            ->options(fn(Get $get): Collection => Provinsi::query()
-                                                                ->where('negara_id', $get('negara_id'))
-                                                                ->pluck('nama', 'id'))
-                                                            ->required()
-                                                            ->validationMessages([
-                                                                'required' => 'Form ini wajib diisi.',
-                                                            ])
-                                                            ->native(false)
-                                                            ->preload()
-                                                            ->live()
-                                                            ->afterStateUpdated(function (Set $set) {
-                                                                $set('kabupaten_id', null);
-                                                                $set('kecamatan_id', null);
-                                                                $set('kelurahan_id', null);
-                                                            }),
-                                                        Select::make('kabupaten_id')
-                                                            ->label('Kabupaten/Kota')
-                                                            ->options(fn(Get $get): Collection => Kabupaten::query()
-                                                                ->where('provinsi_id', $get('provinsi_id'))
-                                                                ->pluck('nama', 'id'))
-                                                            ->required()
-                                                            ->validationMessages([
-                                                                'required' => 'Form ini wajib diisi.',
-                                                            ])
-                                                            ->native(false)
-                                                            ->preload()
-                                                            ->live()
-                                                            ->afterStateUpdated(function (Set $set) {
-                                                                $set('kecamatan_id', null);
-                                                                $set('kelurahan_id', null);
-                                                            }),
-                                                        Select::make('kecamatan_id')
-                                                            ->label('Kecamatan')
-                                                            ->options(fn(Get $get): Collection => Kecamatan::query()
-                                                                ->where('kabupaten_id', $get('kabupaten_id'))
-                                                                ->pluck('nama', 'id'))
-                                                            ->required()
-                                                            ->validationMessages([
-                                                                'required' => 'Form ini wajib diisi.',
-                                                            ])
-                                                            ->native(false)
-                                                            ->preload()
-                                                            ->live()
-                                                            ->afterStateUpdated(function (Set $set) {
-                                                                $set('kelurahan_id', null);
-                                                            }),
-                                                        Select::make('kelurahan_id')
-                                                            ->label('Kelurahan/Desa')
-                                                            ->options(fn(Get $get): Collection => Kelurahan::query()
-                                                                ->where('kecamatan_id', $get('kecamatan_id'))
-                                                                ->pluck('nama', 'id'))
-                                                            ->required()
-                                                            ->validationMessages([
-                                                                'required' => 'Form ini wajib diisi.',
-                                                            ])
-                                                            ->native(false),
-                                                        TextInput::make('alamat')
-                                                            ->label('Jalan/Kampung/Dusun')
-                                                            ->required()
-                                                            ->placeholder('KP KEBON CAU RT 001 RW 005')
-                                                            ->validationMessages([
-                                                                'required' => 'Form ini wajib diisi.',
-                                                            ]),
-                                                    ])
-                                                    ->columns([
-                                                        'sm' => '100%',
-                                                        'md' => 3,
-                                                        'lg' => 3,
-                                                    ]),
-                                                // ]),
-                                                Step::make('Data Kontak')
-                                                    ->schema([
-                                                        // Section::make('Kontak')
-                                                        //     ->schema([
-                                                        TextInput::make('website')
-                                                            ->label('Website')
-                                                            ->url()
-                                                            ->prefixIcon('heroicon-m-globe-alt')
-                                                            // ->required()
-                                                            // ->validationMessages([
-                                                            //     'required' => 'Form ini wajib diisi.',
-                                                            // ])
-                                                            ->placeholder('https://mtsn1pandeglang.sch.id'),
-                                                        TextInput::make('telepon')
-                                                            ->label('Telepon')
-                                                            // ->required()
-                                                            // ->validationMessages([
-                                                            //     'required' => 'Form ini wajib diisi.',
-                                                            // ])
-                                                            ->tel()
-                                                            ->placeholder('08**********')
-                                                            ->prefixIcon('heroicon-m-phone'),
-                                                        TextInput::make('email')
-                                                            ->label('Email')
-                                                            // ->required()
-                                                            // ->validationMessages([
-                                                            //     'required' => 'Form ini wajib diisi.',
-                                                            // ])
-                                                            ->placeholder('adm@mtsn1pandeglang.sch.id')
-                                                            ->email()
-                                                            ->prefixIcon('heroicon-m-envelope'),
-                                                    ])
-                                                    ->columns([
-                                                        'sm' => '100%',
-                                                        'md' => 3,
-                                                        'lg' => 3,
-                                                    ]),
-                                                // ]),
-                                            ]),
-                                        ]),
-
-                                    // Data Prestasi Calon Peserta Didik Baru
-                                    // Select::make('prestasi_id')
-                                    //     ->visible(fn ($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
-                                    //     ->label('Prestasi')
-                                    //     ->helperText(new HtmlString('<small><i>Pilih prestasi yang paling tinggi jika memiliki lebih dari satu prestasi.</i></small>'))
-                                    //     ->relationship('prestasi', 'nama')
-                                    //     ->preload()
-                                    //     ->required()
-                                    //     ->validationMessages([
-                                    //         'required' => 'Form ini wajib diisi.',
-                                    //     ])
-                                    //     ->editOptionForm([
-                                    //         // Prestasi
-                                    //         // Section::make('Prestasi')
-                                    //         //     ->collapsible()
-                                    //         //     ->schema([
-                                    //         Section::make('')
-                                    //             ->schema([
-                                    //                 TextInput::make('nama')
-                                    //                     ->label('Nama Prestasi')
-                                    //                     ->required()
-                                    //                     ->validationMessages([
-                                    //                         'required' => 'Form ini wajib diisi.',
-                                    //                     ]),
-                                    //                 Select::make('jenis')
-                                    //                     ->label('Jenis Prestasi')
-                                    //                     ->options([
-                                    //                         'Hafalan Al-Quran' => 'Hafalan Al-Quran (Minimal 3 Juz)',
-                                    //                         'Olimpiade/Kejuaraan' => 'Olimpiade/Kejuaraan',
-                                    //                     ])
-                                    //                     ->required()
-                                    //                     ->native(false)
-                                    //                     ->validationMessages([
-                                    //                         'required' => 'Form ini wajib diisi.',
-                                    //                     ])
-                                    //                     ->live(),
-                                    //             ])
-                                    //             ->columns([
-                                    //                 'sm' => '100%',
-                                    //                 'md' => 2,
-                                    //                 'lg' => 2,
-                                    //             ]),
-
-                                    //         Section::make('')
-                                    //             ->schema([
-                                    //                 Select::make('tingkat')
-                                    //                     ->label('Tingkat')
-                                    //                     ->native(false)
-                                    //                     ->options([
-                                    //                         'Nasional' => 'Nasional',
-                                    //                         'Provinsi' => 'Provinsi',
-                                    //                         'Kabupaten/Kota' => 'Kabupaten/Kota',
-                                    //                     ])
-                                    //                     ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
-                                    //                 Select::make('kategori')
-                                    //                     ->label('Kategori')
-                                    //                     ->native(false)
-                                    //                     ->options([
-                                    //                         'Regu/Kelompok' => 'Regu/Kelompok',
-                                    //                         'Individu' => 'Individu',
-                                    //                     ])
-                                    //                     ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
-                                    //                 Select::make('peringkat')
-                                    //                     ->label('Peringkat')
-                                    //                     ->options([
-                                    //                         '1' => '1',
-                                    //                         '2' => '2',
-                                    //                         '3' => '3',
-                                    //                     ])
-                                    //                     ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
-                                    //             ])
-                                    //             ->columns([
-                                    //                 'sm' => '100%',
-                                    //                 'md' => 3,
-                                    //                 'lg' => 3,
-                                    //             ])
-                                    //             ->visible(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
-                                    //     ])
-                                    //     ->columns([
-                                    //         'sm' => '100%',
-                                    //         'md' => 3,
-                                    //         'lg' => 3,
-                                    //         // ]),
-                                    //     ])
-                                    //     ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->jenis} | {$record->nama} | {$record->tingkat} | {$record->kategori} | {$record->peringkat}")
-                                    //     ->searchable()
-                                    //     ->native(false),
-                                    // // Data Peminatan Ekstrakurikuler Calon Peserta Didik Baru
-                                    // Select::make('ekstrakurikuler_id')
-                                    //     ->label('Peminatan Ekstrakurikuler')
-                                    //     ->required()
-                                    //     ->searchable()
-                                    //     ->preload()
-                                    //     ->native(false)
-                                    //     ->relationship('ekstrakurikuler', 'nama')
-                                    //     ->validationMessages([
-                                    //         'required' => 'Form ini wajib diisi.',
-                                    //     ]),
-                                    // // Data Peminatan Pelajaran Calon Peserta Didik Baru
-                                    // Select::make('mata_pelajaran_id')
-                                    //     // ->visible(fn($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
-                                    //     ->label('Peminatan Mata Pelajaran')
-                                    //     ->searchable()
-                                    //     ->preload()
-                                    //     ->required()
-                                    //     ->validationMessages([
-                                    //         'required' => 'Form ini wajib diisi.',
-                                    //     ])
-                                    //     ->native(false)
-                                    //     ->relationship('mataPelajaran', 'nama')
-                                    //     ->validationMessages([
-                                    //         'required' => 'Form ini wajib diisi.',
-                                    //     ]),
-                                ]),
-
-                            // Tab Alamat Calon Peserta Didik Baru
-                            Tabs\Tab::make('Alamat')
-                                ->icon('heroicon-m-bell')
-                                ->iconPosition(IconPosition::After)
-                                ->schema([
-                                    // Alamat Calon Peserta Didik Baru
-                                    Select::make('siswa_negara_id')
-                                        ->label('Negara')
-                                        ->relationship('siswaNegara', 'nama')
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('siswa_provinsi_id', null);
-                                            $set('siswa_kabupaten_id', null);
-                                            $set('siswa_kecamatan_id', null);
-                                            $set('siswa_kelurahan_id', null);
-                                        }),
-                                    Select::make('siswa_provinsi_id')
-                                        ->label('Provinsi')
-                                        ->options(fn(Get $get): Collection => Provinsi::query()
-                                            ->where('negara_id', $get('siswa_negara_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('siswa_kabupaten_id', null);
-                                            $set('siswa_kecamatan_id', null);
-                                            $set('siswa_kelurahan_id', null);
-                                        }),
-                                    Select::make('siswa_kabupaten_id')
-                                        ->label('Kabupaten')
-                                        ->options(fn(Get $get): Collection => Kabupaten::query()
-                                            ->where('provinsi_id', $get('siswa_provinsi_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('siswa_kecamatan_id', null);
-                                            $set('siswa_kelurahan_id', null);
-                                        }),
-                                    Select::make('siswa_kecamatan_id')
-                                        ->label('Kecamatan')
-                                        ->options(fn(Get $get): Collection => Kecamatan::query()
-                                            ->where('kabupaten_id', $get('siswa_kabupaten_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('siswa_kelurahan_id', null);
-                                        }),
-                                    Select::make('siswa_kelurahan_id')
-                                        ->label('Kelurahan')
-                                        ->options(fn(Get $get): Collection => Kelurahan::query()
-                                            ->where('kecamatan_id', $get('siswa_kecamatan_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-                                    TextInput::make('siswa_alamat')
-                                        ->label('Jalan/Kampung/Dusun')
-                                        ->required()
-                                        ->placeholder('KP KEBON CAU RT 001 RW 005')
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                ]),
-
-                            // Tab Berkas Calon Peserta Didik Baru
-                            Tabs\Tab::make('Berkas')
-                                ->icon('heroicon-m-bell')
-                                ->iconPosition(IconPosition::After)
-                                ->schema([
-                                    // Berkas Foto Calon Peserta Didik Baru
-                                    FileUpload::make('berkas_foto')
-                                        ->label('Foto Latar Merah')
-                                        ->image()
-                                        ->imageEditor()
-                                        ->imageEditorAspectRatios([
-                                            null,
-                                            '1:1' => '1:1',
-                                            '3:4' => '3:4',
-                                        ])
-                                        ->fetchFileInformation(false)
-                                        ->directory(fn($get) => 'berkas/foto/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                        ->downloadable()
-                                        ->openable()
-                                        ->maxSize(500)
-                                        ->minSize(10)
-                                        ->visibility('private')
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                    // Berkas KK Calon Peserta Didik Baru
-                                    FileUpload::make('berkas_kk')
-                                        ->label('Kartu Keluarga')
-                                        ->image()
-                                        ->imageEditor()
-                                        ->imageEditorAspectRatios([
-                                            null,
-                                            '1:1' => '1:1',
-                                            '3:4' => '3:4',
-                                        ])
-                                        ->fetchFileInformation(false)
-                                        ->directory(fn($get) => 'berkas/kk/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                        ->downloadable()
-                                        ->openable()
-                                        ->maxSize(500)
-                                        ->minSize(10)
-                                        ->visibility('private')
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                    // Berkas Akta Calon Peserta Didik Baru
-                                    FileUpload::make('berkas_akta')
-                                        ->label('Akta Kelahiran')
-                                        ->image()
-                                        ->imageEditor()
-                                        ->imageEditorAspectRatios([
-                                            null,
-                                            '1:1' => '1:1',
-                                            '3:4' => '3:4',
-                                        ])
-                                        ->fetchFileInformation(false)
-                                        ->directory(fn($get) => 'berkas/akta/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                        ->downloadable()
-                                        ->openable()
-                                        ->maxSize(500)
-                                        ->minSize(10)
-                                        ->visibility('private')
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                    // Berkas NISN Calon Peserta Didik Baru
-                                    FileUpload::make('berkas_nisn')
-                                        ->label('Kartu NISN/Tangkapan Layar NISN (Web)')
-                                        ->image()
-                                        ->imageEditor()
-                                        ->imageEditorAspectRatios([
-                                            null,
-                                            '1:1' => '1:1',
-                                            '3:4' => '3:4',
-                                        ])
-                                        ->fetchFileInformation(false)
-                                        ->directory(fn($get) => 'berkas/nisn/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                        ->downloadable()
-                                        ->openable()
-                                        ->maxSize(500)
-                                        ->minSize(10)
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->visibility('private'),
-                                    // Berkas Surat Keterangan Berkelakuan Baik Calon Peserta Didik Baru
-                                    FileUpload::make('berkas_skbb')
-                                        ->label('Surat Keterangan Berkelakuan Baik')
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->fetchFileInformation(false)
-                                        ->directory(fn($get) => 'berkas/skbb/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                        ->downloadable()
-                                        ->openable()
-                                        ->acceptedFileTypes(['application/pdf'])
-                                        ->maxSize(500)
-                                        ->minSize(10)
-                                        ->visibility('private'),
-                                    // Berkas Surat Keterangan Aktif Belajar Calon Peserta Didik Baru
-                                    FileUpload::make('berkas_skab')
-                                        ->label('Surat Keterangan Aktif Belajar')
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->fetchFileInformation(false)
-                                        ->directory(fn($get) => 'berkas/skab/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                        ->downloadable()
-                                        ->openable()
-                                        ->acceptedFileTypes(['application/pdf'])
-                                        ->maxSize(500)
-                                        ->minSize(10)
-                                        ->visibility('private'),
-                                    // Berkas KIP Calon Peserta Didik Baru
-                                    FileUpload::make('berkas_kip')
-                                        ->required(fn($get) => $get('no_kip') !== null)
-                                        ->visible(fn($get) => $get('no_kip') !== null)
-                                        ->label('Kartu Indonesia Pintar')
-                                        ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Indonesia Pintar (KIP).<sup style="color:red">*</sup></i></small>'))
-                                        ->image()
-                                        ->imageEditor()
-                                        ->imageEditorAspectRatios([
-                                            null,
-                                            '1:1' => '1:1',
-                                            '3:4' => '3:4',
-                                        ])
-                                        ->fetchFileInformation(false)
-                                        ->directory(fn($get) => 'berkas/kip/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                        ->downloadable()
-                                        ->openable()
-                                        ->maxSize(500)
-                                        ->minSize(10)
-                                        ->visibility('private'),
-                                    // Berkas KKS Calon Peserta Didik Baru
-                                    FileUpload::make('berkas_kks')
-                                        ->required(fn($get) => $get('no_kks') !== null)
-                                        ->visible(fn($get) => $get('no_kks') !== null)
-                                        ->label('Kartu Keluarga Sejahtera')
-                                        ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Keluarga Sejahtera (KKS).<sup style="color:red">*</sup></i></small>'))
-                                        ->image()
-                                        ->imageEditor()
-                                        ->imageEditorAspectRatios([
-                                            null,
-                                            '1:1' => '1:1',
-                                            '3:4' => '3:4',
-                                        ])
-                                        ->fetchFileInformation(false)
-                                        ->directory(fn($get) => 'berkas/kks/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                        ->downloadable()
-                                        ->openable()
-                                        ->maxSize(500)
-                                        ->minSize(10)
-                                        ->visibility('private'),
-                                    // Berkas PKH Calon Peserta Didik Baru
-                                    FileUpload::make('berkas_pkh')
-                                        ->required(fn($get) => $get('no_pkh') !== null)
-                                        ->visible(fn($get) => $get('no_pkh') !== null)
-                                        ->label('Kartu Program Keluarga Harapan')
-                                        ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Program Keluarga Harapan (PKH).<sup style="color:red">*</sup></i></small>'))
-                                        ->image()
-                                        ->imageEditor()
-                                        ->imageEditorAspectRatios([
-                                            null,
-                                            '1:1' => '1:1',
-                                            '3:4' => '3:4',
-                                        ])
-                                        ->fetchFileInformation(false)
-                                        ->directory(fn($get) => 'berkas/pkh/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                        ->downloadable()
-                                        ->openable()
-                                        ->maxSize(500)
-                                        ->minSize(10)
-                                        ->visibility('private'),
-
-                                    // Berkas Prestasi Belajar Calon Peserta Didik Baru
-                                    // FileUpload::make('berkas_prestasi')
-                                    //     ->visible(fn ($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
-                                    //     ->label('Berkas Prestasi')
-                                    //     ->required()
-                                    //     ->validationMessages([
-                                    //         'required' => 'Form ini wajib diisi.',
-                                    //     ])
-                                    //     ->helperText(new HtmlString('<small><i>Gabungkan semua berkas jika memiliki lebih dari satu prestasi.</i></small>'))
-                                    //     ->fetchFileInformation(false)
-                                    //     ->directory(fn ($get) => 'berkas/prestasi/'.$get('nisn')) // Dinamis berdasarkan NISN
-                                    //     ->downloadable()
-                                    //     ->openable()
-                                    //     ->acceptedFileTypes(['application/pdf'])
-                                    //     ->maxSize(500)
-                                    //     ->minSize(10)
-                                    //     ->visibility('private'),
-                                ]),
-
-                        ])
-                        ->columns([
-                            'sm' => '100%',
-                            'md' => 3,
-                            'lg' => 3,
-                        ]),
-                ]),
-
-            Step::make('Data Orang Tua')
-                ->schema([
-                    // Tab Ibu
-                    Tabs::make('Data Ibu Kandung')
-                        ->tabs([
-                            Tabs\Tab::make('Data Ibu')
-                                ->icon('heroicon-m-bell')
-                                ->iconPosition(IconPosition::After)
-                                ->schema([
-                                    // Biodata Ibu Calon Peserta Didik Baru
-                                    TextInput::make('ibu_nama')
-                                        ->label('Nama Lengkap Ibu Kandung')
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                    TextInput::make('ibu_nik')
-                                        ->label('NIK Ibu Kandung')
-                                        ->required()
-                                        ->maxLength(16)
-                                        ->minLength(16)
-                                        ->numeric()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                            'max_digits' => 'NIK: Masukkan maksimal 16 Angka.',
-                                            'min_digits' => 'NIK: Masukkan minimal 16 Angka.',
-                                        ]),
-
-                                    TextInput::make('ibu_telepon')
-                                        ->label('Nomor Telepon')
-                                        ->tel()
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                    Select::make('ibu_pekerjaan')
-                                        ->label('Pekerjaan')
-                                        ->options([
-                                            'Tidak Bekerja' => 'Tidak Bekerja',
-                                            'ASN' => 'ASN',
-                                            'TNI/POLRI' => 'TNI/POLRI',
-                                            'Karyawan Swasta' => 'Karyawan Swasta',
-                                            'Pegawai Honorer' => 'Pegawai Honorer',
-                                            'Wirausaha' => 'Wirausaha',
-                                            'Wiraswasta' => 'Wiraswasta',
-                                            'Buruh' => 'Buruh',
-                                        ])
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-
-                                    Select::make('ibu_penghasilan')
-                                        ->label('Penghasilan Bulanan')
-                                        ->options([
-                                            'Kurang dari Rp. 500.000' => 'Kurang dari Rp. 500.000',
-                                            'Rp. 500.000 - Rp. 1.000.000' => 'Rp. 500.000 - Rp. 1.000.000',
-                                            'Rp. 1.000.001 - Rp. 2.000.000' => 'Rp. 1.000.001 - Rp. 2.000.000',
-                                            'Rp. 2.000.001 - Rp. 3.000.000' => 'Rp. 2.000.001 - Rp. 3.000.000',
-                                            'Rp. 3.000.001 - Rp. 4.000.000' => 'Rp. 3.000.001 - Rp. 4.000.000',
-                                            'Rp. 4.000.001 - Rp. 5.000.000' => 'Rp. 4.000.001 - Rp. 5.000.000',
-                                            'Lebih dari Rp. 5.000.000' => 'Lebih dari Rp. 5.000.000',
-                                        ])
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-
-                                    Select::make('ibu_pendidikan')
-                                        ->label('Pendidikan')
-                                        ->options([
-                                            'Tidak Sekolah' => 'Tidak Sekolah',
-                                            'SD/MI Sederajat' => 'SD/MI Sederajat',
-                                            'SMP/MTS Sederajat' => 'SMP/MTS Sederajat',
-                                            'SMA/SMK/MA Sederajat' => 'SMA/SMK/MA Sederajat',
-                                            'D1' => 'D1',
-                                            'D2' => 'D2',
-                                            'D3' => 'D3',
-                                            'D4' => 'D4',
-                                            'S1' => 'S1',
-                                            'S2' => 'S2',
-                                            'S3' => 'S3',
-                                        ])
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-
-                                    Select::make('ibu_status')
-                                        ->label('Status')
-                                        ->options([
-                                            'Hidup' => 'Hidup',
-                                            'Meninggal' => 'Meninggal',
-                                        ])
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-                                ]),
-
-                            Tabs\Tab::make('Alamat')
-                                ->icon('heroicon-m-bell')
-                                ->iconPosition(IconPosition::After)
-                                ->schema([
-                                    Select::make('ibu_negara_id')
-                                        ->label('Negara')
-                                        ->relationship('ibuNegara', 'nama')
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('ibu_provinsi_id', null);
-                                            $set('ibu_kabupaten_id', null);
-                                            $set('ibu_kecamatan_id', null);
-                                            $set('ibu_kelurahan_id', null);
-                                        }),
-                                    Select::make('ibu_provinsi_id')
-                                        ->label('Provinsi')
-                                        ->options(fn(Get $get): Collection => Provinsi::query()
-                                            ->where('negara_id', $get('ibu_negara_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('ibu_kabupaten_id', null);
-                                            $set('ibu_kecamatan_id', null);
-                                            $set('ibu_kelurahan_id', null);
-                                        }),
-                                    Select::make('ibu_kabupaten_id')
-                                        ->label('Kabupaten')
-                                        ->options(fn(Get $get): Collection => Kabupaten::query()
-                                            ->where('provinsi_id', $get('ibu_provinsi_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('ibu_kecamatan_id', null);
-                                            $set('ibu_kelurahan_id', null);
-                                        }),
-                                    Select::make('ibu_kecamatan_id')
-                                        ->label('Kecamatan')
-                                        ->options(fn(Get $get): Collection => Kecamatan::query()
-                                            ->where('kabupaten_id', $get('ibu_kabupaten_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('ibu_kelurahan_id', null);
-                                        }),
-                                    Select::make('ibu_kelurahan_id')
-                                        ->label('Kelurahan')
-                                        ->options(fn(Get $get): Collection => Kelurahan::query()
-                                            ->where('kecamatan_id', $get('ibu_kecamatan_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-                                    TextInput::make('ibu_alamat')
-                                        ->label('Jalan/Kampung/Dusun')
-                                        ->required()
-                                        ->placeholder('KP KEBON CAU RT 001 RW 005')
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                ]),
-                        ])
-                        ->columns([
-                            'sm' => '100%',
-                            'md' => 3,
-                            'lg' => 3,
-                        ]),
-
-                    // Tab Ayah
-                    Tabs::make('Data Ayah Kandung')
-                        ->tabs([
-                            Tabs\Tab::make('Data Ayah')
-                                ->icon('heroicon-m-bell')
-                                ->iconPosition(IconPosition::After)
-                                ->schema([
-                                    // Biodata Ayah Calon Peserta Didik Baru
-                                    TextInput::make('ayah_nama')
-                                        ->label('Nama Lengkap Ayah Kandung')
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                    TextInput::make('ayah_nik')
-                                        ->label('NIK Ayah Kandung')
-                                        ->required()
-                                        ->maxLength(16)
-                                        ->numeric()
-                                        ->minLength(16)
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                            'max_digits' => 'NIK: Masukkan maksimal 16 Angka.',
-                                            'min_digits' => 'NIK: Masukkan minimal 16 Angka.',
-                                        ]),
-                                    TextInput::make('ayah_telepon')
-                                        ->label('Nomor Telepon')
-                                        ->tel()
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                    Select::make('ayah_pekerjaan')
-                                        ->label('Pekerjaan')
-                                        ->options([
-                                            'Tidak Bekerja' => 'Tidak Bekerja',
-                                            'ASN' => 'ASN',
-                                            'TNI/POLRI' => 'TNI/POLRI',
-                                            'Karyawan Swasta' => 'Karyawan Swasta',
-                                            'Pegawai Honorer' => 'Pegawai Honorer',
-                                            'Wirausaha' => 'Wirausaha',
-                                            'Wiraswasta' => 'Wiraswasta',
-                                            'Buruh' => 'Buruh',
-                                        ])
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-
-                                    Select::make('ayah_penghasilan')
-                                        ->label('Penghasilan Bulanan')
-                                        ->options([
-                                            'Kurang dari Rp. 500.000' => 'Kurang dari Rp. 500.000',
-                                            'Rp. 500.000 - Rp. 1.000.000' => 'Rp. 500.000 - Rp. 1.000.000',
-                                            'Rp. 1.000.001 - Rp. 2.000.000' => 'Rp. 1.000.001 - Rp. 2.000.000',
-                                            'Rp. 2.000.001 - Rp. 3.000.000' => 'Rp. 2.000.001 - Rp. 3.000.000',
-                                            'Rp. 3.000.001 - Rp. 4.000.000' => 'Rp. 3.000.001 - Rp. 4.000.000',
-                                            'Rp. 4.000.001 - Rp. 5.000.000' => 'Rp. 4.000.001 - Rp. 5.000.000',
-                                            'Lebih dari Rp. 5.000.000' => 'Lebih dari Rp. 5.000.000',
-                                        ])
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-
-                                    Select::make('ayah_pendidikan')
-                                        ->label('Pendidikan')
-                                        ->options([
-                                            'Tidak Sekolah' => 'Tidak Sekolah',
-                                            'SD/MI Sederajat' => 'SD/MI Sederajat',
-                                            'SMP/MTS Sederajat' => 'SMP/MTS Sederajat',
-                                            'SMA/SMK/MA Sederajat' => 'SMA/SMK/MA Sederajat',
-                                            'D1' => 'D1',
-                                            'D2' => 'D2',
-                                            'D3' => 'D3',
-                                            'D4' => 'D4',
-                                            'S1' => 'S1',
-                                            'S2' => 'S2',
-                                            'S3' => 'S3',
-                                        ])
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-
-                                    Select::make('ayah_status')
-                                        ->label('Status')
-                                        ->options([
-                                            'Hidup' => 'Hidup',
-                                            'Meninggal' => 'Meninggal',
-                                        ])
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-                                ]),
-
-                            Tabs\Tab::make('Alamat')
-                                ->icon('heroicon-m-bell')
-                                ->iconPosition(IconPosition::After)
-                                ->schema([
-                                    Select::make('ayah_negara_id')
-                                        ->label('Negara')
-                                        ->relationship('ayahNegara', 'nama')
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('ayah_provinsi_id', null);
-                                            $set('ayah_kabupaten_id', null);
-                                            $set('ayah_kecamatan_id', null);
-                                            $set('ayah_kelurahan_id', null);
-                                        }),
-                                    Select::make('ayah_provinsi_id')
-                                        ->label('Provinsi')
-                                        ->options(fn(Get $get): Collection => Provinsi::query()
-                                            ->where('negara_id', $get('ayah_negara_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('ayah_kabupaten_id', null);
-                                            $set('ayah_kecamatan_id', null);
-                                            $set('ayah_kelurahan_id', null);
-                                        }),
-                                    Select::make('ayah_kabupaten_id')
-                                        ->label('Kabupaten')
-                                        ->options(fn(Get $get): Collection => Kabupaten::query()
-                                            ->where('provinsi_id', $get('ayah_provinsi_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('ayah_kecamatan_id', null);
-                                            $set('ayah_kelurahan_id', null);
-                                        }),
-                                    Select::make('ayah_kecamatan_id')
-                                        ->label('Kecamatan')
-                                        ->options(fn(Get $get): Collection => Kecamatan::query()
-                                            ->where('kabupaten_id', $get('ayah_kabupaten_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('ayah_kelurahan_id', null);
-                                        }),
-                                    Select::make('ayah_kelurahan_id')
-                                        ->label('Kelurahan')
-                                        ->options(fn(Get $get): Collection => Kelurahan::query()
-                                            ->where('kecamatan_id', $get('ayah_kecamatan_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-                                    TextInput::make('ayah_alamat')
-                                        ->label('Jalan/Kampung/Dusun')
-                                        ->required()
-                                        ->placeholder('KP KEBON CAU RT 001 RW 005')
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                ]),
-                        ])
-                        ->columns([
-                            'sm' => '100%',
-                            'md' => 3,
-                            'lg' => 3,
-                        ]),
-
-                    // Tab Wali
-                    Tabs::make('Data Wali')
-                        ->tabs([
-                            Tabs\Tab::make('Data Wali')
-                                ->icon('heroicon-m-bell')
-                                ->iconPosition(IconPosition::After)
-                                ->schema([
-                                    // Biodata Wali Calon Peserta Didik Baru
-                                    TextInput::make('wali_nama')
-                                        ->label('Nama Lengkap Wali'),
-                                    TextInput::make('wali_nik')
-                                        ->label('NIK Wali')
-                                        ->numeric()
-                                        ->maxLength(16)
-                                        ->minLength(16)
-                                        ->validationMessages([
-                                            'max_digits' => 'NIK: Masukkan maksimal 16 Angka.',
-                                            'min_digits' => 'NIK: Masukkan minimal 16 Angka.',
-                                        ]),
-                                    TextInput::make('wali_telepon')
-                                        ->label('Nomor Telepon')
-                                        ->tel(),
-                                    Select::make('wali_pekerjaan')
-                                        ->label('Pekerjaan')
-                                        ->options([
-                                            'Tidak Bekerja' => 'Tidak Bekerja',
-                                            'ASN' => 'ASN',
-                                            'TNI/POLRI' => 'TNI/POLRI',
-                                            'Karyawan Swasta' => 'Karyawan Swasta',
-                                            'Pegawai Honorer' => 'Pegawai Honorer',
-                                            'Wirausaha' => 'Wirausaha',
-                                            'Wiraswasta' => 'Wiraswasta',
-                                            'Buruh' => 'Buruh',
-                                        ])
-                                        ->native(false),
-
-                                    Select::make('wali_penghasilan')
-                                        ->label('Penghasilan Bulanan')
-                                        ->options([
-                                            'Kurang dari Rp. 500.000' => 'Kurang dari Rp. 500.000',
-                                            'Rp. 500.000 - Rp. 1.000.000' => 'Rp. 500.000 - Rp. 1.000.000',
-                                            'Rp. 1.000.001 - Rp. 2.000.000' => 'Rp. 1.000.001 - Rp. 2.000.000',
-                                            'Rp. 2.000.001 - Rp. 3.000.000' => 'Rp. 2.000.001 - Rp. 3.000.000',
-                                            'Rp. 3.000.001 - Rp. 4.000.000' => 'Rp. 3.000.001 - Rp. 4.000.000',
-                                            'Rp. 4.000.001 - Rp. 5.000.000' => 'Rp. 4.000.001 - Rp. 5.000.000',
-                                            'Lebih dari Rp. 5.000.000' => 'Lebih dari Rp. 5.000.000',
-                                        ])
-                                        ->native(false),
-
-                                    Select::make('wali_pendidikan')
-                                        ->label('Pendidikan')
-                                        ->options([
-                                            'Tidak Sekolah' => 'Tidak Sekolah',
-                                            'SD/MI Sederajat' => 'SD/MI Sederajat',
-                                            'SMP/MTS Sederajat' => 'SMP/MTS Sederajat',
-                                            'SMA/SMK/MA Sederajat' => 'SMA/SMK/MA Sederajat',
-                                            'D1' => 'D1',
-                                            'D2' => 'D2',
-                                            'D3' => 'D3',
-                                            'D4' => 'D4',
-                                            'S1' => 'S1',
-                                            'S2' => 'S2',
-                                            'S3' => 'S3',
-                                        ])
-                                        ->native(false),
-                                    Select::make('wali_status')
-                                        ->label('Status')
-                                        ->options([
-                                            'Hidup' => 'Hidup',
-                                            'Meninggal' => 'Meninggal',
-                                        ])
-                                        ->native(false),
-                                ]),
-
-                            Tabs\Tab::make('Alamat')
-                                ->icon('heroicon-m-bell')
-                                ->iconPosition(IconPosition::After)
-                                ->schema([
-                                    Select::make('wali_negara_id')
-                                        ->label('Negara')
-                                        ->relationship('waliNegara', 'nama')
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('wali_provinsi_id', null);
-                                            $set('wali_kabupaten_id', null);
-                                            $set('wali_kecamatan_id', null);
-                                            $set('wali_kelurahan_id', null);
-                                        }),
-                                    Select::make('wali_provinsi_id')
-                                        ->label('Provinsi')
-                                        ->options(fn(Get $get): Collection => Provinsi::query()
-                                            ->where('negara_id', $get('wali_negara_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('wali_kabupaten_id', null);
-                                            $set('wali_kecamatan_id', null);
-                                            $set('wali_kelurahan_id', null);
-                                        }),
-                                    Select::make('wali_kabupaten_id')
-                                        ->label('Kabupaten')
-                                        ->options(fn(Get $get): Collection => Kabupaten::query()
-                                            ->where('provinsi_id', $get('wali_provinsi_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('wali_kecamatan_id', null);
-                                            $set('wali_kelurahan_id', null);
-                                        }),
-                                    Select::make('wali_kecamatan_id')
-                                        ->label('Kecamatan')
-                                        ->options(fn(Get $get): Collection => Kecamatan::query()
-                                            ->where('kabupaten_id', $get('wali_kabupaten_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->native(false)
-                                        ->preload()
-                                        ->live()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('wali_kelurahan_id', null);
-                                        }),
-                                    Select::make('wali_kelurahan_id')
-                                        ->label('Kelurahan')
-                                        ->options(fn(Get $get): Collection => Kelurahan::query()
-                                            ->where('kecamatan_id', $get('wali_kecamatan_id'))
-                                            ->pluck('nama', 'id'))
-                                        ->native(false),
-                                    TextInput::make('wali_alamat')
-                                        ->label('Jalan/Kampung/Dusun')
-                                        // ->required()
-                                        ->placeholder('KP KEBON CAU RT 001 RW 005'),
-                                    // ->validationMessages([
-                                    //     'required' => 'Form ini wajib diisi.',
-                                    // ]),
-                                ]),
-                        ])
-                        ->columns([
-                            'sm' => '100%',
-                            'md' => 3,
-                            'lg' => 3,
-                        ]),
-                    // Section Kepemilikan Rumah
-                    Section::make('Kepemilikan Rumah')
-                        ->icon('heroicon-m-bell')
-                        ->iconPosition(IconPosition::After)
-                        ->schema([
-                            // Status Kepemilikan Rumah
-                            Select::make('kepemilikan_rumah')
-                                ->label('Status Kepemilikan Rumah')
-                                ->options([
-                                    'Rumah Pribadi' => 'Rumah Pribadi',
-                                    'Kontrakan' => 'Kontrakan',
-                                    'Rumah Dinas' => 'Rumah Dinas',
-                                    'Menumpang Saudara' => 'Menumpang Saudara',
-                                ])
-                                ->required()
-                                ->validationMessages([
-                                    'required' => 'Form ini wajib diisi.',
-                                ])
-                                ->native(false),
-                        ]),
-                ]),
-
-            Step::make('Data Tes')
-                ->hidden(function () {
-                    return Auth::user()->roles->first()->name === 'calon_siswa';
-                })
-                ->schema([
-                    Tabs::make('Data Kartu Tes')
-                        ->hidden(function () {
-                            return Auth::user()->roles->first()->name === 'calon_siswa';
-                        })
-                        ->tabs([
-                            Tabs\Tab::make('Data Kartu Tes')
-                                ->icon('heroicon-m-bell')
-                                ->iconPosition(IconPosition::After)
-                                ->schema([
-                                    // Data Kartu Tes
-                                    TextInput::make('tes_sesi')
-                                        ->label('Sesi Tes'),
-                                    TextInput::make('tes_ruang')
-                                        ->label('Ruang Tes'),
-                                    DateTimePicker::make('tes_akademik')
-                                        ->label('Tanggal Tes Akademik'),
-                                    DateTimePicker::make('tes_praktik')
-                                        ->label('Tanggal Tes Praktik'),
-                                ]),
-                        ])
-                        ->columns([
-                            'sm' => '100%',
-                            'md' => 2,
-                            'lg' => 2,
-                        ]),
-
-                    // Tab Nilai Calon Peserta Didik Baru
-                    Tabs::make('Data Nilai Tes')
-                        ->hidden(function () {
-                            return Auth::user()->roles->first()->name === 'calon_siswa';
-                        })
-                        ->tabs([
-                            Tabs\Tab::make('Data Nilai Tes')
-                                ->icon('heroicon-m-bell')
-                                ->iconPosition(IconPosition::After)
-                                ->schema([
-                                    // Data Bobot Nilai Tes Akademik Calon Peserta Didik Baru
-                                    TextInput::make('bobot_nilai_akademik')
-                                        ->label('Bobot Nilai Tes Akademik')
-                                        ->numeric(),
-                                    // Data Bobot Nilai Tes Praktik Calon Peserta Didik Baru
-                                    TextInput::make('bobot_nilai_praktik')
-                                        ->label('Bobot Nilai Tes Praktik')
-                                        ->numeric(),
-                                    // Data Nilai Tes Akademik Calon Peserta Didik Baru
-                                    TextInput::make('nilai_akademik')
-                                        ->label('Nilai Tes Akademik')
-                                        ->numeric(),
-                                    // Data Nilai Tes Praktik Calon Peserta Didik Baru
-                                    TextInput::make('nilai_praktik')
-                                        ->label('Nilai Tes Praktik')
-                                        ->numeric(),
-                                ]),
-                        ])
-                        ->columns([
-                            'sm' => '100%',
-                            'md' => 2,
-                            'lg' => 2,
-                        ]),
-                ])
-                ->columns([
-                    'sm' => '100%',
-                    'md' => '100%',
-                    'lg' => 2,
-                ])
-                ->columnSpanFull(),
-        ];
+        return $this->getAllSteps(
+            includeStatusSection: true,
+            includeDataTes: true
+        );
     }
 }
 
@@ -8827,7 +5659,7 @@ class ListCalonSiswas extends ListRecords
                 ->color('success')
                 ->exporter(CalonSiswaExporter::class)
                 ->chunkSize(250)
-                ->visible(fn (): string => CalonSiswa::count() > 0 && Auth::user()->roles->first()->name !== 'calon_siswa'),
+                ->visible(fn(): string => CalonSiswa::count() > 0 && Auth::user()->roles->first()->name !== 'calon_siswa'),
 
             // Import
             ImportAction::make('import')
@@ -8861,1673 +5693,120 @@ class ListCalonSiswas extends ListRecords
 namespace App\Filament\Resources\CalonSiswaResource\Pages;
 
 use App\Filament\Resources\CalonSiswaResource;
+use App\Filament\Traits\CalonSiswaFormTrait;
 use App\Models\CalonSiswa;
-use App\Models\JalurPendaftaran;
-use App\Models\Kabupaten;
-use App\Models\Kecamatan;
-use App\Models\Kelurahan;
-use App\Models\Provinsi;
-use App\Models\Sekolah;
 use Carbon\Carbon;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Tabs;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Wizard;
-use Filament\Forms\Components\Wizard\Step;
 use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Resources\Pages\ViewRecord;
-use Filament\Support\Enums\IconPosition;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\HtmlString;
 use Torgodly\Html2Media\Actions\Html2MediaAction;
 
 class ViewCalonSiswa extends ViewRecord
 {
+    use CalonSiswaFormTrait;
+
     protected static string $resource = CalonSiswaResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
-            // Formulir
-            Html2MediaAction::make('cetak_formulir')
-                ->label('Formulir')
-                ->outlined()
-                ->icon('heroicon-o-printer')
-                ->filename(fn($record) => 'Formulir_' . $record->nama . '_' . $record->nisn . '.pdf')
-                ->savePdf()
-                ->orientation('portrait')
-                ->format('a4', 'mm')
-                ->enableLinks()
-                ->margin([10, 10, 10, 10])
-                ->content(fn($record) => view('formulir', ['record' => $record]))
-                ->visible(function () {
-                    $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
-                    if (! $calonSiswa) {
-                        return false;
-                    }
+            $this->getPdfAction('cetak_formulir', 'Formulir', 'formulir', function () {
+                $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
+                if (!$calonSiswa) {
+                    return false;
+                }
+                return !in_array($calonSiswa->status_pendaftaran, ['Diproses', 'Tidak Diterima', 'Berkas Tidak Lengkap']);
+            }),
 
-                    return ! in_array($calonSiswa->status_pendaftaran, ['Diproses', 'Tidak Diterima', 'Berkas Tidak Lengkap']);
-                }),
+            $this->getPdfAction('cetak_kartu_tes', 'Kartu Tes', 'kartu-tes', function () {
+                $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
 
-            // Kartu Tes
-            Html2MediaAction::make('cetak_kartu_tes')
-                ->label('Kartu Tes')
-                ->outlined()
-                ->icon('heroicon-o-printer')
-                ->filename(fn($record) => 'Kartu Tes_' . $record->nama . '_' . $record->nisn . '.pdf')
-                ->savePdf()
-                ->orientation('portrait')
-                ->format('a4', 'mm')
-                ->enableLinks()
-                ->margin([10, 10, 10, 10])
-                ->content(fn($record) => view('kartu-tes', ['record' => $record]))
-                ->visible(function () {
-                    $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
+                if (!$calonSiswa || in_array($calonSiswa->status_pendaftaran, [
+                    'Diproses',
+                    'Tidak Diterima',
+                    'Berkas Tidak Lengkap',
+                    'Diterima Di Kelas Reguler',
+                    'Diterima Di Kelas Unggulan'
+                ])) {
+                    return false;
+                }
 
-                    if (! $calonSiswa || in_array($calonSiswa->status_pendaftaran, ['Diproses', 'Tidak Diterima', 'Berkas Tidak Lengkap', 'Diterima Di Kelas Reguler', 'Diterima Di Kelas Unggulan'])) {
-                        return false;
-                    }
+                $tahunPendaftaran = DB::table('tahun_pendaftarans')
+                    ->where('status', 'Aktif')
+                    ->first();
 
-                    $tahunPendaftaran = DB::table('tahun_pendaftarans')
-                        ->where('status', 'Aktif')
-                        ->first();
+                if (
+                    !$tahunPendaftaran || !$tahunPendaftaran->tanggal_penerbitan_kartu_tes_mulai
+                    || !$tahunPendaftaran->tanggal_penerbitan_kartu_tes_selesai
+                ) {
+                    return false;
+                }
 
-                    if (! $tahunPendaftaran || ! $tahunPendaftaran->tanggal_penerbitan_kartu_tes_mulai || ! $tahunPendaftaran->tanggal_penerbitan_kartu_tes_selesai) {
-                        return false;
-                    }
+                return Carbon::now()->between(
+                    Carbon::parse($tahunPendaftaran->tanggal_penerbitan_kartu_tes_mulai),
+                    Carbon::parse($tahunPendaftaran->tanggal_penerbitan_kartu_tes_selesai)
+                );
+            }),
 
-                    return Carbon::now()->between(
-                        Carbon::parse($tahunPendaftaran->tanggal_penerbitan_kartu_tes_mulai),
-                        Carbon::parse($tahunPendaftaran->tanggal_penerbitan_kartu_tes_selesai)
-                    );
-                }),
+            $this->getPdfAction('cetak_skl', 'Hasil', 'skl', function () {
+                $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
+                if (!$calonSiswa || in_array($calonSiswa->status_pendaftaran, [
+                    'Diproses',
+                    'Diverifikasi',
+                    'Berkas Tidak Lengkap'
+                ])) {
+                    return false;
+                }
 
-            // SKL/Hasil
-            Html2MediaAction::make('cetak_skl')
-                ->label('Hasil')
-                ->outlined()
-                ->icon('heroicon-o-printer')
-                ->filename(fn($record) => 'Hasil_' . $record->nama . '_' . $record->nisn . '.pdf')
-                ->savePdf()
-                ->orientation('portrait')
-                ->format('a4', 'mm')
-                ->enableLinks()
-                ->margin([10, 10, 10, 10])
-                ->content(fn($record) => view('skl', ['record' => $record]))
-                ->visible(function () {
-                    $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
-                    if (! $calonSiswa || in_array($calonSiswa->status_pendaftaran, ['Diproses', 'Diverifikasi', 'Berkas Tidak Lengkap'])) {
-                        return false;
-                    }
-                    $tahunPendaftaran = DB::table('tahun_pendaftarans')->where('status', 'Aktif')->first();
-                    if (! $tahunPendaftaran) {
-                        return false;
-                    }
-                    $periodePengumuman = collect([
-                        ['tanggal_pengumuman_jalur_prestasi_mulai', 'tanggal_pengumuman_jalur_prestasi_selesai'],
-                        ['tanggal_pengumuman_jalur_reguler_mulai', 'tanggal_pengumuman_jalur_reguler_selesai'],
-                        ['tanggal_pengumuman_jalur_afirmasi_mulai', 'tanggal_pengumuman_jalur_afirmasi_selesai'],
-                        ['tanggal_pengumuman_jalur_zonasi_mulai', 'tanggal_pengumuman_jalur_zonasi_selesai'],
-                        ['tanggal_pengumuman_jalur_mutasi_mulai', 'tanggal_pengumuman_jalur_mutasi_selesai'],
-                    ])->map(fn($dates) => [
-                        optional($tahunPendaftaran)->{$dates[0]} ? Carbon::parse($tahunPendaftaran->{$dates[0]}) : null,
-                        optional($tahunPendaftaran)->{$dates[1]} ? Carbon::parse($tahunPendaftaran->{$dates[1]}) : null,
-                    ]);
+                $tahunPendaftaran = DB::table('tahun_pendaftarans')
+                    ->where('status', 'Aktif')
+                    ->first();
 
-                    return $periodePengumuman->contains(fn($range) => now()->between(...$range));
-                }),
+                if (!$tahunPendaftaran) {
+                    return false;
+                }
 
+                $periodePengumuman = collect([
+                    ['tanggal_pengumuman_jalur_prestasi_mulai', 'tanggal_pengumuman_jalur_prestasi_selesai'],
+                    ['tanggal_pengumuman_jalur_reguler_mulai', 'tanggal_pengumuman_jalur_reguler_selesai'],
+                    ['tanggal_pengumuman_jalur_afirmasi_mulai', 'tanggal_pengumuman_jalur_afirmasi_selesai'],
+                    ['tanggal_pengumuman_jalur_zonasi_mulai', 'tanggal_pengumuman_jalur_zonasi_selesai'],
+                    ['tanggal_pengumuman_jalur_mutasi_mulai', 'tanggal_pengumuman_jalur_mutasi_selesai'],
+                ])->map(fn($dates) => [
+                    optional($tahunPendaftaran)->{$dates[0]} ? Carbon::parse($tahunPendaftaran->{$dates[0]}) : null,
+                    optional($tahunPendaftaran)->{$dates[1]} ? Carbon::parse($tahunPendaftaran->{$dates[1]}) : null,
+                ]);
+
+                return $periodePengumuman->contains(fn($range) => now()->between(...$range));
+            }),
         ];
+    }
+
+    protected function getPdfAction(string $name, string $label, string $view, callable $visibleCallback): Html2MediaAction
+    {
+        return Html2MediaAction::make($name)
+            ->label($label)
+            ->outlined()
+            ->icon('heroicon-o-printer')
+            ->filename(fn($record) => "{$label}_{$record->nama}_{$record->nisn}.pdf")
+            ->savePdf()
+            ->orientation('portrait')
+            ->format('a4', 'mm')
+            ->enableLinks()
+            ->margin([10, 10, 10, 10])
+            ->content(fn($record) => view($view, ['record' => $record]))
+            ->visible($visibleCallback);
     }
 
     public function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                Wizard::make([
-                    Step::make('Data Calon Siswa')
-                        ->schema([
-                            // Section Formulir
-                            Section::make('Formulir Pendaftaran')
-                                // ->collapsible()
-                                ->schema([
-                                    // Data Status Pendaftaran Calon Peserta Didik Baru
-                                    Select::make('status_pendaftaran')
-                                        ->label('Status Pendaftaran')
-                                        ->options([
-                                            'Diproses' => 'Diproses',
-                                            'Berkas Tidak Lengkap' => 'Berkas Tidak Lengkap',
-                                            'Diverifikasi' => 'Diverifikasi',
-                                            'Tidak Diterima' => 'Tidak Diterima',
-                                            'Diterima' => 'Diterima',
-                                            'Diterima Di Kelas Reguler' => 'Diterima Di Kelas Reguler',
-                                            'Diterima Di Kelas Unggulan' => 'Diterima Di Kelas Unggulan',
-                                        ])
-                                        ->native(false)
-                                        ->live()
-                                        ->default('Diproses'),
-                                    // Data Kelas Pendaftaran Calon Peserta Didik Baru
-                                    Select::make('kelas_id')
-                                        ->label('Kelas')
-                                        ->relationship('kelas', 'nama')
-                                        ->native(false),
-                                ])
-                                ->visible(Auth::user()->roles->first()->name !== 'calon_siswa')
-                                ->columns([
-                                    'sm' => '100%',
-                                    'md' => 2,
-                                    'lg' => 2,
-                                    'xl' => 2,
-                                    '2xl' => 2,
-                                ]),
-
-                            Tabs::make('Biodata')
-                                ->tabs([
-                                    Tabs\Tab::make('Biodata')
-                                        ->icon('heroicon-m-bell')
-                                        ->iconPosition(IconPosition::After)
-                                        ->schema([
-                                            // Jalur Pendaftaran
-                                            Select::make('jalur_pendaftaran_id')
-                                                ->label('Jalur Pendaftaran')
-                                                ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif')) // Menampilkan data jalurPendaftaran dengan kondisi statusnya aktif saja
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false)
-                                                ->live()
-                                                ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->nama} | {$record->tahunPendaftaran->nama}"),
-                                            // Nama Lengkap Calon Peserta Didik Baru
-                                            TextInput::make('nama')
-                                                ->label('Nama Lengkap')
-                                                ->required()
-                                                ->disabledOn('create')
-                                                ->dehydrated()
-                                                ->default(fn() => Auth::user()->name)
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ]),
-                                            // NIK Calon Peserta Didik Baru
-                                            TextInput::make('nik')
-                                                ->label('Nomor Induk Kependudukan (NIK)')
-                                                ->required()
-                                                ->unique(ignoreRecord: true)
-                                                ->rule(fn($record) => $record === null ? 'unique:calon_siswas,nik' : 'unique:calon_siswas,nik,' . $record->id)
-                                                ->dehydrateStateUsing(fn($state) => $state ? $state : null)
-                                                ->numeric()
-                                                ->maxLength(16)
-                                                ->minLength(16)
-                                                ->validationMessages([
-                                                    'max_digits' => 'NIK: Masukkan maksimal 16 Angka.',
-                                                    'min_digits' => 'NIK: Masukkan minimal 16 Angka.',
-                                                    'unique' => 'NIK: Nomor ini sudah pernah di isi.',
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ]),
-                                            // KK Calon Peserta Didik Baru
-                                            TextInput::make('kk')
-                                                ->label('Nomor Kartu Keluarga (KK)')
-                                                ->required()
-                                                ->maxLength(16)
-                                                ->numeric()
-                                                ->minLength(16)
-                                                ->validationMessages([
-                                                    'max_digits' => 'NIK: Masukkan maksimal 16 Angka.',
-                                                    'min_digits' => 'NIK: Masukkan minimal 16 Angka.',
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ]),
-                                            // NISN Calon Peserta Didik Baru
-                                            TextInput::make('nisn')
-                                                ->label('Nomor Induk Siswa Nasional (NISN)')
-                                                ->required()
-                                                ->disabledOn('create')
-                                                ->dehydrated()
-                                                ->default(fn() => Auth::user()->username)
-                                                ->unique(ignoreRecord: true)
-                                                ->rule(fn($record) => $record === null ? 'unique:calon_siswas,nisn' : 'unique:calon_siswas,nisn,' . $record->id)
-                                                ->dehydrateStateUsing(fn($state) => $state ? $state : null)
-                                                ->numeric()
-                                                ->maxLength(10)
-                                                ->minLength(10)
-                                                ->validationMessages([
-                                                    'max_digits' => 'NISN: Masukkan maksimal 10 Angka.',
-                                                    'min_digits' => 'NISN: Masukkan minimal 10 Angka.',
-                                                    'unique' => 'NISN: Nomor ini sudah pernah di isi.',
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ]),
-                                            // Tempat Lahir Calon Peserta Didik Baru
-                                            TextInput::make('tempat_lahir')
-                                                ->label('Tempat Lahir')
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ]),
-                                            // Tanggal Lahir Calon Peserta Didik Baru
-                                            DatePicker::make('tanggal_lahir')
-                                                ->label('Tanggal Lahir')
-                                                ->maxDate(now())
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ]),
-                                            // Tahun Lulus Calon Peserta Didik Baru
-                                            Select::make('tahun_lulus')
-                                                ->label('Tahun Lulus')
-                                                ->options(function () {
-                                                    $tahun = range(date('Y'), date('Y') - 2);
-
-                                                    return array_combine($tahun, $tahun);
-                                                })
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false),
-                                            // Jenis Kelamin Calon Peserta Didik Baru
-                                            Select::make('jenis_kelamin')
-                                                ->label('Jenis Kelamin')
-                                                ->options([
-                                                    'Pria' => 'Laki-laki',
-                                                    'Wanita' => 'Perempuan',
-                                                ])
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false),
-                                            // Golongan Darah Calon Peserta Didik Baru
-                                            Select::make('golongan_darah')
-                                                ->label('Golongan Darah')
-                                                ->options([
-                                                    'A-' => 'A-',
-                                                    'A+' => 'A+',
-                                                    'B-' => 'B-',
-                                                    'B+' => 'B+',
-                                                    'AB-' => 'AB-',
-                                                    'AB+' => 'AB+',
-                                                    'O-' => 'O-',
-                                                    'O+' => 'O+',
-                                                ])
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false),
-                                            // Agama Calon Peserta Didik Baru
-                                            Select::make('agama')
-                                                ->label('Agama')
-                                                ->options([
-                                                    'Islam' => 'Islam',
-                                                    'Kristen Katholik' => 'Kristen Katholik',
-                                                    'Kristen Protestan' => 'Kristen Protestan',
-                                                    'Hindu' => 'Hindu',
-                                                    'Buddha' => 'Buddha',
-                                                    'Konghucu' => 'Konghucu',
-                                                ])
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false),
-                                            // Anak Ke Calon Peserta Didik Baru
-                                            TextInput::make('anak_ke')
-                                                ->label('Anak Ke')
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->numeric(),
-                                            // Jumlah Saudara Calon Peserta Didik Baru
-                                            TextInput::make('jumlah_saudara')
-                                                ->label('Dari (Jumlah Anak)')
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->numeric(),
-                                            // Tinggal Bersama Calon Peserta Didik Baru
-                                            Select::make('tinggal_bersama')
-                                                ->label('Tinggal Bersama')
-                                                ->options([
-                                                    'Orang Tua' => 'Orang Tua',
-                                                    'Saudara' => 'Saudara',
-                                                    'Panti Asuhan' => 'Panti Asuhan',
-                                                    'Kost' => 'Kost',
-                                                    'Lainnya' => 'Lainnya',
-                                                ])
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false),
-                                            // Jarak Ke Sekolah Calon Peserta Didik Baru
-                                            Select::make('jarak_ke_sekolah')
-                                                ->label('Jarak Ke Sekolah')
-                                                ->options([
-                                                    '0 - 1 Km' => '0 - 1 Km',
-                                                    '1 - 5 Km' => '1 - 5 Km',
-                                                    '5 - 10 Km' => '5 - 10 Km',
-                                                    '10 - 15 Km' => '10 - 15 Km',
-                                                    '15 - 20 Km' => '15 - 20 Km',
-                                                    '20 - 25 Km' => '20 - 25 Km',
-                                                    '25 - 30 Km' => '25 - 30 Km',
-                                                ])
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false),
-                                            // Disabilitas Calon Peserta Didik Baru
-                                            Select::make('disabilitas')
-                                                ->label('Disabilitas')
-                                                ->options([
-                                                    'Non Disabilitas' => 'Non Disabilitas',
-                                                    'Fisik' => 'Fisik',
-                                                    'Penglihatan' => 'Penglihatan',
-                                                    'Pendengaran' => 'Pendengaran',
-                                                    'Kognitif' => 'Kognitif',
-                                                    'Mental' => 'Mental',
-                                                    'Lainnya' => 'Lainnya',
-                                                ])
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false),
-                                            // Tinggi Badan Calon Peserta Didik Baru
-                                            TextInput::make('tinggi_badan')
-                                                ->label('Tinggi Badan')
-                                                ->postFix('Cm')
-                                                ->numeric(),
-                                            // Berat Badan Calon Peserta Didik Baru
-                                            TextInput::make('berat_badan')
-                                                ->label('Berat Badan')
-                                                ->postFix('Kg')
-                                                ->numeric(),
-                                            // No KIP Calon Peserta Didik Baru
-                                            TextInput::make('no_kip')
-                                                ->label('Nomor Kartu Indonesia Pintar')
-                                                ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Indonesia Pintar (KIP).<sup style="color:red">*</sup></i></small>'))
-                                                ->unique(ignoreRecord: true)
-                                                ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_kip' : 'unique:calon_siswas,no_kip,' . $record->id)
-                                                ->dehydrateStateUsing(fn($state) => $state ? $state : null)
-                                                ->maxLength(6)
-                                                ->minLength(6)
-                                                ->live()
-                                                ->validationMessages([
-                                                    'max' => 'KIP: Masukkan maksimal 6 Karakter.',
-                                                    'min' => 'KIP: Masukkan minimal 6 Karakter.',
-                                                    'unique' => 'KIP: Nomor ini sudah pernah di isi.',
-                                                ]),
-                                            // No KIP Calon Peserta Didik Baru
-                                            TextInput::make('no_kks')
-                                                ->label('Nomor Kartu Keluarga Sejahtera')
-                                                ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Keluarga Sejahtera (KKS).<sup style="color:red">*</sup></i></small>'))
-                                                ->unique(ignoreRecord: true)
-                                                ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_kks' : 'unique:calon_siswas,no_kks,' . $record->id)
-                                                ->dehydrateStateUsing(fn($state) => $state ? $state : null)
-                                                ->maxLength(6)
-                                                ->minLength(6)
-                                                ->live()
-                                                ->validationMessages([
-                                                    'max' => 'KKS: Masukkan maksimal 6 Karakter.',
-                                                    'min' => 'KKS: Masukkan minimal 6 Karakter.',
-                                                    'unique' => 'KKS: Nomor ini sudah pernah di isi.',
-                                                ]),
-                                            // No KIP Calon Peserta Didik Baru
-                                            TextInput::make('no_pkh')
-                                                ->label('Nomor Kartu Program Keluarga Harapan')
-                                                ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Program Keluarga Harapan (PKH).<sup style="color:red">*</sup></i></small>'))
-                                                ->unique(ignoreRecord: true)
-                                                ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_pkh' : 'unique:calon_siswas,no_pkh,' . $record->id)
-                                                ->dehydrateStateUsing(fn($state) => $state ? $state : null)
-                                                ->maxLength(6)
-                                                ->minLength(6)
-                                                ->live()
-                                                ->validationMessages([
-                                                    'max' => 'PKH: Masukkan maksimal 6 Karakter.',
-                                                    'min' => 'PKH: Masukkan minimal 6 Karakter.',
-                                                    'unique' => 'PKH: Nomor ini sudah pernah di isi.',
-                                                ]),
-                                            TextInput::make('siswa_telepon')
-                                                ->label('Nomor Telepon')
-                                                ->numeric()
-                                                ->tel(),
-                                            // Data Sekolah Asal Calon Peserta Didik Baru
-                                            Select::make('sekolah_asal_id')
-                                                ->label('Sekolah Asal')
-                                                ->relationship('sekolahAsal', 'nama')
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false)
-                                                ->searchable()
-                                                ->preload()
-                                                ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->nama} | NPSN: {$record->npsn}")
-                                                ->createOptionForm([
-                                                    Wizard::make([
-                                                        Step::make('Data Instansi')
-                                                            ->schema([
-                                                                // Section::make('Instansi')
-                                                                //     ->schema([
-                                                                TextInput::make('nama')
-                                                                    ->label('Nama Instansi')
-                                                                    ->prefixIcon('heroicon-o-building-library')
-                                                                    ->required()
-                                                                    ->validationMessages([
-                                                                        'required' => 'Form ini wajib diisi.',
-                                                                    ])
-                                                                    ->columnSpanFull(),
-                                                                Select::make('jenjang')
-                                                                    ->label('Jenjang')
-                                                                    ->native(false)
-                                                                    ->required()
-                                                                    ->live()
-                                                                    ->validationMessages([
-                                                                        'required' => 'Form ini wajib diisi.',
-                                                                    ])
-                                                                    ->options(function () {
-                                                                        $sekolah = Sekolah::first(); // Ambil satu instance model Sekolah
-                                                                        $jenjang = optional($sekolah)->jenjang; // Menghindari error jika null
-
-                                                                        return match ($jenjang) {
-                                                                            'TK' => ['PAUD' => 'PAUD'],
-                                                                            'SD', 'MI' => ['TK' => 'TK'],
-                                                                            'SMP', 'MTS' => ['SD' => 'SD', 'MI' => 'MI'],
-                                                                            'SMA', 'SMK', 'MA' => ['SMP' => 'SMP', 'MTS' => 'MTS'],
-                                                                            default => [
-                                                                                'PAUD' => 'PAUD',
-                                                                                'TK' => 'TK',
-                                                                                'SD' => 'SD',
-                                                                                'MI' => 'MI',
-                                                                                'SMP' => 'SMP',
-                                                                                'MTS' => 'MTS',
-                                                                                'SMA' => 'SMA',
-                                                                                'SMK' => 'SMK',
-                                                                                'MA' => 'MA',
-                                                                            ],
-                                                                        };
-                                                                    }),
-                                                                TextInput::make('npsn')
-                                                                    ->label('NPSN')
-                                                                    ->numeric()
-                                                                    ->minLength(8)
-                                                                    ->maxLength(8)
-                                                                    ->required()
-                                                                    ->validationMessages([
-                                                                        'min_digits' => 'NPSN harus terdiri dari minimal 8 digit.',
-                                                                        'max_digits' => 'NPSN tidak boleh lebih dari 8 digit.',
-                                                                        'required' => 'Form ini wajib diisi.',
-                                                                    ]),
-                                                                TextInput::make('nss')
-                                                                    ->visible(fn($get) => in_array($get('jenjang'), ['MI', 'MTS', 'MA']))
-                                                                    ->label('NSS/NSM')
-                                                                    ->required()
-                                                                    ->numeric()
-                                                                    ->minLength(12)
-                                                                    ->maxLength(12)
-                                                                    ->validationMessages([
-                                                                        'min_digits' => 'Nomor NSS/NSM harus terdiri dari minimal 12 digit.',
-                                                                        'max_digits' => 'Nomor NSS/NSM tidak boleh lebih dari 12 digit.',
-                                                                        'required' => 'Form ini wajib diisi.',
-                                                                    ]),
-                                                                Select::make('akreditasi')
-                                                                    ->label('Akreditasi')
-                                                                    ->native(false)
-                                                                    ->required()
-                                                                    ->validationMessages([
-                                                                        'required' => 'Form ini wajib diisi.',
-                                                                    ])
-                                                                    ->options(['A' => 'A (Sangat Baik)', 'B' => 'B (Baik)', 'C' => 'C (Cukup)', 'D' => 'D (Kurang)']),
-
-                                                                Select::make('status')
-                                                                    ->label('Status')
-                                                                    ->native(false)
-                                                                    ->required()
-                                                                    ->validationMessages([
-                                                                        'required' => 'Form ini wajib diisi.',
-                                                                    ])
-                                                                    ->options(['NEGERI' => 'NEGERI', 'SWASTA' => 'SWASTA']),
-                                                                FileUpload::make('logo')
-                                                                    ->label('Logo Instansi')
-                                                                    ->image()
-                                                                    ->imageEditor()
-                                                                    ->imageEditorAspectRatios([
-                                                                        null,
-                                                                        '1:1' => '1:1',
-                                                                    ])
-                                                                    ->fetchFileInformation(false)
-                                                                    ->directory('assets/instansi-lain')
-                                                                    ->downloadable()
-                                                                    ->openable()
-                                                                    ->maxSize(500)
-                                                                    ->minSize(10)
-                                                                    ->visibility('private')
-                                                                    ->required()
-                                                                    ->validationMessages([
-                                                                        'required' => 'Form ini wajib diisi.',
-                                                                    ]),
-                                                            ])
-                                                            ->columns([
-                                                                'sm' => '100%',
-                                                                'md' => 3,
-                                                                'lg' => 3,
-                                                            ]),
-                                                        // ]),
-                                                        Step::make('Data Alamat')
-                                                            ->schema([
-                                                                // Section::make('Alamat')
-                                                                //     ->schema([
-                                                                Select::make('negara_id')
-                                                                    ->label('Negara')
-                                                                    ->relationship('negara', 'nama')
-                                                                    ->required()
-                                                                    ->validationMessages([
-                                                                        'required' => 'Form ini wajib diisi.',
-                                                                    ])
-                                                                    ->native(false)
-                                                                    ->preload()
-                                                                    ->live()
-                                                                    ->afterStateUpdated(function (Set $set) {
-                                                                        $set('provinsi_id', null);
-                                                                        $set('kabupaten_id', null);
-                                                                        $set('kecamatan_id', null);
-                                                                        $set('kelurahan_id', null);
-                                                                    }),
-                                                                Select::make('provinsi_id')
-                                                                    ->label('Provinsi')
-                                                                    ->options(fn(Get $get): Collection => Provinsi::query()
-                                                                        ->where('negara_id', $get('negara_id'))
-                                                                        ->pluck('nama', 'id'))
-                                                                    ->required()
-                                                                    ->validationMessages([
-                                                                        'required' => 'Form ini wajib diisi.',
-                                                                    ])
-                                                                    ->native(false)
-                                                                    ->preload()
-                                                                    ->live()
-                                                                    ->afterStateUpdated(function (Set $set) {
-                                                                        $set('kabupaten_id', null);
-                                                                        $set('kecamatan_id', null);
-                                                                        $set('kelurahan_id', null);
-                                                                    }),
-                                                                Select::make('kabupaten_id')
-                                                                    ->label('Kabupaten/Kota')
-                                                                    ->options(fn(Get $get): Collection => Kabupaten::query()
-                                                                        ->where('provinsi_id', $get('provinsi_id'))
-                                                                        ->pluck('nama', 'id'))
-                                                                    ->required()
-                                                                    ->validationMessages([
-                                                                        'required' => 'Form ini wajib diisi.',
-                                                                    ])
-                                                                    ->native(false)
-                                                                    ->preload()
-                                                                    ->live()
-                                                                    ->afterStateUpdated(function (Set $set) {
-                                                                        $set('kecamatan_id', null);
-                                                                        $set('kelurahan_id', null);
-                                                                    }),
-                                                                Select::make('kecamatan_id')
-                                                                    ->label('Kecamatan')
-                                                                    ->options(fn(Get $get): Collection => Kecamatan::query()
-                                                                        ->where('kabupaten_id', $get('kabupaten_id'))
-                                                                        ->pluck('nama', 'id'))
-                                                                    ->required()
-                                                                    ->validationMessages([
-                                                                        'required' => 'Form ini wajib diisi.',
-                                                                    ])
-                                                                    ->native(false)
-                                                                    ->preload()
-                                                                    ->live()
-                                                                    ->afterStateUpdated(function (Set $set) {
-                                                                        $set('kelurahan_id', null);
-                                                                    }),
-                                                                Select::make('kelurahan_id')
-                                                                    ->label('Kelurahan/Desa')
-                                                                    ->options(fn(Get $get): Collection => Kelurahan::query()
-                                                                        ->where('kecamatan_id', $get('kecamatan_id'))
-                                                                        ->pluck('nama', 'id'))
-                                                                    ->required()
-                                                                    ->validationMessages([
-                                                                        'required' => 'Form ini wajib diisi.',
-                                                                    ])
-                                                                    ->native(false),
-                                                                TextInput::make('alamat')
-                                                                    ->label('Jalan/Kampung/Dusun')
-                                                                    ->required()
-                                                                    ->placeholder('KP KEBON CAU RT 001 RW 005')
-                                                                    ->validationMessages([
-                                                                        'required' => 'Form ini wajib diisi.',
-                                                                    ]),
-                                                            ])
-                                                            ->columns([
-                                                                'sm' => '100%',
-                                                                'md' => 3,
-                                                                'lg' => 3,
-                                                            ]),
-                                                        // ]),
-                                                        Step::make('Data Kontak')
-                                                            ->schema([
-                                                                // Section::make('Kontak')
-                                                                //     ->schema([
-                                                                TextInput::make('website')
-                                                                    ->label('Website')
-                                                                    ->url()
-                                                                    ->prefixIcon('heroicon-m-globe-alt')
-                                                                    // ->required()
-                                                                    // ->validationMessages([
-                                                                    //     'required' => 'Form ini wajib diisi.',
-                                                                    // ])
-                                                                    ->placeholder('https://mtsn1pandeglang.sch.id'),
-                                                                TextInput::make('telepon')
-                                                                    ->label('Telepon')
-                                                                    // ->required()
-                                                                    // ->validationMessages([
-                                                                    //     'required' => 'Form ini wajib diisi.',
-                                                                    // ])
-                                                                    ->tel()
-                                                                    ->placeholder('08**********')
-                                                                    ->prefixIcon('heroicon-m-phone'),
-                                                                TextInput::make('email')
-                                                                    ->label('Email')
-                                                                    // ->required()
-                                                                    // ->validationMessages([
-                                                                    //     'required' => 'Form ini wajib diisi.',
-                                                                    // ])
-                                                                    ->placeholder('adm@mtsn1pandeglang.sch.id')
-                                                                    ->email()
-                                                                    ->prefixIcon('heroicon-m-envelope'),
-                                                            ])
-                                                            ->columns([
-                                                                'sm' => '100%',
-                                                                'md' => 3,
-                                                                'lg' => 3,
-                                                            ]),
-                                                        // ]),
-                                                    ]),
-                                                ]),
-                                            // Data Prestasi Calon Peserta Didik Baru
-                                            // Select::make('prestasi_id')
-                                            //     ->visible(fn ($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
-                                            //     ->label('Prestasi')
-                                            //     ->helperText(new HtmlString('<small><i>Pilih prestasi yang paling tinggi jika memiliki lebih dari satu prestasi.</i></small>'))
-                                            //     ->relationship('prestasi', 'nama')
-                                            //     ->preload()
-                                            //     ->createOptionForm([
-                                            //         // Prestasi
-                                            //         // Section::make('Prestasi')
-                                            //         //     ->collapsible()
-                                            //         //     ->schema([
-                                            //         Section::make('')
-                                            //             ->schema([
-                                            //                 TextInput::make('nama')
-                                            //                     ->label('Nama Prestasi')
-                                            //                     ->required()
-                                            //                     ->validationMessages([
-                                            //                         'required' => 'Form ini wajib diisi.',
-                                            //                     ]),
-                                            //                 Select::make('jenis')
-                                            //                     ->label('Jenis Prestasi')
-                                            //                     ->options([
-                                            //                         'Hafalan Al-Quran' => 'Hafalan Al-Quran (Minimal 3 Juz)',
-                                            //                         'Olimpiade/Kejuaraan' => 'Olimpiade/Kejuaraan',
-                                            //                     ])
-                                            //                     ->required()
-                                            //                     ->native(false)
-                                            //                     ->validationMessages([
-                                            //                         'required' => 'Form ini wajib diisi.',
-                                            //                     ])
-                                            //                     ->live(),
-                                            //             ])
-                                            //             ->columns([
-                                            //                 'sm' => '100%',
-                                            //                 'md' => 2,
-                                            //                 'lg' => 2,
-                                            //             ]),
-
-                                            //         Section::make('')
-                                            //             ->schema([
-                                            //                 Select::make('tingkat')
-                                            //                     ->label('Tingkat')
-                                            //                     ->native(false)
-                                            //                     ->options([
-                                            //                         'Nasional' => 'Nasional',
-                                            //                         'Provinsi' => 'Provinsi',
-                                            //                         'Kabupaten/Kota' => 'Kabupaten/Kota',
-                                            //                     ])
-                                            //                     ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
-                                            //                 Select::make('kategori')
-                                            //                     ->label('Kategori')
-                                            //                     ->native(false)
-                                            //                     ->options([
-                                            //                         'Regu/Kelompok' => 'Regu/Kelompok',
-                                            //                         'Individu' => 'Individu',
-                                            //                     ])
-                                            //                     ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
-                                            //                 Select::make('peringkat')
-                                            //                     ->label('Peringkat')
-                                            //                     ->options([
-                                            //                         '1' => '1',
-                                            //                         '2' => '2',
-                                            //                         '3' => '3',
-                                            //                     ])
-                                            //                     ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
-                                            //             ])
-                                            //             ->columns([
-                                            //                 'sm' => '100%',
-                                            //                 'md' => 3,
-                                            //                 'lg' => 3,
-                                            //             ])
-                                            //             ->visible(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
-                                            //     ])
-                                            //     ->columns([
-                                            //         'sm' => '100%',
-                                            //         'md' => 3,
-                                            //         'lg' => 3,
-                                            //         // ]),
-                                            //     ])
-                                            //     ->required()
-                                            //     ->validationMessages([
-                                            //         'required' => 'Form ini wajib diisi.',
-                                            //     ])
-                                            //     ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->jenis} | {$record->nama} | {$record->tingkat} | {$record->kategori} | {$record->peringkat}")
-                                            //     ->searchable()
-                                            //     ->native(false),
-                                            // // Data Peminatan Ekstrakurikuler Calon Peserta Didik Baru
-                                            // Select::make('ekstrakurikuler_id')
-                                            //     ->label('Peminatan Ekstrakurikuler')
-                                            //     ->required()
-                                            //     ->searchable()
-                                            //     ->preload()
-                                            //     ->native(false)
-                                            //     ->relationship('ekstrakurikuler', 'nama')
-                                            //     ->validationMessages([
-                                            //         'required' => 'Form ini wajib diisi.',
-                                            //     ]),
-                                            // // Data Peminatan Pelajaran Calon Peserta Didik Baru
-                                            // Select::make('mata_pelajaran_id')
-                                            //     ->visible(fn ($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
-                                            //     ->label('Peminatan Mata Pelajaran')
-                                            //     ->searchable()
-                                            //     ->preload()
-                                            //     ->required()
-                                            //     ->native(false)
-                                            //     ->relationship('mataPelajaran', 'nama')
-                                            //     ->validationMessages([
-                                            //         'required' => 'Form ini wajib diisi.',
-                                            //     ]),
-                                        ]),
-
-                                    // Tab Alamat Calon Peserta Didik Baru
-                                    Tabs\Tab::make('Alamat')
-                                        ->icon('heroicon-m-bell')
-                                        ->iconPosition(IconPosition::After)
-                                        ->schema([
-                                            // Alamat Calon Peserta Didik Baru
-                                            Select::make('siswa_negara_id')
-                                                ->label('Negara')
-                                                ->relationship('siswaNegara', 'nama')
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false)
-                                                ->preload()
-                                                ->live()
-                                                ->afterStateUpdated(function (Set $set) {
-                                                    $set('siswa_provinsi_id', null);
-                                                    $set('siswa_kabupaten_id', null);
-                                                    $set('siswa_kecamatan_id', null);
-                                                    $set('siswa_kelurahan_id', null);
-                                                }),
-                                            Select::make('siswa_provinsi_id')
-                                                ->label('Provinsi')
-                                                ->options(fn(Get $get): Collection => Provinsi::query()
-                                                    ->where('negara_id', $get('siswa_negara_id'))
-                                                    ->pluck('nama', 'id'))
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false)
-                                                ->preload()
-                                                ->live()
-                                                ->afterStateUpdated(function (Set $set) {
-                                                    $set('siswa_kabupaten_id', null);
-                                                    $set('siswa_kecamatan_id', null);
-                                                    $set('siswa_kelurahan_id', null);
-                                                }),
-                                            Select::make('siswa_kabupaten_id')
-                                                ->label('Kabupaten')
-                                                ->options(fn(Get $get): Collection => Kabupaten::query()
-                                                    ->where('provinsi_id', $get('siswa_provinsi_id'))
-                                                    ->pluck('nama', 'id'))
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false)
-                                                ->preload()
-                                                ->live()
-                                                ->afterStateUpdated(function (Set $set) {
-                                                    $set('siswa_kecamatan_id', null);
-                                                    $set('siswa_kelurahan_id', null);
-                                                }),
-                                            Select::make('siswa_kecamatan_id')
-                                                ->label('Kecamatan')
-                                                ->options(fn(Get $get): Collection => Kecamatan::query()
-                                                    ->where('kabupaten_id', $get('siswa_kabupaten_id'))
-                                                    ->pluck('nama', 'id'))
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false)
-                                                ->preload()
-                                                ->live()
-                                                ->afterStateUpdated(function (Set $set) {
-                                                    $set('siswa_kelurahan_id', null);
-                                                }),
-                                            Select::make('siswa_kelurahan_id')
-                                                ->label('Kelurahan')
-                                                ->options(fn(Get $get): Collection => Kelurahan::query()
-                                                    ->where('kecamatan_id', $get('siswa_kecamatan_id'))
-                                                    ->pluck('nama', 'id'))
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false),
-                                            TextInput::make('siswa_alamat')
-                                                ->label('Jalan/Kampung/Dusun')
-                                                ->required()
-                                                ->placeholder('KP KEBON CAU RT 001 RW 005')
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ]),
-                                        ]),
-
-                                    // Tab Berkas Calon Peserta Didik Baru
-                                    Tabs\Tab::make('Berkas')
-                                        ->icon('heroicon-m-bell')
-                                        ->iconPosition(IconPosition::After)
-                                        ->schema([
-                                            // Berkas Foto Calon Peserta Didik Baru
-                                            FileUpload::make('berkas_foto')
-                                                ->label('Foto Latar Merah')
-                                                ->image()
-                                                ->imageEditor()
-                                                ->imageEditorAspectRatios([
-                                                    null,
-                                                    '1:1' => '1:1',
-                                                    '3:4' => '3:4',
-                                                ])
-                                                ->fetchFileInformation(false)
-                                                ->directory(fn($get) => 'berkas/foto/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                                ->downloadable()
-                                                ->openable()
-                                                ->maxSize(500)
-                                                ->minSize(10)
-                                                ->visibility('private')
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ]),
-                                            // Berkas KK Calon Peserta Didik Baru
-                                            FileUpload::make('berkas_kk')
-                                                ->label('Kartu Keluarga')
-                                                ->image()
-                                                ->imageEditor()
-                                                ->imageEditorAspectRatios([
-                                                    null,
-                                                    '1:1' => '1:1',
-                                                    '3:4' => '3:4',
-                                                ])
-                                                ->fetchFileInformation(false)
-                                                ->directory(fn($get) => 'berkas/kk/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                                ->downloadable()
-                                                ->openable()
-                                                ->maxSize(500)
-                                                ->minSize(10)
-                                                ->visibility('private')
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ]),
-                                            // Berkas Akta Calon Peserta Didik Baru
-                                            FileUpload::make('berkas_akta')
-                                                ->label('Akta Kelahiran')
-                                                ->image()
-                                                ->imageEditor()
-                                                ->imageEditorAspectRatios([
-                                                    null,
-                                                    '1:1' => '1:1',
-                                                    '3:4' => '3:4',
-                                                ])
-                                                ->fetchFileInformation(false)
-                                                ->directory(fn($get) => 'berkas/akta/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                                ->downloadable()
-                                                ->openable()
-                                                ->maxSize(500)
-                                                ->minSize(10)
-                                                ->visibility('private')
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ]),
-
-                                            // Berkas NISN Calon Peserta Didik Baru
-                                            FileUpload::make('berkas_nisn')
-                                                ->label('Kartu NISN/Tangkapan Layar NISN (Web)')
-                                                ->image()
-                                                ->imageEditor()
-                                                ->imageEditorAspectRatios([
-                                                    null,
-                                                    '1:1' => '1:1',
-                                                    '3:4' => '3:4',
-                                                ])
-                                                ->fetchFileInformation(false)
-                                                ->directory(fn($get) => 'berkas/nisn/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                                ->downloadable()
-                                                ->openable()
-                                                ->maxSize(500)
-                                                ->minSize(10)
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->visibility('private'),
-                                            // Berkas Surat Keterangan Berkelakuan Baik Calon Peserta Didik Baru
-                                            FileUpload::make('berkas_skbb')
-                                                ->label('Surat Keterangan Berkelakuan Baik')
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->fetchFileInformation(false)
-                                                ->directory(fn($get) => 'berkas/skbb/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                                ->downloadable()
-                                                ->openable()
-                                                ->acceptedFileTypes(['application/pdf'])
-                                                ->maxSize(500)
-                                                ->minSize(10)
-                                                ->visibility('private'),
-                                            // Berkas Surat Keterangan Aktif Belajar Calon Peserta Didik Baru
-                                            FileUpload::make('berkas_skab')
-                                                ->label('Surat Keterangan Aktif Belajar')
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->fetchFileInformation(false)
-                                                ->directory(fn($get) => 'berkas/skab/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                                ->downloadable()
-                                                ->openable()
-                                                ->acceptedFileTypes(['application/pdf'])
-                                                ->maxSize(500)
-                                                ->minSize(10)
-                                                ->visibility('private'),
-
-                                            // Berkas KIP Calon Peserta Didik Baru
-                                            FileUpload::make('berkas_kip')
-                                                ->required(fn($get) => $get('no_kip') !== null)
-                                                ->visible(fn($get) => $get('no_kip') !== null)
-                                                ->label('Kartu Indonesia Pintar')
-                                                ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Indonesia Pintar (KIP).<sup style="color:red">*</sup></i></small>'))
-                                                ->image()
-                                                ->imageEditor()
-                                                ->imageEditorAspectRatios([
-                                                    null,
-                                                    '1:1' => '1:1',
-                                                    '3:4' => '3:4',
-                                                ])
-                                                ->fetchFileInformation(false)
-                                                ->directory(fn($get) => 'berkas/kip/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                                ->downloadable()
-                                                ->openable()
-                                                ->maxSize(500)
-                                                ->minSize(10)
-                                                ->visibility('private'),
-                                            // Berkas KKS Calon Peserta Didik Baru
-                                            FileUpload::make('berkas_kks')
-                                                ->required(fn($get) => $get('no_kks') !== null)
-                                                ->visible(fn($get) => $get('no_kks') !== null)
-                                                ->label('Kartu Keluarga Sejahtera')
-                                                ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Keluarga Sejahtera (KKS).<sup style="color:red">*</sup></i></small>'))
-                                                ->image()
-                                                ->imageEditor()
-                                                ->imageEditorAspectRatios([
-                                                    null,
-                                                    '1:1' => '1:1',
-                                                    '3:4' => '3:4',
-                                                ])
-                                                ->fetchFileInformation(false)
-                                                ->directory(fn($get) => 'berkas/kks/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                                ->downloadable()
-                                                ->openable()
-                                                ->maxSize(500)
-                                                ->minSize(10)
-                                                ->visibility('private'),
-                                            // Berkas PKH Calon Peserta Didik Baru
-                                            FileUpload::make('berkas_pkh')
-                                                ->required(fn($get) => $get('no_pkh') !== null)
-                                                ->visible(fn($get) => $get('no_pkh') !== null)
-                                                ->label('Kartu Program Keluarga Harapan')
-                                                ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Program Keluarga Harapan (PKH).<sup style="color:red">*</sup></i></small>'))
-                                                ->image()
-                                                ->imageEditor()
-                                                ->imageEditorAspectRatios([
-                                                    null,
-                                                    '1:1' => '1:1',
-                                                    '3:4' => '3:4',
-                                                ])
-                                                ->fetchFileInformation(false)
-                                                ->directory(fn($get) => 'berkas/pkh/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                                ->downloadable()
-                                                ->openable()
-                                                ->maxSize(500)
-                                                ->minSize(10)
-                                                ->visibility('private'),
-                                            // Berkas Prestasi Belajar Calon Peserta Didik Baru
-                                            // FileUpload::make('berkas_prestasi')
-                                            //     ->required(fn($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
-                                            //     ->visible(fn($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
-                                            //     ->label('Berkas Prestasi')
-                                            //     ->helperText(new HtmlString('<small><i>Gabungkan semua berkas jika memiliki lebih dari satu prestasi.</i></small>'))
-                                            //     ->fetchFileInformation(false)
-                                            //     ->directory(fn($get) => 'berkas/prestasi/' . $get('nisn')) // Dinamis berdasarkan NISN
-                                            //     ->downloadable()
-                                            //     ->openable()
-                                            //     ->validationMessages([
-                                            //         'required' => 'Form ini wajib diisi.',
-                                            //     ])
-                                            //     ->acceptedFileTypes(['application/pdf'])
-                                            //     ->maxSize(500)
-                                            //     ->minSize(10)
-                                            //     ->visibility('private'),
-                                        ]),
-
-                                ])
-                                ->columns([
-                                    'sm' => '100%',
-                                    'md' => 3,
-                                    'lg' => 3,
-                                ]),
-                        ]),
-
-                    Step::make('Data Orang Tua')
-                        ->schema([
-                            // Tab Ibu
-                            Tabs::make('Data Ibu Kandung')
-                                ->tabs([
-                                    Tabs\Tab::make('Data Ibu')
-                                        ->icon('heroicon-m-bell')
-                                        ->iconPosition(IconPosition::After)
-                                        ->schema([
-                                            // Biodata Ibu Calon Peserta Didik Baru
-                                            TextInput::make('ibu_nama')
-                                                ->label('Nama Lengkap Ibu Kandung')
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ]),
-                                            TextInput::make('ibu_nik')
-                                                ->label('NIK Ibu Kandung')
-                                                ->required()
-                                                ->maxLength(16)
-                                                ->minLength(16)
-                                                ->numeric()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                    'max_digits' => 'NIK: Masukkan maksimal 16 Angka.',
-                                                    'min_digits' => 'NIK: Masukkan minimal 16 Angka.',
-                                                ]),
-
-                                            TextInput::make('ibu_telepon')
-                                                ->label('Nomor Telepon')
-                                                ->numeric()
-                                                ->tel()
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ]),
-                                            Select::make('ibu_pekerjaan')
-                                                ->label('Pekerjaan')
-                                                ->options([
-                                                    'Tidak Bekerja' => 'Tidak Bekerja',
-                                                    'ASN' => 'ASN',
-                                                    'TNI/POLRI' => 'TNI/POLRI',
-                                                    'Karyawan Swasta' => 'Karyawan Swasta',
-                                                    'Pegawai Honorer' => 'Pegawai Honorer',
-                                                    'Wirausaha' => 'Wirausaha',
-                                                    'Wiraswasta' => 'Wiraswasta',
-                                                    'Buruh' => 'Buruh',
-                                                ])
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false),
-
-                                            Select::make('ibu_penghasilan')
-                                                ->label('Penghasilan Bulanan')
-                                                ->options([
-                                                    'Kurang dari Rp. 500.000' => 'Kurang dari Rp. 500.000',
-                                                    'Rp. 500.000 - Rp. 1.000.000' => 'Rp. 500.000 - Rp. 1.000.000',
-                                                    'Rp. 1.000.001 - Rp. 2.000.000' => 'Rp. 1.000.001 - Rp. 2.000.000',
-                                                    'Rp. 2.000.001 - Rp. 3.000.000' => 'Rp. 2.000.001 - Rp. 3.000.000',
-                                                    'Rp. 3.000.001 - Rp. 4.000.000' => 'Rp. 3.000.001 - Rp. 4.000.000',
-                                                    'Rp. 4.000.001 - Rp. 5.000.000' => 'Rp. 4.000.001 - Rp. 5.000.000',
-                                                    'Lebih dari Rp. 5.000.000' => 'Lebih dari Rp. 5.000.000',
-                                                ])
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false),
-
-                                            Select::make('ibu_pendidikan')
-                                                ->label('Pendidikan')
-                                                ->options([
-                                                    'Tidak Sekolah' => 'Tidak Sekolah',
-                                                    'SD/MI Sederajat' => 'SD/MI Sederajat',
-                                                    'SMP/MTS Sederajat' => 'SMP/MTS Sederajat',
-                                                    'SMA/SMK/MA Sederajat' => 'SMA/SMK/MA Sederajat',
-                                                    'D1' => 'D1',
-                                                    'D2' => 'D2',
-                                                    'D3' => 'D3',
-                                                    'D4' => 'D4',
-                                                    'S1' => 'S1',
-                                                    'S2' => 'S2',
-                                                    'S3' => 'S3',
-                                                ])
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false),
-
-                                            Select::make('ibu_status')
-                                                ->label('Status')
-                                                ->options([
-                                                    'Hidup' => 'Hidup',
-                                                    'Meninggal' => 'Meninggal',
-                                                ])
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false),
-                                        ]),
-
-                                    Tabs\Tab::make('Alamat')
-                                        ->icon('heroicon-m-bell')
-                                        ->iconPosition(IconPosition::After)
-                                        ->schema([
-                                            Select::make('ibu_negara_id')
-                                                ->label('Negara')
-                                                ->relationship('ibuNegara', 'nama')
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false)
-                                                ->preload()
-                                                ->live()
-                                                ->afterStateUpdated(function (Set $set) {
-                                                    $set('ibu_provinsi_id', null);
-                                                    $set('ibu_kabupaten_id', null);
-                                                    $set('ibu_kecamatan_id', null);
-                                                    $set('ibu_kelurahan_id', null);
-                                                }),
-                                            Select::make('ibu_provinsi_id')
-                                                ->label('Provinsi')
-                                                ->options(fn(Get $get): Collection => Provinsi::query()
-                                                    ->where('negara_id', $get('ibu_negara_id'))
-                                                    ->pluck('nama', 'id'))
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false)
-                                                ->preload()
-                                                ->live()
-                                                ->afterStateUpdated(function (Set $set) {
-                                                    $set('ibu_kabupaten_id', null);
-                                                    $set('ibu_kecamatan_id', null);
-                                                    $set('ibu_kelurahan_id', null);
-                                                }),
-                                            Select::make('ibu_kabupaten_id')
-                                                ->label('Kabupaten')
-                                                ->options(fn(Get $get): Collection => Kabupaten::query()
-                                                    ->where('provinsi_id', $get('ibu_provinsi_id'))
-                                                    ->pluck('nama', 'id'))
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false)
-                                                ->preload()
-                                                ->live()
-                                                ->afterStateUpdated(function (Set $set) {
-                                                    $set('ibu_kecamatan_id', null);
-                                                    $set('ibu_kelurahan_id', null);
-                                                }),
-                                            Select::make('ibu_kecamatan_id')
-                                                ->label('Kecamatan')
-                                                ->options(fn(Get $get): Collection => Kecamatan::query()
-                                                    ->where('kabupaten_id', $get('ibu_kabupaten_id'))
-                                                    ->pluck('nama', 'id'))
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false)
-                                                ->preload()
-                                                ->live()
-                                                ->afterStateUpdated(function (Set $set) {
-                                                    $set('ibu_kelurahan_id', null);
-                                                }),
-                                            Select::make('ibu_kelurahan_id')
-                                                ->label('Kelurahan')
-                                                ->options(fn(Get $get): Collection => Kelurahan::query()
-                                                    ->where('kecamatan_id', $get('ibu_kecamatan_id'))
-                                                    ->pluck('nama', 'id'))
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false),
-                                            TextInput::make('ibu_alamat')
-                                                ->label('Jalan/Kampung/Dusun')
-                                                ->required()
-                                                ->placeholder('KP KEBON CAU RT 001 RW 005')
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ]),
-                                        ]),
-                                ])
-                                ->columns([
-                                    'sm' => '100%',
-                                    'md' => 3,
-                                    'lg' => 3,
-                                ]),
-
-                            // Tab Ayah
-                            Tabs::make('Data Ayah Kandung')
-                                ->tabs([
-                                    Tabs\Tab::make('Data Ayah')
-                                        ->icon('heroicon-m-bell')
-                                        ->iconPosition(IconPosition::After)
-                                        ->schema([
-                                            // Biodata Ayah Calon Peserta Didik Baru
-                                            TextInput::make('ayah_nama')
-                                                ->label('Nama Lengkap Ayah Kandung')
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ]),
-                                            TextInput::make('ayah_nik')
-                                                ->label('NIK Ayah Kandung')
-                                                ->required()
-                                                ->maxLength(16)
-                                                ->numeric()
-                                                ->minLength(16)
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                    'max_digits' => 'NIK: Masukkan maksimal 16 Angka.',
-                                                    'min_digits' => 'NIK: Masukkan minimal 16 Angka.',
-                                                ]),
-                                            TextInput::make('ayah_telepon')
-                                                ->label('Nomor Telepon')
-                                                ->numeric()
-                                                ->tel()
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ]),
-                                            Select::make('ayah_pekerjaan')
-                                                ->label('Pekerjaan')
-                                                ->options([
-                                                    'Tidak Bekerja' => 'Tidak Bekerja',
-                                                    'ASN' => 'ASN',
-                                                    'TNI/POLRI' => 'TNI/POLRI',
-                                                    'Karyawan Swasta' => 'Karyawan Swasta',
-                                                    'Pegawai Honorer' => 'Pegawai Honorer',
-                                                    'Wirausaha' => 'Wirausaha',
-                                                    'Wiraswasta' => 'Wiraswasta',
-                                                    'Buruh' => 'Buruh',
-                                                ])
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false),
-
-                                            Select::make('ayah_penghasilan')
-                                                ->label('Penghasilan Bulanan')
-                                                ->options([
-                                                    'Kurang dari Rp. 500.000' => 'Kurang dari Rp. 500.000',
-                                                    'Rp. 500.000 - Rp. 1.000.000' => 'Rp. 500.000 - Rp. 1.000.000',
-                                                    'Rp. 1.000.001 - Rp. 2.000.000' => 'Rp. 1.000.001 - Rp. 2.000.000',
-                                                    'Rp. 2.000.001 - Rp. 3.000.000' => 'Rp. 2.000.001 - Rp. 3.000.000',
-                                                    'Rp. 3.000.001 - Rp. 4.000.000' => 'Rp. 3.000.001 - Rp. 4.000.000',
-                                                    'Rp. 4.000.001 - Rp. 5.000.000' => 'Rp. 4.000.001 - Rp. 5.000.000',
-                                                    'Lebih dari Rp. 5.000.000' => 'Lebih dari Rp. 5.000.000',
-                                                ])
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false),
-
-                                            Select::make('ayah_pendidikan')
-                                                ->label('Pendidikan')
-                                                ->options([
-                                                    'Tidak Sekolah' => 'Tidak Sekolah',
-                                                    'SD/MI Sederajat' => 'SD/MI Sederajat',
-                                                    'SMP/MTS Sederajat' => 'SMP/MTS Sederajat',
-                                                    'SMA/SMK/MA Sederajat' => 'SMA/SMK/MA Sederajat',
-                                                    'D1' => 'D1',
-                                                    'D2' => 'D2',
-                                                    'D3' => 'D3',
-                                                    'D4' => 'D4',
-                                                    'S1' => 'S1',
-                                                    'S2' => 'S2',
-                                                    'S3' => 'S3',
-                                                ])
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false),
-
-                                            Select::make('ayah_status')
-                                                ->label('Status')
-                                                ->options([
-                                                    'Hidup' => 'Hidup',
-                                                    'Meninggal' => 'Meninggal',
-                                                ])
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false),
-                                        ]),
-
-                                    Tabs\Tab::make('Alamat')
-                                        ->icon('heroicon-m-bell')
-                                        ->iconPosition(IconPosition::After)
-                                        ->schema([
-                                            Select::make('ayah_negara_id')
-                                                ->label('Negara')
-                                                ->relationship('ayahNegara', 'nama')
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false)
-                                                ->preload()
-                                                ->live()
-                                                ->afterStateUpdated(function (Set $set) {
-                                                    $set('ayah_provinsi_id', null);
-                                                    $set('ayah_kabupaten_id', null);
-                                                    $set('ayah_kecamatan_id', null);
-                                                    $set('ayah_kelurahan_id', null);
-                                                }),
-                                            Select::make('ayah_provinsi_id')
-                                                ->label('Provinsi')
-                                                ->options(fn(Get $get): Collection => Provinsi::query()
-                                                    ->where('negara_id', $get('ayah_negara_id'))
-                                                    ->pluck('nama', 'id'))
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false)
-                                                ->preload()
-                                                ->live()
-                                                ->afterStateUpdated(function (Set $set) {
-                                                    $set('ayah_kabupaten_id', null);
-                                                    $set('ayah_kecamatan_id', null);
-                                                    $set('ayah_kelurahan_id', null);
-                                                }),
-                                            Select::make('ayah_kabupaten_id')
-                                                ->label('Kabupaten')
-                                                ->options(fn(Get $get): Collection => Kabupaten::query()
-                                                    ->where('provinsi_id', $get('ayah_provinsi_id'))
-                                                    ->pluck('nama', 'id'))
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false)
-                                                ->preload()
-                                                ->live()
-                                                ->afterStateUpdated(function (Set $set) {
-                                                    $set('ayah_kecamatan_id', null);
-                                                    $set('ayah_kelurahan_id', null);
-                                                }),
-                                            Select::make('ayah_kecamatan_id')
-                                                ->label('Kecamatan')
-                                                ->options(fn(Get $get): Collection => Kecamatan::query()
-                                                    ->where('kabupaten_id', $get('ayah_kabupaten_id'))
-                                                    ->pluck('nama', 'id'))
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false)
-                                                ->preload()
-                                                ->live()
-                                                ->afterStateUpdated(function (Set $set) {
-                                                    $set('ayah_kelurahan_id', null);
-                                                }),
-                                            Select::make('ayah_kelurahan_id')
-                                                ->label('Kelurahan')
-                                                ->options(fn(Get $get): Collection => Kelurahan::query()
-                                                    ->where('kecamatan_id', $get('ayah_kecamatan_id'))
-                                                    ->pluck('nama', 'id'))
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->native(false),
-                                            TextInput::make('ayah_alamat')
-                                                ->label('Jalan/Kampung/Dusun')
-                                                ->required()
-                                                ->placeholder('KP KEBON CAU RT 001 RW 005')
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ]),
-                                        ]),
-                                ])
-                                ->columns([
-                                    'sm' => '100%',
-                                    'md' => 3,
-                                    'lg' => 3,
-                                ]),
-
-                            // Tab Wali
-                            Tabs::make('Data Wali')
-                                ->tabs([
-                                    Tabs\Tab::make('Data Wali')
-                                        ->icon('heroicon-m-bell')
-                                        ->iconPosition(IconPosition::After)
-                                        ->schema([
-                                            // Biodata Wali Calon Peserta Didik Baru
-                                            TextInput::make('wali_nama')
-                                                ->label('Nama Lengkap Wali'),
-                                            TextInput::make('wali_nik')
-                                                ->label('NIK Wali')
-                                                ->numeric()
-                                                ->maxLength(16)
-                                                ->minLength(16)
-                                                ->validationMessages([
-                                                    'max_digits' => 'NIK: Masukkan maksimal 16 Angka.',
-                                                    'min_digits' => 'NIK: Masukkan minimal 16 Angka.',
-                                                ]),
-                                            TextInput::make('wali_telepon')
-                                                ->label('Nomor Telepon')
-                                                ->numeric()
-                                                ->tel(),
-                                            Select::make('wali_pekerjaan')
-                                                ->label('Pekerjaan')
-                                                ->options([
-                                                    'Tidak Bekerja' => 'Tidak Bekerja',
-                                                    'ASN' => 'ASN',
-                                                    'TNI/POLRI' => 'TNI/POLRI',
-                                                    'Karyawan Swasta' => 'Karyawan Swasta',
-                                                    'Pegawai Honorer' => 'Pegawai Honorer',
-                                                    'Wirausaha' => 'Wirausaha',
-                                                    'Wiraswasta' => 'Wiraswasta',
-                                                    'Buruh' => 'Buruh',
-                                                ])
-                                                ->native(false),
-
-                                            Select::make('wali_penghasilan')
-                                                ->label('Penghasilan Bulanan')
-                                                ->options([
-                                                    'Kurang dari Rp. 500.000' => 'Kurang dari Rp. 500.000',
-                                                    'Rp. 500.000 - Rp. 1.000.000' => 'Rp. 500.000 - Rp. 1.000.000',
-                                                    'Rp. 1.000.001 - Rp. 2.000.000' => 'Rp. 1.000.001 - Rp. 2.000.000',
-                                                    'Rp. 2.000.001 - Rp. 3.000.000' => 'Rp. 2.000.001 - Rp. 3.000.000',
-                                                    'Rp. 3.000.001 - Rp. 4.000.000' => 'Rp. 3.000.001 - Rp. 4.000.000',
-                                                    'Rp. 4.000.001 - Rp. 5.000.000' => 'Rp. 4.000.001 - Rp. 5.000.000',
-                                                    'Lebih dari Rp. 5.000.000' => 'Lebih dari Rp. 5.000.000',
-                                                ])
-                                                ->native(false),
-
-                                            Select::make('wali_pendidikan')
-                                                ->label('Pendidikan')
-                                                ->options([
-                                                    'Tidak Sekolah' => 'Tidak Sekolah',
-                                                    'SD/MI Sederajat' => 'SD/MI Sederajat',
-                                                    'SMP/MTS Sederajat' => 'SMP/MTS Sederajat',
-                                                    'SMA/SMK/MA Sederajat' => 'SMA/SMK/MA Sederajat',
-                                                    'D1' => 'D1',
-                                                    'D2' => 'D2',
-                                                    'D3' => 'D3',
-                                                    'D4' => 'D4',
-                                                    'S1' => 'S1',
-                                                    'S2' => 'S2',
-                                                    'S3' => 'S3',
-                                                ])
-                                                ->native(false),
-                                            Select::make('wali_status')
-                                                ->label('Status')
-                                                ->options([
-                                                    'Hidup' => 'Hidup',
-                                                    'Meninggal' => 'Meninggal',
-                                                ])
-                                                ->native(false),
-                                        ]),
-
-                                    Tabs\Tab::make('Alamat')
-                                        ->icon('heroicon-m-bell')
-                                        ->iconPosition(IconPosition::After)
-                                        ->schema([
-                                            Select::make('wali_negara_id')
-                                                ->label('Negara')
-                                                ->relationship('waliNegara', 'nama')
-                                                ->native(false)
-                                                ->preload()
-                                                ->live()
-                                                ->afterStateUpdated(function (Set $set) {
-                                                    $set('wali_provinsi_id', null);
-                                                    $set('wali_kabupaten_id', null);
-                                                    $set('wali_kecamatan_id', null);
-                                                    $set('wali_kelurahan_id', null);
-                                                }),
-                                            Select::make('wali_provinsi_id')
-                                                ->label('Provinsi')
-                                                ->options(fn(Get $get): Collection => Provinsi::query()
-                                                    ->where('negara_id', $get('wali_negara_id'))
-                                                    ->pluck('nama', 'id'))
-                                                ->native(false)
-                                                ->preload()
-                                                ->live()
-                                                ->afterStateUpdated(function (Set $set) {
-                                                    $set('wali_kabupaten_id', null);
-                                                    $set('wali_kecamatan_id', null);
-                                                    $set('wali_kelurahan_id', null);
-                                                }),
-                                            Select::make('wali_kabupaten_id')
-                                                ->label('Kabupaten')
-                                                ->options(fn(Get $get): Collection => Kabupaten::query()
-                                                    ->where('provinsi_id', $get('wali_provinsi_id'))
-                                                    ->pluck('nama', 'id'))
-                                                ->native(false)
-                                                ->preload()
-                                                ->live()
-                                                ->afterStateUpdated(function (Set $set) {
-                                                    $set('wali_kecamatan_id', null);
-                                                    $set('wali_kelurahan_id', null);
-                                                }),
-                                            Select::make('wali_kecamatan_id')
-                                                ->label('Kecamatan')
-                                                ->options(fn(Get $get): Collection => Kecamatan::query()
-                                                    ->where('kabupaten_id', $get('wali_kabupaten_id'))
-                                                    ->pluck('nama', 'id'))
-                                                ->native(false)
-                                                ->preload()
-                                                ->live()
-                                                ->afterStateUpdated(function (Set $set) {
-                                                    $set('wali_kelurahan_id', null);
-                                                }),
-                                            Select::make('wali_kelurahan_id')
-                                                ->label('Kelurahan')
-                                                ->options(fn(Get $get): Collection => Kelurahan::query()
-                                                    ->where('kecamatan_id', $get('wali_kecamatan_id'))
-                                                    ->pluck('nama', 'id'))
-                                                ->native(false),
-                                            TextInput::make('wali_alamat')
-                                                ->label('Jalan/Kampung/Dusun')
-                                                // ->required()
-                                                ->placeholder('KP KEBON CAU RT 001 RW 005'),
-                                            // ->validationMessages([
-                                            //     'required' => 'Form ini wajib diisi.',
-                                            // ]),
-                                        ]),
-                                ])
-                                ->columns([
-                                    'sm' => '100%',
-                                    'md' => 3,
-                                    'lg' => 3,
-                                ]),
-                            // Section Kepemilikan Rumah
-                            Section::make('Kepemilikan Rumah')
-                                ->icon('heroicon-m-bell')
-                                ->iconPosition(IconPosition::After)
-                                ->schema([
-                                    // Status Kepemilikan Rumah
-                                    Select::make('kepemilikan_rumah')
-                                        ->label('Status Kepemilikan Rumah')
-                                        ->options([
-                                            'Rumah Pribadi' => 'Rumah Pribadi',
-                                            'Kontrakan' => 'Kontrakan',
-                                            'Rumah Dinas' => 'Rumah Dinas',
-                                            'Menumpang Saudara' => 'Menumpang Saudara',
-                                        ])
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false),
-                                ]),
-                        ]),
-                ])
-                    ->columnSpanFull(),
-            ]);
+        return $form->schema([
+            \Filament\Forms\Components\Wizard::make($this->getAllSteps(
+                includeStatusSection: true,
+                includeDataTes: false
+            )),
+        ]);
     }
 }
 
@@ -10545,9 +5824,24 @@ namespace App\Filament\Resources;
 use App\Filament\Exports\CalonSiswaExporter;
 use App\Filament\Resources\CalonSiswaResource\Pages;
 use App\Models\CalonSiswa;
-use Carbon\Carbon;
+use App\Models\Kabupaten;
+use App\Models\Kecamatan;
+use App\Models\Kelurahan;
+use App\Models\Provinsi;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\Wizard;
+use Filament\Forms\Components\Wizard\Step;
+use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\IconPosition;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\BulkAction;
@@ -10559,537 +5853,870 @@ use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\ActionsPosition;
-use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Torgodly\Html2Media\Tables\Actions\Html2MediaAction;
 
 class CalonSiswaResource extends Resource
 {
     protected static ?string $model = CalonSiswa::class;
-
     protected static ?string $recordTitleAttribute = 'nama';
-
     protected static ?string $navigationLabel = 'Formulir Pendaftaran';
-
     protected static ?string $navigationGroup = 'Pendaftaran';
-
     protected static ?string $slug = 'formulir';
-
     protected static ?int $navigationSort = 1;
-
     protected static bool $shouldRegisterNavigation = true;
-
     protected static ?string $navigationIcon = 'heroicon-o-identification';
 
     public static function getNavigationBadge(): ?string
     {
-        return CalonSiswa::count();
+        return (string) CalonSiswa::count();
     }
+
+    /**
+     * Nonaktifkan skip antar step wizard.
+     * User wajib menyelesaikan setiap step secara berurutan.
+     * Ini memastikan semua field required terisi sebelum submit.
+     */
+    public static function canSkipWizardSteps(): bool
+    {
+        return false;
+    }
+
+    // -----------------------------------------------------------------------
+    // Helpers
+    // -----------------------------------------------------------------------
+
+    private static function isCalonSiswa(): bool
+    {
+        return Auth::user()->hasRole('calon_siswa');
+    }
+
+    private static function isAdminOrAbove(): bool
+    {
+        return Auth::user()->hasAnyRole(['super_admin', 'admin', 'verifikator', 'panitia']);
+    }
+
+    private static function isSuperAdmin(): bool
+    {
+        return Auth::user()->hasRole('super_admin');
+    }
+
+    // -----------------------------------------------------------------------
+    // Opsi reusable
+    // -----------------------------------------------------------------------
+
+    private static function opsiPekerjaan(): array
+    {
+        return [
+            'Tidak Bekerja'    => 'Tidak Bekerja',
+            'ASN'              => 'ASN',
+            'TNI/POLRI'        => 'TNI/POLRI',
+            'Karyawan Swasta'  => 'Karyawan Swasta',
+            'Wirausaha'        => 'Wirausaha',
+            'Petani'           => 'Petani',
+            'Nelayan'          => 'Nelayan',
+            'Buruh'            => 'Buruh',
+            'Lainnya'          => 'Lainnya',
+        ];
+    }
+
+    private static function opsiPenghasilan(): array
+    {
+        return [
+            'Kurang dari Rp. 500.000'          => 'Kurang dari Rp. 500.000',
+            'Rp. 500.000 - Rp. 1.000.000'      => 'Rp. 500.000 - Rp. 1.000.000',
+            'Rp. 1.000.000 - Rp. 2.000.000'    => 'Rp. 1.000.000 - Rp. 2.000.000',
+            'Rp. 2.000.000 - Rp. 3.000.000'    => 'Rp. 2.000.000 - Rp. 3.000.000',
+            'Rp. 3.000.000 - Rp. 5.000.000'    => 'Rp. 3.000.000 - Rp. 5.000.000',
+            'Lebih dari Rp. 5.000.000'         => 'Lebih dari Rp. 5.000.000',
+        ];
+    }
+
+    private static function opsiPendidikan(): array
+    {
+        return [
+            'Tidak Sekolah'    => 'Tidak Sekolah',
+            'SD/MI Sederajat'  => 'SD/MI Sederajat',
+            'SMP/MTs Sederajat' => 'SMP/MTs Sederajat',
+            'SMA/MA/SMK'       => 'SMA/MA/SMK',
+            'D1/D2/D3'         => 'D1/D2/D3',
+            'S1'               => 'S1',
+            'S2'               => 'S2',
+            'S3'               => 'S3',
+        ];
+    }
+
+    private static function opsiStatus(): array
+    {
+        return ['Hidup' => 'Hidup', 'Meninggal' => 'Meninggal'];
+    }
+
+    private static function opsiStatusPendaftaran(): array
+    {
+        $base = [
+            'Diproses'            => 'Diproses',
+            'Berkas Tidak Lengkap' => 'Berkas Tidak Lengkap',
+            'Diverifikasi'        => 'Diverifikasi',
+        ];
+
+        $admin = [
+            'Tidak Diterima'             => 'Tidak Diterima',
+            'Diterima'                   => 'Diterima',
+            'Diterima Di Kelas Reguler'  => 'Diterima Di Kelas Reguler',
+            'Diterima Di Kelas Unggulan' => 'Diterima Di Kelas Unggulan',
+        ];
+
+        return self::isSuperAdmin() ? array_merge($base, $admin) : $base;
+    }
+
+    // -----------------------------------------------------------------------
+    // Wilayah — reusable field group
+    // -----------------------------------------------------------------------
+
+    /**
+     * Generate 5 field Select wilayah (Negara → Provinsi → Kabupaten → Kecamatan → Kelurahan)
+     * dengan cascade reset otomatis.
+     *
+     * @param  string  $prefix  e.g. 'siswa', 'ibu', 'ayah', 'wali'
+     * @param  bool    $required
+     */
+    private static function wilayahFields(string $prefix, bool $required = true): array
+    {
+        $neg = "{$prefix}_negara_id";
+        $pro = "{$prefix}_provinsi_id";
+        $kab = "{$prefix}_kabupaten_id";
+        $kec = "{$prefix}_kecamatan_id";
+        $kel = "{$prefix}_kelurahan_id";
+
+        return [
+            Select::make($neg)
+                ->label('Negara')
+                ->relationship("{$prefix}Negara", 'nama')
+                ->required($required)
+                ->native(false)
+                ->preload()
+                ->live()
+                ->afterStateUpdated(fn(Set $set) => $set($pro, null)),
+
+            Select::make($pro)
+                ->label('Provinsi')
+                ->searchable()
+                ->required($required)
+                ->live()
+                ->getSearchResultsUsing(
+                    fn(string $search, Get $get) =>
+                    Provinsi::query()
+                        ->where('negara_id', $get($neg))
+                        ->where('nama', 'like', "%{$search}%")
+                        ->limit(50)->pluck('nama', 'id')->toArray()
+                )
+                ->getOptionLabelUsing(fn($v): ?string => Provinsi::find($v)?->nama)
+                ->afterStateUpdated(fn(Set $set) => $set($kab, null)),
+
+            Select::make($kab)
+                ->label('Kabupaten / Kota')
+                ->searchable()
+                ->required($required)
+                ->live()
+                ->getSearchResultsUsing(
+                    fn(string $search, Get $get) =>
+                    Kabupaten::query()
+                        ->where('provinsi_id', $get($pro))
+                        ->where('nama', 'like', "%{$search}%")
+                        ->limit(50)->pluck('nama', 'id')->toArray()
+                )
+                ->getOptionLabelUsing(fn($v): ?string => Kabupaten::find($v)?->nama)
+                ->afterStateUpdated(fn(Set $set) => $set($kec, null)),
+
+            Select::make($kec)
+                ->label('Kecamatan')
+                ->searchable()
+                ->required($required)
+                ->live()
+                ->getSearchResultsUsing(
+                    fn(string $search, Get $get) =>
+                    Kecamatan::query()
+                        ->where('kabupaten_id', $get($kab))
+                        ->where('nama', 'like', "%{$search}%")
+                        ->limit(50)->pluck('nama', 'id')->toArray()
+                )
+                ->getOptionLabelUsing(fn($v): ?string => Kecamatan::find($v)?->nama)
+                ->afterStateUpdated(fn(Set $set) => $set($kel, null)),
+
+            Select::make($kel)
+                ->label('Kelurahan / Desa')
+                ->searchable()
+                ->required($required)
+                ->getSearchResultsUsing(
+                    fn(string $search, Get $get) =>
+                    Kelurahan::query()
+                        ->where('kecamatan_id', $get($kec))
+                        ->where('nama', 'like', "%{$search}%")
+                        ->limit(50)->pluck('nama', 'id')->toArray()
+                )
+                ->getOptionLabelUsing(fn($v): ?string => Kelurahan::find($v)?->nama),
+        ];
+    }
+
+    // -----------------------------------------------------------------------
+    // Form
+    // -----------------------------------------------------------------------
+
+    public static function form(Form $form): Form
+    {
+        $isCalonSiswa = self::isCalonSiswa();
+
+        return $form->schema([
+            Wizard::make([
+
+                // ============================================================
+                // STEP 1 — Data Calon Siswa
+                // ============================================================
+                Step::make('Data Calon Siswa')
+                    ->icon('heroicon-o-user')
+                    ->schema([
+
+                        // --- Section admin-only: status & kelas ---
+                        Section::make('Status Pendaftaran')
+                            ->visible(! $isCalonSiswa)
+                            ->columns(2)
+                            ->schema([
+                                Select::make('status_pendaftaran')
+                                    ->label('Status Pendaftaran')
+                                    ->options(fn() => self::opsiStatusPendaftaran())
+                                    ->default('Diproses')
+                                    ->required()
+                                    ->native(false)
+                                    ->live(),
+
+                                Select::make('status_formulir')
+                                    ->label('Status Formulir')
+                                    ->options([
+                                        'Diproses'  => 'Diproses',
+                                        'Disetujui' => 'Disetujui',
+                                        'Ditolak'   => 'Ditolak',
+                                    ])
+                                    ->default('Diproses')
+                                    ->required()
+                                    ->native(false),
+
+                                Select::make('kelas_id')
+                                    ->label('Kelas')
+                                    ->relationship('kelas', 'nama')
+                                    ->native(false)
+                                    ->searchable()
+                                    ->preload()
+                                    ->visible(fn(Get $get) => in_array($get('status_pendaftaran'), [
+                                        'Diterima Di Kelas Reguler',
+                                        'Diterima Di Kelas Unggulan',
+                                    ]))
+                                    ->required(fn(Get $get) => in_array($get('status_pendaftaran'), [
+                                        'Diterima Di Kelas Reguler',
+                                        'Diterima Di Kelas Unggulan',
+                                    ])),
+                            ]),
+
+                        // --- Section: Biodata ---
+                        Section::make('Biodata Calon Siswa')
+                            ->icon('heroicon-m-identification')
+                            ->columns(['sm' => 1, 'md' => 3])
+                            ->schema([
+                                Select::make('jalur_pendaftaran_id')
+                                    ->label('Jalur Pendaftaran')
+                                    ->relationship(
+                                        'jalurPendaftaran',
+                                        'nama',
+                                        fn(Builder $q) => $q->where('status', 'Aktif')
+                                    )
+                                    ->required()
+                                    ->native(false)
+                                    ->live()
+                                    ->getOptionLabelFromRecordUsing(
+                                        fn(Model $r) => "{$r->nama} | {$r->tahunPendaftaran->nama}"
+                                    ),
+
+                                TextInput::make('nama')
+                                    ->label('Nama Lengkap')
+                                    ->required()
+                                    ->maxLength(50)
+                                    ->readOnly()
+                                    ->default(fn() => Auth::user()->name),
+
+                                TextInput::make('nisn')
+                                    ->label('NISN')
+                                    ->required()
+                                    ->numeric()
+                                    ->minLength(10)
+                                    ->maxLength(10)
+                                    ->readOnly()
+                                    ->default(fn() => Auth::user()->username)
+                                    ->unique(table: 'calon_siswas', column: 'nisn', ignoreRecord: true),
+
+                                TextInput::make('nik')
+                                    ->label('NIK')
+                                    ->required()
+                                    ->numeric()
+                                    ->minLength(16)
+                                    ->maxLength(16)
+                                    ->unique(table: 'calon_siswas', column: 'nik', ignoreRecord: true),
+
+                                TextInput::make('kk')
+                                    ->label('Nomor Kartu Keluarga')
+                                    ->required()
+                                    ->numeric()
+                                    ->minLength(16)
+                                    ->maxLength(16),
+
+                                TextInput::make('tempat_lahir')
+                                    ->label('Tempat Lahir')
+                                    ->required()
+                                    ->maxLength(50),
+
+                                DatePicker::make('tanggal_lahir')
+                                    ->label('Tanggal Lahir')
+                                    ->required()
+                                    ->maxDate(now()->subYears(9))
+                                    ->displayFormat('d/m/Y'),
+
+                                Select::make('tahun_lulus')
+                                    ->label('Tahun Lulus SD/MI')
+                                    ->options(fn() => array_combine(
+                                        range(date('Y'), date('Y') - 2),
+                                        range(date('Y'), date('Y') - 2)
+                                    ))
+                                    ->required()
+                                    ->native(false),
+
+                                Select::make('jenis_kelamin')
+                                    ->label('Jenis Kelamin')
+                                    ->options(['Pria' => 'Laki-laki', 'Wanita' => 'Perempuan'])
+                                    ->required()
+                                    ->native(false),
+
+                                Select::make('golongan_darah')
+                                    ->label('Golongan Darah')
+                                    ->options(['A+' => 'A+', 'A-' => 'A-', 'B+' => 'B+', 'B-' => 'B-', 'AB+' => 'AB+', 'AB-' => 'AB-', 'O+' => 'O+', 'O-' => 'O-'])
+                                    ->required()
+                                    ->native(false),
+
+                                Select::make('agama')
+                                    ->label('Agama')
+                                    ->options([
+                                        'Islam' => 'Islam',
+                                        'Kristen Katholik' => 'Kristen Katholik',
+                                        'Kristen Protestan' => 'Kristen Protestan',
+                                        'Hindu' => 'Hindu',
+                                        'Buddha' => 'Buddha',
+                                        'Konghucu' => 'Konghucu',
+                                    ])
+                                    ->required()
+                                    ->native(false),
+
+                                TextInput::make('anak_ke')->label('Anak Ke')->required()->numeric()->minValue(1),
+                                TextInput::make('jumlah_saudara')->label('Dari (Jumlah Anak)')->required()->numeric()->minValue(1),
+
+                                Select::make('tinggal_bersama')
+                                    ->label('Tinggal Bersama')
+                                    ->options(['Orang Tua' => 'Orang Tua', 'Saudara' => 'Saudara', 'Panti Asuhan' => 'Panti Asuhan', 'Kost' => 'Kost', 'Lainnya' => 'Lainnya'])
+                                    ->required()->native(false),
+
+                                Select::make('jarak_ke_sekolah')
+                                    ->label('Jarak ke Sekolah')
+                                    ->options(['0 - 1 Km' => '0 - 1 Km', '1 - 5 Km' => '1 - 5 Km', '5 - 10 Km' => '5 - 10 Km', '10 - 15 Km' => '10 - 15 Km', '15 - 20 Km' => '15 - 20 Km', '20 - 25 Km' => '20 - 25 Km', '25 - 30 Km' => '25 - 30 Km'])
+                                    ->required()->native(false),
+
+                                Select::make('disabilitas')
+                                    ->label('Disabilitas')
+                                    ->options(['Non Disabilitas' => 'Non Disabilitas', 'Fisik' => 'Fisik', 'Penglihatan' => 'Penglihatan', 'Pendengaran' => 'Pendengaran', 'Kognitif' => 'Kognitif', 'Mental' => 'Mental', 'Lainnya' => 'Lainnya'])
+                                    ->required()->native(false),
+
+                                TextInput::make('tinggi_badan')->label('Tinggi Badan')->numeric()->minValue(100)->maxValue(250)->suffix('cm'),
+                                TextInput::make('berat_badan')->label('Berat Badan')->numeric()->minValue(20)->maxValue(200)->suffix('kg'),
+                                TextInput::make('siswa_telepon')->label('Nomor Telepon (WhatsApp)')->tel()->maxLength(20),
+
+                                Select::make('sekolah_asal_id')
+                                    ->label('Sekolah Asal')
+                                    ->relationship('sekolahAsal', 'nama')
+                                    ->required()->native(false)->searchable()->preload()
+                                    ->getOptionLabelFromRecordUsing(fn(Model $r) => "{$r->nama} | NPSN: {$r->npsn}"),
+
+                                Select::make('ekstrakurikuler_id')
+                                    ->label('Pilihan Ekstrakurikuler')
+                                    ->relationship('ekstrakurikuler', 'nama')
+                                    ->native(false)->searchable()->preload(),
+
+                                Select::make('mata_pelajaran_id')
+                                    ->label('Mata Pelajaran Favorit')
+                                    ->relationship('mataPelajaran', 'nama')
+                                    ->native(false)->searchable()->preload(),
+
+                                Toggle::make('penerima_kip')
+                                    ->label('Penerima KIP / KKS / PKH?')
+                                    ->live()->columnSpanFull(),
+
+                                TextInput::make('no_kip')->label('Nomor KIP')
+                                    ->visible(fn(Get $get) => (bool) $get('penerima_kip'))
+                                    ->required(fn(Get $get) => (bool) $get('penerima_kip'))
+                                    ->maxLength(30)->live()
+                                    ->unique(table: 'calon_siswas', column: 'no_kip', ignoreRecord: true),
+
+                                TextInput::make('no_kks')->label('Nomor KKS')
+                                    ->visible(fn(Get $get) => (bool) $get('penerima_kip'))
+                                    ->maxLength(30)->live()
+                                    ->unique(table: 'calon_siswas', column: 'no_kks', ignoreRecord: true),
+
+                                TextInput::make('no_pkh')->label('Nomor PKH')
+                                    ->visible(fn(Get $get) => (bool) $get('penerima_kip'))
+                                    ->maxLength(30)->live()
+                                    ->unique(table: 'calon_siswas', column: 'no_pkh', ignoreRecord: true),
+                            ]),
+
+                        // --- Section: Alamat ---
+                        Section::make('Alamat Domisili')
+                            ->icon('heroicon-m-map-pin')
+                            ->columns(['sm' => 1, 'md' => 3])
+                            ->schema([
+                                ...self::wilayahFields('siswa'),
+                                TextInput::make('siswa_alamat')
+                                    ->label('Jalan / Kampung / Dusun')
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->placeholder('Kp. Kebon Cau RT 001 RW 005')
+                                    ->columnSpanFull(),
+                            ]),
+
+                        // --- Section: Berkas ---
+                        Section::make('Upload Berkas')
+                            ->icon('heroicon-m-paper-clip')
+                            ->columns(['sm' => 1, 'md' => 2])
+                            ->schema([
+                                FileUpload::make('berkas_foto')
+                                    ->label('Foto Formal (Latar Merah)')
+                                    ->image()->required()
+                                    ->directory(fn() => 'berkas/foto/' . Auth::user()->username)
+                                    ->maxSize(1024)->minSize(10)
+                                    ->helperText('JPG/PNG. 10 KB – 1 MB.'),
+
+                                FileUpload::make('berkas_kk')
+                                    ->label('Kartu Keluarga (KK)')
+                                    ->image()->required()
+                                    ->directory(fn() => 'berkas/kk/' . Auth::user()->username)
+                                    ->maxSize(1024)->minSize(10)
+                                    ->helperText('JPG/PNG. 10 KB – 1 MB.'),
+
+                                FileUpload::make('berkas_akta')
+                                    ->label('Akta Kelahiran')
+                                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'application/pdf'])
+                                    ->required()
+                                    ->directory(fn() => 'berkas/akta/' . Auth::user()->username)
+                                    ->maxSize(1024)->minSize(10)
+                                    ->helperText('JPG/PNG/PDF. 10 KB – 1 MB.'),
+
+                                FileUpload::make('berkas_skbb')
+                                    ->label('SKBB')
+                                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'application/pdf'])
+                                    ->required()
+                                    ->directory(fn() => 'berkas/skbb/' . Auth::user()->username)
+                                    ->maxSize(1024)->minSize(10)
+                                    ->helperText('JPG/PNG/PDF. 10 KB – 1 MB.'),
+
+                                FileUpload::make('berkas_skab')
+                                    ->label('SKAB')
+                                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'application/pdf'])
+                                    ->required()
+                                    ->directory(fn() => 'berkas/skab/' . Auth::user()->username)
+                                    ->maxSize(1024)->minSize(10)
+                                    ->helperText('JPG/PNG/PDF. 10 KB – 1 MB.'),
+
+                                FileUpload::make('berkas_nisn')
+                                    ->label('Kartu NISN')
+                                    ->image()
+                                    ->directory(fn() => 'berkas/nisn/' . Auth::user()->username)
+                                    ->maxSize(1024)->minSize(10)
+                                    ->helperText('Opsional. JPG/PNG. 10 KB – 1 MB.'),
+
+                                FileUpload::make('berkas_kip')
+                                    ->label('Kartu KIP')
+                                    ->image()
+                                    ->visible(fn(Get $get) => (bool) $get('penerima_kip'))
+                                    ->required(fn(Get $get) => (bool) $get('penerima_kip') && $get('no_kip'))
+                                    ->directory(fn() => 'berkas/kip/' . Auth::user()->username)
+                                    ->maxSize(1024)->minSize(10),
+
+                                FileUpload::make('berkas_kks')
+                                    ->label('Kartu KKS')
+                                    ->image()
+                                    ->visible(fn(Get $get) => (bool) $get('penerima_kip') && $get('no_kks'))
+                                    ->directory(fn() => 'berkas/kks/' . Auth::user()->username)
+                                    ->maxSize(1024)->minSize(10),
+
+                                FileUpload::make('berkas_pkh')
+                                    ->label('Kartu PKH')
+                                    ->image()
+                                    ->visible(fn(Get $get) => (bool) $get('penerima_kip') && $get('no_pkh'))
+                                    ->directory(fn() => 'berkas/pkh/' . Auth::user()->username)
+                                    ->maxSize(1024)->minSize(10),
+                            ]),
+                    ]),
+
+                // ============================================================
+                // STEP 2 — Data Orang Tua / Wali
+                // ============================================================
+                Step::make('Data Orang Tua')
+                    ->icon('heroicon-o-user-group')
+                    ->schema([
+
+                        // --- IBU ---
+                        Section::make('Data Ibu Kandung')
+                            ->icon('heroicon-m-user')
+                            ->collapsible()
+                            ->columns(['sm' => 1, 'md' => 3])
+                            ->schema([
+                                TextInput::make('ibu_nama')->label('Nama Ibu')->required()->maxLength(50),
+                                TextInput::make('ibu_nik')->label('NIK Ibu')->required()->numeric()->minLength(16)->maxLength(16),
+                                TextInput::make('ibu_telepon')->label('Nomor Telepon')->tel()->required()->maxLength(20),
+                                Select::make('ibu_pekerjaan')->label('Pekerjaan')->options(fn() => self::opsiPekerjaan())->required()->native(false),
+                                Select::make('ibu_penghasilan')->label('Penghasilan')->options(fn() => self::opsiPenghasilan())->required()->native(false),
+                                Select::make('ibu_pendidikan')->label('Pendidikan Terakhir')->options(fn() => self::opsiPendidikan())->required()->native(false),
+                                Select::make('ibu_status')->label('Status')->options(fn() => self::opsiStatus())->required()->native(false)->live(),
+                                TextInput::make('ibu_alamat')->label('Jalan / Kampung / Dusun')->maxLength(255),
+                                ...self::wilayahFields('ibu'),
+                            ]),
+
+                        // --- AYAH ---
+                        Section::make('Data Ayah Kandung')
+                            ->icon('heroicon-m-user')
+                            ->collapsible()
+                            ->columns(['sm' => 1, 'md' => 3])
+                            ->schema([
+                                TextInput::make('ayah_nama')->label('Nama Ayah')->required()->maxLength(50),
+                                TextInput::make('ayah_nik')->label('NIK Ayah')->required()->numeric()->minLength(16)->maxLength(16),
+                                TextInput::make('ayah_telepon')->label('Nomor Telepon')->tel()->required()->maxLength(20),
+                                Select::make('ayah_pekerjaan')->label('Pekerjaan')->options(fn() => self::opsiPekerjaan())->required()->native(false),
+                                Select::make('ayah_penghasilan')->label('Penghasilan')->options(fn() => self::opsiPenghasilan())->required()->native(false),
+                                Select::make('ayah_pendidikan')->label('Pendidikan Terakhir')->options(fn() => self::opsiPendidikan())->required()->native(false),
+                                Select::make('ayah_status')->label('Status')->options(fn() => self::opsiStatus())->required()->native(false)->live(),
+                                Select::make('kepemilikan_rumah')
+                                    ->label('Status Kepemilikan Rumah')
+                                    ->options(['Rumah Pribadi' => 'Rumah Pribadi', 'Kontrakan' => 'Kontrakan', 'Rumah Dinas' => 'Rumah Dinas', 'Menumpang Saudara' => 'Menumpang Saudara'])
+                                    ->required()->native(false),
+                                TextInput::make('ayah_alamat')->label('Jalan / Kampung / Dusun')->maxLength(255),
+                                ...self::wilayahFields('ayah'),
+                            ]),
+
+                        // --- WALI (opsional) ---
+                        Section::make('Data Wali (Opsional)')
+                            ->icon('heroicon-m-user')
+                            ->collapsible()
+                            ->collapsed()
+                            ->columns(['sm' => 1, 'md' => 3])
+                            ->schema([
+                                TextInput::make('wali_nama')->label('Nama Wali')->maxLength(50),
+                                TextInput::make('wali_nik')->label('NIK Wali')->numeric()->minLength(16)->maxLength(16),
+                                TextInput::make('wali_telepon')->label('Nomor Telepon')->tel()->maxLength(20),
+                                Select::make('wali_pekerjaan')->label('Pekerjaan')->options(fn() => self::opsiPekerjaan())->native(false),
+                                Select::make('wali_penghasilan')->label('Penghasilan')->options(fn() => self::opsiPenghasilan())->native(false),
+                                Select::make('wali_pendidikan')->label('Pendidikan Terakhir')->options(fn() => self::opsiPendidikan())->native(false),
+                                Select::make('wali_status')->label('Status')->options(fn() => self::opsiStatus())->native(false),
+                                TextInput::make('wali_alamat')->label('Jalan / Kampung / Dusun')->maxLength(255),
+                                ...self::wilayahFields('wali', required: false),
+                            ]),
+                    ]),
+
+                // ============================================================
+                // STEP 3 — Data Tes (admin/panitia only)
+                // ============================================================
+                Step::make('Data Tes')
+                    ->icon('heroicon-o-clipboard-document-check')
+                    ->hidden(fn() => $isCalonSiswa)
+                    ->schema([
+                        Section::make('Jadwal Tes')
+                            ->columns(2)
+                            ->schema([
+                                TextInput::make('tes_sesi')
+                                    ->label('Sesi Tes')
+                                    ->maxLength(20),
+
+                                TextInput::make('tes_ruang')
+                                    ->label('Ruang Tes')
+                                    ->maxLength(20),
+
+                                DateTimePicker::make('tes_akademik')
+                                    ->label('Waktu Tes Akademik')
+                                    ->seconds(false)
+                                    ->displayFormat('d/m/Y H:i'),
+
+                                DateTimePicker::make('tes_praktik')
+                                    ->label('Waktu Tes Praktik')
+                                    ->seconds(false)
+                                    ->displayFormat('d/m/Y H:i'),
+                            ]),
+
+                        Section::make('Nilai Tes')
+                            ->columns(2)
+                            ->schema([
+                                TextInput::make('bobot_nilai_akademik')
+                                    ->label('Bobot Nilai Akademik (%)')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->maxValue(100)
+                                    ->suffix('%'),
+
+                                TextInput::make('bobot_nilai_praktik')
+                                    ->label('Bobot Nilai Praktik (%)')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->maxValue(100)
+                                    ->suffix('%'),
+
+                                TextInput::make('nilai_akademik')
+                                    ->label('Nilai Tes Akademik')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->maxValue(100),
+
+                                TextInput::make('nilai_praktik')
+                                    ->label('Nilai Tes Praktik')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->maxValue(100),
+                            ]),
+                    ]),
+
+            ])->columnSpanFull(),
+        ]);
+    }
+
+    // -----------------------------------------------------------------------
+    // Table
+    // -----------------------------------------------------------------------
 
     public static function table(Table $table): Table
     {
-        $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
-        $label = $calonSiswa ? $calonSiswa->status_pendaftaran : '';
-        $statusHidden = ['Diterima', 'Diterima Di Kelas Unggulan', 'Diterima Di Kelas Reguler', 'Tidak Diterima'];
+        $isCalonSiswa = self::isCalonSiswa();
+        $isSuperAdmin = self::isSuperAdmin();
 
         return $table
             ->query(
-                optional(Auth::user()->roles->first())->name !== 'calon_siswa'
-                    ? CalonSiswa::query()
-                    : CalonSiswa::query()->where('nisn', Auth::user()->username)
-                // tambahkan logika untuk menampilkan bata berdasarkan tahun pendaftaran aktif saja
+                $isCalonSiswa
+                    ? CalonSiswa::query()->where('user_id', Auth::id())
+                    : CalonSiswa::query()
             )
-            ->headerActions([
-                Action::make('status_pendaftaran')
-                    ->label($label)
-                    ->color(function () {
-                        $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
-                        if (! $calonSiswa) {
-                            return 'warning';
-                        }
-                        $status = [
-                            'Diproses' => 'warning',
-                            'Diverifikasi' => 'success',
-                            'Berkas Tidak Lengkap' => 'warning',
-                            'Tidak Diterima' => 'danger',
-                            'Diterima' => 'success',
-                            'Diterima Di Kelas Reguler' => 'success',
-                            'Diterima Di Kelas Unggulan' => 'info',
-                        ];
-
-                        return $status[$calonSiswa->status_pendaftaran] ?? 'warning';
-                    })
-                    ->icon(function () {
-                        $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
-                        if (! $calonSiswa) {
-                            return 'heroicon-o-arrow-path';
-                        }
-                        $status = [
-                            'Diproses' => 'heroicon-o-arrow-path',
-                            'Diverifikasi' => 'heroicon-o-clipboard-document-check',
-                            'Berkas Tidak Lengkap' => 'heroicon-o-document-minus',
-                            'Tidak Diterima' => 'heroicon-o-no-symbol',
-                            'Diterima' => 'heroicon-o-check-circle',
-                            'Diterima Di Kelas Reguler' => 'heroicon-o-shield-check',
-                            'Diterima Di Kelas Unggulan' => 'heroicon-o-shield-check',
-                        ];
-
-                        return $status[$calonSiswa->status_pendaftaran] ?? 'gray';
-                    })
-                    ->outlined()
-                    ->size('sm')
-                    ->disabled()
-                    ->hidden(optional(Auth::user()->roles->first())->name !== 'calon_siswa' || $calonSiswa === null || in_array($calonSiswa->status_pendaftaran, $statusHidden)),
-            ])
+            ->defaultSort('created_at', 'desc')
             ->columns([
                 ImageColumn::make('berkas_foto')
                     ->label('Foto')
-                    ->circular(),
+                    ->circular()
+                    ->defaultImageUrl(fn() => 'https://ui-avatars.com/api/?name=CS&color=7F9CF5&background=EBF4FF'),
+
+                TextColumn::make('nomor_pendaftaran')
+                    ->label('No. Daftar')
+                    ->searchable()
+                    ->copyable()
+                    ->visible(! $isCalonSiswa),
 
                 TextColumn::make('jalurPendaftaran.nama')
-                    ->label('Jalur Pendaftaran')
+                    ->label('Jalur')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
-                        'Reguler' => 'success',
-                        'Prestasi' => 'primary',
-                        'Afirmasi' => 'warning',
-                        'Zonasi' => 'danger',
-                        'Mutasi' => 'info',
-                    })
-                    ->icon(fn(string $state): string => match ($state) {
-                        'Reguler' => 'heroicon-o-sparkles',
-                        'Prestasi' => 'heroicon-o-trophy',
-                        'Afirmasi' => 'heroicon-o-gift',
-                        'Zonasi' => 'heroicon-o-map',
-                        'Mutasi' => 'heroicon-o-arrows-right-left',
-                    }),
+                    ->colors([
+                        'primary' => 'Prestasi',
+                        'success' => 'Reguler',
+                        'warning' => 'Afirmasi',
+                        'info'    => 'Zonasi',
+                        'danger'  => 'Mutasi',
+                    ]),
+
+                TextColumn::make('nama')
+                    ->label('Nama Lengkap')
+                    ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('nisn')
+                    ->label('NISN')
+                    ->searchable()
+                    ->copyable(),
+
+                TextColumn::make('sekolahAsal.nama')
+                    ->label('Sekolah Asal')
+                    ->searchable()
+                    ->visible(! $isCalonSiswa)
+                    ->limit(30)
+                    ->tooltip(fn(TextColumn $col): ?string => strlen($col->getState()) > 30 ? $col->getState() : null),
+
+                TextColumn::make('status_formulir')
+                    ->label('Status Formulir')
+                    ->badge()
+                    ->colors([
+                        'warning' => 'Diproses',
+                        'success' => 'Disetujui',
+                        'danger'  => 'Ditolak',
+                    ]),
 
                 TextColumn::make('status_pendaftaran')
                     ->label('Status Pendaftaran')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
-                        'Diproses' => 'warning',
-                        'Diverifikasi' => 'success',
-                        'Berkas Tidak Lengkap' => 'warning',
-                        'Tidak Diterima' => 'danger',
-                        'Diterima' => 'success',
-                        'Diterima Di Kelas Reguler' => 'success',
-                        'Diterima Di Kelas Unggulan' => 'primary',
-                    })
-                    ->icon(fn(string $state): string => match ($state) {
-                        'Diproses' => 'heroicon-o-arrow-path',
-                        'Diverifikasi' => 'heroicon-o-clipboard-document-check',
-                        'Berkas Tidak Lengkap' => 'heroicon-o-document-minus',
-                        'Tidak Diterima' => 'heroicon-o-no-symbol',
-                        'Diterima' => 'heroicon-o-check-circle',
-                        'Diterima Di Kelas Reguler' => 'heroicon-o-shield-check',
-                        'Diterima Di Kelas Unggulan' => 'heroicon-o-shield-check',
-                    })
-                    ->visible(Auth::user()->roles->first()->name === 'super_admin'),
+                    ->colors([
+                        'gray'    => 'Diproses',
+                        'warning' => 'Berkas Tidak Lengkap',
+                        'success' => fn($state) => in_array($state, ['Diverifikasi', 'Diterima', 'Diterima Di Kelas Reguler', 'Diterima Di Kelas Unggulan']),
+                        'danger'  => 'Tidak Diterima',
+                    ])
+                    ->visible(! $isCalonSiswa || $isSuperAdmin),
+
                 TextColumn::make('kelas.nama')
-                    ->label('Diterima Di Kelas')
+                    ->label('Kelas')
                     ->badge()
-                    ->icon('heroicon-o-building-storefront')
-                    ->visible(function () {
-                        $tahunPendaftaran = DB::table('tahun_pendaftarans')
-                            ->where('status', 'Aktif')
-                            ->first();
+                    ->visible(! $isCalonSiswa),
 
-                        // Pastikan data tahun pendaftaran dan tanggal selesai registrasi berkas tersedia
-                        if (! $tahunPendaftaran || ! $tahunPendaftaran->tanggal_registrasi_berkas_selesai) {
-                            return false;
-                        }
-
-                        // Konversi tanggal ke Carbon untuk perbandingan
-                        $berkasDate = Carbon::parse($tahunPendaftaran->tanggal_registrasi_berkas_selesai);
-
-                        // Elemen terlihat jika tanggal saat ini >= tanggal selesai registrasi berkas atau user bukan peserta
-                        return Carbon::now()->gte($berkasDate) || optional(Auth::user()->roles->first())->name !== 'calon_siswa';
-                    }),
-
-                TextColumn::make('nama')
-                    ->label('Nama Lengkap')
-                    ->searchable(Auth::user()->roles->first()->name === 'super_admin' && CalonSiswa::count() > 10),
-                TextColumn::make('jenis_kelamin')
-                    ->label('Jenis Kelamin'),
-                TextColumn::make('nik')
-                    ->visible(Auth::user()->roles->first()->name === 'super_admin')
-                    ->label('NIK')
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('kk')
-                    ->visible(Auth::user()->roles->first()->name === 'super_admin')
-                    ->label('KK')
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('nisn')
-                    ->visible(Auth::user()->roles->first()->name === 'super_admin')
-                    ->label('NISN')
-                    ->searchable(Auth::user()->roles->first()->name === 'super_admin' && CalonSiswa::count() > 10),
-                TextColumn::make('sekolahAsal.nama')
-                    ->label('Sekolah Asal'),
-                TextColumn::make('tempat_lahir')
-                    ->visible(Auth::user()->roles->first()->name === 'super_admin')
-                    ->label('Tempat Lahir')
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('tanggal_lahir')
-                    ->visible(Auth::user()->roles->first()->name === 'super_admin')
-                    ->label('Tanggal Lahir')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->date('d F Y H:i:s'),
-                TextColumn::make('tahun_lulus')
-                    ->label('Tahun Lulus'),
-                TextColumn::make('golongan_darah')
-                    ->visible(Auth::user()->roles->first()->name === 'super_admin')
-                    ->label('Golongan Darah')
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('agama')
-                    ->visible(Auth::user()->roles->first()->name === 'super_admin')
-                    ->label('Agama')
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('anak_ke')
-                    ->visible(Auth::user()->roles->first()->name === 'super_admin')
-                    ->label('Anak Ke')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->numeric(),
-                TextColumn::make('jumlah_saudara')
-                    ->visible(Auth::user()->roles->first()->name === 'super_admin')
-                    ->label('Jumlah Saudara')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->numeric(),
-                TextColumn::make('tinggal_bersama')
-                    ->visible(Auth::user()->roles->first()->name === 'super_admin')
-                    ->label('Tinggal Bersama')
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('jarak_ke_sekolah')
-                    ->visible(Auth::user()->roles->first()->name === 'super_admin')
-                    ->label('Jarak Ke Sekolah')
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('disabilitas')
-                    ->visible(Auth::user()->roles->first()->name === 'super_admin')
-                    ->label('Disabilitas')
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('tinggi_badan')
-                    ->visible(Auth::user()->roles->first()->name === 'super_admin')
-                    ->label('Tinggi Badan')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->numeric(),
-                TextColumn::make('berat_badan')
-                    ->visible(Auth::user()->roles->first()->name === 'super_admin')
-                    ->label('Berat Badan')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->numeric(),
-                TextColumn::make('no_kip')
-                    ->visible(Auth::user()->roles->first()->name === 'super_admin')
-                    ->label('Nomor KIP')
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('no_kks')
-                    ->visible(Auth::user()->roles->first()->name === 'super_admin')
-                    ->label('Nomor KKS')
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('no_pkh')
-                    ->visible(Auth::user()->roles->first()->name === 'super_admin')
-                    ->label('Nomor PKH')
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('siswa_telepon')
-                    ->visible(Auth::user()->roles->first()->name === 'super_admin')
-                    ->label('Telepon')
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('siswa_alamat')
-                    ->visible(Auth::user()->roles->first()->name === 'super_admin')
-                    ->label('Alamat')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->wrap()
-                    ->words(10)
-                    ->tooltip(function (TextColumn $column): ?string {
-                        $state = $column->getState();
-                        if (strlen($state) <= $column->getCharacterLimit()) {
-                            return null;
-                        }
-
-                        return $state;
-                    }),
-                TextColumn::make('siswaKelurahan.nama')
-                    ->visible(Auth::user()->roles->first()->name === 'super_admin')
-                    ->label('Kelurahan')
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('siswaKecamatan.nama')
-                    ->visible(Auth::user()->roles->first()->name === 'super_admin')
-                    ->label('Kecamatan')
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('siswaKabupaten.nama')
-                    ->visible(Auth::user()->roles->first()->name === 'super_admin')
-                    ->label('Kabupaten')
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('siswaProvinsi.nama')
-                    ->visible(Auth::user()->roles->first()->name === 'super_admin')
-                    ->label('Provinsi')
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('siswaNegara.nama')
-                    ->visible(Auth::user()->roles->first()->name === 'super_admin')
-                    ->label('Negara')
-                    ->toggleable(isToggledHiddenByDefault: true),
-
-                // Jadwal Tes
-                TextColumn::make('tes_sesi')
-                    ->label('Sesi Tes')
-                    ->visible(function () {
-                        $tahunPendaftaran = DB::table('tahun_pendaftarans')->where('status', 'Aktif')->first();
-
-                        if (
-                            ! $tahunPendaftaran
-                            || empty($tahunPendaftaran->tanggal_penerbitan_kartu_tes_mulai)
-                            || empty($tahunPendaftaran->tanggal_penerbitan_kartu_tes_selesai)
-                        ) {
-                            return false;
-                        }
-
-                        $currentDate = Carbon::now();
-                        $tesMulai = Carbon::parse($tahunPendaftaran->tanggal_penerbitan_kartu_tes_mulai);
-                        $tesSelesai = Carbon::parse($tahunPendaftaran->tanggal_penerbitan_kartu_tes_selesai);
-
-                        return $currentDate->between($tesMulai, $tesSelesai) || optional(Auth::user()->roles->first())->name !== 'calon_siswa';
-                    }),
-
-                TextColumn::make('tes_ruang')
-                    ->label('Ruang Tes')
-                    ->visible(function () {
-                        $tahunPendaftaran = DB::table('tahun_pendaftarans')->where('status', 'Aktif')->first();
-
-                        if (
-                            ! $tahunPendaftaran
-                            || empty($tahunPendaftaran->tanggal_penerbitan_kartu_tes_mulai)
-                            || empty($tahunPendaftaran->tanggal_penerbitan_kartu_tes_selesai)
-                        ) {
-                            return false;
-                        }
-
-                        $currentDate = Carbon::now();
-                        $tesMulai = Carbon::parse($tahunPendaftaran->tanggal_penerbitan_kartu_tes_mulai);
-                        $tesSelesai = Carbon::parse($tahunPendaftaran->tanggal_penerbitan_kartu_tes_selesai);
-
-                        return $currentDate->between($tesMulai, $tesSelesai) || optional(Auth::user()->roles->first())->name !== 'calon_siswa';
-                    }),
-
-                TextColumn::make('tes_akademik')
-                    ->label('Tes Akademik')
-                    ->date('d F Y H:i:s')
-                    ->visible(function () {
-                        $tahunPendaftaran = DB::table('tahun_pendaftarans')->where('status', 'Aktif')->first();
-
-                        if (
-                            ! $tahunPendaftaran
-                            || empty($tahunPendaftaran->tanggal_penerbitan_kartu_tes_mulai)
-                            || empty($tahunPendaftaran->tanggal_penerbitan_kartu_tes_selesai)
-                        ) {
-                            return false;
-                        }
-
-                        $currentDate = Carbon::now();
-                        $tesMulai = Carbon::parse($tahunPendaftaran->tanggal_penerbitan_kartu_tes_mulai);
-                        $tesSelesai = Carbon::parse($tahunPendaftaran->tanggal_penerbitan_kartu_tes_selesai);
-
-                        return $currentDate->between($tesMulai, $tesSelesai) || optional(Auth::user()->roles->first())->name !== 'calon_siswa';
-                    }),
-
-                TextColumn::make('tes_praktik')
-                    ->label('Tes Praktik')
-                    ->date('d F Y H:i:s')
-                    ->visible(function () {
-                        $tahunPendaftaran = DB::table('tahun_pendaftarans')->where('status', 'Aktif')->first();
-
-                        if (
-                            ! $tahunPendaftaran
-                            || empty($tahunPendaftaran->tanggal_penerbitan_kartu_tes_mulai)
-                            || empty($tahunPendaftaran->tanggal_penerbitan_kartu_tes_selesai)
-                        ) {
-                            return false;
-                        }
-
-                        $currentDate = Carbon::now();
-                        $tesMulai = Carbon::parse($tahunPendaftaran->tanggal_penerbitan_kartu_tes_mulai);
-                        $tesSelesai = Carbon::parse($tahunPendaftaran->tanggal_penerbitan_kartu_tes_selesai);
-
-                        return $currentDate->between($tesMulai, $tesSelesai) || optional(Auth::user()->roles->first())->name !== 'calon_siswa';
-                    }),
+                TextColumn::make('created_at')
+                    ->label('Tgl. Daftar')
+                    ->date('d/m/Y')
+                    ->sortable()
+                    ->visible(! $isCalonSiswa),
             ])
             ->filters([
                 TrashedFilter::make()
-                    ->visible(Auth::user()->roles->first()->name === 'super_admin'),
-                SelectFilter::make('jalur_pendaftaran')
+                    ->visible($isSuperAdmin),
+
+                SelectFilter::make('jalur_pendaftaran_id')
                     ->label('Jalur Pendaftaran')
-                    ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
-                    ->visible(optional(Auth::user()->roles->first())->name !== 'calon_siswa'),
+                    ->relationship('jalurPendaftaran', 'nama', fn(Builder $q) => $q->where('status', 'Aktif'))
+                    ->visible(! $isCalonSiswa),
+
+                SelectFilter::make('status_formulir')
+                    ->label('Status Formulir')
+                    ->options([
+                        'Diproses'  => 'Diproses',
+                        'Disetujui' => 'Disetujui',
+                        'Ditolak'   => 'Ditolak',
+                    ])
+                    ->visible(! $isCalonSiswa),
+
                 SelectFilter::make('status_pendaftaran')
                     ->label('Status Pendaftaran')
                     ->options([
-                        'Diproses' => 'Diproses',
-                        'Berkas Tidak Lengkap' => 'Berkas Tidak Lengkap',
-                        'Diverifikasi' => 'Diverifikasi',
-                        'Tidak Diterima' => 'Tidak Diterima',
-                        'Diterima' => 'Diterima',
-                        'Diterima Di Kelas Reguler' => 'Diterima Di Kelas Reguler',
+                        'Diproses'                   => 'Diproses',
+                        'Berkas Tidak Lengkap'        => 'Berkas Tidak Lengkap',
+                        'Diverifikasi'               => 'Diverifikasi',
+                        'Tidak Diterima'             => 'Tidak Diterima',
+                        'Diterima'                   => 'Diterima',
+                        'Diterima Di Kelas Reguler'  => 'Diterima Di Kelas Reguler',
                         'Diterima Di Kelas Unggulan' => 'Diterima Di Kelas Unggulan',
                     ])
-                    ->visible(optional(Auth::user()->roles->first())->name !== 'calon_siswa'),
-                SelectFilter::make('kelas')
+                    ->visible(! $isCalonSiswa),
+
+                SelectFilter::make('kelas_id')
                     ->label('Kelas')
                     ->relationship('kelas', 'nama')
-                    ->visible(optional(Auth::user()->roles->first())->name !== 'calon_siswa'),
+                    ->visible(! $isCalonSiswa),
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\DeleteAction::make(),
-                    Tables\Actions\ForceDeleteAction::make(),
-                    Tables\Actions\RestoreAction::make(),
-
-                    // Formulir
-                    Html2MediaAction::make('cetak_formulir')
-                        ->label('Formulir')
-                        ->icon('heroicon-o-printer')
-                        ->filename(fn($record) => 'Formulir_' . $record->nama . '_' . $record->nisn . '.pdf')
-                        ->savePdf()
-                        // ->pagebreak('section', ['css', 'legacy'])
-                        ->orientation('portrait')
-                        ->format('a4', 'mm')
-                        ->enableLinks()
-                        ->margin([10, 10, 10, 10])
-                        ->content(fn($record) => view('formulir', ['record' => $record])),
-
-                    // Kartu Tes
-                    Html2MediaAction::make('cetak_kartu_tes')
-                        ->label('Kartu Tes')
-                        ->icon('heroicon-o-printer')
-                        ->filename(fn($record) => 'Kartu Tes_' . $record->nama . '_' . $record->nisn . '.pdf')
-                        ->savePdf()
-                        // ->pagebreak('section', ['css', 'legacy'])
-                        ->orientation('portrait')
-                        ->format('a4', 'mm')
-                        ->enableLinks()
-                        ->margin([10, 10, 10, 10])
-                        ->content(fn($record) => view('kartu-tes', ['record' => $record])),
-
-                    // SKL/Hasil
-                    Html2MediaAction::make('cetak_skl')
-                        ->label('Hasil')
-                        ->icon('heroicon-o-printer')
-                        ->filename(fn($record) => 'Hasil_' . $record->nama . '_' . $record->nisn . '.pdf')
-                        ->savePdf()
-                        // ->pagebreak('section', ['css', 'legacy'])
-                        ->orientation('portrait')
-                        ->format('a4', 'mm')
-                        ->enableLinks()
-                        ->margin([10, 10, 10, 10])
-                        ->content(fn($record) => view('skl', ['record' => $record])),
-                ])
-                    ->visible(optional(Auth::user()->roles->first())->name !== 'calon_siswa'),
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make()
+                        ->visible(fn() => ! $isCalonSiswa),
+                    Tables\Actions\DeleteAction::make()
+                        ->visible(fn() => $isSuperAdmin),
+                    Tables\Actions\RestoreAction::make()
+                        ->visible(fn() => $isSuperAdmin),
+                    Tables\Actions\ForceDeleteAction::make()
+                        ->visible(fn() => $isSuperAdmin),
+                ]),
             ], ActionsPosition::BeforeColumns)
-
             ->bulkActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                    ForceDeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->visible($isSuperAdmin),
+
+                    ForceDeleteBulkAction::make()
+                        ->visible($isSuperAdmin),
+
+                    RestoreBulkAction::make()
+                        ->visible($isSuperAdmin),
+
                     ExportBulkAction::make()
-                        ->label('Ekspor')
-                        ->icon('heroicon-m-cloud-arrow-down')
-                        ->color('success')
                         ->exporter(CalonSiswaExporter::class)
-                        ->chunkSize(250),
+                        ->visible(! $isCalonSiswa),
+
                     BulkAction::make('set_jalur_pendaftaran')
                         ->label('Set Jalur Pendaftaran')
                         ->icon('heroicon-o-sparkles')
                         ->color('primary')
                         ->requiresConfirmation()
+                        ->visible($isSuperAdmin)
                         ->form([
-                            Select::make('jalur_pendaftaran')
+                            Select::make('jalur_pendaftaran_id')
                                 ->label('Jalur Pendaftaran')
-                                ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
+                                ->relationship(
+                                    'jalurPendaftaran',
+                                    'nama',
+                                    fn(Builder $q) => $q->where('status', 'Aktif')
+                                )
                                 ->required(),
                         ])
-                        ->action(function (Collection $records, array $data) {
-                            $records->each(function ($record) use ($data) {
-                                CalonSiswa::where('id', $record->id)->update([
-                                    'jalur_pendaftaran_id' => $data['jalur_pendaftaran'],
-                                ]);
-                            });
-                        }),
+                        ->action(
+                            fn(Collection $records, array $data) =>
+                            $records->each(
+                                fn($r) =>
+                                CalonSiswa::where('id', $r->id)
+                                    ->update(['jalur_pendaftaran_id' => $data['jalur_pendaftaran_id']])
+                            )
+                        ),
 
                     BulkAction::make('set_status_pendaftaran')
                         ->label('Set Status Pendaftaran')
-                        ->icon('heroicon-o-check-circle')
-                        ->color('primary')
+                        ->icon('heroicon-o-arrow-path')
+                        ->color('warning')
                         ->requiresConfirmation()
+                        ->visible($isSuperAdmin)
                         ->form([
                             Select::make('status_pendaftaran')
                                 ->label('Status')
-                                ->options([
-                                    'Diproses' => 'Diproses',
-                                    'Berkas Tidak Lengkap' => 'Berkas Tidak Lengkap',
-                                    'Diverifikasi' => 'Diverifikasi',
-                                    'Tidak Diterima' => 'Tidak Diterima',
-                                    'Diterima' => 'Diterima',
-                                    'Diterima Di Kelas Reguler' => 'Diterima Di Kelas Reguler',
-                                    'Diterima Di Kelas Unggulan' => 'Diterima Di Kelas Unggulan',
-                                ])
+                                ->options(fn() => self::opsiStatusPendaftaran())
                                 ->required(),
                         ])
-                        ->action(function (Collection $records, array $data) {
-                            $records->each(function ($record) use ($data) {
-                                CalonSiswa::where('id', $record->id)->update([
-                                    'status_pendaftaran' => $data['status_pendaftaran'],
-                                ]);
-                            });
-                        }),
-
-                    BulkAction::make('set_kelas')
-                        ->label('Set Kelas')
-                        ->icon('heroicon-o-building-storefront')
-                        ->color('primary')
-                        ->requiresConfirmation()
-                        ->form([
-                            Select::make('kelas_id')
-                                ->label('Kelas')
-                                ->relationship('kelas', 'nama')
-                                ->required(),
-                        ])
-                        ->action(function (Collection $records, array $data) {
-                            $records->each(function ($record) use ($data) {
-                                CalonSiswa::where('id', $record->id)->update([
-                                    'kelas_id' => $data['kelas_id'],
-                                ]);
-                            });
-                        }),
-                ])
-                    ->visible(Auth::user()->roles->first()->name === 'super_admin'),
+                        ->action(
+                            fn(Collection $records, array $data) =>
+                            $records->each(
+                                fn($r) =>
+                                CalonSiswa::where('id', $r->id)
+                                    ->update(['status_pendaftaran' => $data['status_pendaftaran']])
+                            )
+                        ),
+                ]),
             ])
             ->striped()
-            ->filtersLayout(FiltersLayout::AboveContentCollapsible)
-            ->paginationPageOptions([10, 25, 50]);
+            ->poll('60s');
     }
+
+    // -----------------------------------------------------------------------
+    // Pages
+    // -----------------------------------------------------------------------
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListCalonSiswas::route('/'),
+            'index'  => Pages\ListCalonSiswas::route('/'),
             'create' => Pages\CreateCalonSiswa::route('/create'),
-            'view' => Pages\ViewCalonSiswa::route('/{record}'),
-            'edit' => Pages\EditCalonSiswa::route('/{record}/edit'),
+            'view'   => Pages\ViewCalonSiswa::route('/{record}'),
+            'edit'   => Pages\EditCalonSiswa::route('/{record}/edit'),
         ];
     }
+
+    // -----------------------------------------------------------------------
+    // Eloquent query — pastikan soft delete scope benar
+    // -----------------------------------------------------------------------
 
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
+            ->withoutGlobalScopes([SoftDeletingScope::class]);
     }
 }
 
@@ -11113,193 +6740,184 @@ use Illuminate\Support\Facades\Auth;
 class FormulirOverview extends BaseWidget
 {
     protected static bool $isLazy = false;
-
-    protected ?string $heading = '♾️ Navigasi';
-
-    // protected ?string $description = 'An overview of some analytics.';
+    protected ?string $heading = '♾️ Statistik Pendaftaran';
     protected static ?int $sort = 0;
+    // Refresh tiap 60 detik agar data tetap live
+    protected static ?string $pollingInterval = '60s';
 
     protected function getStats(): array
     {
-        if (Auth::user()->roles->first()->name !== 'calon_siswa') {
-            return [
-                Stat::make('', CalonSiswa::count().' Peserta')
-                    ->description('Total Pendaftar')
-                    ->descriptionIcon('heroicon-o-user-circle', IconPosition::Before)
-                    ->color('gray')
-                    ->chart(CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-                        ->groupBy('hari')
-                        ->orderBy('hari')
-                        ->pluck('total')->toArray())
-                    ->extraAttributes([
-                        'class' => 'cursor-pointer',
-                        'onclick' => "window.location.href='/formulir'",
-                    ]),
+        $isCalonSiswa = Auth::user()->hasRole('calon_siswa');
+        $isAdmin      = ! $isCalonSiswa;
 
-                Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Diproses')->count().' Peserta')
-                    ->description('Diproses')
-                    ->descriptionIcon('heroicon-o-arrow-path', IconPosition::Before)
-                    ->color('warning')
-                    ->chart(
-                        CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-                            ->where('status_pendaftaran', 'Diproses') // Filter hanya status "Diproses"
-                            ->groupBy('hari')
-                            ->orderBy('hari')
-                            ->pluck('total')
-                            ->toArray()
-                    )
-                    ->extraAttributes([
-                        'class' => 'cursor-pointer',
-                        'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Diproses'",
-                    ]),
+        // ----------------------------------------------------------------
+        // 1 query — hitung semua status_pendaftaran sekaligus
+        // ----------------------------------------------------------------
+        $statusCount = CalonSiswa::selectRaw('status_pendaftaran, COUNT(*) as total')
+            ->groupBy('status_pendaftaran')
+            ->pluck('total', 'status_pendaftaran')
+            ->toArray();
 
-                Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Berkas Tidak Lengkap')->count().' Peserta')
-                    ->description('Berkas Tidak Lengkap')
-                    ->descriptionIcon('heroicon-o-document-minus', IconPosition::Before)
-                    ->color('warning')
-                    ->chart(
-                        CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-                            ->where('status_pendaftaran', 'Berkas Tidak Lengkap')
-                            ->groupBy('hari')
-                            ->orderBy('hari')
-                            ->pluck('total')
-                            ->toArray()
-                    )
-                    ->extraAttributes([
-                        'class' => 'cursor-pointer',
-                        'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Berkas+Tidak+Lengkap'",
-                    ]),
+        // ----------------------------------------------------------------
+        // 1 query — hitung semua status_formulir sekaligus
+        // ----------------------------------------------------------------
+        $formulirCount = CalonSiswa::selectRaw('status_formulir, COUNT(*) as total')
+            ->groupBy('status_formulir')
+            ->pluck('total', 'status_formulir')
+            ->toArray();
 
-                Stat::make('', CalonSiswa::whereNotIn('status_pendaftaran', ['Berkas Tidak Lengkap', 'Diproses'])->count().' Peserta')
-                    ->description('Diverifikasi')
-                    ->descriptionIcon('heroicon-o-clipboard-document-check', IconPosition::Before)
-                    ->color('success')
-                    ->chart(
-                        CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-                            ->where('status_pendaftaran', 'Diverifikasi')
-                            ->groupBy('hari')
-                            ->orderBy('hari')
-                            ->pluck('total')
-                            ->toArray()
-                    )
-                    ->extraAttributes([
-                        'class' => 'cursor-pointer',
-                        'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Diverifikasi'",
-                    ]),
+        $totalPendaftar      = array_sum($statusCount);
+        $diproses            = $statusCount['Diproses'] ?? 0;
+        $berkasTidakLengkap  = $statusCount['Berkas Tidak Lengkap'] ?? 0;
+        $diverifikasi        = $statusCount['Diverifikasi'] ?? 0;
+        $diterimaPrestasi    = $statusCount['Diterima'] ?? 0;
+        $diterimaReguler     = $statusCount['Diterima Di Kelas Reguler'] ?? 0;
+        $diterimaUnggulan    = $statusCount['Diterima Di Kelas Unggulan'] ?? 0;
+        $tidakDiterima       = $statusCount['Tidak Diterima'] ?? 0;
+        $formulirDisetujui   = $formulirCount['Disetujui'] ?? 0;
+        $formulirDitolak     = $formulirCount['Ditolak'] ?? 0;
 
-                Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Diterima')->count().' Peserta')
-                    ->description('Diterima Jalur Prestasi')
-                    ->descriptionIcon('heroicon-o-check-circle', IconPosition::Before)
-                    ->color('success')
-                    ->chart(
-                        CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-                            ->where('status_pendaftaran', 'Diterima')
-                            ->groupBy('hari')
-                            ->orderBy('hari')
-                            ->pluck('total')
-                            ->toArray()
-                    )
-                    ->extraAttributes([
-                        'class' => 'cursor-pointer',
-                        'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Diterima'",
-                    ]),
+        // ----------------------------------------------------------------
+        // Chart helper — 1 query per stat, dijalankan lazy
+        // ----------------------------------------------------------------
+        $chart = function (?string $status = null) {
+            return CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
+                ->when(
+                    $status,
+                    fn($q) => $q->where('status_pendaftaran', $status)
+                )
+                ->groupBy('hari')
+                ->orderBy('hari')
+                ->pluck('total')
+                ->toArray();
+        };
 
-                Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Diterima Di Kelas Reguler')->count().' Peserta')
-                    ->description('Diterima Di Kelas Reguler')
-                    ->descriptionIcon('heroicon-o-shield-check', IconPosition::Before)
-                    ->color('success')
-                    ->chart(
-                        CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-                            ->where('status_pendaftaran', 'Diterima Di Kelas Reguler')
-                            ->groupBy('hari')
-                            ->orderBy('hari')
-                            ->pluck('total')
-                            ->toArray()
-                    )
-                    ->extraAttributes([
-                        'class' => 'cursor-pointer',
-                        'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Diterima+Di+Kelas+Reguler'",
-                    ]),
+        $url = fn(string $path) => "/admin/formulir{$path}";
 
-                Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Diterima Di Kelas Unggulan')->count().' Peserta')
-                    ->description('Diterima Di Kelas Unggulan')
-                    ->descriptionIcon('heroicon-o-shield-check', IconPosition::Before)
-                    ->color('success')
-                    ->chart(
-                        CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-                            ->where('status_pendaftaran', 'Diterima Di Kelas Unggulan')
-                            ->groupBy('hari')
-                            ->orderBy('hari')
-                            ->pluck('total')
-                            ->toArray()
-                    )
-                    ->extraAttributes([
-                        'class' => 'cursor-pointer',
-                        'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Diterima+Di+Kelas+Unggulan'",
-                    ]),
+        // ----------------------------------------------------------------
+        // Stat builder helper
+        // ----------------------------------------------------------------
+        $makeStat = fn(
+            string $value,
+            string $description,
+            string $icon,
+            string $color,
+            array  $chartData,
+            string $href
+        ) => Stat::make('', $value)
+            ->description($description)
+            ->descriptionIcon($icon, IconPosition::Before)
+            ->color($color)
+            ->chart($chartData)
+            ->extraAttributes([
+                'class'   => 'cursor-pointer transition hover:opacity-80',
+                'onclick' => "window.location.href='{$href}'",
+            ]);
 
-                Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Tidak Diterima')->count().' Peserta')
-                    ->description('Tidak Diterima')
-                    ->descriptionIcon('heroicon-o-no-symbol', IconPosition::Before)
-                    ->color('danger')
-                    ->chart(
-                        CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-                            ->where('status_pendaftaran', 'Tidak Diterima')
-                            ->groupBy('hari')
-                            ->orderBy('hari')
-                            ->pluck('total')
-                            ->toArray()
-                    )
-                    ->extraAttributes([
-                        'class' => 'cursor-pointer',
-                        'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Tidak+Diterima'",
-                    ]),
-            ];
+        // ----------------------------------------------------------------
+        // Stats dasar (tampil untuk semua role)
+        // ----------------------------------------------------------------
+        $stats = [
+            $makeStat(
+                "{$totalPendaftar} Peserta",
+                'Total Pendaftar',
+                'heroicon-o-user-circle',
+                'gray',
+                $chart(),
+                $url('')
+            ),
+            $makeStat(
+                "{$diproses} Peserta",
+                'Formulir Diproses',
+                'heroicon-o-arrow-path',
+                'warning',
+                $chart('Diproses'),
+                $url('?tableFilters[status_pendaftaran][value]=Diproses')
+            ),
+            $makeStat(
+                "{$berkasTidakLengkap} Peserta",
+                'Berkas Tidak Lengkap',
+                'heroicon-o-document-minus',
+                'warning',
+                $chart('Berkas Tidak Lengkap'),
+                $url('?tableFilters[status_pendaftaran][value]=Berkas+Tidak+Lengkap')
+            ),
+            $makeStat(
+                "{$diverifikasi} Peserta",
+                'Diverifikasi',
+                'heroicon-o-clipboard-document-check',
+                'success',
+                $chart('Diverifikasi'),
+                $url('?tableFilters[status_pendaftaran][value]=Diverifikasi')
+            ),
+        ];
+
+        // ----------------------------------------------------------------
+        // Stats admin-only
+        // ----------------------------------------------------------------
+        if ($isAdmin) {
+            $stats = array_merge($stats, [
+                $makeStat(
+                    "{$formulirDisetujui} Formulir",
+                    'Formulir Disetujui',
+                    'heroicon-o-document-check',
+                    'success',
+                    CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
+                        ->where('status_formulir', 'Disetujui')
+                        ->groupBy('hari')->orderBy('hari')->pluck('total')->toArray(),
+                    $url('?tableFilters[status_formulir][value]=Disetujui')
+                ),
+
+                $makeStat(
+                    "{$formulirDitolak} Formulir",
+                    'Formulir Ditolak',
+                    'heroicon-o-document-minus',
+                    'danger',
+                    CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
+                        ->where('status_formulir', 'Ditolak')
+                        ->groupBy('hari')->orderBy('hari')->pluck('total')->toArray(),
+                    $url('?tableFilters[status_formulir][value]=Ditolak')
+                ),
+
+                $makeStat(
+                    "{$diterimaPrestasi} Peserta",
+                    'Diterima Jalur Prestasi',
+                    'heroicon-o-check-circle',
+                    'success',
+                    $chart('Diterima'),
+                    $url('?tableFilters[status_pendaftaran][value]=Diterima')
+                ),
+
+                $makeStat(
+                    "{$diterimaReguler} Peserta",
+                    'Diterima Kelas Reguler',
+                    'heroicon-o-shield-check',
+                    'success',
+                    $chart('Diterima Di Kelas Reguler'),
+                    $url('?tableFilters[status_pendaftaran][value]=Diterima+Di+Kelas+Reguler')
+                ),
+
+                $makeStat(
+                    "{$diterimaUnggulan} Peserta",
+                    'Diterima Kelas Unggulan',
+                    'heroicon-o-shield-check',
+                    'info',
+                    $chart('Diterima Di Kelas Unggulan'),
+                    $url('?tableFilters[status_pendaftaran][value]=Diterima+Di+Kelas+Unggulan')
+                ),
+
+                $makeStat(
+                    "{$tidakDiterima} Peserta",
+                    'Tidak Diterima',
+                    'heroicon-o-no-symbol',
+                    'danger',
+                    $chart('Tidak Diterima'),
+                    $url('?tableFilters[status_pendaftaran][value]=Tidak+Diterima')
+                ),
+            ]);
         }
 
-        return [
-            Stat::make('', CalonSiswa::count().' Peserta')
-                ->description('Total Pendaftar')
-                ->descriptionIcon('heroicon-o-user-circle', IconPosition::Before)
-                ->color('gray')
-                ->chart(CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-                    ->groupBy('hari')
-                    ->orderBy('hari')
-                    ->pluck('total')->toArray()),
-
-            Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Diproses')->count().' Peserta')
-                ->description('Diproses')
-                ->descriptionIcon('heroicon-o-arrow-path', IconPosition::Before)
-                ->color('warning')
-                ->chart(CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-                    ->where('status_pendaftaran', 'Diproses') // Filter hanya status "Diproses"
-                    ->groupBy('hari')
-                    ->orderBy('hari')
-                    ->pluck('total')
-                    ->toArray()),
-
-            Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Berkas Tidak Lengkap')->count().' Peserta')
-                ->description('Berkas Tidak Lengkap')
-                ->descriptionIcon('heroicon-o-document-minus', IconPosition::Before)
-                ->color('warning')
-                ->chart(CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-                    ->where('status_pendaftaran', 'Berkas Tidak Lengkap')
-                    ->groupBy('hari')
-                    ->orderBy('hari')
-                    ->pluck('total')
-                    ->toArray()),
-
-            Stat::make('', CalonSiswa::whereNotIn('status_pendaftaran', ['Berkas Tidak Lengkap', 'Diproses'])->count().' Peserta')
-                ->description('Diverifikasi')
-                ->descriptionIcon('heroicon-o-clipboard-document-check', IconPosition::Before)
-                ->color('success')
-                ->chart(CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-                    ->where('status_pendaftaran', 'Diverifikasi')
-                    ->groupBy('hari')
-                    ->orderBy('hari')
-                    ->pluck('total')
-                    ->toArray()),
-        ];
+        return $stats;
     }
 }
 
@@ -21625,14 +17243,12 @@ use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\SimplePage;
 use Illuminate\Support\Facades\Redis;
-use Illuminate\Validation\Rules\Password;
 
 class ResetPasswordOtp extends SimplePage implements HasForms
 {
     use InteractsWithForms;
 
     protected static string $view = 'filament.pages.auth.reset-password-otp';
-
     protected static bool $shouldRegisterNavigation = false;
 
     public ?array $data = [];
@@ -21641,10 +17257,8 @@ class ResetPasswordOtp extends SimplePage implements HasForms
     {
         if (! session('reset_otp_user_id')) {
             $this->redirect(route('otp.forgot-password'));
-
             return;
         }
-
         $this->form->fill();
     }
 
@@ -21677,7 +17291,6 @@ class ResetPasswordOtp extends SimplePage implements HasForms
         if (! $user) {
             Notification::make()->title('Sesi tidak valid. Silakan ulangi proses lupa password.')->danger()->send();
             $this->redirect(route('otp.forgot-password'));
-
             return;
         }
 
@@ -21685,13 +17298,12 @@ class ResetPasswordOtp extends SimplePage implements HasForms
 
         if (! $storedOtp) {
             Notification::make()->title('Kode OTP sudah kadaluarsa.')->body('Silakan minta kode OTP baru.')->danger()->send();
-
             return;
         }
 
-        if ($data['otp'] !== $storedOtp) {
+        // OPTIMASI: Mencegah Timing Attack
+        if (! hash_equals((string) $storedOtp, (string) $data['otp'])) {
             Notification::make()->title('Kode OTP tidak valid.')->body('Periksa kembali kode yang dikirim ke WhatsApp Anda.')->danger()->send();
-
             return;
         }
 
@@ -21699,8 +17311,6 @@ class ResetPasswordOtp extends SimplePage implements HasForms
         Redis::setex("reset_token:{$userId}", 900, 1);
 
         Notification::make()->title('OTP valid. Silakan buat password baru.')->success()->send();
-
-        // Redirect ke halaman buat password baru (page terpisah)
         $this->redirect(route('otp.new-password'));
     }
 
@@ -21711,7 +17321,6 @@ class ResetPasswordOtp extends SimplePage implements HasForms
 
         if (! $user) {
             Notification::make()->title('Sesi tidak valid.')->danger()->send();
-
             return;
         }
 
@@ -21719,7 +17328,6 @@ class ResetPasswordOtp extends SimplePage implements HasForms
         if (Redis::exists($cooldownKey)) {
             $ttl = Redis::ttl($cooldownKey);
             Notification::make()->title("Tunggu {$ttl} detik sebelum meminta OTP baru.")->warning()->send();
-
             return;
         }
 
@@ -21727,11 +17335,7 @@ class ResetPasswordOtp extends SimplePage implements HasForms
         Redis::setex("reset_otp:{$userId}", 300, $otp);
         Redis::setex($cooldownKey, 60, 1);
 
-        $message = "Halo {$user->name},\n\n"
-            ."Kode OTP baru reset password PPDB MTsN 1 Pandeglang Anda:\n\n"
-            ."*{$otp}*\n\n"
-            .'Kode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.';
-
+        $message = "Halo {$user->name},\n\nKode OTP baru reset password PPDB MTsN 1 Pandeglang Anda:\n\n*{$otp}*\n\nKode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.";
         app(WhatsAppService::class)->send($user->telepon, $message);
 
         Notification::make()->title('Kode OTP baru telah dikirim ke WhatsApp Anda.')->success()->send();
@@ -21770,25 +17374,20 @@ class VerifikasiOtp extends SimplePage implements HasForms
     use InteractsWithForms;
 
     protected static string $view = 'filament.pages.auth.verifikasi-otp';
-
     protected static bool $shouldRegisterNavigation = false;
 
     public ?array $data = [];
 
     public function mount(): void
     {
-        // Guard: kalau tidak ada session otp_user_id, tolak akses
         if (! session('otp_user_id')) {
             $this->redirect(filament()->getLoginUrl());
-
             return;
         }
 
-        // Guard: kalau user sudah terverifikasi
         $user = User::find(session('otp_user_id'));
         if ($user?->hasVerifiedEmail()) {
             $this->redirect(filament()->getUrl());
-
             return;
         }
 
@@ -21822,38 +17421,24 @@ class VerifikasiOtp extends SimplePage implements HasForms
         $user = User::find($userId);
 
         if (! $user) {
-            Notification::make()
-                ->title('Sesi tidak valid. Silakan daftar ulang.')
-                ->danger()
-                ->send();
+            Notification::make()->title('Sesi tidak valid. Silakan daftar ulang.')->danger()->send();
             $this->redirect(filament()->getLoginUrl());
-
             return;
         }
 
         $storedOtp = Redis::get("otp:{$userId}");
 
         if (! $storedOtp) {
-            Notification::make()
-                ->title('Kode OTP sudah kadaluarsa.')
-                ->body('Silakan minta kode OTP baru.')
-                ->danger()
-                ->send();
-
+            Notification::make()->title('Kode OTP sudah kadaluarsa.')->body('Silakan minta kode OTP baru.')->danger()->send();
             return;
         }
 
-        if ($data['otp'] !== $storedOtp) {
-            Notification::make()
-                ->title('Kode OTP tidak valid.')
-                ->body('Periksa kembali kode yang dikirim ke WhatsApp Anda.')
-                ->danger()
-                ->send();
-
+        // OPTIMASI: Mencegah Timing Attack
+        if (! hash_equals((string) $storedOtp, (string) $data['otp'])) {
+            Notification::make()->title('Kode OTP tidak valid.')->body('Periksa kembali kode yang dikirim ke WhatsApp Anda.')->danger()->send();
             return;
         }
 
-        // OTP valid — aktifkan akun
         $user->forceFill([
             'email_verified_at' => now(),
             'status' => 'Aktif',
@@ -21863,16 +17448,9 @@ class VerifikasiOtp extends SimplePage implements HasForms
         Redis::del("otp_cooldown:{$userId}");
         session()->forget('otp_user_id');
 
-        // Login otomatis
         Auth::login($user);
 
-        Notification::make()
-            ->title('Akun berhasil diverifikasi!')
-            ->body('Selamat datang di PPDB MTsN 1 Pandeglang.')
-            ->success()
-            ->send();
-
-        // Redirect ke formulir pendaftaran
+        Notification::make()->title('Akun berhasil diverifikasi!')->body('Selamat datang di PPDB MTsN 1 Pandeglang.')->success()->send();
         $this->redirect(filament()->getUrl());
     }
 
@@ -21882,42 +17460,25 @@ class VerifikasiOtp extends SimplePage implements HasForms
         $user = User::find($userId);
 
         if (! $user) {
-            Notification::make()
-                ->title('Sesi tidak valid.')
-                ->danger()
-                ->send();
-
+            Notification::make()->title('Sesi tidak valid.')->danger()->send();
             return;
         }
 
-        // Cek cooldown
         $cooldownKey = "otp_cooldown:{$userId}";
         if (Redis::exists($cooldownKey)) {
             $ttl = Redis::ttl($cooldownKey);
-            Notification::make()
-                ->title("Tunggu {$ttl} detik sebelum meminta OTP baru.")
-                ->warning()
-                ->send();
-
+            Notification::make()->title("Tunggu {$ttl} detik sebelum meminta OTP baru.")->warning()->send();
             return;
         }
 
         $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-
         Redis::setex("otp:{$userId}", 300, $otp);
-        Redis::setex($cooldownKey, 60, 1); // cooldown 60 detik
+        Redis::setex($cooldownKey, 60, 1);
 
-        $message = "Halo {$user->name},\n\n"
-            ."Kode OTP baru verifikasi akun PPDB MTsN 1 Pandeglang Anda:\n\n"
-            ."*{$otp}*\n\n"
-            .'Kode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.';
-
+        $message = "Halo {$user->name},\n\nKode OTP baru verifikasi akun PPDB MTsN 1 Pandeglang Anda:\n\n*{$otp}*\n\nKode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.";
         app(WhatsAppService::class)->send($user->telepon, $message);
 
-        Notification::make()
-            ->title('Kode OTP baru telah dikirim ke WhatsApp Anda.')
-            ->success()
-            ->send();
+        Notification::make()->title('Kode OTP baru telah dikirim ke WhatsApp Anda.')->success()->send();
     }
 
     public function getTitle(): string
@@ -23818,25 +19379,19 @@ return new class extends Migration
         Schema::create('formulir_prestasis', function (Blueprint $table) {
             $table->id();
 
-            // Pemilik formulir — pakai char(36) karena calon_siswas.id adalah UUID
-            $table->char('calon_siswa_id', 36);
-            $table->foreign('calon_siswa_id')
-                ->references('id')
-                ->on('calon_siswas')
+            // OPTIMASI: Menggunakan foreignUuid bawaan Laravel
+            $table->foreignUuid('calon_siswa_id')
+                ->constrained('calon_siswas')
                 ->cascadeOnDelete()
                 ->cascadeOnUpdate();
 
-            // Referensi ke master prestasi (jenis, tingkat, kategori, peringkat)
             $table->foreignId('prestasi_id')
                 ->constrained('prestasis')
                 ->cascadeOnUpdate();
 
-            // Data spesifik yang diisi pendaftar
             $table->string('nama_prestasi');
             $table->year('tahun_prestasi');
             $table->string('penyelenggara_prestasi');
-
-            // Berkas bukti prestasi (upload per entri)
             $table->string('berkas_prestasi')->nullable();
 
             $table->timestamps();
@@ -67238,13 +62793,7 @@ Artisan::command('inspire', function () {
 
 ```blade
 @php
-    use App\Helpers\PdfDataHelper;
     use Illuminate\Support\Facades\Storage;
-
-    $instansi         = PdfDataHelper::instansi();
-    $tahunPendaftaran = PdfDataHelper::tahunAktif();
-    $sekretaris       = PdfDataHelper::sekretarisAktif();
-    $ketua            = PdfDataHelper::ketuaAktif();
 
     $isJalurPrestasi = optional($record->jalurPendaftaran)->nama === 'Prestasi';
     $jenisKelamin    = $record->jenis_kelamin === 'Pria' ? 'Laki-laki' : 'Perempuan';
@@ -67285,31 +62834,19 @@ Artisan::command('inspire', function () {
     @page { size: A4 portrait; margin: 15mm; }
     body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 9.5pt; color: #374151; line-height: 1.5; }
     table { border-collapse: collapse; width: 100%; }
-
-    /* Typography */
     .title-doc { font-family: 'Georgia', serif; text-align: center; font-size: 14pt; font-weight: bold; color: #111827; letter-spacing: 1px; text-transform: uppercase; margin-top: 15px; }
     .subtitle-doc { text-align: center; font-size: 10pt; color: #6b7280; margin-bottom: 20px; letter-spacing: 0.5px; }
-
-    /* Modern Section Header */
     .section-title { background-color: #f3f4f6; color: #111827; padding: 6px 10px; font-size: 9pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; border-left: 4px solid #059669; margin: 15px 0 8px 0; }
-
-    /* Modern Data Table */
     .data-table td { padding: 6px 4px; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
     .data-table tr:last-child td { border-bottom: none; }
     .data-table .lbl { width: 30%; color: #6b7280; font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.5px; }
     .data-table .cln { width: 3%; text-align: center; color: #9ca3af; }
     .data-table .val { font-weight: bold; color: #1f2937; }
-
-    /* Elegant Photo Box */
     .photo-wrapper { width: 3.5cm; padding-left: 15px; vertical-align: top; }
     .photo-box { width: 3cm; height: 4cm; border: 2px solid #e5e7eb; border-radius: 4px; padding: 3px; text-align: center; background: #f9fafb; display: table-cell; vertical-align: middle; }
     .photo-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 2px; }
     .photo-text { font-size: 8pt; color: #9ca3af; letter-spacing: 1px; }
-
-    /* Watermark */
     .watermark { position: absolute; top: 35%; left: 0; right: 0; text-align: center; font-size: 80pt; font-family: 'Georgia', serif; color: rgba(220, 38, 38, 0.05); transform: rotate(-30deg); z-index: -1000; letter-spacing: 5px; }
-
-    /* Signatures */
     .signature-area { margin-top: 30px; page-break-inside: avoid; }
     .sig-box { text-align: center; font-size: 9.5pt; color: #374151; vertical-align: bottom; }
     .sig-name { font-weight: bold; color: #111827; text-decoration: underline; margin-bottom: 2px; display: inline-block; }
@@ -67428,13 +62965,7 @@ Artisan::command('inspire', function () {
 ```blade
 @php
     use Carbon\Carbon;
-    use App\Helpers\PdfDataHelper;
     use Illuminate\Support\Facades\Storage;
-
-    $instansi         = PdfDataHelper::instansi();
-    $tahunPendaftaran = PdfDataHelper::tahunAktif();
-    $sekretaris       = PdfDataHelper::sekretarisAktif();
-    $ketua            = PdfDataHelper::ketuaAktif();
 
     $fotoUrl      = $record->berkas_foto ? Storage::url($record->berkas_foto) : null;
     $qrPayload    = url('/admin/formulir/' . $record->id);
@@ -67452,35 +62983,22 @@ Artisan::command('inspire', function () {
     @page { size: A4 portrait; margin: 15mm; }
     body { font-family: 'Helvetica', sans-serif; font-size: 10pt; color: #1f2937; line-height: 1.4; }
     table { border-collapse: collapse; width: 100%; }
-
-    /* The Card Container */
     .card-container { border: 2px solid #111827; border-radius: 8px; padding: 20px; position: relative; }
-
     .card-header { text-align: center; border-bottom: 2px dashed #d1d5db; padding-bottom: 15px; margin-bottom: 15px; }
     .card-title { font-family: 'Georgia', serif; font-size: 16pt; font-weight: bold; color: #111827; text-transform: uppercase; letter-spacing: 2px; }
     .card-subtitle { font-size: 10pt; color: #4b5563; margin-top: 5px; letter-spacing: 1px; }
-
-    /* Data Layout */
     .info-lbl { font-size: 9pt; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
     .info-val { font-size: 11pt; font-weight: bold; color: #111827; margin-bottom: 12px; }
-
-    /* Photo */
     .photo-box { width: 3.5cm; height: 4.5cm; border: 3px solid #e5e7eb; border-radius: 6px; padding: 3px; text-align: center; display: table-cell; vertical-align: middle; }
     .photo-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 3px; }
-
-    /* Schedule Grid */
     .schedule-box { border: 1px solid #d1d5db; border-radius: 6px; overflow: hidden; margin-top: 10px; }
     .schedule-header { background-color: #f3f4f6; padding: 8px; text-align: center; font-weight: bold; font-size: 9.5pt; letter-spacing: 1px; color: #374151; border-bottom: 1px solid #d1d5db; }
     .schedule-cell { padding: 10px; text-align: center; }
     .schedule-time { font-size: 12pt; font-weight: bold; color: #059669; }
     .schedule-date { font-size: 9pt; color: #4b5563; margin-top: 4px; }
-
-    /* CBT Highlight Box */
     .cbt-alert { background-color: #eff6ff; border: 1px solid #bfdbfe; border-left: 4px solid #3b82f6; border-radius: 4px; padding: 12px 15px; margin-top: 20px; }
     .cbt-title { font-size: 9pt; font-weight: bold; color: #1e3a8a; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
     .cbt-creds { font-family: 'Courier New', Courier, monospace; font-size: 14pt; font-weight: bold; color: #1e40af; letter-spacing: 2px; }
-
-    /* Footer */
     .card-footer { margin-top: 25px; border-top: 2px dashed #d1d5db; padding-top: 15px; }
 </style>
 </head>
@@ -67653,251 +63171,498 @@ Artisan::command('inspire', function () {
 ```blade
 @php
     use Carbon\Carbon;
-    use App\Helpers\PdfDataHelper;
     use Illuminate\Support\Facades\Storage;
 
-    $instansi         = PdfDataHelper::instansi();
-    $tahunPendaftaran = PdfDataHelper::tahunAktif();
-    $sekretaris       = PdfDataHelper::sekretarisAktif();
-    $ketua            = PdfDataHelper::ketuaAktif();
-    $pimpinan         = PdfDataHelper::pimpinanAktif();
-
-    $fotoUrl      = $record->berkas_foto ? Storage::url($record->berkas_foto) : null;
-    $qrPayload    = url('/admin/formulir/' . $record->id);
+    $fotoUrl = $record->berkas_foto ? Storage::url($record->berkas_foto) : null;
+    $qrPayload = url('/admin/formulir/' . $record->id);
 
     $now = Carbon::now();
     $tanggalTtd = $now;
     if ($tahunPendaftaran) {
         $periodes = [
-            [$tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_mulai, $tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_selesai],
-            [$tahunPendaftaran->tanggal_pengumuman_jalur_reguler_mulai, $tahunPendaftaran->tanggal_pengumuman_jalur_reguler_selesai],
-            [$tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai, $tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_selesai],
-            [$tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai, $tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_selesai],
-            [$tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai, $tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai],
+            [
+                $tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_mulai,
+                $tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_selesai,
+            ],
+            [
+                $tahunPendaftaran->tanggal_pengumuman_jalur_reguler_mulai,
+                $tahunPendaftaran->tanggal_pengumuman_jalur_reguler_selesai,
+            ],
+            [
+                $tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai,
+                $tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_selesai,
+            ],
+            [
+                $tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai,
+                $tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_selesai,
+            ],
+            [
+                $tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai,
+                $tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai,
+            ],
         ];
         foreach ($periodes as [$mulai, $selesai]) {
             if ($mulai && $selesai && $now->between(Carbon::parse($mulai), Carbon::parse($selesai))) {
-                $tanggalTtd = Carbon::parse($mulai); break;
+                $tanggalTtd = Carbon::parse($mulai);
+                break;
             }
         }
     }
 
-    $kota         = ucwords(strtolower(optional($instansi?->kabupaten)->nama ?? 'Pandeglang'));
+    $kota = ucwords(strtolower(optional($instansi?->kabupaten)->nama ?? 'Pandeglang'));
     $namaMadrasah = $instansi?->nama ?? 'MTsN 1 Pandeglang';
-    $diterima     = in_array($record->status_pendaftaran, ['Diterima', 'Diterima Di Kelas Reguler', 'Diterima Di Kelas Unggulan']);
+    $diterima = in_array($record->status_pendaftaran, [
+        'Diterima',
+        'Diterima Di Kelas Reguler',
+        'Diterima Di Kelas Unggulan',
+    ]);
 @endphp
 
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
-<meta charset="UTF-8">
-<style>
-    @page { size: A4 portrait; margin: 15mm 20mm; }
-    body { font-family: 'Georgia', 'Times New Roman', serif; font-size: 11pt; color: #111827; line-height: 1.6; text-align: justify; }
-    table { border-collapse: collapse; width: 100%; text-align: left; }
-    .sans { font-family: 'Helvetica', sans-serif; }
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 15mm 20mm;
+        }
 
-    .doc-title { text-align: center; font-size: 14pt; font-weight: bold; letter-spacing: 1.5px; text-decoration: underline; margin-top: 10px; }
-    .doc-nomor { text-align: center; font-size: 10.5pt; font-family: 'Helvetica', sans-serif; color: #4b5563; margin-bottom: 25px; }
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            font-size: 11pt;
+            color: #111827;
+            line-height: 1.6;
+            text-align: justify;
+        }
 
-    /* Elegant Data Box */
-    .data-box { border: 1px solid #d1d5db; padding: 15px; margin: 20px 0; background-color: #fcfcfc; }
-    .data-box td { padding: 4px; vertical-align: top; font-family: 'Helvetica', sans-serif; font-size: 10pt; }
-    .data-box .lbl { color: #6b7280; font-weight: bold; width: 35%; text-transform: uppercase; letter-spacing: 0.5px; }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            text-align: left;
+        }
 
-    /* The Stamp (Status Kelulusan) */
-    .stamp-container { text-align: center; margin: 30px 0; }
-    .stamp { display: inline-block; padding: 10px 40px; font-family: 'Helvetica', sans-serif; font-size: 16pt; font-weight: 900; letter-spacing: 4px; text-transform: uppercase; border: 4px solid; border-radius: 8px; transform: rotate(-3deg); }
-    .stamp-pass { color: #047857; border-color: #047857; background-color: rgba(4, 120, 87, 0.05); }
-    .stamp-fail { color: #b91c1c; border-color: #b91c1c; background-color: rgba(185, 28, 28, 0.05); }
+        .sans {
+            font-family: 'Helvetica', sans-serif;
+        }
 
-    /* Signatures */
-    .sig-area { margin-top: 40px; page-break-inside: avoid; }
-    .sig-block { text-align: center; font-family: 'Helvetica', sans-serif; font-size: 9.5pt; }
-    .sig-title { color: #4b5563; margin-bottom: 60px; display: block; }
-    .sig-name { font-weight: bold; color: #111827; text-decoration: underline; font-size: 10pt; }
+        .doc-title {
+            text-align: center;
+            font-size: 14pt;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+            text-decoration: underline;
+            margin-top: 10px;
+        }
 
-    .page-break { page-break-before: always; }
+        .doc-nomor {
+            text-align: center;
+            font-size: 10.5pt;
+            font-family: 'Helvetica', sans-serif;
+            color: #4b5563;
+            margin-bottom: 25px;
+        }
 
-    /* Modern Tables for Checklist */
-    .clean-table { border: 1px solid #e5e7eb; font-family: 'Helvetica', sans-serif; font-size: 9.5pt; }
-    .clean-table th { background-color: #f3f4f6; padding: 10px; text-align: left; color: #374151; font-weight: bold; border-bottom: 2px solid #d1d5db; text-transform: uppercase; font-size: 8.5pt; letter-spacing: 0.5px; }
-    .clean-table td { padding: 10px; border-bottom: 1px solid #e5e7eb; color: #1f2937; }
-</style>
+        .data-box {
+            border: 1px solid #d1d5db;
+            padding: 15px;
+            margin: 20px 0;
+            background-color: #fcfcfc;
+        }
+
+        .data-box td {
+            padding: 4px;
+            vertical-align: top;
+            font-family: 'Helvetica', sans-serif;
+            font-size: 10pt;
+        }
+
+        .data-box .lbl {
+            color: #6b7280;
+            font-weight: bold;
+            width: 35%;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stamp-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .stamp {
+            display: inline-block;
+            padding: 10px 40px;
+            font-family: 'Helvetica', sans-serif;
+            font-size: 16pt;
+            font-weight: 900;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            border: 4px solid;
+            border-radius: 8px;
+            transform: rotate(-3deg);
+        }
+
+        .stamp-pass {
+            color: #047857;
+            border-color: #047857;
+            background-color: rgba(4, 120, 87, 0.05);
+        }
+
+        .stamp-fail {
+            color: #b91c1c;
+            border-color: #b91c1c;
+            background-color: rgba(185, 28, 28, 0.05);
+        }
+
+        .sig-area {
+            margin-top: 40px;
+            page-break-inside: avoid;
+        }
+
+        .sig-block {
+            text-align: center;
+            font-family: 'Helvetica', sans-serif;
+            font-size: 9.5pt;
+        }
+
+        .sig-title {
+            color: #4b5563;
+            margin-bottom: 60px;
+            display: block;
+        }
+
+        .sig-name {
+            font-weight: bold;
+            color: #111827;
+            text-decoration: underline;
+            font-size: 10pt;
+        }
+
+        .page-break {
+            page-break-before: always;
+        }
+
+        .clean-table {
+            border: 1px solid #e5e7eb;
+            font-family: 'Helvetica', sans-serif;
+            font-size: 9.5pt;
+        }
+
+        .clean-table th {
+            background-color: #f3f4f6;
+            padding: 10px;
+            text-align: left;
+            color: #374151;
+            font-weight: bold;
+            border-bottom: 2px solid #d1d5db;
+            text-transform: uppercase;
+            font-size: 8.5pt;
+            letter-spacing: 0.5px;
+        }
+
+        .clean-table td {
+            padding: 10px;
+            border-bottom: 1px solid #e5e7eb;
+            color: #1f2937;
+        }
+    </style>
 </head>
+
 <body>
 
-{{-- ==================== LEMBAR 1: SKL ==================== --}}
-@include('partials.pdf-header', ['instansi' => $instansi])
+    {{-- ==================== LEMBAR 1: SKL ==================== --}}
+    @include('partials.pdf-header', ['instansi' => $instansi])
 
-<div class="doc-title">SURAT KEPUTUSAN KELULUSAN</div>
-<div class="doc-nomor">Nomor: {{ $instansi?->nomor_surat ?? '......./Mts.01/PPDB/' . date('Y') }}</div>
+    <div class="doc-title">SURAT KEPUTUSAN KELULUSAN</div>
+    <div class="doc-nomor">Nomor: {{ $instansi?->nomor_surat ?? '......./Mts.01/PPDB/' . date('Y') }}</div>
 
-<p>
-    Berdasarkan hasil Keputusan Sidang Pleno Panitia Penerimaan Peserta Didik Baru (PPDB) <b>{{ $namaMadrasah }}</b> Tahun Pelajaran {{ $tahunPendaftaran?->nama ?? '' }}, setelah melakukan evaluasi terhadap kelengkapan administrasi dan hasil uji seleksi, maka Panitia menetapkan bahwa peserta didik di bawah ini:
-</p>
+    <p>
+        Berdasarkan hasil Keputusan Sidang Pleno Panitia Penerimaan Peserta Didik Baru (PPDB) <b>{{ $namaMadrasah }}</b>
+        Tahun Pelajaran {{ $tahunPendaftaran?->nama ?? '' }}, setelah melakukan evaluasi terhadap kelengkapan
+        administrasi dan hasil uji seleksi, maka Panitia menetapkan bahwa peserta didik di bawah ini:
+    </p>
 
-<div class="data-box">
-    <table>
+    <div class="data-box">
+        <table>
+            <tr>
+                <td class="lbl">Nomor Registrasi</td>
+                <td>:</td>
+                <td style="font-weight: bold; font-size: 11pt; color: #111827;">{{ $record->nomor_pendaftaran ?? '-' }}
+                </td>
+            </tr>
+            <tr>
+                <td class="lbl">Nama Lengkap</td>
+                <td>:</td>
+                <td style="font-weight: bold; font-size: 11pt; color: #111827;">{{ strtoupper($record->nama ?? '-') }}
+                </td>
+            </tr>
+            <tr>
+                <td class="lbl">Jalur Pendaftaran</td>
+                <td>:</td>
+                <td>{{ strtoupper(optional($record->jalurPendaftaran)->nama ?? '-') }}</td>
+            </tr>
+            <tr>
+                <td class="lbl">Asal Sekolah Dasar</td>
+                <td>:</td>
+                <td>{{ strtoupper(optional($record->sekolahAsal)->nama ?? '-') }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <p style="text-align: center; font-size: 12pt; margin-top: 30px;">Dinyatakan:</p>
+
+    <div class="stamp-container">
+        <div class="stamp {{ $diterima ? 'stamp-pass' : 'stamp-fail' }}">
+            {{ $diterima ? 'L U L U S' : 'TIDAK LULUS' }}
+        </div>
+    </div>
+
+    <p>
+        Demikian Surat Keputusan ini diterbitkan agar dapat dipergunakan sebagaimana mestinya. Keputusan Panitia
+        bersifat mutlak dan tidak dapat diganggu gugat. Bagi peserta didik yang dinyatakan <b>LULUS</b>, diwajibkan
+        untuk segera melakukan tahapan Daftar Ulang sesuai dengan jadwal yang telah ditentukan.
+    </p>
+
+    <div class="sig-area">
+        <table>
+            <tr>
+                <td style="width: 25%; vertical-align: bottom;">{!! QrCode::size(70)->margin(0)->generate($qrPayload) !!}</td>
+                <td class="sig-block" style="width: 37.5%; vertical-align: top;">
+                    <span class="sig-title">{{ $kota }}, {{ $tanggalTtd->translatedFormat('d F Y') }}<br>Ketua
+                        Panitia PPDB,</span>
+                    <div style="position: relative; top: -50px; height: 0;">
+                        @if ($ketua?->berkas_tte)
+                            <img src="{{ Storage::url($ketua->berkas_tte) }}" style="height:60px;">
+                        @endif
+                    </div>
+                    <span class="sig-name">{{ $ketua?->nama ?? '.....................................' }}</span><br>
+                    NIP. {{ $ketua?->nip ?? '-' }}
+                </td>
+                <td class="sig-block" style="width: 37.5%; vertical-align: top;">
+                    <span class="sig-title">Mengetahui,<br>Kepala {{ ucwords(strtolower($namaMadrasah)) }}</span>
+                    <div style="position: relative; top: -50px; height: 0;">
+                        @if ($pimpinan?->berkas_tte)
+                            <img src="{{ Storage::url($pimpinan->berkas_tte) }}" style="height:60px;">
+                        @endif
+                    </div>
+                    <span class="sig-name">{{ $pimpinan?->nama ?? '.....................................' }}</span><br>
+                    NIP. {{ $pimpinan?->nip ?? '-' }}
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    {{-- ==================== LEMBAR 2: PAKTA INTEGRITAS ==================== --}}
+    <div class="page-break"></div>
+    @include('partials.pdf-header', ['instansi' => $instansi])
+
+    <div class="doc-title" style="font-size: 13pt; margin-bottom: 25px;">PAKTA INTEGRITAS ORANG TUA / WALI</div>
+
+    <p>Saya yang bertanda tangan di bawah ini:</p>
+    <table class="sans" style="margin: 15px 0 20px 20px; width: 90%;">
         <tr>
-            <td class="lbl">Nomor Registrasi</td><td>:</td>
-            <td style="font-weight: bold; font-size: 11pt; color: #111827;">{{ $record->nomor_pendaftaran ?? '-' }}</td>
+            <td style="width: 30%; color: #4b5563;">Nama Lengkap</td>
+            <td style="width: 2%;">:</td>
+            <td style="font-weight: bold;">
+                {{ strtoupper($record->ayah_nama ?? ($record->wali_nama ?? '......................................')) }}
+            </td>
         </tr>
         <tr>
-            <td class="lbl">Nama Lengkap</td><td>:</td>
-            <td style="font-weight: bold; font-size: 11pt; color: #111827;">{{ strtoupper($record->nama ?? '-') }}</td>
+            <td style="color: #4b5563;">Status Hubungan</td>
+            <td>:</td>
+            <td>Orang Tua / Wali Peserta Didik</td>
+        </tr>
+    </table>
+
+    <p>Adalah benar orang tua / wali dari Calon Peserta Didik Baru:</p>
+    <table class="sans" style="margin: 15px 0 20px 20px; width: 90%;">
+        <tr>
+            <td style="width: 30%; color: #4b5563;">Nama Lengkap Siswa</td>
+            <td style="width: 2%;">:</td>
+            <td style="font-weight: bold; font-size: 12pt;">{{ strtoupper($record->nama) }}</td>
         </tr>
         <tr>
-            <td class="lbl">Jalur Pendaftaran</td><td>:</td>
-            <td>{{ strtoupper(optional($record->jalurPendaftaran)->nama ?? '-') }}</td>
+            <td style="color: #4b5563;">Nomor Registrasi</td>
+            <td>:</td>
+            <td>{{ $record->nomor_pendaftaran }}</td>
+        </tr>
+    </table>
+
+    <p>Menyatakan dengan sesungguhnya bahwa:</p>
+    <ol style="margin-top: 10px; padding-left: 25px; line-height: 1.8;">
+        <li>Seluruh data dan dokumen yang saya berikan kepada pihak panitia adalah <b>benar, absah, dan dapat
+                dipertanggungjawabkan secara hukum</b>.</li>
+        <li>Apabila dikemudian hari ditemukan indikasi pemalsuan data/dokumen, saya bersedia menerima sanksi berupa
+            <b>pembatalan kelulusan</b> putra/putri saya.</li>
+        <li>Saya sepenuhnya sanggup dan bersedia bekerja sama dengan pihak madrasah untuk membimbing putra/putri saya
+            agar senantiasa mematuhi <b>Tata Tertib dan Peraturan Madarasah</b>.</li>
+        <li>Saya berkomitmen untuk tidak melakukan tindakan penyuapan, pemaksaan, maupun gratifikasi kepada panitia
+            pelaksana, dewan guru, atau staf madrasah dalam bentuk apa pun.</li>
+    </ol>
+
+    <p style="margin-top: 20px;">Demikian Pakta Integritas ini saya buat dalam keadaan sadar, sehat jasmani dan rohani,
+        serta tanpa adanya tekanan dari pihak mana pun.</p>
+
+    <table class="sig-area sans">
+        <tr>
+            <td style="width: 55%;"></td>
+            <td class="sig-block" style="width: 45%;">
+                <span style="display: block; margin-bottom: 10px;">{{ $kota }},
+                    {{ $tanggalTtd->translatedFormat('d F Y') }}<br>Yang Membuat Pernyataan,</span>
+                <div
+                    style="border: 1px dashed #9ca3af; width: 80px; height: 40px; line-height: 40px; margin: 0 auto 10px; font-size: 8pt; color: #9ca3af;">
+                    Meterai 10rb</div>
+                <span class="sig-name"
+                    style="font-size: 11pt;">{{ strtoupper($record->ayah_nama ?? ($record->wali_nama ?? '......................................')) }}</span>
+            </td>
+        </tr>
+    </table>
+
+    {{-- ==================== LEMBAR 3: SURAT PERNYATAAN SISWA ==================== --}}
+    <div class="page-break"></div>
+    @include('partials.pdf-header', ['instansi' => $instansi])
+
+    <div class="doc-title" style="font-size: 13pt; margin-bottom: 25px;">SURAT PERNYATAAN PESERTA DIDIK</div>
+
+    <p>Saya yang bertanda tangan di bawah ini, Calon Peserta Didik Baru {{ $namaMadrasah }}:</p>
+    <table class="sans"
+        style="margin: 15px 0 20px 20px; width: 90%; background-color: #f9fafb; padding: 15px; border-left: 3px solid #059669;">
+        <tr>
+            <td style="width: 30%; color: #4b5563; padding: 4px;">Nama Lengkap</td>
+            <td style="width: 2%;">:</td>
+            <td style="font-weight: bold; font-size: 12pt;">{{ strtoupper($record->nama) }}</td>
         </tr>
         <tr>
-            <td class="lbl">Asal Sekolah Dasar</td><td>:</td>
+            <td style="color: #4b5563; padding: 4px;">NISN</td>
+            <td>:</td>
+            <td>{{ $record->nisn }}</td>
+        </tr>
+        <tr>
+            <td style="color: #4b5563; padding: 4px;">Asal Sekolah</td>
+            <td>:</td>
             <td>{{ strtoupper(optional($record->sekolahAsal)->nama ?? '-') }}</td>
         </tr>
     </table>
-</div>
 
-<p style="text-align: center; font-size: 12pt; margin-top: 30px;">Dinyatakan:</p>
+    <p>Dengan memohon ridha Allah SWT, saya berjanji dan menyatakan bahwa saya:</p>
+    <ol style="margin-top: 10px; padding-left: 25px; line-height: 1.8;">
+        <li>Akan senantiasa menjaga nama baik agama, keluarga, dan almamater {{ $namaMadrasah }} di mana pun saya
+            berada.</li>
+        <li>Sanggup mematuhi dan melaksanakan segala tata tertib, peraturan madrasah, serta menjunjung tinggi norma
+            kesopanan dan akhlakul karimah terhadap Guru dan sesama teman.</li>
+        <li>Bersedia mengikuti seluruh kegiatan intrakurikuler maupun ekstrakurikuler yang telah ditetapkan oleh pihak
+            madrasah dengan penuh tanggung jawab.</li>
+        <li><b>TIDAK AKAN</b> terlibat secara langsung maupun tidak langsung dalam tindakan kriminalitas,
+            perkelahian/tawuran pelajar, perundungan (<i>bullying</i>), mengkonsumsi rokok/miras/narkotika, serta
+            pergaulan bebas.</li>
+        <li>Apabila saya terbukti melanggar pernyataan di atas, saya <b>SIAP MENERIMA SANKSI TERBERAT</b> dari pihak
+            madrasah, yaitu dikembalikan pembinaannya kepada orang tua / wali (Dikeluarkan).</li>
+    </ol>
 
-<div class="stamp-container">
-    <div class="stamp {{ $diterima ? 'stamp-pass' : 'stamp-fail' }}">
-        {{ $diterima ? 'L U L U S' : 'TIDAK LULUS' }}
-    </div>
-</div>
-
-<p>
-    Demikian Surat Keputusan ini diterbitkan agar dapat dipergunakan sebagaimana mestinya. Keputusan Panitia bersifat mutlak dan tidak dapat diganggu gugat. Bagi peserta didik yang dinyatakan <b>LULUS</b>, diwajibkan untuk segera melakukan tahapan Daftar Ulang sesuai dengan jadwal yang telah ditentukan.
-</p>
-
-<div class="sig-area">
-    <table>
+    <table class="sig-area sans">
         <tr>
-            <td style="width: 25%; vertical-align: bottom;">{!! QrCode::size(70)->margin(0)->generate($qrPayload) !!}</td>
-            <td class="sig-block" style="width: 37.5%; vertical-align: top;">
-                <span class="sig-title">{{ $kota }}, {{ $tanggalTtd->translatedFormat('d F Y') }}<br>Ketua Panitia PPDB,</span>
-                <div style="position: relative; top: -50px; height: 0;">@if ($ketua?->berkas_tte) <img src="{{ Storage::url($ketua->berkas_tte) }}" style="height:60px;"> @endif</div>
-                <span class="sig-name">{{ $ketua?->nama ?? '.....................................' }}</span><br>
-                NIP. {{ $ketua?->nip ?? '-' }}
+            <td class="sig-block" style="width: 45%;">
+                <span style="display: block; margin-bottom: 70px;">Mengetahui dan Menyetujui,<br>Orang Tua / Wali
+                    Siswa</span>
+                <span class="sig-name"
+                    style="font-size: 11pt;">{{ strtoupper($record->ayah_nama ?? ($record->wali_nama ?? '......................................')) }}</span>
             </td>
-            <td class="sig-block" style="width: 37.5%; vertical-align: top;">
-                <span class="sig-title">Mengetahui,<br>Kepala {{ ucwords(strtolower($namaMadrasah)) }}</span>
-                <div style="position: relative; top: -50px; height: 0;">@if ($pimpinan?->berkas_tte) <img src="{{ Storage::url($pimpinan->berkas_tte) }}" style="height:60px;"> @endif</div>
-                <span class="sig-name">{{ $pimpinan?->nama ?? '.....................................' }}</span><br>
-                NIP. {{ $pimpinan?->nip ?? '-' }}
+            <td style="width: 10%;"></td>
+            <td class="sig-block" style="width: 45%;">
+                <span style="display: block; margin-bottom: 70px;">{{ $kota }},
+                    {{ $tanggalTtd->translatedFormat('d F Y') }}<br>Calon Peserta Didik</span>
+                <span class="sig-name" style="font-size: 11pt;">{{ strtoupper($record->nama) }}</span>
             </td>
         </tr>
     </table>
-</div>
 
-{{-- ==================== LEMBAR 2: PAKTA INTEGRITAS ==================== --}}
-<div class="page-break"></div>
-@include('partials.pdf-header', ['instansi' => $instansi])
+    {{-- ==================== LEMBAR 4: CHECKLIST ==================== --}}
+    <div class="page-break"></div>
+    @include('partials.pdf-header', ['instansi' => $instansi])
 
-<div class="doc-title" style="font-size: 13pt; margin-bottom: 25px;">PAKTA INTEGRITAS ORANG TUA / WALI</div>
+    <div class="doc-title" style="font-size: 13pt; margin-bottom: 25px; font-family: 'Helvetica', sans-serif;">PANDUAN &
+        CHECKLIST DAFTAR ULANG</div>
 
-<p>Saya yang bertanda tangan di bawah ini:</p>
-<table class="sans" style="margin: 15px 0 20px 20px; width: 90%;">
-    <tr><td style="width: 30%; color: #4b5563;">Nama Lengkap</td><td style="width: 2%;">:</td><td style="font-weight: bold;">{{ strtoupper($record->ayah_nama ?? $record->wali_nama ?? '......................................') }}</td></tr>
-    <tr><td style="color: #4b5563;">Status Hubungan</td><td>:</td><td>Orang Tua / Wali Peserta Didik</td></tr>
-</table>
+    <p class="sans" style="font-size: 10.5pt; color: #374151; margin-bottom: 15px;">
+        Selamat, Anda telah dinyatakan Lulus! Sebagai syarat akhir penerimaan, harap membawa dokumen-dokumen di bawah
+        ini saat proses Daftar Ulang. Masukkan seluruh dokumen ke dalam <b>MAP SNELHECTER PLASTIK</b> (Warna Merah untuk
+        Laki-laki, Warna Kuning untuk Perempuan).
+    </p>
 
-<p>Adalah benar orang tua / wali dari Calon Peserta Didik Baru:</p>
-<table class="sans" style="margin: 15px 0 20px 20px; width: 90%;">
-    <tr><td style="width: 30%; color: #4b5563;">Nama Lengkap Siswa</td><td style="width: 2%;">:</td><td style="font-weight: bold; font-size: 12pt;">{{ strtoupper($record->nama) }}</td></tr>
-    <tr><td style="color: #4b5563;">Nomor Registrasi</td><td>:</td><td>{{ $record->nomor_pendaftaran }}</td></tr>
-</table>
-
-<p>Menyatakan dengan sesungguhnya bahwa:</p>
-<ol style="margin-top: 10px; padding-left: 25px; line-height: 1.8;">
-    <li>Seluruh data dan dokumen yang saya berikan kepada pihak panitia adalah <b>benar, absah, dan dapat dipertanggungjawabkan secara hukum</b>.</li>
-    <li>Apabila dikemudian hari ditemukan indikasi pemalsuan data/dokumen, saya bersedia menerima sanksi berupa <b>pembatalan kelulusan</b> putra/putri saya.</li>
-    <li>Saya sepenuhnya sanggup dan bersedia bekerja sama dengan pihak madrasah untuk membimbing putra/putri saya agar senantiasa mematuhi <b>Tata Tertib dan Peraturan Madarasah</b>.</li>
-    <li>Saya berkomitmen untuk tidak melakukan tindakan penyuapan, pemaksaan, maupun gratifikasi kepada panitia pelaksana, dewan guru, atau staf madrasah dalam bentuk apa pun.</li>
-</ol>
-
-<p style="margin-top: 20px;">Demikian Pakta Integritas ini saya buat dalam keadaan sadar, sehat jasmani dan rohani, serta tanpa adanya tekanan dari pihak mana pun.</p>
-
-<table class="sig-area sans">
-    <tr>
-        <td style="width: 55%;"></td>
-        <td class="sig-block" style="width: 45%;">
-            <span style="display: block; margin-bottom: 10px;">{{ $kota }}, {{ $tanggalTtd->translatedFormat('d F Y') }}<br>Yang Membuat Pernyataan,</span>
-            <div style="border: 1px dashed #9ca3af; width: 80px; height: 40px; line-height: 40px; margin: 0 auto 10px; font-size: 8pt; color: #9ca3af;">Meterai 10rb</div>
-            <span class="sig-name" style="font-size: 11pt;">{{ strtoupper($record->ayah_nama ?? $record->wali_nama ?? '......................................') }}</span>
-        </td>
-    </tr>
-</table>
-
-{{-- ==================== LEMBAR 3: SURAT PERNYATAAN SISWA ==================== --}}
-<div class="page-break"></div>
-@include('partials.pdf-header', ['instansi' => $instansi])
-
-<div class="doc-title" style="font-size: 13pt; margin-bottom: 25px;">SURAT PERNYATAAN PESERTA DIDIK</div>
-
-<p>Saya yang bertanda tangan di bawah ini, Calon Peserta Didik Baru {{ $namaMadrasah }}:</p>
-<table class="sans" style="margin: 15px 0 20px 20px; width: 90%; background-color: #f9fafb; padding: 15px; border-left: 3px solid #059669;">
-    <tr><td style="width: 30%; color: #4b5563; padding: 4px;">Nama Lengkap</td><td style="width: 2%;">:</td><td style="font-weight: bold; font-size: 12pt;">{{ strtoupper($record->nama) }}</td></tr>
-    <tr><td style="color: #4b5563; padding: 4px;">NISN</td><td>:</td><td>{{ $record->nisn }}</td></tr>
-    <tr><td style="color: #4b5563; padding: 4px;">Asal Sekolah</td><td>:</td><td>{{ strtoupper(optional($record->sekolahAsal)->nama ?? '-') }}</td></tr>
-</table>
-
-<p>Dengan memohon ridha Allah SWT, saya berjanji dan menyatakan bahwa saya:</p>
-<ol style="margin-top: 10px; padding-left: 25px; line-height: 1.8;">
-    <li>Akan senantiasa menjaga nama baik agama, keluarga, dan almamater {{ $namaMadrasah }} di mana pun saya berada.</li>
-    <li>Sanggup mematuhi dan melaksanakan segala tata tertib, peraturan madrasah, serta menjunjung tinggi norma kesopanan dan akhlakul karimah terhadap Guru dan sesama teman.</li>
-    <li>Bersedia mengikuti seluruh kegiatan intrakurikuler maupun ekstrakurikuler yang telah ditetapkan oleh pihak madrasah dengan penuh tanggung jawab.</li>
-    <li><b>TIDAK AKAN</b> terlibat secara langsung maupun tidak langsung dalam tindakan kriminalitas, perkelahian/tawuran pelajar, perundungan (<i>bullying</i>), mengkonsumsi rokok/miras/narkotika, serta pergaulan bebas.</li>
-    <li>Apabila saya terbukti melanggar pernyataan di atas, saya <b>SIAP MENERIMA SANKSI TERBERAT</b> dari pihak madrasah, yaitu dikembalikan pembinaannya kepada orang tua / wali (Dikeluarkan).</li>
-</ol>
-
-<table class="sig-area sans">
-    <tr>
-        <td class="sig-block" style="width: 45%;">
-            <span style="display: block; margin-bottom: 70px;">Mengetahui dan Menyetujui,<br>Orang Tua / Wali Siswa</span>
-            <span class="sig-name" style="font-size: 11pt;">{{ strtoupper($record->ayah_nama ?? $record->wali_nama ?? '......................................') }}</span>
-        </td>
-        <td style="width: 10%;"></td>
-        <td class="sig-block" style="width: 45%;">
-            <span style="display: block; margin-bottom: 70px;">{{ $kota }}, {{ $tanggalTtd->translatedFormat('d F Y') }}<br>Calon Peserta Didik</span>
-            <span class="sig-name" style="font-size: 11pt;">{{ strtoupper($record->nama) }}</span>
-        </td>
-    </tr>
-</table>
-
-{{-- ==================== LEMBAR 4: CHECKLIST ==================== --}}
-<div class="page-break"></div>
-@include('partials.pdf-header', ['instansi' => $instansi])
-
-<div class="doc-title" style="font-size: 13pt; margin-bottom: 25px; font-family: 'Helvetica', sans-serif;">PANDUAN & CHECKLIST DAFTAR ULANG</div>
-
-<p class="sans" style="font-size: 10.5pt; color: #374151; margin-bottom: 15px;">
-    Selamat, Anda telah dinyatakan Lulus! Sebagai syarat akhir penerimaan, harap membawa dokumen-dokumen di bawah ini saat proses Daftar Ulang. Masukkan seluruh dokumen ke dalam <b>MAP SNELHECTER PLASTIK</b> (Warna Merah untuk Laki-laki, Warna Kuning untuk Perempuan).
-</p>
-
-<table class="clean-table" style="width: 100%;">
-    <thead>
-        <tr>
-            <th style="width: 5%; text-align: center;">No</th>
-            <th style="width: 45%;">Nama Dokumen Pemberkasan</th>
-            <th style="width: 10%; text-align: center;">Jumlah</th>
-            <th style="width: 30%;">Keterangan</th>
-            <th style="width: 10%; text-align: center;">Cek (✓)</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr><td style="text-align:center;">1</td><td>Formulir Pendaftaran (Lembar 1)</td><td style="text-align:center; font-weight:bold;">1 Lembar</td><td>Dicetak dari sistem PPDB</td><td style="font-size: 14pt; text-align:center;">☐</td></tr>
-        <tr><td style="text-align:center;">2</td><td>Pakta Integritas (Lembar 2)</td><td style="text-align:center; font-weight:bold;">1 Lembar</td><td>Bermeterai 10.000 & Ditandatangani</td><td style="font-size: 14pt; text-align:center;">☐</td></tr>
-        <tr><td style="text-align:center;">3</td><td>Surat Pernyataan (Lembar 3)</td><td style="text-align:center; font-weight:bold;">1 Lembar</td><td>Ditandatangani Siswa & Ortu</td><td style="font-size: 14pt; text-align:center;">☐</td></tr>
-        <tr><td style="text-align:center;">4</td><td>Fotokopi Kartu Keluarga (KK)</td><td style="text-align:center; font-weight:bold;">2 Lembar</td><td>Dilegalisir Desa/Kelurahan</td><td style="font-size: 14pt; text-align:center;">☐</td></tr>
-        <tr><td style="text-align:center;">5</td><td>Fotokopi Akta Kelahiran</td><td style="text-align:center; font-weight:bold;">2 Lembar</td><td>Jelas & Terbaca</td><td style="font-size: 14pt; text-align:center;">☐</td></tr>
-        <tr><td style="text-align:center;">6</td><td>Fotokopi Ijazah / SKL</td><td style="text-align:center; font-weight:bold;">2 Lembar</td><td>Dilegalisir Asal Sekolah</td><td style="font-size: 14pt; text-align:center;">☐</td></tr>
-        <tr><td style="text-align:center;">7</td><td>Pas Foto Resmi 3x4</td><td style="text-align:center; font-weight:bold;">4 Lembar</td><td>Berlatar Belakang Merah</td><td style="font-size: 14pt; text-align:center;">☐</td></tr>
-        <tr><td style="text-align:center;">8</td><td>Kartu KIP / PKH / KKS</td><td style="text-align:center; font-weight:bold;">1 Lembar</td><td><i style="color: #6b7280;">Hanya bagi yang memiliki</i></td><td style="font-size: 14pt; text-align:center;">☐</td></tr>
-    </tbody>
-</table>
+    <table class="clean-table" style="width: 100%;">
+        <thead>
+            <tr>
+                <th style="width: 5%; text-align: center;">No</th>
+                <th style="width: 45%;">Nama Dokumen Pemberkasan</th>
+                <th style="width: 10%; text-align: center;">Jumlah</th>
+                <th style="width: 30%;">Keterangan</th>
+                <th style="width: 10%; text-align: center;">Cek (✓)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="text-align:center;">1</td>
+                <td>Formulir Pendaftaran (Lembar 1)</td>
+                <td style="text-align:center; font-weight:bold;">1 Lembar</td>
+                <td>Dicetak dari sistem PPDB</td>
+                <td style="font-size: 14pt; text-align:center;">☐</td>
+            </tr>
+            <tr>
+                <td style="text-align:center;">2</td>
+                <td>Pakta Integritas (Lembar 2)</td>
+                <td style="text-align:center; font-weight:bold;">1 Lembar</td>
+                <td>Bermeterai 10.000 & Ditandatangani</td>
+                <td style="font-size: 14pt; text-align:center;">☐</td>
+            </tr>
+            <tr>
+                <td style="text-align:center;">3</td>
+                <td>Surat Pernyataan (Lembar 3)</td>
+                <td style="text-align:center; font-weight:bold;">1 Lembar</td>
+                <td>Ditandatangani Siswa & Ortu</td>
+                <td style="font-size: 14pt; text-align:center;">☐</td>
+            </tr>
+            <tr>
+                <td style="text-align:center;">4</td>
+                <td>Fotokopi Kartu Keluarga (KK)</td>
+                <td style="text-align:center; font-weight:bold;">2 Lembar</td>
+                <td>Dilegalisir Desa/Kelurahan</td>
+                <td style="font-size: 14pt; text-align:center;">☐</td>
+            </tr>
+            <tr>
+                <td style="text-align:center;">5</td>
+                <td>Fotokopi Akta Kelahiran</td>
+                <td style="text-align:center; font-weight:bold;">2 Lembar</td>
+                <td>Jelas & Terbaca</td>
+                <td style="font-size: 14pt; text-align:center;">☐</td>
+            </tr>
+            <tr>
+                <td style="text-align:center;">6</td>
+                <td>Fotokopi Ijazah / SKL</td>
+                <td style="text-align:center; font-weight:bold;">2 Lembar</td>
+                <td>Dilegalisir Asal Sekolah</td>
+                <td style="font-size: 14pt; text-align:center;">☐</td>
+            </tr>
+            <tr>
+                <td style="text-align:center;">7</td>
+                <td>Pas Foto Resmi 3x4</td>
+                <td style="text-align:center; font-weight:bold;">4 Lembar</td>
+                <td>Berlatar Belakang Merah</td>
+                <td style="font-size: 14pt; text-align:center;">☐</td>
+            </tr>
+            <tr>
+                <td style="text-align:center;">8</td>
+                <td>Kartu KIP / PKH / KKS</td>
+                <td style="text-align:center; font-weight:bold;">1 Lembar</td>
+                <td><i style="color: #6b7280;">Hanya bagi yang memiliki</i></td>
+                <td style="font-size: 14pt; text-align:center;">☐</td>
+            </tr>
+        </tbody>
+    </table>
 
 </body>
+
 </html>
 
 ```

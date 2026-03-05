@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 
 class TahunPendaftaran extends Model
 {
@@ -79,6 +80,13 @@ class TahunPendaftaran extends Model
         'tanggal_registrasi_berkas_mulai' => 'datetime',
         'tanggal_registrasi_berkas_selesai' => 'datetime',
     ];
+
+    protected static function booted(): void
+    {
+        $flushCache = fn() => Cache::forget('tahun_pendaftaran_aktif');
+        static::saved($flushCache);
+        static::deleted($flushCache);
+    }
 
     public function calonSiswas(): HasMany
     {

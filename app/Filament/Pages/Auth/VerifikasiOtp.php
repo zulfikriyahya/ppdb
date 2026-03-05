@@ -18,25 +18,20 @@ class VerifikasiOtp extends SimplePage implements HasForms
     use InteractsWithForms;
 
     protected static string $view = 'filament.pages.auth.verifikasi-otp';
-
     protected static bool $shouldRegisterNavigation = false;
 
     public ?array $data = [];
 
     public function mount(): void
     {
-        // Guard: kalau tidak ada session otp_user_id, tolak akses
         if (! session('otp_user_id')) {
             $this->redirect(filament()->getLoginUrl());
-
             return;
         }
 
-        // Guard: kalau user sudah terverifikasi
         $user = User::find(session('otp_user_id'));
         if ($user?->hasVerifiedEmail()) {
             $this->redirect(filament()->getUrl());
-
             return;
         }
 
@@ -70,38 +65,24 @@ class VerifikasiOtp extends SimplePage implements HasForms
         $user = User::find($userId);
 
         if (! $user) {
-            Notification::make()
-                ->title('Sesi tidak valid. Silakan daftar ulang.')
-                ->danger()
-                ->send();
+            Notification::make()->title('Sesi tidak valid. Silakan daftar ulang.')->danger()->send();
             $this->redirect(filament()->getLoginUrl());
-
             return;
         }
 
         $storedOtp = Redis::get("otp:{$userId}");
 
         if (! $storedOtp) {
-            Notification::make()
-                ->title('Kode OTP sudah kadaluarsa.')
-                ->body('Silakan minta kode OTP baru.')
-                ->danger()
-                ->send();
-
+            Notification::make()->title('Kode OTP sudah kadaluarsa.')->body('Silakan minta kode OTP baru.')->danger()->send();
             return;
         }
 
-        if ($data['otp'] !== $storedOtp) {
-            Notification::make()
-                ->title('Kode OTP tidak valid.')
-                ->body('Periksa kembali kode yang dikirim ke WhatsApp Anda.')
-                ->danger()
-                ->send();
-
+        // OPTIMASI: Mencegah Timing Attack
+        if (! hash_equals((string) $storedOtp, (string) $data['otp'])) {
+            Notification::make()->title('Kode OTP tidak valid.')->body('Periksa kembali kode yang dikirim ke WhatsApp Anda.')->danger()->send();
             return;
         }
 
-        // OTP valid — aktifkan akun
         $user->forceFill([
             'email_verified_at' => now(),
             'status' => 'Aktif',
@@ -111,16 +92,9 @@ class VerifikasiOtp extends SimplePage implements HasForms
         Redis::del("otp_cooldown:{$userId}");
         session()->forget('otp_user_id');
 
-        // Login otomatis
         Auth::login($user);
 
-        Notification::make()
-            ->title('Akun berhasil diverifikasi!')
-            ->body('Selamat datang di PPDB MTsN 1 Pandeglang.')
-            ->success()
-            ->send();
-
-        // Redirect ke formulir pendaftaran
+        Notification::make()->title('Akun berhasil diverifikasi!')->body('Selamat datang di PPDB MTsN 1 Pandeglang.')->success()->send();
         $this->redirect(filament()->getUrl());
     }
 
@@ -130,42 +104,25 @@ class VerifikasiOtp extends SimplePage implements HasForms
         $user = User::find($userId);
 
         if (! $user) {
-            Notification::make()
-                ->title('Sesi tidak valid.')
-                ->danger()
-                ->send();
-
+            Notification::make()->title('Sesi tidak valid.')->danger()->send();
             return;
         }
 
-        // Cek cooldown
         $cooldownKey = "otp_cooldown:{$userId}";
         if (Redis::exists($cooldownKey)) {
             $ttl = Redis::ttl($cooldownKey);
-            Notification::make()
-                ->title("Tunggu {$ttl} detik sebelum meminta OTP baru.")
-                ->warning()
-                ->send();
-
+            Notification::make()->title("Tunggu {$ttl} detik sebelum meminta OTP baru.")->warning()->send();
             return;
         }
 
         $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-
         Redis::setex("otp:{$userId}", 300, $otp);
-        Redis::setex($cooldownKey, 60, 1); // cooldown 60 detik
+        Redis::setex($cooldownKey, 60, 1);
 
-        $message = "Halo {$user->name},\n\n"
-            ."Kode OTP baru verifikasi akun PPDB MTsN 1 Pandeglang Anda:\n\n"
-            ."*{$otp}*\n\n"
-            .'Kode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.';
-
+        $message = "Halo {$user->name},\n\nKode OTP baru verifikasi akun PPDB MTsN 1 Pandeglang Anda:\n\n*{$otp}*\n\nKode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.";
         app(WhatsAppService::class)->send($user->telepon, $message);
 
-        Notification::make()
-            ->title('Kode OTP baru telah dikirim ke WhatsApp Anda.')
-            ->success()
-            ->send();
+        Notification::make()->title('Kode OTP baru telah dikirim ke WhatsApp Anda.')->success()->send();
     }
 
     public function getTitle(): string

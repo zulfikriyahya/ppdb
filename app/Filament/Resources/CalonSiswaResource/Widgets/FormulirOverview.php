@@ -11,192 +11,183 @@ use Illuminate\Support\Facades\Auth;
 class FormulirOverview extends BaseWidget
 {
     protected static bool $isLazy = false;
-
-    protected ?string $heading = '♾️ Navigasi';
-
-    // protected ?string $description = 'An overview of some analytics.';
+    protected ?string $heading = '♾️ Statistik Pendaftaran';
     protected static ?int $sort = 0;
+    // Refresh tiap 60 detik agar data tetap live
+    protected static ?string $pollingInterval = '60s';
 
     protected function getStats(): array
     {
-        if (Auth::user()->roles->first()->name !== 'calon_siswa') {
-            return [
-                Stat::make('', CalonSiswa::count().' Peserta')
-                    ->description('Total Pendaftar')
-                    ->descriptionIcon('heroicon-o-user-circle', IconPosition::Before)
-                    ->color('gray')
-                    ->chart(CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-                        ->groupBy('hari')
-                        ->orderBy('hari')
-                        ->pluck('total')->toArray())
-                    ->extraAttributes([
-                        'class' => 'cursor-pointer',
-                        'onclick' => "window.location.href='/formulir'",
-                    ]),
+        $isCalonSiswa = Auth::user()->hasRole('calon_siswa');
+        $isAdmin      = ! $isCalonSiswa;
 
-                Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Diproses')->count().' Peserta')
-                    ->description('Diproses')
-                    ->descriptionIcon('heroicon-o-arrow-path', IconPosition::Before)
-                    ->color('warning')
-                    ->chart(
-                        CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-                            ->where('status_pendaftaran', 'Diproses') // Filter hanya status "Diproses"
-                            ->groupBy('hari')
-                            ->orderBy('hari')
-                            ->pluck('total')
-                            ->toArray()
-                    )
-                    ->extraAttributes([
-                        'class' => 'cursor-pointer',
-                        'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Diproses'",
-                    ]),
+        // ----------------------------------------------------------------
+        // 1 query — hitung semua status_pendaftaran sekaligus
+        // ----------------------------------------------------------------
+        $statusCount = CalonSiswa::selectRaw('status_pendaftaran, COUNT(*) as total')
+            ->groupBy('status_pendaftaran')
+            ->pluck('total', 'status_pendaftaran')
+            ->toArray();
 
-                Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Berkas Tidak Lengkap')->count().' Peserta')
-                    ->description('Berkas Tidak Lengkap')
-                    ->descriptionIcon('heroicon-o-document-minus', IconPosition::Before)
-                    ->color('warning')
-                    ->chart(
-                        CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-                            ->where('status_pendaftaran', 'Berkas Tidak Lengkap')
-                            ->groupBy('hari')
-                            ->orderBy('hari')
-                            ->pluck('total')
-                            ->toArray()
-                    )
-                    ->extraAttributes([
-                        'class' => 'cursor-pointer',
-                        'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Berkas+Tidak+Lengkap'",
-                    ]),
+        // ----------------------------------------------------------------
+        // 1 query — hitung semua status_formulir sekaligus
+        // ----------------------------------------------------------------
+        $formulirCount = CalonSiswa::selectRaw('status_formulir, COUNT(*) as total')
+            ->groupBy('status_formulir')
+            ->pluck('total', 'status_formulir')
+            ->toArray();
 
-                Stat::make('', CalonSiswa::whereNotIn('status_pendaftaran', ['Berkas Tidak Lengkap', 'Diproses'])->count().' Peserta')
-                    ->description('Diverifikasi')
-                    ->descriptionIcon('heroicon-o-clipboard-document-check', IconPosition::Before)
-                    ->color('success')
-                    ->chart(
-                        CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-                            ->where('status_pendaftaran', 'Diverifikasi')
-                            ->groupBy('hari')
-                            ->orderBy('hari')
-                            ->pluck('total')
-                            ->toArray()
-                    )
-                    ->extraAttributes([
-                        'class' => 'cursor-pointer',
-                        'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Diverifikasi'",
-                    ]),
+        $totalPendaftar      = array_sum($statusCount);
+        $diproses            = $statusCount['Diproses'] ?? 0;
+        $berkasTidakLengkap  = $statusCount['Berkas Tidak Lengkap'] ?? 0;
+        $diverifikasi        = $statusCount['Diverifikasi'] ?? 0;
+        $diterimaPrestasi    = $statusCount['Diterima'] ?? 0;
+        $diterimaReguler     = $statusCount['Diterima Di Kelas Reguler'] ?? 0;
+        $diterimaUnggulan    = $statusCount['Diterima Di Kelas Unggulan'] ?? 0;
+        $tidakDiterima       = $statusCount['Tidak Diterima'] ?? 0;
+        $formulirDisetujui   = $formulirCount['Disetujui'] ?? 0;
+        $formulirDitolak     = $formulirCount['Ditolak'] ?? 0;
 
-                Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Diterima')->count().' Peserta')
-                    ->description('Diterima Jalur Prestasi')
-                    ->descriptionIcon('heroicon-o-check-circle', IconPosition::Before)
-                    ->color('success')
-                    ->chart(
-                        CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-                            ->where('status_pendaftaran', 'Diterima')
-                            ->groupBy('hari')
-                            ->orderBy('hari')
-                            ->pluck('total')
-                            ->toArray()
-                    )
-                    ->extraAttributes([
-                        'class' => 'cursor-pointer',
-                        'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Diterima'",
-                    ]),
+        // ----------------------------------------------------------------
+        // Chart helper — 1 query per stat, dijalankan lazy
+        // ----------------------------------------------------------------
+        $chart = function (?string $status = null) {
+            return CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
+                ->when(
+                    $status,
+                    fn($q) => $q->where('status_pendaftaran', $status)
+                )
+                ->groupBy('hari')
+                ->orderBy('hari')
+                ->pluck('total')
+                ->toArray();
+        };
 
-                Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Diterima Di Kelas Reguler')->count().' Peserta')
-                    ->description('Diterima Di Kelas Reguler')
-                    ->descriptionIcon('heroicon-o-shield-check', IconPosition::Before)
-                    ->color('success')
-                    ->chart(
-                        CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-                            ->where('status_pendaftaran', 'Diterima Di Kelas Reguler')
-                            ->groupBy('hari')
-                            ->orderBy('hari')
-                            ->pluck('total')
-                            ->toArray()
-                    )
-                    ->extraAttributes([
-                        'class' => 'cursor-pointer',
-                        'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Diterima+Di+Kelas+Reguler'",
-                    ]),
+        $url = fn(string $path) => "/formulir{$path}";
 
-                Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Diterima Di Kelas Unggulan')->count().' Peserta')
-                    ->description('Diterima Di Kelas Unggulan')
-                    ->descriptionIcon('heroicon-o-shield-check', IconPosition::Before)
-                    ->color('success')
-                    ->chart(
-                        CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-                            ->where('status_pendaftaran', 'Diterima Di Kelas Unggulan')
-                            ->groupBy('hari')
-                            ->orderBy('hari')
-                            ->pluck('total')
-                            ->toArray()
-                    )
-                    ->extraAttributes([
-                        'class' => 'cursor-pointer',
-                        'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Diterima+Di+Kelas+Unggulan'",
-                    ]),
+        // ----------------------------------------------------------------
+        // Stat builder helper
+        // ----------------------------------------------------------------
+        $makeStat = fn(
+            string $value,
+            string $description,
+            string $icon,
+            string $color,
+            array  $chartData,
+            string $href
+        ) => Stat::make('', $value)
+            ->description($description)
+            ->descriptionIcon($icon, IconPosition::Before)
+            ->color($color)
+            ->chart($chartData)
+            ->extraAttributes([
+                'class'   => 'cursor-pointer transition hover:opacity-80',
+                'onclick' => "window.location.href='{$href}'",
+            ]);
 
-                Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Tidak Diterima')->count().' Peserta')
-                    ->description('Tidak Diterima')
-                    ->descriptionIcon('heroicon-o-no-symbol', IconPosition::Before)
-                    ->color('danger')
-                    ->chart(
-                        CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-                            ->where('status_pendaftaran', 'Tidak Diterima')
-                            ->groupBy('hari')
-                            ->orderBy('hari')
-                            ->pluck('total')
-                            ->toArray()
-                    )
-                    ->extraAttributes([
-                        'class' => 'cursor-pointer',
-                        'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Tidak+Diterima'",
-                    ]),
-            ];
+        // ----------------------------------------------------------------
+        // Stats dasar (tampil untuk semua role)
+        // ----------------------------------------------------------------
+        $stats = [
+            $makeStat(
+                "{$totalPendaftar} Peserta",
+                'Total Pendaftar',
+                'heroicon-o-user-circle',
+                'gray',
+                $chart(),
+                $url('')
+            ),
+            $makeStat(
+                "{$diproses} Peserta",
+                'Formulir Diproses',
+                'heroicon-o-arrow-path',
+                'warning',
+                $chart('Diproses'),
+                $url('?tableFilters[status_pendaftaran][value]=Diproses')
+            ),
+            $makeStat(
+                "{$berkasTidakLengkap} Peserta",
+                'Berkas Tidak Lengkap',
+                'heroicon-o-document-minus',
+                'warning',
+                $chart('Berkas Tidak Lengkap'),
+                $url('?tableFilters[status_pendaftaran][value]=Berkas+Tidak+Lengkap')
+            ),
+            $makeStat(
+                "{$diverifikasi} Peserta",
+                'Diverifikasi',
+                'heroicon-o-clipboard-document-check',
+                'success',
+                $chart('Diverifikasi'),
+                $url('?tableFilters[status_pendaftaran][value]=Diverifikasi')
+            ),
+        ];
+
+        // ----------------------------------------------------------------
+        // Stats admin-only
+        // ----------------------------------------------------------------
+        if ($isAdmin) {
+            $stats = array_merge($stats, [
+                $makeStat(
+                    "{$formulirDisetujui} Formulir",
+                    'Formulir Disetujui',
+                    'heroicon-o-document-check',
+                    'success',
+                    CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
+                        ->where('status_formulir', 'Disetujui')
+                        ->groupBy('hari')->orderBy('hari')->pluck('total')->toArray(),
+                    $url('?tableFilters[status_formulir][value]=Disetujui')
+                ),
+
+                $makeStat(
+                    "{$formulirDitolak} Formulir",
+                    'Formulir Ditolak',
+                    'heroicon-o-document-minus',
+                    'danger',
+                    CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
+                        ->where('status_formulir', 'Ditolak')
+                        ->groupBy('hari')->orderBy('hari')->pluck('total')->toArray(),
+                    $url('?tableFilters[status_formulir][value]=Ditolak')
+                ),
+
+                $makeStat(
+                    "{$diterimaPrestasi} Peserta",
+                    'Diterima Jalur Prestasi',
+                    'heroicon-o-check-circle',
+                    'success',
+                    $chart('Diterima'),
+                    $url('?tableFilters[status_pendaftaran][value]=Diterima')
+                ),
+
+                $makeStat(
+                    "{$diterimaReguler} Peserta",
+                    'Diterima Kelas Reguler',
+                    'heroicon-o-shield-check',
+                    'success',
+                    $chart('Diterima Di Kelas Reguler'),
+                    $url('?tableFilters[status_pendaftaran][value]=Diterima+Di+Kelas+Reguler')
+                ),
+
+                $makeStat(
+                    "{$diterimaUnggulan} Peserta",
+                    'Diterima Kelas Unggulan',
+                    'heroicon-o-shield-check',
+                    'info',
+                    $chart('Diterima Di Kelas Unggulan'),
+                    $url('?tableFilters[status_pendaftaran][value]=Diterima+Di+Kelas+Unggulan')
+                ),
+
+                $makeStat(
+                    "{$tidakDiterima} Peserta",
+                    'Tidak Diterima',
+                    'heroicon-o-no-symbol',
+                    'danger',
+                    $chart('Tidak Diterima'),
+                    $url('?tableFilters[status_pendaftaran][value]=Tidak+Diterima')
+                ),
+            ]);
         }
 
-        return [
-            Stat::make('', CalonSiswa::count().' Peserta')
-                ->description('Total Pendaftar')
-                ->descriptionIcon('heroicon-o-user-circle', IconPosition::Before)
-                ->color('gray')
-                ->chart(CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-                    ->groupBy('hari')
-                    ->orderBy('hari')
-                    ->pluck('total')->toArray()),
-
-            Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Diproses')->count().' Peserta')
-                ->description('Diproses')
-                ->descriptionIcon('heroicon-o-arrow-path', IconPosition::Before)
-                ->color('warning')
-                ->chart(CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-                    ->where('status_pendaftaran', 'Diproses') // Filter hanya status "Diproses"
-                    ->groupBy('hari')
-                    ->orderBy('hari')
-                    ->pluck('total')
-                    ->toArray()),
-
-            Stat::make('', CalonSiswa::query()->where('status_pendaftaran', 'Berkas Tidak Lengkap')->count().' Peserta')
-                ->description('Berkas Tidak Lengkap')
-                ->descriptionIcon('heroicon-o-document-minus', IconPosition::Before)
-                ->color('warning')
-                ->chart(CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-                    ->where('status_pendaftaran', 'Berkas Tidak Lengkap')
-                    ->groupBy('hari')
-                    ->orderBy('hari')
-                    ->pluck('total')
-                    ->toArray()),
-
-            Stat::make('', CalonSiswa::whereNotIn('status_pendaftaran', ['Berkas Tidak Lengkap', 'Diproses'])->count().' Peserta')
-                ->description('Diverifikasi')
-                ->descriptionIcon('heroicon-o-clipboard-document-check', IconPosition::Before)
-                ->color('success')
-                ->chart(CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-                    ->where('status_pendaftaran', 'Diverifikasi')
-                    ->groupBy('hari')
-                    ->orderBy('hari')
-                    ->pluck('total')
-                    ->toArray()),
-        ];
+        return $stats;
     }
 }

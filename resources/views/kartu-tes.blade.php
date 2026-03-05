@@ -1,12 +1,6 @@
 @php
     use Carbon\Carbon;
-    use App\Helpers\PdfDataHelper;
     use Illuminate\Support\Facades\Storage;
-
-    $instansi         = PdfDataHelper::instansi();
-    $tahunPendaftaran = PdfDataHelper::tahunAktif();
-    $sekretaris       = PdfDataHelper::sekretarisAktif();
-    $ketua            = PdfDataHelper::ketuaAktif();
 
     $fotoUrl      = $record->berkas_foto ? Storage::url($record->berkas_foto) : null;
     $qrPayload    = url('/admin/formulir/' . $record->id);
@@ -24,35 +18,22 @@
     @page { size: A4 portrait; margin: 15mm; }
     body { font-family: 'Helvetica', sans-serif; font-size: 10pt; color: #1f2937; line-height: 1.4; }
     table { border-collapse: collapse; width: 100%; }
-
-    /* The Card Container */
     .card-container { border: 2px solid #111827; border-radius: 8px; padding: 20px; position: relative; }
-
     .card-header { text-align: center; border-bottom: 2px dashed #d1d5db; padding-bottom: 15px; margin-bottom: 15px; }
     .card-title { font-family: 'Georgia', serif; font-size: 16pt; font-weight: bold; color: #111827; text-transform: uppercase; letter-spacing: 2px; }
     .card-subtitle { font-size: 10pt; color: #4b5563; margin-top: 5px; letter-spacing: 1px; }
-
-    /* Data Layout */
     .info-lbl { font-size: 9pt; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
     .info-val { font-size: 11pt; font-weight: bold; color: #111827; margin-bottom: 12px; }
-
-    /* Photo */
     .photo-box { width: 3.5cm; height: 4.5cm; border: 3px solid #e5e7eb; border-radius: 6px; padding: 3px; text-align: center; display: table-cell; vertical-align: middle; }
     .photo-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 3px; }
-
-    /* Schedule Grid */
     .schedule-box { border: 1px solid #d1d5db; border-radius: 6px; overflow: hidden; margin-top: 10px; }
     .schedule-header { background-color: #f3f4f6; padding: 8px; text-align: center; font-weight: bold; font-size: 9.5pt; letter-spacing: 1px; color: #374151; border-bottom: 1px solid #d1d5db; }
     .schedule-cell { padding: 10px; text-align: center; }
     .schedule-time { font-size: 12pt; font-weight: bold; color: #059669; }
     .schedule-date { font-size: 9pt; color: #4b5563; margin-top: 4px; }
-
-    /* CBT Highlight Box */
     .cbt-alert { background-color: #eff6ff; border: 1px solid #bfdbfe; border-left: 4px solid #3b82f6; border-radius: 4px; padding: 12px 15px; margin-top: 20px; }
     .cbt-title { font-size: 9pt; font-weight: bold; color: #1e3a8a; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
     .cbt-creds { font-family: 'Courier New', Courier, monospace; font-size: 14pt; font-weight: bold; color: #1e40af; letter-spacing: 2px; }
-
-    /* Footer */
     .card-footer { margin-top: 25px; border-top: 2px dashed #d1d5db; padding-top: 15px; }
 </style>
 </head>

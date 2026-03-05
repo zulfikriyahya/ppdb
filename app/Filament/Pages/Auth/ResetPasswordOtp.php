@@ -11,14 +11,12 @@ use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\SimplePage;
 use Illuminate\Support\Facades\Redis;
-use Illuminate\Validation\Rules\Password;
 
 class ResetPasswordOtp extends SimplePage implements HasForms
 {
     use InteractsWithForms;
 
     protected static string $view = 'filament.pages.auth.reset-password-otp';
-
     protected static bool $shouldRegisterNavigation = false;
 
     public ?array $data = [];
@@ -27,10 +25,8 @@ class ResetPasswordOtp extends SimplePage implements HasForms
     {
         if (! session('reset_otp_user_id')) {
             $this->redirect(route('otp.forgot-password'));
-
             return;
         }
-
         $this->form->fill();
     }
 
@@ -63,7 +59,6 @@ class ResetPasswordOtp extends SimplePage implements HasForms
         if (! $user) {
             Notification::make()->title('Sesi tidak valid. Silakan ulangi proses lupa password.')->danger()->send();
             $this->redirect(route('otp.forgot-password'));
-
             return;
         }
 
@@ -71,13 +66,12 @@ class ResetPasswordOtp extends SimplePage implements HasForms
 
         if (! $storedOtp) {
             Notification::make()->title('Kode OTP sudah kadaluarsa.')->body('Silakan minta kode OTP baru.')->danger()->send();
-
             return;
         }
 
-        if ($data['otp'] !== $storedOtp) {
+        // OPTIMASI: Mencegah Timing Attack
+        if (! hash_equals((string) $storedOtp, (string) $data['otp'])) {
             Notification::make()->title('Kode OTP tidak valid.')->body('Periksa kembali kode yang dikirim ke WhatsApp Anda.')->danger()->send();
-
             return;
         }
 
@@ -85,8 +79,6 @@ class ResetPasswordOtp extends SimplePage implements HasForms
         Redis::setex("reset_token:{$userId}", 900, 1);
 
         Notification::make()->title('OTP valid. Silakan buat password baru.')->success()->send();
-
-        // Redirect ke halaman buat password baru (page terpisah)
         $this->redirect(route('otp.new-password'));
     }
 
@@ -97,7 +89,6 @@ class ResetPasswordOtp extends SimplePage implements HasForms
 
         if (! $user) {
             Notification::make()->title('Sesi tidak valid.')->danger()->send();
-
             return;
         }
 
@@ -105,7 +96,6 @@ class ResetPasswordOtp extends SimplePage implements HasForms
         if (Redis::exists($cooldownKey)) {
             $ttl = Redis::ttl($cooldownKey);
             Notification::make()->title("Tunggu {$ttl} detik sebelum meminta OTP baru.")->warning()->send();
-
             return;
         }
 
@@ -113,11 +103,7 @@ class ResetPasswordOtp extends SimplePage implements HasForms
         Redis::setex("reset_otp:{$userId}", 300, $otp);
         Redis::setex($cooldownKey, 60, 1);
 
-        $message = "Halo {$user->name},\n\n"
-            ."Kode OTP baru reset password PPDB MTsN 1 Pandeglang Anda:\n\n"
-            ."*{$otp}*\n\n"
-            .'Kode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.';
-
+        $message = "Halo {$user->name},\n\nKode OTP baru reset password PPDB MTsN 1 Pandeglang Anda:\n\n*{$otp}*\n\nKode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.";
         app(WhatsAppService::class)->send($user->telepon, $message);
 
         Notification::make()->title('Kode OTP baru telah dikirim ke WhatsApp Anda.')->success()->send();

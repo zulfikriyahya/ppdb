@@ -1,11 +1,5 @@
 @php
-    use App\Helpers\PdfDataHelper;
     use Illuminate\Support\Facades\Storage;
-
-    $instansi         = PdfDataHelper::instansi();
-    $tahunPendaftaran = PdfDataHelper::tahunAktif();
-    $sekretaris       = PdfDataHelper::sekretarisAktif();
-    $ketua            = PdfDataHelper::ketuaAktif();
 
     $isJalurPrestasi = optional($record->jalurPendaftaran)->nama === 'Prestasi';
     $jenisKelamin    = $record->jenis_kelamin === 'Pria' ? 'Laki-laki' : 'Perempuan';
@@ -46,31 +40,19 @@
     @page { size: A4 portrait; margin: 15mm; }
     body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 9.5pt; color: #374151; line-height: 1.5; }
     table { border-collapse: collapse; width: 100%; }
-
-    /* Typography */
     .title-doc { font-family: 'Georgia', serif; text-align: center; font-size: 14pt; font-weight: bold; color: #111827; letter-spacing: 1px; text-transform: uppercase; margin-top: 15px; }
     .subtitle-doc { text-align: center; font-size: 10pt; color: #6b7280; margin-bottom: 20px; letter-spacing: 0.5px; }
-
-    /* Modern Section Header */
     .section-title { background-color: #f3f4f6; color: #111827; padding: 6px 10px; font-size: 9pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; border-left: 4px solid #059669; margin: 15px 0 8px 0; }
-
-    /* Modern Data Table */
     .data-table td { padding: 6px 4px; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
     .data-table tr:last-child td { border-bottom: none; }
     .data-table .lbl { width: 30%; color: #6b7280; font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.5px; }
     .data-table .cln { width: 3%; text-align: center; color: #9ca3af; }
     .data-table .val { font-weight: bold; color: #1f2937; }
-
-    /* Elegant Photo Box */
     .photo-wrapper { width: 3.5cm; padding-left: 15px; vertical-align: top; }
     .photo-box { width: 3cm; height: 4cm; border: 2px solid #e5e7eb; border-radius: 4px; padding: 3px; text-align: center; background: #f9fafb; display: table-cell; vertical-align: middle; }
     .photo-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 2px; }
     .photo-text { font-size: 8pt; color: #9ca3af; letter-spacing: 1px; }
-
-    /* Watermark */
     .watermark { position: absolute; top: 35%; left: 0; right: 0; text-align: center; font-size: 80pt; font-family: 'Georgia', serif; color: rgba(220, 38, 38, 0.05); transform: rotate(-30deg); z-index: -1000; letter-spacing: 5px; }
-
-    /* Signatures */
     .signature-area { margin-top: 30px; page-break-inside: avoid; }
     .sig-box { text-align: center; font-size: 9.5pt; color: #374151; vertical-align: bottom; }
     .sig-name { font-weight: bold; color: #111827; text-decoration: underline; margin-bottom: 2px; display: inline-block; }

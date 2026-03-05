@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Cache;
 
 class CalonSiswa extends Model
 {
@@ -17,7 +18,7 @@ class CalonSiswa extends Model
     protected $fillable = [
         'user_id',
         'tahun_pendaftaran_id',
-        'nomor_pendaftaran',        // ← baru
+        'nomor_pendaftaran',
         'nama',
         'nik',
         'kk',
@@ -35,10 +36,10 @@ class CalonSiswa extends Model
         'disabilitas',
         'tinggi_badan',
         'berat_badan',
-        'penerima_kip',             // ← baru
+        'penerima_kip',
         'no_kip',
-        'no_kks',                   // ← baru (fix inkonsistensi exporter)
-        'no_pkh',                   // ← baru
+        'no_kks',
+        'no_pkh',
         'siswa_telepon',
         'siswa_alamat',
         'siswa_negara_id',
@@ -105,7 +106,7 @@ class CalonSiswa extends Model
         'nilai_akademik',
         'nilai_praktik',
         'status_pendaftaran',
-        'status_formulir',          // ← baru
+        'status_formulir',
         'kelas_id',
         'tes_sesi',
         'tes_ruang',
@@ -116,7 +117,7 @@ class CalonSiswa extends Model
 
     protected $casts = [
         'tanggal_lahir' => 'date',
-        'penerima_kip' => 'boolean',  // ← baru
+        'penerima_kip' => 'boolean',
         'tahun_pendaftaran_id' => 'integer',
         'user_id' => 'integer',
         'siswa_negara_id' => 'integer',
@@ -147,7 +148,6 @@ class CalonSiswa extends Model
         'ekstrakurikuler_id' => 'integer',
         'mata_pelajaran_id' => 'integer',
         'prestasi_id' => 'integer',
-
         'nik' => 'encrypted',
         'kk' => 'encrypted',
         'ibu_nik' => 'encrypted',
@@ -159,36 +159,24 @@ class CalonSiswa extends Model
         'wali_telepon' => 'encrypted',
     ];
 
-    // -----------------------------------------------------------------------
-    // Global Scopes
-    // -----------------------------------------------------------------------
-
     protected static function booted(): void
     {
-        // ── Scope 1: Isolasi per tahun pendaftaran aktif ─────────────────────
-        // once() harus dipanggil di luar closure agar cache berlaku
-        // di seluruh request lifecycle, bukan per-instance.
+        // Scope 1: Isolasi per tahun pendaftaran aktif menggunakan Cache Forever
         static::addGlobalScope('tahun_aktif', function (Builder $builder) {
-            // Cache::remember lebih aman untuk Octane (worker persist antar request)
-            $tahun = \Illuminate\Support\Facades\Cache::remember(
-                'tahun_pendaftaran_aktif',
-                now()->addSeconds(60),
-                fn() => TahunPendaftaran::where('status', 'Aktif')->first()
-            );
-
+            $tahun = Cache::rememberForever('tahun_pendaftaran_aktif', fn() => TahunPendaftaran::where('status', 'Aktif')->first());
             if ($tahun) {
                 $builder->where('tahun_pendaftaran_id', $tahun->id);
             }
         });
 
-        // ── Scope 2: calon_siswa hanya bisa lihat data milik sendiri ────────
+        // Scope 2: calon_siswa hanya bisa lihat data milik sendiri
         static::addGlobalScope('milik_sendiri', function (Builder $builder) {
             if (auth()->check() && auth()->user()->hasRole('calon_siswa')) {
                 $builder->where('user_id', auth()->id());
             }
         });
 
-        // ── Auto-generate nomor_pendaftaran ──────────────────────────────────
+        // Auto-generate nomor_pendaftaran
         static::creating(function (CalonSiswa $model) {
             if (empty($model->nomor_pendaftaran)) {
                 $model->nomor_pendaftaran = static::generateNomorPendaftaran();
@@ -196,18 +184,11 @@ class CalonSiswa extends Model
         });
     }
 
-    // -----------------------------------------------------------------------
-    // Nomor Pendaftaran Generator
-    // Format: PPDB-{TAHUN}-{6 digit sequence}
-    // Contoh: PPDB-2025-000001
-    // -----------------------------------------------------------------------
-
     public static function generateNomorPendaftaran(): string
     {
-        $tahun = TahunPendaftaran::where('status', 'Aktif')->first();
+        $tahun = Cache::rememberForever('tahun_pendaftaran_aktif', fn() => TahunPendaftaran::where('status', 'Aktif')->first());
         $prefix = 'PPDB-' . ($tahun ? substr($tahun->nama, 0, 4) : date('Y'));
 
-        // Ambil nomor urut terakhir untuk tahun ini, bypass global scope
         $last = static::withoutGlobalScopes()
             ->where('nomor_pendaftaran', 'like', $prefix . '-%')
             ->orderByDesc('nomor_pendaftaran')
@@ -215,7 +196,6 @@ class CalonSiswa extends Model
             ->value('nomor_pendaftaran');
 
         $seq = $last ? ((int) substr($last, -6)) + 1 : 1;
-
         return $prefix . '-' . str_pad($seq, 6, '0', STR_PAD_LEFT);
     }
 
