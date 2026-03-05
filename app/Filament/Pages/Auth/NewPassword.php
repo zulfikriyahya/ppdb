@@ -97,7 +97,12 @@ class NewPassword extends SimplePage implements HasForms
             ."Password akun PPDB MTsN 1 Pandeglang Anda telah berhasil diubah.\n\n"
             .'Jika Anda tidak merasa melakukan perubahan ini, segera hubungi panitia PPDB.';
 
-        app(WhatsAppService::class)->send($user->telepon, $message);
+        app(WhatsAppService::class)->send(
+            phone: $user->telepon,
+            message: $message,
+            minDelay: 1,
+            maxDelay: 5,
+        );
 
         Notification::make()->title('Password berhasil diubah.')->body('Silakan login dengan password baru Anda.')->success()->send();
 

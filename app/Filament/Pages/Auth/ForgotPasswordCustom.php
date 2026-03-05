@@ -98,7 +98,12 @@ class ForgotPasswordCustom extends SimplePage implements HasForms
             ."*{$otp}*\n\n"
             .'Kode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.';
 
-        app(WhatsAppService::class)->send($user->telepon, $message);
+        app(WhatsAppService::class)->send(
+            phone: $user->telepon,
+            message: $message,
+            minDelay: 1,
+            maxDelay: 5,
+        );
 
         session(['reset_otp_user_id' => $user->id]);
 

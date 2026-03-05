@@ -38,44 +38,44 @@ class InformasiPublished extends TableWidget
     private function statusColor(string $status): string
     {
         return match ($status) {
-            'Diverifikasi' => 'success',
+            'Diverifikasi',
             'Diterima',
             'Diterima Di Kelas Reguler' => 'success',
             'Diterima Di Kelas Unggulan' => 'info',
-            'Tidak Diterima' => 'danger',
-            default => 'warning',
+            'Tidak Diterima'             => 'danger',
+            default                      => 'warning',
         };
     }
 
     private function statusIcon(string $status): string
     {
         return match ($status) {
-            'Diverifikasi' => 'heroicon-o-clipboard-document-check',
-            'Berkas Tidak Lengkap' => 'heroicon-o-document-minus',
-            'Tidak Diterima' => 'heroicon-o-no-symbol',
-            'Diterima' => 'heroicon-o-check-circle',
+            'Diverifikasi'               => 'heroicon-o-clipboard-document-check',
+            'Berkas Tidak Lengkap'       => 'heroicon-o-document-minus',
+            'Tidak Diterima'             => 'heroicon-o-no-symbol',
+            'Diterima'                   => 'heroicon-o-check-circle',
             'Diterima Di Kelas Reguler',
             'Diterima Di Kelas Unggulan' => 'heroicon-o-shield-check',
-            default => 'heroicon-o-arrow-path',
+            default                      => 'heroicon-o-arrow-path',
         };
     }
 
     private function isInPengumumanPeriod(): bool
     {
-        $tahun = DB::table('tahun_pendaftarans')->where('status', 'Aktif')->first();
+        $tahun   = DB::table('tahun_pendaftarans')->where('status', 'Aktif')->first();
         $sekarang = Carbon::now();
 
         $jalurs = ['prestasi', 'reguler', 'afirmasi', 'zonasi', 'mutasi'];
 
         foreach ($jalurs as $jalur) {
-            $mulaiRaw = $tahun->{"tanggal_pengumuman_jalur_{$jalur}_mulai"} ?? null;
+            $mulaiRaw   = $tahun->{"tanggal_pengumuman_jalur_{$jalur}_mulai"}   ?? null;
             $selesaiRaw = $tahun->{"tanggal_pengumuman_jalur_{$jalur}_selesai"} ?? null;
 
             if (empty($mulaiRaw) || empty($selesaiRaw)) {
                 continue;
             }
 
-            $mulai = Carbon::createFromFormat('Y-m-d H:i:s', trim($mulaiRaw));
+            $mulai   = Carbon::createFromFormat('Y-m-d H:i:s', trim($mulaiRaw));
             $selesai = Carbon::createFromFormat('Y-m-d H:i:s', trim($selesaiRaw));
 
             if ($sekarang->between($mulai, $selesai)) {
@@ -98,24 +98,28 @@ class InformasiPublished extends TableWidget
     public function table(Table $table): Table
     {
         $calonSiswa = $this->getCalonSiswa();
-        $label = $calonSiswa?->status_pendaftaran ?? '';
+        $label      = $calonSiswa?->status_pendaftaran ?? '';
 
-        $urlFormulir = $calonSiswa ? '/formulir' : '';
-        $urlViewFormulir = $calonSiswa ? '/formulir/'.$calonSiswa->id : '';
-        $urlInformasi = $calonSiswa ? '/informasi' : '';
+        $urlFormulir     = $calonSiswa ? '/formulir' : '';
+        $urlViewFormulir = $calonSiswa ? "/formulir/{$calonSiswa->id}" : '';
+        $urlInformasi    = $calonSiswa ? '/informasi' : '';
 
         $isCalonSiswa = $this->isCalonSiswa();
-        $hasTerminalStatus = $calonSiswa && in_array($calonSiswa->status_pendaftaran, [
+
+        $terminalStatuses = [
             'Diterima',
             'Diterima Di Kelas Unggulan',
             'Diterima Di Kelas Reguler',
             'Tidak Diterima',
-        ]);
-        $hidePendaftaranBadge = ! $isCalonSiswa || $calonSiswa === null || $hasTerminalStatus;
-        $inPengumuman = $this->isInPengumumanPeriod();
+        ];
+
+        $hasTerminalStatus     = $calonSiswa && in_array($calonSiswa->status_pendaftaran, $terminalStatuses);
+        $hidePendaftaranBadge  = ! $isCalonSiswa || $calonSiswa === null || $hasTerminalStatus;
+        $inPengumuman          = $this->isInPengumumanPeriod();
 
         return $table
             ->headerActions([
+                // --- Status Pendaftaran (non-terminal) ---
                 Action::make('label_status_pendaftaran')
                     ->label('Status Pendaftaran :')
                     ->outlined()
@@ -126,13 +130,14 @@ class InformasiPublished extends TableWidget
 
                 Action::make('status_pendaftaran')
                     ->label($label)
-                    ->color(fn () => $calonSiswa ? $this->statusColor($calonSiswa->status_pendaftaran) : 'warning')
-                    ->icon(fn () => $calonSiswa ? $this->statusIcon($calonSiswa->status_pendaftaran) : 'heroicon-o-arrow-path')
+                    ->color(fn() => $calonSiswa ? $this->statusColor($calonSiswa->status_pendaftaran) : 'warning')
+                    ->icon(fn() => $calonSiswa ? $this->statusIcon($calonSiswa->status_pendaftaran) : 'heroicon-o-arrow-path')
                     ->outlined()
                     ->size('sm')
                     ->url($urlFormulir)
                     ->hidden($hidePendaftaranBadge),
 
+                // --- Status Kelulusan (periode pengumuman) ---
                 Action::make('label_status_kelulusan')
                     ->label('Status Pendaftaran :')
                     ->outlined()
@@ -143,8 +148,8 @@ class InformasiPublished extends TableWidget
 
                 Action::make('status_kelulusan')
                     ->label($label)
-                    ->color(fn () => $calonSiswa ? $this->statusColor($calonSiswa->status_pendaftaran) : '')
-                    ->icon(fn () => $calonSiswa ? $this->statusIcon($calonSiswa->status_pendaftaran) : '')
+                    ->color(fn() => $calonSiswa ? $this->statusColor($calonSiswa->status_pendaftaran) : '')
+                    ->icon(fn() => $calonSiswa ? $this->statusIcon($calonSiswa->status_pendaftaran) : '')
                     ->outlined()
                     ->size('sm')
                     ->url($urlViewFormulir)
@@ -156,7 +161,7 @@ class InformasiPublished extends TableWidget
             ->columns([
                 TextColumn::make('judul')
                     ->label('Informasi')
-                    ->description(fn (Informasi $record): string => Str::limit($record->isi, 50))
+                    ->description(fn(Informasi $record): string => Str::limit($record->isi, 50))
                     ->icon('heroicon-o-information-circle')
                     ->iconColor('info'),
 

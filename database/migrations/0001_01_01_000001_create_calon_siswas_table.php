@@ -113,8 +113,6 @@ return new class extends Migration
             $table->integer('nilai_praktik')->nullable();
             $table->enum('status_pendaftaran', [
                 'Diproses',
-                'Berkas Tidak Lengkap',
-                'Diverifikasi',
                 'Tidak Diterima',
                 'Diterima',
                 'Diterima Di Kelas Reguler',
@@ -122,6 +120,7 @@ return new class extends Migration
             ])->default('Diproses')->nullable();
             $table->enum('status_formulir', [
                 'Diproses',
+                'Berkas Tidak Lengkap',
                 'Disetujui',
                 'Ditolak',
             ])->default('Diproses');

@@ -203,7 +203,12 @@ class RegisterCustom extends Register
             ."*{$otp}*\n\n"
             .'Kode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.';
 
-        app(WhatsAppService::class)->send($user->telepon, $message);
+        app(WhatsAppService::class)->send(
+            phone: $user->telepon,
+            message: $message,
+            minDelay: 1,   // OTP: kirim cepat
+            maxDelay: 5,
+        );
 
         session(['otp_user_id' => $user->id]);
 

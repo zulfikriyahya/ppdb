@@ -117,25 +117,22 @@ class FormOptions
     ];
 
     public const STATUS_PENDAFTARAN_SUPER_ADMIN = [
-        'Diproses' => 'Diproses',
-        'Berkas Tidak Lengkap' => 'Berkas Tidak Lengkap',
-        'Diverifikasi' => 'Diverifikasi',
-        'Tidak Diterima' => 'Tidak Diterima',
-        'Diterima' => 'Diterima',
-        'Diterima Di Kelas Reguler' => 'Diterima Di Kelas Reguler',
+        'Diproses'                 => 'Diproses',
+        'Tidak Diterima'           => 'Tidak Diterima',
+        'Diterima'                 => 'Diterima',
+        'Diterima Di Kelas Reguler'  => 'Diterima Di Kelas Reguler',
         'Diterima Di Kelas Unggulan' => 'Diterima Di Kelas Unggulan',
     ];
 
     public const STATUS_PENDAFTARAN_REGULAR = [
         'Diproses' => 'Diproses',
-        'Berkas Tidak Lengkap' => 'Berkas Tidak Lengkap',
-        'Diverifikasi' => 'Diverifikasi',
     ];
 
     public const STATUS_FORMULIR = [
-        'Diproses' => 'Diproses',
-        'Disetujui' => 'Disetujui',
-        'Ditolak' => 'Ditolak',
+        'Diproses'            => 'Diproses',
+        'Berkas Tidak Lengkap' => 'Berkas Tidak Lengkap',
+        'Disetujui'           => 'Disetujui',
+        'Ditolak'             => 'Ditolak',
     ];
 
     // Helper untuk tahun lulus

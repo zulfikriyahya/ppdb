@@ -561,7 +561,26 @@ trait CalonSiswaFormTrait
 
     protected function getStatusFormulirSection(): Section
     {
-        return Section::make('Formulir Pendaftaran')
+        return Section::make('Status Formulir')
+            ->icon('heroicon-m-document-check')
+            ->visible(Auth::user()->roles->first()->name !== 'calon_siswa')
+            ->columns(['sm' => '100%', 'md' => 1, 'lg' => 1])
+            ->schema([
+                Select::make('status_formulir')
+                    ->label('Status Formulir')
+                    ->options(FormOptions::STATUS_FORMULIR)
+                    ->native(false)
+                    ->default('Diproses')
+                    ->required(),
+            ]);
+    }
+
+    protected function getStatusPendaftaranSection(): Section
+    {
+        return Section::make('Status Pendaftaran')
+            ->icon('heroicon-m-clipboard-document-list')
+            ->visible(Auth::user()->roles->first()->name !== 'calon_siswa')
+            ->columns(['sm' => '100%', 'md' => 2, 'lg' => 2])
             ->schema([
                 Select::make('status_pendaftaran')
                     ->label('Status Pendaftaran')
@@ -570,7 +589,8 @@ trait CalonSiswaFormTrait
                         : FormOptions::STATUS_PENDAFTARAN_REGULAR)
                     ->native(false)
                     ->live()
-                    ->default('Diproses'),
+                    ->default('Diproses')
+                    ->required(),
 
                 Select::make('kelas_id')
                     ->label('Kelas')
@@ -578,11 +598,13 @@ trait CalonSiswaFormTrait
                         'Diterima Di Kelas Reguler',
                         'Diterima Di Kelas Unggulan',
                     ]))
+                    ->required(fn ($get) => in_array($get('status_pendaftaran'), [
+                        'Diterima Di Kelas Reguler',
+                        'Diterima Di Kelas Unggulan',
+                    ]))
                     ->relationship('kelas', 'nama')
                     ->native(false),
-            ])
-            ->visible(Auth::user()->roles->first()->name !== 'calon_siswa')
-            ->columns(['sm' => '100%', 'md' => 2, 'lg' => 2]);
+            ]);
     }
 
     protected function getDataTesStep(): Wizard\Step
@@ -628,30 +650,56 @@ trait CalonSiswaFormTrait
 
     protected function getAllSteps(bool $includeStatusSection = false, bool $includeDataTes = false): array
     {
-        $steps = [
-            Wizard\Step::make('Data Calon Siswa')
+        $isCalonSiswa = Auth::user()->hasRole('calon_siswa');
+
+        $steps = [];
+
+        // ----------------------------------------------------------------
+        // Step 0 — Status (hanya untuk admin/non-calon_siswa)
+        // ----------------------------------------------------------------
+        if ($includeStatusSection && ! $isCalonSiswa) {
+            $steps[] = Wizard\Step::make('Status')
+                ->icon('heroicon-o-flag')
+                ->description('Status formulir & pendaftaran')
                 ->schema([
-                    ...($includeStatusSection ? [$this->getStatusFormulirSection()] : []),
+                    $this->getStatusFormulirSection(),
+                    $this->getStatusPendaftaranSection(),
+                ]);
+        }
 
-                    Tabs::make('Biodata')
-                        ->tabs([
-                            $this->getDataCalonSiswaTab(),
-                            $this->getAlamatTab('siswa'),
-                            $this->getBerkasTab(),
-                        ])
-                        ->columns(['sm' => '100%', 'md' => 3, 'lg' => 3]),
-                ]),
+        // ----------------------------------------------------------------
+        // Step 1 — Data Calon Siswa
+        // ----------------------------------------------------------------
+        $steps[] = Wizard\Step::make('Data Calon Siswa')
+            ->icon('heroicon-o-user')
+            ->description('Biodata, alamat & berkas')
+            ->schema([
+                Tabs::make('Biodata')
+                    ->tabs([
+                        $this->getDataCalonSiswaTab(),
+                        $this->getAlamatTab('siswa'),
+                        $this->getBerkasTab(),
+                    ])
+                    ->columns(['sm' => '100%', 'md' => 3, 'lg' => 3]),
+            ]);
 
-            Wizard\Step::make('Data Orang Tua')
-                ->schema([
-                    $this->getOrangTuaTabs('ibu', 'Ibu Kandung'),
-                    $this->getOrangTuaTabs('ayah', 'Ayah Kandung'),
-                    $this->getOrangTuaTabs('wali', 'Wali', false),
-                    $this->getKepemilikanRumahSection(),
-                ])
-                ->columnSpanFull(),
-        ];
+        // ----------------------------------------------------------------
+        // Step 2 — Data Orang Tua
+        // ----------------------------------------------------------------
+        $steps[] = Wizard\Step::make('Data Orang Tua')
+            ->icon('heroicon-o-user-group')
+            ->description('Data ibu, ayah & wali')
+            ->schema([
+                $this->getOrangTuaTabs('ibu', 'Ibu Kandung'),
+                $this->getOrangTuaTabs('ayah', 'Ayah Kandung'),
+                $this->getOrangTuaTabs('wali', 'Wali', false),
+                $this->getKepemilikanRumahSection(),
+            ])
+            ->columnSpanFull();
 
+        // ----------------------------------------------------------------
+        // Step 3 — Data Tes (hanya admin)
+        // ----------------------------------------------------------------
         if ($includeDataTes) {
             $steps[] = $this->getDataTesStep();
         }

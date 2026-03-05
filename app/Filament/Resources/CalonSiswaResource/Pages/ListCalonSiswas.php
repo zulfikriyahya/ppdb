@@ -107,7 +107,6 @@ class ListCalonSiswas extends ListRecords
             'Diterima',
             'Diterima Di Kelas Unggulan',
             'Diterima Di Kelas Reguler',
-            'Diverifikasi',
             'Tidak Diterima',
         ];
 

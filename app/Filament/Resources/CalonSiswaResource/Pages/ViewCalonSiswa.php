@@ -6,6 +6,7 @@ use App\Filament\Resources\CalonSiswaResource;
 use App\Filament\Traits\CalonSiswaFormTrait;
 use App\Models\CalonSiswa;
 use Carbon\Carbon;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Wizard;
 use Filament\Forms\Form;
 use Filament\Resources\Pages\ViewRecord;
@@ -23,22 +24,22 @@ class ViewCalonSiswa extends ViewRecord
     {
         return [
             $this->buildPdfAction(
-                name: 'cetak_formulir',
-                label: 'Formulir',
-                view: 'formulir',
-                visibleCallback: fn () => $this->canPrintFormulir()
+                'cetak_formulir',
+                'Formulir',
+                'formulir',
+                fn() => $this->canPrintFormulir()
             ),
             $this->buildPdfAction(
-                name: 'cetak_kartu_tes',
-                label: 'Kartu Tes',
-                view: 'kartu-tes',
-                visibleCallback: fn () => $this->canPrintKartuTes()
+                'cetak_kartu_tes',
+                'Kartu Tes',
+                'kartu-tes',
+                fn() => $this->canPrintKartuTes()
             ),
             $this->buildPdfAction(
-                name: 'cetak_skl',
-                label: 'Hasil',
-                view: 'skl',
-                visibleCallback: fn () => $this->canPrintHasil()
+                'cetak_skl',
+                'Hasil',
+                'skl',
+                fn() => $this->canPrintHasil()
             ),
         ];
     }
@@ -50,12 +51,56 @@ class ViewCalonSiswa extends ViewRecord
                 includeStatusSection: true,
                 includeDataTes: false
             ))->columnSpanFull(),
+
+            // ----------------------------------------------------------------
+            // Section FormulirPrestasi — hanya tampil jika ada data
+            // ----------------------------------------------------------------
+            Section::make('Data Formulir Prestasi')
+                ->icon('heroicon-o-trophy')
+                ->collapsible()
+                ->columnSpanFull()
+                ->visible(fn() => $this->record->formulirPrestasis()->exists())
+                ->schema([
+                    \Filament\Forms\Components\Repeater::make('formulirPrestasis')
+                        ->relationship('formulirPrestasis')
+                        ->addable(false)
+                        ->deletable(false)
+                        ->reorderable(false)
+                        ->label('')
+                        ->schema([
+                            \Filament\Forms\Components\TextInput::make('nama_prestasi')
+                                ->label('Nama / Judul Prestasi')
+                                ->disabled(),
+
+                            \Filament\Forms\Components\Select::make('prestasi_id')
+                                ->label('Jenis Prestasi')
+                                ->relationship('prestasi', 'nama')
+                                ->disabled(),
+
+                            \Filament\Forms\Components\TextInput::make('tahun_prestasi')
+                                ->label('Tahun')
+                                ->disabled(),
+
+                            \Filament\Forms\Components\TextInput::make('penyelenggara_prestasi')
+                                ->label('Penyelenggara')
+                                ->disabled(),
+
+                            \Filament\Forms\Components\FileUpload::make('berkas_prestasi')
+                                ->label('Berkas Bukti')
+                                ->disabled()
+                                ->downloadable()
+                                ->openable()
+                                ->visibility('private')
+                                ->columnSpanFull(),
+                        ])
+                        ->columns(['sm' => 1, 'md' => 2, 'lg' => 4]),
+                ]),
         ]);
     }
 
-    // ========================================================================
+    // =========================================================================
     // PDF ACTION BUILDER
-    // ========================================================================
+    // =========================================================================
 
     private function buildPdfAction(
         string $name,
@@ -67,19 +112,19 @@ class ViewCalonSiswa extends ViewRecord
             ->label($label)
             ->outlined()
             ->icon('heroicon-o-printer')
-            ->filename(fn ($record) => "{$label}_{$record->nama}_{$record->nisn}.pdf")
+            ->filename(fn($record) => "{$label}_{$record->nama}_{$record->nisn}.pdf")
             ->savePdf()
             ->orientation('portrait')
             ->format('a4', 'mm')
             ->enableLinks()
             ->margin([10, 10, 10, 10])
-            ->content(fn ($record) => view($view, ['record' => $record]))
+            ->content(fn($record) => view($view, ['record' => $record]))
             ->visible($visibleCallback);
     }
 
-    // ========================================================================
+    // =========================================================================
     // VISIBILITY RULES
-    // ========================================================================
+    // =========================================================================
 
     private function getCalonSiswa(): ?CalonSiswa
     {
@@ -88,29 +133,25 @@ class ViewCalonSiswa extends ViewRecord
 
     private function canPrintFormulir(): bool
     {
-        $calonSiswa = $this->getCalonSiswa();
-        if (! $calonSiswa) {
-            return false;
-        }
+        $cs = $this->getCalonSiswa();
+        if (! $cs) return false;
 
-        return ! in_array($calonSiswa->status_pendaftaran, [
-            'Diproses',
-            'Tidak Diterima',
-            'Berkas Tidak Lengkap',
-        ]);
+        // Boleh cetak jika formulir sudah Disetujui
+        return $cs->status_formulir === 'Disetujui';
     }
 
     private function canPrintKartuTes(): bool
     {
-        $calonSiswa = $this->getCalonSiswa();
-        if (! $calonSiswa) {
+        $cs = $this->getCalonSiswa();
+        if (! $cs) return false;
+
+        // Blokir jika belum disetujui atau sudah final
+        if (! in_array($cs->status_formulir, ['Disetujui'])) {
             return false;
         }
 
-        if (in_array($calonSiswa->status_pendaftaran, [
-            'Diproses',
+        if (in_array($cs->status_pendaftaran, [
             'Tidak Diterima',
-            'Berkas Tidak Lengkap',
             'Diterima Di Kelas Reguler',
             'Diterima Di Kelas Unggulan',
         ])) {
@@ -122,15 +163,15 @@ class ViewCalonSiswa extends ViewRecord
 
     private function canPrintHasil(): bool
     {
-        $calonSiswa = $this->getCalonSiswa();
-        if (! $calonSiswa) {
-            return false;
-        }
+        $cs = $this->getCalonSiswa();
+        if (! $cs) return false;
 
-        if (in_array($calonSiswa->status_pendaftaran, [
-            'Diproses',
-            'Diverifikasi',
-            'Berkas Tidak Lengkap',
+        // Hanya yang sudah punya keputusan final
+        if (! in_array($cs->status_pendaftaran, [
+            'Diterima',
+            'Diterima Di Kelas Reguler',
+            'Diterima Di Kelas Unggulan',
+            'Tidak Diterima',
         ])) {
             return false;
         }
@@ -138,9 +179,9 @@ class ViewCalonSiswa extends ViewRecord
         return $this->isWithinPengumumanPeriod();
     }
 
-    // ========================================================================
+    // =========================================================================
     // DATE RANGE HELPERS
-    // ========================================================================
+    // =========================================================================
 
     private function getActiveTahunPendaftaran(): ?object
     {
@@ -149,26 +190,22 @@ class ViewCalonSiswa extends ViewRecord
 
     private function isWithinKartuTesPeriod(): bool
     {
-        $tahun = $this->getActiveTahunPendaftaran();
+        $t = $this->getActiveTahunPendaftaran();
 
-        if (
-            ! $tahun
-            || ! $tahun->tanggal_penerbitan_kartu_tes_mulai
-            || ! $tahun->tanggal_penerbitan_kartu_tes_selesai
-        ) {
+        if (! $t?->tanggal_penerbitan_kartu_tes_mulai || ! $t?->tanggal_penerbitan_kartu_tes_selesai) {
             return false;
         }
 
         return Carbon::now()->between(
-            Carbon::parse($tahun->tanggal_penerbitan_kartu_tes_mulai),
-            Carbon::parse($tahun->tanggal_penerbitan_kartu_tes_selesai)
+            Carbon::parse($t->tanggal_penerbitan_kartu_tes_mulai),
+            Carbon::parse($t->tanggal_penerbitan_kartu_tes_selesai)
         );
     }
 
     private function isWithinPengumumanPeriod(): bool
     {
-        $tahun = $this->getActiveTahunPendaftaran();
-        if (! $tahun) {
+        $t = $this->getActiveTahunPendaftaran();
+        if (! $t) {
             return false;
         }
 
@@ -181,10 +218,10 @@ class ViewCalonSiswa extends ViewRecord
                 ['tanggal_pengumuman_jalur_mutasi_mulai',    'tanggal_pengumuman_jalur_mutasi_selesai'],
             ] as [$mulai, $selesai]
         ) {
-            if ($tahun->{$mulai} && $tahun->{$selesai}) {
+            if ($t->{$mulai} && $t->{$selesai}) {
                 if (Carbon::now()->between(
-                    Carbon::parse($tahun->{$mulai}),
-                    Carbon::parse($tahun->{$selesai})
+                    Carbon::parse($t->{$mulai}),
+                    Carbon::parse($t->{$selesai})
                 )) {
                     return true;
                 }
