@@ -165,27 +165,30 @@ class CalonSiswa extends Model
 
     protected static function booted(): void
     {
-        // Scope 1: Isolasi per tahun pendaftaran aktif.
+        // ── Scope 1: Isolasi per tahun pendaftaran aktif ─────────────────────
+        // once() harus dipanggil di luar closure agar cache berlaku
+        // di seluruh request lifecycle, bukan per-instance.
         static::addGlobalScope('tahun_aktif', function (Builder $builder) {
-            $tahun = once(fn() => TahunPendaftaran::where('status', 'Aktif')->first());
+            // Cache::remember lebih aman untuk Octane (worker persist antar request)
+            $tahun = \Illuminate\Support\Facades\Cache::remember(
+                'tahun_pendaftaran_aktif',
+                now()->addSeconds(60),
+                fn() => TahunPendaftaran::where('status', 'Aktif')->first()
+            );
 
-            // Hanya terapkan scope jika tahun aktif ditemukan
             if ($tahun) {
-                $builder->where(function (Builder $q) use ($tahun) {
-                    $q->where('tahun_pendaftaran_id', $tahun->id)
-                        ->orWhereNull('tahun_pendaftaran_id'); // fallback: record lama tanpa tahun
-                });
+                $builder->where('tahun_pendaftaran_id', $tahun->id);
             }
         });
 
-        // Scope 2: calon_siswa hanya bisa lihat data milik sendiri.
+        // ── Scope 2: calon_siswa hanya bisa lihat data milik sendiri ────────
         static::addGlobalScope('milik_sendiri', function (Builder $builder) {
             if (auth()->check() && auth()->user()->hasRole('calon_siswa')) {
                 $builder->where('user_id', auth()->id());
             }
         });
 
-        // Auto-generate nomor_pendaftaran saat creating
+        // ── Auto-generate nomor_pendaftaran ──────────────────────────────────
         static::creating(function (CalonSiswa $model) {
             if (empty($model->nomor_pendaftaran)) {
                 $model->nomor_pendaftaran = static::generateNomorPendaftaran();

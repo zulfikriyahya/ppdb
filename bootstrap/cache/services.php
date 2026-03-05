@@ -53,10 +53,11 @@
     49 => 'Termwind\\Laravel\\TermwindServiceProvider',
     50 => 'Pest\\Laravel\\PestServiceProvider',
     51 => 'RyanChandler\\BladeCaptureDirective\\BladeCaptureDirectiveServiceProvider',
-    52 => 'Spatie\\Permission\\PermissionServiceProvider',
-    53 => 'Torgodly\\Html2Media\\Html2MediaServiceProvider',
-    54 => 'App\\Providers\\AppServiceProvider',
-    55 => 'App\\Providers\\Filament\\AdminPanelProvider',
+    52 => 'SimpleSoftwareIO\\QrCode\\QrCodeServiceProvider',
+    53 => 'Spatie\\Permission\\PermissionServiceProvider',
+    54 => 'Torgodly\\Html2Media\\Html2MediaServiceProvider',
+    55 => 'App\\Providers\\AppServiceProvider',
+    56 => 'App\\Providers\\Filament\\AdminPanelProvider',
   ),
   'eager' => 
   array (
@@ -96,10 +97,11 @@
     33 => 'Termwind\\Laravel\\TermwindServiceProvider',
     34 => 'Pest\\Laravel\\PestServiceProvider',
     35 => 'RyanChandler\\BladeCaptureDirective\\BladeCaptureDirectiveServiceProvider',
-    36 => 'Spatie\\Permission\\PermissionServiceProvider',
-    37 => 'Torgodly\\Html2Media\\Html2MediaServiceProvider',
-    38 => 'App\\Providers\\AppServiceProvider',
-    39 => 'App\\Providers\\Filament\\AdminPanelProvider',
+    36 => 'SimpleSoftwareIO\\QrCode\\QrCodeServiceProvider',
+    37 => 'Spatie\\Permission\\PermissionServiceProvider',
+    38 => 'Torgodly\\Html2Media\\Html2MediaServiceProvider',
+    39 => 'App\\Providers\\AppServiceProvider',
+    40 => 'App\\Providers\\Filament\\AdminPanelProvider',
   ),
   'deferred' => 
   array (

@@ -1,345 +1,181 @@
-<?php
-use App\Models\Ketua;
-use App\Models\Sekolah;
-use App\Models\Pimpinan;
-use App\Models\CalonSiswa;
-use App\Models\Sekretaris;
-use App\Models\JalurPendaftaran;
-use App\Models\TahunPendaftaran;
-use Illuminate\Support\Facades\Storage;
+@php
+    use App\Helpers\PdfDataHelper;
+    use Illuminate\Support\Facades\Storage;
 
-$calonSiswa = CalonSiswa::first(); // Pastikan deklarasi dilakukan lebih awal
+    $instansi         = PdfDataHelper::instansi();
+    $tahunPendaftaran = PdfDataHelper::tahunAktif();
+    $sekretaris       = PdfDataHelper::sekretarisAktif();
+    $ketua            = PdfDataHelper::ketuaAktif();
 
-$jalurPendaftaranPrestasi = in_array(optional(JalurPendaftaran::find(optional($calonSiswa)->jalur_pendaftaran_id))->nama, ['Prestasi']);
+    $isJalurPrestasi = optional($record->jalurPendaftaran)->nama === 'Prestasi';
+    $jenisKelamin    = $record->jenis_kelamin === 'Pria' ? 'Laki-laki' : 'Perempuan';
+    $fotoUrl         = $record->berkas_foto ? Storage::url($record->berkas_foto) : null;
+    $qrPayload       = url('/admin/formulir/' . $record->id);
+    $isDraft         = $record->status_formulir !== 'Disetujui';
+    $kota            = ucwords(strtolower(optional($instansi?->kabupaten)->nama ?? 'Pandeglang'));
 
-$instansi = Sekolah::first();
-$tahunPendaftaran = TahunPendaftaran::where('status', 'Aktif')->first();
-$sekretaris = Sekretaris::where('status', 'Aktif')->first();
-$ketua = Ketua::where('status', 'Aktif')->first();
-$pimpinan = Pimpinan::where('status', 'Aktif')->first();
-$jenisKelamin = $record->jenis_kelamin === 'Pria' ? 'Laki-laki' : 'Perempuan';
+    $alamatSiswa = collect([
+        $record->siswa_alamat, optional($record->siswaKelurahan)->nama,
+        optional($record->siswaKecamatan)->nama, optional($record->siswaKabupaten)->nama,
+        optional($record->siswaProvinsi)->nama,
+    ])->filter()->implode(', ');
 
-?>
+    $biodata = [
+        ['No. Pendaftaran', $record->nomor_pendaftaran ?? '-'],
+        ['Nama Lengkap', strtoupper($record->nama ?? '-')],
+        ['Jalur Pendaftaran', strtoupper(optional($record->jalurPendaftaran)->nama ?? '-')],
+        ['NISN / NIK', ($record->nisn ?? '-') . '  /  ' . ($record->nik ?? '-')],
+        ['Tempat, Tgl Lahir', ucwords(strtolower($record->tempat_lahir ?? '')) . ', ' . ($record->tanggal_lahir ? date('d F Y', strtotime($record->tanggal_lahir)) : '-')],
+        ['Jenis Kelamin', $jenisKelamin],
+        ['Agama', ucwords(strtolower($record->agama ?? '-'))],
+        ['Asal Sekolah', strtoupper(optional($record->sekolahAsal)->nama ?? '-')],
+        ['No. Telepon', $record->siswa_telepon ?? '-'],
+        ['Alamat Siswa', ucwords(strtolower($alamatSiswa))],
+    ];
 
-<table width="100%">
+    if ($record->penerima_kip) {
+        $biodata[] = ['KIP / KKS / PKH', ($record->no_kip ?? '-') . ' / ' . ($record->no_kks ?? '-') . ' / ' . ($record->no_pkh ?? '-')];
+    }
+@endphp
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<style>
+    @page { size: A4 portrait; margin: 15mm; }
+    body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 9.5pt; color: #374151; line-height: 1.5; }
+    table { border-collapse: collapse; width: 100%; }
+
+    /* Typography */
+    .title-doc { font-family: 'Georgia', serif; text-align: center; font-size: 14pt; font-weight: bold; color: #111827; letter-spacing: 1px; text-transform: uppercase; margin-top: 15px; }
+    .subtitle-doc { text-align: center; font-size: 10pt; color: #6b7280; margin-bottom: 20px; letter-spacing: 0.5px; }
+
+    /* Modern Section Header */
+    .section-title { background-color: #f3f4f6; color: #111827; padding: 6px 10px; font-size: 9pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; border-left: 4px solid #059669; margin: 15px 0 8px 0; }
+
+    /* Modern Data Table */
+    .data-table td { padding: 6px 4px; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table .lbl { width: 30%; color: #6b7280; font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.5px; }
+    .data-table .cln { width: 3%; text-align: center; color: #9ca3af; }
+    .data-table .val { font-weight: bold; color: #1f2937; }
+
+    /* Elegant Photo Box */
+    .photo-wrapper { width: 3.5cm; padding-left: 15px; vertical-align: top; }
+    .photo-box { width: 3cm; height: 4cm; border: 2px solid #e5e7eb; border-radius: 4px; padding: 3px; text-align: center; background: #f9fafb; display: table-cell; vertical-align: middle; }
+    .photo-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 2px; }
+    .photo-text { font-size: 8pt; color: #9ca3af; letter-spacing: 1px; }
+
+    /* Watermark */
+    .watermark { position: absolute; top: 35%; left: 0; right: 0; text-align: center; font-size: 80pt; font-family: 'Georgia', serif; color: rgba(220, 38, 38, 0.05); transform: rotate(-30deg); z-index: -1000; letter-spacing: 5px; }
+
+    /* Signatures */
+    .signature-area { margin-top: 30px; page-break-inside: avoid; }
+    .sig-box { text-align: center; font-size: 9.5pt; color: #374151; vertical-align: bottom; }
+    .sig-name { font-weight: bold; color: #111827; text-decoration: underline; margin-bottom: 2px; display: inline-block; }
+</style>
+</head>
+<body>
+
+@if ($isDraft) <div class="watermark">DRAFT DOCUMENT</div> @endif
+
+@include('partials.pdf-header', ['instansi' => $instansi])
+
+<div class="title-doc">Formulir Pendaftaran Calon Peserta Didik</div>
+<div class="subtitle-doc">Tahun Pelajaran {{ $tahunPendaftaran?->nama ?? '' }}</div>
+
+<div class="section-title">A. Identitas Calon Peserta Didik</div>
+<table>
     <tr>
-        <td align="center">
-            <img src="{{ optional($instansi)->logo_institusi
-                ? Storage::url($instansi->logo_institusi)
-                : Storage::url(optional($instansi)->logo ?? '') }}"
-                alt="Logo Institusi/Instansi" width="90px">
+        <td style="vertical-align: top; padding: 0;">
+            <table class="data-table">
+                @foreach ($biodata as [$label, $value])
+                <tr>
+                    <td class="lbl">{{ $label }}</td><td class="cln">:</td><td class="val">{{ $value }}</td>
+                </tr>
+                @endforeach
+            </table>
         </td>
-
-        <td align="center">
-            <b> KEMENTERIAN AGAMA REPUBLIK INDONESIA </b> <br>
-            <b> KANTOR KEMENTERIAN AGAMA KABUPATEN PANDEGLANG </b> <br>
-            <b> MADRASAH TSANAWIYAH NEGERI 1 PANDEGLANG </b> <br>
-            <small>
-                {{ ucwords(strtolower($instansi->alamat)) ?? '' }}
-                {{ ucwords(strtolower($instansi->kelurahan->nama)) ?? '' }},
-                {{ ucwords(strtolower($instansi->kecamatan->nama)) ?? '' }},
-                {{ ucwords(strtolower($instansi->kabupaten->nama)) ?? '' }} -
-                {{ ucwords(strtolower($instansi->provinsi->nama)) ?? '' }}
-            </small>
-            <br>
-            <small> Website: {{ $instansi->website ?? 'https://mtsn1pandeglang.sch.id' }} Email:
-                {{ $instansi->email ?? 'adm@mtsn1pandeglang.sch.id' }}
-            </small> <br>
-        </td>
-
-        <td align="center">
-            <img src="{{ optional($instansi)->logo && optional($instansi)->logo_institusi
-                ? Storage::url($instansi->logo)
-                : (optional($instansi)->logo ?:
-                    '') }}"
-                alt="Logo Instansi" width="90px">
+        <td class="photo-wrapper">
+            <div class="photo-box">
+                @if ($fotoUrl) <img src="{{ $fotoUrl }}" alt="Foto">
+                @else <span class="photo-text">FOTO<br>3x4</span> @endif
+            </div>
         </td>
     </tr>
 </table>
-<hr style="border: 1px solid">
-<table width="100%">
-    <tr>
-        <td>
-            <br>
-        </td>
-    </tr>
-    <tr>
-        <td align="center" colspan="4">
-            <b>FORMULIR PENDAFTARAN</b>
-        </td>
-    </tr>
 
+<div class="section-title">B. Data Orang Tua / Wali</div>
+<table class="data-table">
     <tr>
-        <td align="center" colspan="4">
-            <b>TAHUN PELAJARAN {{ $tahunPendaftaran->nama ?? '' }}</b>
-        </td>
-    </tr>
-
-    <tr>
-        <td>
-            <br>
-        </td>
-    </tr>
-
-    <tr>
-        <td colspan="4">
-            <b>DATA PESERTA</b>
-        </td>
-    </tr>
-
-    <tr>
-        <td width="170px">
-            <span>Nama Lengkap</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            <strong>
-                {{ ucwords(strtoupper($record->nama)) ?? '' }}
-            </strong>
-        </td>
-        <td rowspan="9" width="140px" style="align-content: flex-start">
-            <img src="{{ Storage::url($record->berkas_foto ?? '') }}" alt="Foto">
-        </td>
-    </tr>
-
-    <tr>
-        <td>
-            <span>Jalur Pendaftaran</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            {{ ucwords(strtolower($record->jalurPendaftaran->nama)) ?? '' }}
-        </td>
-    </tr>
-
-    <tr>
-        <td>
-            <span>NISN</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            {{ $record->nisn ?? '' }}
-        </td>
-    </tr>
-
-    <tr>
-        <td>
-            <span>Tempat, Tanggal Lahir</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            {{ ucwords(strtolower($record->tempat_lahir)) ?? '' }},
-            {{ ucwords(strtolower(date('d F Y', strtotime($record->tanggal_lahir)))) ?? '' }}
-        </td>
-    </tr>
-
-    <tr>
-        <td>
-            <span>Asal Sekolah</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            {{ ucwords(strtoupper($record->sekolahAsal->nama)) ?? '' }}
-        </td>
-    </tr>
-
-    <tr>
-        <td>
-            <span>Tahun Lulus</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            {{ $record->tahun_lulus ?? '' }}
-        </td>
-    </tr>
-
-    <tr>
-        <td>
-            <span>Jenis Lelamin</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            {{ $jenisKelamin ?? '' }}
-        </td>
-    </tr>
-
-    <tr>
-        <td>
-            <span>Golongan Darah</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            {{ $record->golongan_darah ?? '' }}
-        </td>
+        <td class="lbl" style="width: 25%;">Nama Ayah / Ibu</td><td class="cln">:</td>
+        <td class="val">{{ strtoupper($record->ayah_nama ?? '-') }} &nbsp;|&nbsp; {{ strtoupper($record->ibu_nama ?? '-') }}</td>
     </tr>
     <tr>
-        <td>
-            <span>Agama</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            {{ ucwords(strtolower($record->agama)) ?? '' }}
-        </td>
+        <td class="lbl">Pekerjaan</td><td class="cln">:</td>
+        <td class="val">{{ $record->ayah_pekerjaan ?? '-' }} &nbsp;|&nbsp; {{ $record->ibu_pekerjaan ?? '-' }}</td>
     </tr>
     <tr>
-        <td>
-            <span>Alamat Lengkap</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td colspan="2">
-            {{ ucwords(strtolower($record->siswa_alamat)) ?? '' }},
-            {{ ucwords(strtolower($record->siswaKelurahan->nama)) ?? '' }},
-            {{ ucwords(strtolower($record->siswaKecamatan->nama)) ?? '' }},
-            {{ ucwords(strtolower($record->siswaKabupaten->nama)) ?? '' }} -
-            {{ ucwords(strtolower($record->siswaProvinsi->nama)) ?? '' }}
-        </td>
+        <td class="lbl">No. Telepon/WhatsApp</td><td class="cln">:</td>
+        <td class="val">{{ $record->ayah_telepon ?? $record->ibu_telepon ?? '-' }}</td>
     </tr>
 </table>
-<br>
-@if ($jalurPendaftaranPrestasi)
-    <table width="100%" style="border: 1px solid;">
-        <thead style="border: 1px solid;">
-            <td colspan="5" align="center">
-                <span>
-                    <strong>
-                        DATA PRESTASI
-                    </strong>
-                </span>
-            </td>
-        </thead>
-        <tr style="border: 1px solid;">
-            <th style="border: 1px solid;">
-                <span>
-                    <strong>
-                        Jenis
-                    </strong>
-                </span>
-            </th>
-            <th style="border: 1px solid;">
-                <span>
-                    <strong>
-                        Nama
-                    </strong>
-                </span>
-            </th>
-            <th style="border: 1px solid;">
-                <span>
-                    <strong>
-                        Tingkat
-                    </strong>
-                </span>
-            </th style="border: 1px solid;">
-            <th style="border: 1px solid;">
-                <span>
-                    <strong>
-                        Kategori
-                    </strong>
-                </span>
-            </th>
-            <th style="border: 1px solid;">
-                <span>
-                    <strong>
-                        Peringkat
-                    </strong>
-                </span>
-            </th>
+
+@if ($isJalurPrestasi)
+<div class="section-title">C. Rekam Prestasi</div>
+<table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
+    <thead>
+        <tr style="background-color: #f9fafb; border-bottom: 2px solid #e5e7eb;">
+            <th style="padding: 8px; text-align: left; font-size: 8.5pt; color: #6b7280; text-transform: uppercase;">No</th>
+            <th style="padding: 8px; text-align: left; font-size: 8.5pt; color: #6b7280; text-transform: uppercase;">Nama Prestasi / Perlombaan</th>
+            <th style="padding: 8px; text-align: center; font-size: 8.5pt; color: #6b7280; text-transform: uppercase;">Tingkat</th>
+            <th style="padding: 8px; text-align: center; font-size: 8.5pt; color: #6b7280; text-transform: uppercase;">Peringkat</th>
         </tr>
-        {{-- <tr style="border: 1px solid center;">
-            <td style="border: 1px solid center;">{{ $record->prestasi->jenis }}</td>
-            <td style="border: 1px solid center;">{{ $record->prestasi->nama }}</td>
-            <td style="border: 1px solid center;">{{ $record->prestasi->tingkat }}</td>
-            <td style="border: 1px solid center;">{{ $record->prestasi->kategori }}</td>
-            <td style="border: 1px solid center;">{{ $record->prestasi->peringkat }}</td>
-        </tr> --}}
-    </table>
-    <br>
+    </thead>
+    <tbody>
+        @forelse ($record->formulirPrestasis as $i => $fp)
+        <tr style="border-bottom: 1px solid #f3f4f6;">
+            <td style="padding: 8px; font-weight: bold;">{{ $i + 1 }}</td>
+            <td style="padding: 8px; color: #111827;">{{ $fp->nama_prestasi }}</td>
+            <td style="padding: 8px; text-align: center;">{{ optional($fp->prestasi)->tingkat ?? '-' }}</td>
+            <td style="padding: 8px; text-align: center; font-weight: bold;">{{ optional($fp->prestasi)->peringkat ?? '-' }}</td>
+        </tr>
+        @empty
+        <tr><td colspan="4" style="padding: 15px; text-align: center; font-style: italic; color: #9ca3af;">Tidak ada data prestasi yang dilampirkan.</td></tr>
+        @endforelse
+    </tbody>
+</table>
 @endif
 
-<table width="100%">
-    <tr>
-        <td width="70%">
-        </td>
-        <td>
-            <span>
-                {{ ucwords(strtolower($instansi->kabupaten->nama)) ?? '' }},
-                {{ date('d F Y', strtotime($record->updated_at)) ?? '' }}
-            </span>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <span>
-                Ketua,
-            </span>
-        </td>
-        <td>
-            <span>
-                Sekretaris,
-            </span>
-        </td>
-    </tr>
-    <tr height="90px">
-        <td>
-            <span>
-                <img src="{{ Storage::url($ketua->berkas_tte) ?? null }}" alt="TTE Ketua" width="90px">
-                {{-- <img src="{{ $ketua->berkas_tte ? Storage::url($ketua->berkas_tte) : null }}" alt="TTE Ketua"
-                    width="90px"> --}}
-            </span>
-        </td>
-        <td>
-            <span>
-                <img src="{{ Storage::url($sekretaris->berkas_tte) ?? null }}" alt="TTE Sekretaris" width="90px">
-                {{-- <img src="{{ $sekretaris->berkas_tte ? Storage::url($sekretaris->berkas_tte) : null }}"
-                    alt="TTE Sekretaris" width="90px"> --}}
-            </span>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <span>
-                <strong>
-                    {{ $ketua->nama ?? '' }}
-                </strong>
-            </span>
-        </td>
-        <td>
-            <span>
-                <strong>
-                    {{ $sekretaris->nama ?? '' }}
-                </strong>
-            </span>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <span>
-                NIP {{ $ketua->nip ?? '' }}
-            </span>
-        </td>
-        <td>
-            <span>
-                NIP {{ $sekretaris->nip ?? '' }}
-            </span>
-        </td>
-    </tr>
-</table>
+<div class="signature-area">
+    <table>
+        <tr>
+            <td style="width: 25%; vertical-align: bottom;">
+                {!! QrCode::size(70)->margin(0)->generate($qrPayload) !!}
+                <div style="font-size: 7.5pt; color: #9ca3af; margin-top: 5px; letter-spacing: 0.5px;">SCAN TO VERIFY</div>
+            </td>
+            <td class="sig-box" style="width: 37.5%;">
+                {{ $kota }}, {{ date('d F Y', strtotime($record->updated_at)) }}<br>
+                <span style="color: #6b7280; font-size: 9pt;">Ketua Panitia PPDB,</span>
+                <div style="height: 70px;">
+                    @if ($ketua?->berkas_tte) <img src="{{ Storage::url($ketua->berkas_tte) }}" style="height:60px; margin-top:5px;"> @endif
+                </div>
+                <div class="sig-name">{{ $ketua?->nama ?? str_repeat('.', 35) }}</div><br>
+                <span style="font-size: 8.5pt; color: #6b7280;">NIP. {{ $ketua?->nip ?? '-' }}</span>
+            </td>
+            <td class="sig-box" style="width: 37.5%;">
+                <br>
+                <span style="color: #6b7280; font-size: 9pt;">Sekretaris Panitia,</span>
+                <div style="height: 70px;">
+                    @if ($sekretaris?->berkas_tte) <img src="{{ Storage::url($sekretaris->berkas_tte) }}" style="height:60px; margin-top:5px;"> @endif
+                </div>
+                <div class="sig-name">{{ $sekretaris?->nama ?? str_repeat('.', 35) }}</div><br>
+                <span style="font-size: 8.5pt; color: #6b7280;">NIP. {{ $sekretaris?->nip ?? '-' }}</span>
+            </td>
+        </tr>
+    </table>
+</div>
+
+</body>
+</html>

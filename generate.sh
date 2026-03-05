@@ -2,13 +2,14 @@
 # generate.sh - Generator Blueprint Otomatis
 # Hanya menghasilkan file yang benar-benar dibutuhkan untuk membangun ulang project.
 
-set -uo pipefail
+set -euo pipefail
 
 OUT="draft.md"
 ROOT="."
 
 # ===========================================================================
 # WHITELIST — Hanya file dalam path ini yang akan diinclude.
+# Glob pattern (mis. **/*.blade.php) didukung via find + manual matching.
 # ===========================================================================
 INCLUDE_PATHS=(
   # --- Domain / Business Logic ---
@@ -38,10 +39,7 @@ INCLUDE_PATHS=(
   "routes/console.php"
 
   # --- Views (hanya yang custom, bukan vendor) ---
-  "resources/views/formulir.blade.php"
-  "resources/views/kartu-tes.blade.php"
-  "resources/views/skl.blade.php"
-  "resources/views/filament/pages/auth"
+  "resources/views"
 
   # --- Config yang sudah dikustomisasi ---
   "config/filament-shield.php"
@@ -135,31 +133,12 @@ write_file() {
 }
 
 # ===========================================================================
-# Sections — urutan penulisan ke draft.md
+# Sections
 # ===========================================================================
-declare -A SECTION_LABELS=(
-  ["app/Models"]="## 🗃️ Models"
-  ["app/Policies"]="## 🔐 Policies"
-  ["app/Services"]="## ⚙️ Services"
-  ["app/Http/Controllers"]="## 🎮 Controllers"
-  ["app/Filament/Resources"]="## 🧩 Filament Resources"
-  ["app/Filament/Widgets"]="## 📊 Filament Widgets (Global)"
-  ["app/Filament/Pages"]="## 📄 Filament Pages"
-  ["app/Filament/Exports"]="## 📤 Filament Exports"
-  ["app/Filament/Imports"]="## 📥 Filament Imports"
-  ["app/Providers/Filament"]="## ⚙️ Filament Panel Provider"
-  ["app/Providers/AppServiceProvider.php"]="## ⚙️ App Service Provider"
-  ["database/migrations"]="## 🏗️ Migrations"
-  ["database/seeders"]="## 🌱 Seeders"
-  ["routes"]="## 🛣️ Routes"
-  ["resources/views"]="## 🖼️ Views (Custom)"
-  ["config"]="## ⚙️ Config (Custom)"
-  ["bootstrap"]="## 🚀 Bootstrap"
-  ["root"]="## 📦 Root Config Files"
-)
-
-# Urutan section yang diinginkan di output
-SECTION_ORDER=(
+# Key menggunakan index numerik agar aman di semua versi bash,
+# karena key dengan '/' dan '.' bisa bermasalah pada associative array.
+# ===========================================================================
+SECTION_KEYS=(
   "app/Models"
   "app/Policies"
   "app/Services"
@@ -180,39 +159,67 @@ SECTION_ORDER=(
   "root"
 )
 
+SECTION_LABELS=(
+  "## 🗃️ Models"
+  "## 🔐 Policies"
+  "## ⚙️ Services"
+  "## 🎮 Controllers"
+  "## 🧩 Filament Resources"
+  "## 📊 Filament Widgets (Global)"
+  "## 📄 Filament Pages"
+  "## 📤 Filament Exports"
+  "## 📥 Filament Imports"
+  "## ⚙️ Filament Panel Provider"
+  "## ⚙️ App Service Provider"
+  "## 🏗️ Migrations"
+  "## 🌱 Seeders"
+  "## 🛣️ Routes"
+  "## 🖼️ Views (Custom)"
+  "## ⚙️ Config (Custom)"
+  "## 🚀 Bootstrap"
+  "## 📦 Root Config Files"
+)
+
+# Storage per section — index sesuai SECTION_KEYS
+declare -a section_files
+for i in "${!SECTION_KEYS[@]}"; do
+  section_files[$i]=""
+done
+
 # ===========================================================================
-# Classify file ke section mana
+# Classify file ke index section
 # ===========================================================================
 classify() {
   local rel="$1"
-  for section in "${SECTION_ORDER[@]}"; do
-    if [[ "$rel" == $section/* || "$rel" == "$section" ]]; then
-      printf "%s" "$section"
+  local i
+  for i in "${!SECTION_KEYS[@]}"; do
+    local key="${SECTION_KEYS[$i]}"
+    if [[ "$rel" == "$key" || "$rel" == "$key/"* ]]; then
+      printf "%s" "$i"
       return
     fi
   done
-  printf "root"
+  # fallback ke index "root" (index terakhir)
+  printf "%s" "$(( ${#SECTION_KEYS[@]} - 1 ))"
 }
 
 # ===========================================================================
 # Collect files
 # ===========================================================================
-declare -A section_files
-
 for inc in "${INCLUDE_PATHS[@]}"; do
   full_path="$ROOT/$inc"
 
   if [ -f "$full_path" ]; then
     is_excluded "$full_path" && continue
-    section="$(classify "$inc")"
-    section_files[$section]="${section_files[$section]:-}"$'\n'"$inc"
+    idx="$(classify "$inc")"
+    section_files[$idx]+=$'\n'"$inc"
 
   elif [ -d "$full_path" ]; then
     while IFS= read -r -d '' f; do
-      rel="${f#$ROOT/}"
+      rel="${f#"$ROOT"/}"
       is_excluded "$f" && continue
-      section="$(classify "$rel")"
-      section_files[$section]="${section_files[$section]:-}"$'\n'"$rel"
+      idx="$(classify "$rel")"
+      section_files[$idx]+=$'\n'"$rel"
     done < <(find "$full_path" -type f -print0 | sort -z)
   fi
 done
@@ -230,32 +237,48 @@ cat >> "$OUT" << 'EOF'
 
 EOF
 
-# Tree ringkas — hanya dari INCLUDE_PATHS
+# Tree ringkas
 printf "## 🗂️ Included File Tree\n\n\`\`\`\n" >> "$OUT"
 for inc in "${INCLUDE_PATHS[@]}"; do
   full_path="$ROOT/$inc"
   if [ -f "$full_path" ]; then
+    is_excluded "$full_path" && continue
     printf "%s\n" "$inc" >> "$OUT"
   elif [ -d "$full_path" ]; then
-    find "$full_path" -type f | sed "s|$ROOT/||" | sort | while read -r line; do
-      is_excluded "$ROOT/$line" && continue
-      printf "%s\n" "$line" >> "$OUT"
-    done
+    while IFS= read -r f; do
+      rel="${f#"$ROOT"/}"
+      is_excluded "$f" && continue
+      printf "%s\n" "$rel" >> "$OUT"
+    done < <(find "$full_path" -type f | sort)
   fi
 done
 printf "\`\`\`\n\n---\n\n" >> "$OUT"
 
 # Tulis per section sesuai urutan
-for section in "${SECTION_ORDER[@]}"; do
-  [[ -z "${section_files[$section]:-}" ]] && continue
+total_files=0
+for i in "${!SECTION_KEYS[@]}"; do
+  [[ -z "${section_files[$i]}" ]] && continue
 
-  label="${SECTION_LABELS[$section]:-## 📁 $section}"
-  printf "%s\n\n" "$label" >> "$OUT"
+  printf "%s\n\n" "${SECTION_LABELS[$i]}" >> "$OUT"
 
+  count=0
   while IFS= read -r rel; do
     [[ -z "$rel" ]] && continue
     write_file "$ROOT/$rel"
-  done <<< "${section_files[$section]}"
+    (( count++ )) || true
+  done <<< "${section_files[$i]}"
+
+  (( total_files += count )) || true
 done
 
-echo "✅ Selesai. '$OUT' telah dibuat ($(wc -l < "$OUT") baris, $(du -sh "$OUT" | cut -f1) ukuran)."
+# ===========================================================================
+# Summary
+# ===========================================================================
+lines="$(wc -l < "$OUT")"
+size="$(du -sh "$OUT" | cut -f1)"
+
+echo "✅ Selesai."
+echo "   📄 Output  : $OUT"
+echo "   📁 Files   : $total_files file"
+echo "   📏 Baris   : $lines"
+echo "   💾 Ukuran  : $size"

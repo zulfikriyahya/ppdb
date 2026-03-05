@@ -7,9 +7,12 @@
         </x-filament::button>
     </x-filament-panels::form>
 
-    <div class="mt-2 text-sm text-center text-gray-500 dark:text-gray-400">
-        <a href="{{ route('otp.forgot-password') }}" class="font-medium text-primary-600 hover:underline">
-            Kembali
+    <div class="mt-6 text-sm text-center">
+        <a
+            href="{{ route('otp.forgot-password') }}"
+            class="font-medium text-gray-500 transition duration-200 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+        >
+            &larr; Kembali
         </a>
     </div>
 </x-filament-panels::page.simple>

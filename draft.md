@@ -244,13 +244,17 @@ database/seeders/UserSeeder.php
 routes/web.php
 routes/api.php
 routes/console.php
-resources/views/formulir.blade.php
-resources/views/kartu-tes.blade.php
-resources/views/skl.blade.php
 resources/views/filament/pages/auth/forgot-password-custom.blade.php
 resources/views/filament/pages/auth/new-password.blade.php
 resources/views/filament/pages/auth/reset-password-otp.blade.php
 resources/views/filament/pages/auth/verifikasi-otp.blade.php
+resources/views/formulir.blade.php
+resources/views/kartu-tes.blade.php
+resources/views/partials/pdf-header.blade.php
+resources/views/skl.blade.php
+resources/views/vendor/filament-easy-footer/easy-footer.blade.php
+resources/views/vendor/filament-easy-footer/github-version.blade.php
+resources/views/vendor/filament-easy-footer/.gitkeep
 config/filament-shield.php
 config/permission.php
 config/services.php
@@ -527,23 +531,30 @@ class CalonSiswa extends Model
 
     protected static function booted(): void
     {
-        // Scope 1: Isolasi per tahun pendaftaran aktif.
+        // ── Scope 1: Isolasi per tahun pendaftaran aktif ─────────────────────
+        // once() harus dipanggil di luar closure agar cache berlaku
+        // di seluruh request lifecycle, bukan per-instance.
         static::addGlobalScope('tahun_aktif', function (Builder $builder) {
-            // Cache di request lifecycle — hindari N+1 query per model load
-            $tahun = once(fn () => TahunPendaftaran::where('status', 'Aktif')->first());
+            // Cache::remember lebih aman untuk Octane (worker persist antar request)
+            $tahun = \Illuminate\Support\Facades\Cache::remember(
+                'tahun_pendaftaran_aktif',
+                now()->addSeconds(60),
+                fn() => TahunPendaftaran::where('status', 'Aktif')->first()
+            );
+
             if ($tahun) {
                 $builder->where('tahun_pendaftaran_id', $tahun->id);
             }
         });
 
-        // Scope 2: calon_siswa hanya bisa lihat data milik sendiri.
+        // ── Scope 2: calon_siswa hanya bisa lihat data milik sendiri ────────
         static::addGlobalScope('milik_sendiri', function (Builder $builder) {
             if (auth()->check() && auth()->user()->hasRole('calon_siswa')) {
                 $builder->where('user_id', auth()->id());
             }
         });
 
-        // Auto-generate nomor_pendaftaran saat creating
+        // ── Auto-generate nomor_pendaftaran ──────────────────────────────────
         static::creating(function (CalonSiswa $model) {
             if (empty($model->nomor_pendaftaran)) {
                 $model->nomor_pendaftaran = static::generateNomorPendaftaran();
@@ -560,18 +571,18 @@ class CalonSiswa extends Model
     public static function generateNomorPendaftaran(): string
     {
         $tahun = TahunPendaftaran::where('status', 'Aktif')->first();
-        $prefix = 'PPDB-'.($tahun ? substr($tahun->nama, 0, 4) : date('Y'));
+        $prefix = 'PPDB-' . ($tahun ? substr($tahun->nama, 0, 4) : date('Y'));
 
         // Ambil nomor urut terakhir untuk tahun ini, bypass global scope
         $last = static::withoutGlobalScopes()
-            ->where('nomor_pendaftaran', 'like', $prefix.'-%')
+            ->where('nomor_pendaftaran', 'like', $prefix . '-%')
             ->orderByDesc('nomor_pendaftaran')
             ->lockForUpdate()
             ->value('nomor_pendaftaran');
 
         $seq = $last ? ((int) substr($last, -6)) + 1 : 1;
 
-        return $prefix.'-'.str_pad($seq, 6, '0', STR_PAD_LEFT);
+        return $prefix . '-' . str_pad($seq, 6, '0', STR_PAD_LEFT);
     }
 
     // -----------------------------------------------------------------------
@@ -5515,6 +5526,7 @@ use App\Models\Kecamatan;
 use App\Models\Kelurahan;
 use App\Models\Provinsi;
 use App\Models\Sekolah;
+use App\Models\TahunPendaftaran;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Section;
@@ -5553,21 +5565,21 @@ class CreateCalonSiswa extends CreateRecord
                                     // Jalur Pendaftaran
                                     Select::make('jalur_pendaftaran_id')
                                         ->label('Jalur Pendaftaran')
-                                        ->relationship('jalurPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif')) // Menampilkan data jalurPendaftaran dengan kondisi statusnya aktif saja
+                                        ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif')) // Menampilkan data jalurPendaftaran dengan kondisi statusnya aktif saja
                                         ->required()
                                         ->validationMessages([
                                             'required' => 'Form ini wajib diisi.',
                                         ])
                                         ->native(false)
                                         ->live()
-                                        ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->nama} | {$record->tahunPendaftaran->nama}"),
+                                        ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->nama} | {$record->tahunPendaftaran->nama}"),
                                     // Nama Lengkap Calon Peserta Didik Baru
                                     TextInput::make('nama')
                                         ->label('Nama Lengkap')
                                         ->required()
                                         ->disabledOn('create')
                                         ->dehydrated()
-                                        ->default(fn () => Auth::user()->name)
+                                        ->default(fn() => Auth::user()->name)
                                         ->validationMessages([
                                             'required' => 'Form ini wajib diisi.',
                                         ]),
@@ -5576,8 +5588,8 @@ class CreateCalonSiswa extends CreateRecord
                                         ->label('Nomor Induk Kependudukan (NIK)')
                                         ->required()
                                         ->unique(ignoreRecord: true)
-                                        ->rule(fn ($record) => $record === null ? 'unique:calon_siswas,nik' : 'unique:calon_siswas,nik,'.$record->id)
-                                        ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
+                                        ->rule(fn($record) => $record === null ? 'unique:calon_siswas,nik' : 'unique:calon_siswas,nik,' . $record->id)
+                                        ->dehydrateStateUsing(fn($state) => $state ? $state : null)
                                         ->numeric()
                                         ->maxLength(16)
                                         ->minLength(16)
@@ -5605,10 +5617,10 @@ class CreateCalonSiswa extends CreateRecord
                                         ->required()
                                         ->disabledOn('create')
                                         ->dehydrated()
-                                        ->default(fn () => Auth::user()->username)
+                                        ->default(fn() => Auth::user()->username)
                                         ->unique(ignoreRecord: true)
-                                        ->rule(fn ($record) => $record === null ? 'unique:calon_siswas,nisn' : 'unique:calon_siswas,nisn,'.$record->id)
-                                        ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
+                                        ->rule(fn($record) => $record === null ? 'unique:calon_siswas,nisn' : 'unique:calon_siswas,nisn,' . $record->id)
+                                        ->dehydrateStateUsing(fn($state) => $state ? $state : null)
                                         ->numeric()
                                         ->maxLength(10)
                                         ->minLength(10)
@@ -5772,8 +5784,8 @@ class CreateCalonSiswa extends CreateRecord
                                         ->label('Nomor Kartu Indonesia Pintar')
                                         ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Indonesia Pintar (KIP).<sup style="color:red">*</sup></i></small>'))
                                         ->unique(ignoreRecord: true)
-                                        ->rule(fn ($record) => $record === null ? 'unique:calon_siswas,no_kip' : 'unique:calon_siswas,no_kip,'.$record->id)
-                                        ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
+                                        ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_kip' : 'unique:calon_siswas,no_kip,' . $record->id)
+                                        ->dehydrateStateUsing(fn($state) => $state ? $state : null)
                                         ->maxLength(6)
                                         ->minLength(6)
                                         ->live()
@@ -5787,8 +5799,8 @@ class CreateCalonSiswa extends CreateRecord
                                         ->label('Nomor Kartu Keluarga Sejahtera')
                                         ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Keluarga Sejahtera (KKS).<sup style="color:red">*</sup></i></small>'))
                                         ->unique(ignoreRecord: true)
-                                        ->rule(fn ($record) => $record === null ? 'unique:calon_siswas,no_kks' : 'unique:calon_siswas,no_kks,'.$record->id)
-                                        ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
+                                        ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_kks' : 'unique:calon_siswas,no_kks,' . $record->id)
+                                        ->dehydrateStateUsing(fn($state) => $state ? $state : null)
                                         ->maxLength(6)
                                         ->minLength(6)
                                         ->live()
@@ -5802,8 +5814,8 @@ class CreateCalonSiswa extends CreateRecord
                                         ->label('Nomor Kartu Program Keluarga Harapan')
                                         ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Program Keluarga Harapan (PKH).<sup style="color:red">*</sup></i></small>'))
                                         ->unique(ignoreRecord: true)
-                                        ->rule(fn ($record) => $record === null ? 'unique:calon_siswas,no_pkh' : 'unique:calon_siswas,no_pkh,'.$record->id)
-                                        ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
+                                        ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_pkh' : 'unique:calon_siswas,no_pkh,' . $record->id)
+                                        ->dehydrateStateUsing(fn($state) => $state ? $state : null)
                                         ->maxLength(6)
                                         ->minLength(6)
                                         ->live()
@@ -5827,7 +5839,7 @@ class CreateCalonSiswa extends CreateRecord
                                         ->native(false)
                                         ->searchable()
                                         ->preload()
-                                        ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->nama} | NPSN: {$record->npsn}")
+                                        ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->nama} | NPSN: {$record->npsn}")
                                         ->createOptionForm([
                                             Wizard::make([
                                                 Step::make('Data Instansi')
@@ -5884,7 +5896,7 @@ class CreateCalonSiswa extends CreateRecord
                                                                 'required' => 'Form ini wajib diisi.',
                                                             ]),
                                                         TextInput::make('nss')
-                                                            ->visible(fn ($get) => in_array($get('jenjang'), ['MI', 'MTS', 'MA']))
+                                                            ->visible(fn($get) => in_array($get('jenjang'), ['MI', 'MTS', 'MA']))
                                                             ->label('NSS/NSM')
                                                             ->required()
                                                             ->numeric()
@@ -5960,7 +5972,7 @@ class CreateCalonSiswa extends CreateRecord
                                                             }),
                                                         Select::make('provinsi_id')
                                                             ->label('Provinsi')
-                                                            ->options(fn (Get $get): Collection => Provinsi::query()
+                                                            ->options(fn(Get $get): Collection => Provinsi::query()
                                                                 ->where('negara_id', $get('negara_id'))
                                                                 ->pluck('nama', 'id'))
                                                             ->required()
@@ -5977,7 +5989,7 @@ class CreateCalonSiswa extends CreateRecord
                                                             }),
                                                         Select::make('kabupaten_id')
                                                             ->label('Kabupaten/Kota')
-                                                            ->options(fn (Get $get): Collection => Kabupaten::query()
+                                                            ->options(fn(Get $get): Collection => Kabupaten::query()
                                                                 ->where('provinsi_id', $get('provinsi_id'))
                                                                 ->pluck('nama', 'id'))
                                                             ->required()
@@ -5993,7 +6005,7 @@ class CreateCalonSiswa extends CreateRecord
                                                             }),
                                                         Select::make('kecamatan_id')
                                                             ->label('Kecamatan')
-                                                            ->options(fn (Get $get): Collection => Kecamatan::query()
+                                                            ->options(fn(Get $get): Collection => Kecamatan::query()
                                                                 ->where('kabupaten_id', $get('kabupaten_id'))
                                                                 ->pluck('nama', 'id'))
                                                             ->required()
@@ -6008,7 +6020,7 @@ class CreateCalonSiswa extends CreateRecord
                                                             }),
                                                         Select::make('kelurahan_id')
                                                             ->label('Kelurahan/Desa')
-                                                            ->options(fn (Get $get): Collection => Kelurahan::query()
+                                                            ->options(fn(Get $get): Collection => Kelurahan::query()
                                                                 ->where('kecamatan_id', $get('kecamatan_id'))
                                                                 ->pluck('nama', 'id'))
                                                             ->required()
@@ -6071,115 +6083,115 @@ class CreateCalonSiswa extends CreateRecord
                                             ]),
                                         ]),
                                     // Data Prestasi Calon Peserta Didik Baru
-                                    Select::make('prestasi_id')
-                                        ->visible(fn ($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
-                                        ->label('Prestasi')
-                                        ->helperText(new HtmlString('<small><i>Pilih prestasi yang paling tinggi jika memiliki lebih dari satu prestasi.</i></small>'))
-                                        ->relationship('prestasi', 'nama')
-                                        ->preload()
-                                        ->createOptionForm([
-                                            // Prestasi
-                                            // Section::make('Prestasi')
-                                            //     ->collapsible()
-                                            //     ->schema([
-                                            Section::make('')
-                                                ->schema([
-                                                    TextInput::make('nama')
-                                                        ->label('Nama Prestasi')
-                                                        ->required()
-                                                        ->validationMessages([
-                                                            'required' => 'Form ini wajib diisi.',
-                                                        ]),
-                                                    Select::make('jenis')
-                                                        ->label('Jenis Prestasi')
-                                                        ->options([
-                                                            'Hafalan Al-Quran' => 'Hafalan Al-Quran (Minimal 3 Juz)',
-                                                            'Olimpiade/Kejuaraan' => 'Olimpiade/Kejuaraan',
-                                                        ])
-                                                        ->required()
-                                                        ->native(false)
-                                                        ->validationMessages([
-                                                            'required' => 'Form ini wajib diisi.',
-                                                        ])
-                                                        ->live(),
-                                                ])
-                                                ->columns([
-                                                    'sm' => '100%',
-                                                    'md' => 2,
-                                                    'lg' => 2,
-                                                ]),
+                                    // Select::make('prestasi_id')
+                                    //     ->visible(fn ($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
+                                    //     ->label('Prestasi')
+                                    //     ->helperText(new HtmlString('<small><i>Pilih prestasi yang paling tinggi jika memiliki lebih dari satu prestasi.</i></small>'))
+                                    //     ->relationship('prestasi', 'nama')
+                                    //     ->preload()
+                                    //     ->createOptionForm([
+                                    //         // Prestasi
+                                    //         // Section::make('Prestasi')
+                                    //         //     ->collapsible()
+                                    //         //     ->schema([
+                                    //         Section::make('')
+                                    //             ->schema([
+                                    //                 TextInput::make('nama')
+                                    //                     ->label('Nama Prestasi')
+                                    //                     ->required()
+                                    //                     ->validationMessages([
+                                    //                         'required' => 'Form ini wajib diisi.',
+                                    //                     ]),
+                                    //                 Select::make('jenis')
+                                    //                     ->label('Jenis Prestasi')
+                                    //                     ->options([
+                                    //                         'Hafalan Al-Quran' => 'Hafalan Al-Quran (Minimal 3 Juz)',
+                                    //                         'Olimpiade/Kejuaraan' => 'Olimpiade/Kejuaraan',
+                                    //                     ])
+                                    //                     ->required()
+                                    //                     ->native(false)
+                                    //                     ->validationMessages([
+                                    //                         'required' => 'Form ini wajib diisi.',
+                                    //                     ])
+                                    //                     ->live(),
+                                    //             ])
+                                    //             ->columns([
+                                    //                 'sm' => '100%',
+                                    //                 'md' => 2,
+                                    //                 'lg' => 2,
+                                    //             ]),
 
-                                            Section::make('')
-                                                ->schema([
-                                                    Select::make('tingkat')
-                                                        ->label('Tingkat')
-                                                        ->native(false)
-                                                        ->options([
-                                                            'Nasional' => 'Nasional',
-                                                            'Provinsi' => 'Provinsi',
-                                                            'Kabupaten/Kota' => 'Kabupaten/Kota',
-                                                        ])
-                                                        ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
-                                                    Select::make('kategori')
-                                                        ->label('Kategori')
-                                                        ->native(false)
-                                                        ->options([
-                                                            'Regu/Kelompok' => 'Regu/Kelompok',
-                                                            'Individu' => 'Individu',
-                                                        ])
-                                                        ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
-                                                    Select::make('peringkat')
-                                                        ->label('Peringkat')
-                                                        ->options([
-                                                            '1' => '1',
-                                                            '2' => '2',
-                                                            '3' => '3',
-                                                        ])
-                                                        ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
-                                                ])
-                                                ->columns([
-                                                    'sm' => '100%',
-                                                    'md' => 3,
-                                                    'lg' => 3,
-                                                ])
-                                                ->visible(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
-                                        ])
-                                        ->columns([
-                                            'sm' => '100%',
-                                            'md' => 3,
-                                            'lg' => 3,
-                                            // ]),
-                                        ])
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->jenis} | {$record->nama} | {$record->tingkat} | {$record->kategori} | {$record->peringkat}")
-                                        ->searchable()
-                                        ->native(false),
-                                    // Data Peminatan Ekstrakurikuler Calon Peserta Didik Baru
-                                    Select::make('ekstrakurikuler_id')
-                                        ->label('Peminatan Ekstrakurikuler')
-                                        ->required()
-                                        ->searchable()
-                                        ->preload()
-                                        ->native(false)
-                                        ->relationship('ekstrakurikuler', 'nama')
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                    // Data Peminatan Pelajaran Calon Peserta Didik Baru
-                                    Select::make('mata_pelajaran_id')
-                                        // ->visible(fn($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
-                                        ->label('Peminatan Mata Pelajaran')
-                                        ->searchable()
-                                        ->preload()
-                                        ->required()
-                                        ->native(false)
-                                        ->relationship('mataPelajaran', 'nama')
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
+                                    //         Section::make('')
+                                    //             ->schema([
+                                    //                 Select::make('tingkat')
+                                    //                     ->label('Tingkat')
+                                    //                     ->native(false)
+                                    //                     ->options([
+                                    //                         'Nasional' => 'Nasional',
+                                    //                         'Provinsi' => 'Provinsi',
+                                    //                         'Kabupaten/Kota' => 'Kabupaten/Kota',
+                                    //                     ])
+                                    //                     ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                    //                 Select::make('kategori')
+                                    //                     ->label('Kategori')
+                                    //                     ->native(false)
+                                    //                     ->options([
+                                    //                         'Regu/Kelompok' => 'Regu/Kelompok',
+                                    //                         'Individu' => 'Individu',
+                                    //                     ])
+                                    //                     ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                    //                 Select::make('peringkat')
+                                    //                     ->label('Peringkat')
+                                    //                     ->options([
+                                    //                         '1' => '1',
+                                    //                         '2' => '2',
+                                    //                         '3' => '3',
+                                    //                     ])
+                                    //                     ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                    //             ])
+                                    //             ->columns([
+                                    //                 'sm' => '100%',
+                                    //                 'md' => 3,
+                                    //                 'lg' => 3,
+                                    //             ])
+                                    //             ->visible(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                    //     ])
+                                    //     ->columns([
+                                    //         'sm' => '100%',
+                                    //         'md' => 3,
+                                    //         'lg' => 3,
+                                    //         // ]),
+                                    //     ])
+                                    //     ->required()
+                                    //     ->validationMessages([
+                                    //         'required' => 'Form ini wajib diisi.',
+                                    //     ])
+                                    //     ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->jenis} | {$record->nama} | {$record->tingkat} | {$record->kategori} | {$record->peringkat}")
+                                    //     ->searchable()
+                                    //     ->native(false),
+                                    // // Data Peminatan Ekstrakurikuler Calon Peserta Didik Baru
+                                    // Select::make('ekstrakurikuler_id')
+                                    //     ->label('Peminatan Ekstrakurikuler')
+                                    //     ->required()
+                                    //     ->searchable()
+                                    //     ->preload()
+                                    //     ->native(false)
+                                    //     ->relationship('ekstrakurikuler', 'nama')
+                                    //     ->validationMessages([
+                                    //         'required' => 'Form ini wajib diisi.',
+                                    //     ]),
+                                    // // Data Peminatan Pelajaran Calon Peserta Didik Baru
+                                    // Select::make('mata_pelajaran_id')
+                                    //     // ->visible(fn($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
+                                    //     ->label('Peminatan Mata Pelajaran')
+                                    //     ->searchable()
+                                    //     ->preload()
+                                    //     ->required()
+                                    //     ->native(false)
+                                    //     ->relationship('mataPelajaran', 'nama')
+                                    //     ->validationMessages([
+                                    //         'required' => 'Form ini wajib diisi.',
+                                    //     ]),
                                 ]),
 
                             // Tab Alamat Calon Peserta Didik Baru
@@ -6206,7 +6218,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('siswa_provinsi_id')
                                         ->label('Provinsi')
-                                        ->options(fn (Get $get): Collection => Provinsi::query()
+                                        ->options(fn(Get $get): Collection => Provinsi::query()
                                             ->where('negara_id', $get('siswa_negara_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -6223,7 +6235,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('siswa_kabupaten_id')
                                         ->label('Kabupaten')
-                                        ->options(fn (Get $get): Collection => Kabupaten::query()
+                                        ->options(fn(Get $get): Collection => Kabupaten::query()
                                             ->where('provinsi_id', $get('siswa_provinsi_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -6239,7 +6251,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('siswa_kecamatan_id')
                                         ->label('Kecamatan')
-                                        ->options(fn (Get $get): Collection => Kecamatan::query()
+                                        ->options(fn(Get $get): Collection => Kecamatan::query()
                                             ->where('kabupaten_id', $get('siswa_kabupaten_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -6254,7 +6266,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('siswa_kelurahan_id')
                                         ->label('Kelurahan')
-                                        ->options(fn (Get $get): Collection => Kelurahan::query()
+                                        ->options(fn(Get $get): Collection => Kelurahan::query()
                                             ->where('kecamatan_id', $get('siswa_kecamatan_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -6287,7 +6299,7 @@ class CreateCalonSiswa extends CreateRecord
                                             '3:4' => '3:4',
                                         ])
                                         ->fetchFileInformation(false)
-                                        ->directory(fn ($get) => 'berkas/foto/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                        ->directory(fn($get) => 'berkas/foto/' . $get('nisn')) // Dinamis berdasarkan NISN
                                         ->downloadable()
                                         ->openable()
                                         ->maxSize(500)
@@ -6308,7 +6320,7 @@ class CreateCalonSiswa extends CreateRecord
                                             '3:4' => '3:4',
                                         ])
                                         ->fetchFileInformation(false)
-                                        ->directory(fn ($get) => 'berkas/kk/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                        ->directory(fn($get) => 'berkas/kk/' . $get('nisn')) // Dinamis berdasarkan NISN
                                         ->downloadable()
                                         ->openable()
                                         ->maxSize(500)
@@ -6329,7 +6341,7 @@ class CreateCalonSiswa extends CreateRecord
                                             '3:4' => '3:4',
                                         ])
                                         ->fetchFileInformation(false)
-                                        ->directory(fn ($get) => 'berkas/akta/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                        ->directory(fn($get) => 'berkas/akta/' . $get('nisn')) // Dinamis berdasarkan NISN
                                         ->downloadable()
                                         ->openable()
                                         ->maxSize(500)
@@ -6351,7 +6363,7 @@ class CreateCalonSiswa extends CreateRecord
                                             '3:4' => '3:4',
                                         ])
                                         ->fetchFileInformation(false)
-                                        ->directory(fn ($get) => 'berkas/nisn/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                        ->directory(fn($get) => 'berkas/nisn/' . $get('nisn')) // Dinamis berdasarkan NISN
                                         ->downloadable()
                                         ->openable()
                                         ->maxSize(500)
@@ -6369,7 +6381,7 @@ class CreateCalonSiswa extends CreateRecord
                                             'required' => 'Form ini wajib diisi.',
                                         ])
                                         ->fetchFileInformation(false)
-                                        ->directory(fn ($get) => 'berkas/skbb/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                        ->directory(fn($get) => 'berkas/skbb/' . $get('nisn')) // Dinamis berdasarkan NISN
                                         ->downloadable()
                                         ->openable()
                                         ->acceptedFileTypes(['application/pdf'])
@@ -6384,7 +6396,7 @@ class CreateCalonSiswa extends CreateRecord
                                             'required' => 'Form ini wajib diisi.',
                                         ])
                                         ->fetchFileInformation(false)
-                                        ->directory(fn ($get) => 'berkas/skab/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                        ->directory(fn($get) => 'berkas/skab/' . $get('nisn')) // Dinamis berdasarkan NISN
                                         ->downloadable()
                                         ->openable()
                                         ->acceptedFileTypes(['application/pdf'])
@@ -6394,8 +6406,8 @@ class CreateCalonSiswa extends CreateRecord
 
                                     // Berkas KIP Calon Peserta Didik Baru
                                     FileUpload::make('berkas_kip')
-                                        ->required(fn ($get) => $get('no_kip') !== null)
-                                        ->visible(fn ($get) => $get('no_kip') !== null)
+                                        ->required(fn($get) => $get('no_kip') !== null)
+                                        ->visible(fn($get) => $get('no_kip') !== null)
                                         ->label('Kartu Indonesia Pintar')
                                         ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Indonesia Pintar (KIP).<sup style="color:red">*</sup></i></small>'))
                                         ->image()
@@ -6406,7 +6418,7 @@ class CreateCalonSiswa extends CreateRecord
                                             '3:4' => '3:4',
                                         ])
                                         ->fetchFileInformation(false)
-                                        ->directory(fn ($get) => 'berkas/kip/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                        ->directory(fn($get) => 'berkas/kip/' . $get('nisn')) // Dinamis berdasarkan NISN
                                         ->downloadable()
                                         ->openable()
                                         ->maxSize(500)
@@ -6414,8 +6426,8 @@ class CreateCalonSiswa extends CreateRecord
                                         ->visibility('private'),
                                     // Berkas KKS Calon Peserta Didik Baru
                                     FileUpload::make('berkas_kks')
-                                        ->required(fn ($get) => $get('no_kks') !== null)
-                                        ->visible(fn ($get) => $get('no_kks') !== null)
+                                        ->required(fn($get) => $get('no_kks') !== null)
+                                        ->visible(fn($get) => $get('no_kks') !== null)
                                         ->label('Kartu Keluarga Sejahtera')
                                         ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Keluarga Sejahtera (KKS).<sup style="color:red">*</sup></i></small>'))
                                         ->image()
@@ -6426,7 +6438,7 @@ class CreateCalonSiswa extends CreateRecord
                                             '3:4' => '3:4',
                                         ])
                                         ->fetchFileInformation(false)
-                                        ->directory(fn ($get) => 'berkas/kks/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                        ->directory(fn($get) => 'berkas/kks/' . $get('nisn')) // Dinamis berdasarkan NISN
                                         ->downloadable()
                                         ->openable()
                                         ->maxSize(500)
@@ -6434,8 +6446,8 @@ class CreateCalonSiswa extends CreateRecord
                                         ->visibility('private'),
                                     // Berkas PKH Calon Peserta Didik Baru
                                     FileUpload::make('berkas_pkh')
-                                        ->required(fn ($get) => $get('no_pkh') !== null)
-                                        ->visible(fn ($get) => $get('no_pkh') !== null)
+                                        ->required(fn($get) => $get('no_pkh') !== null)
+                                        ->visible(fn($get) => $get('no_pkh') !== null)
                                         ->label('Kartu Program Keluarga Harapan')
                                         ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Program Keluarga Harapan (PKH).<sup style="color:red">*</sup></i></small>'))
                                         ->image()
@@ -6446,29 +6458,29 @@ class CreateCalonSiswa extends CreateRecord
                                             '3:4' => '3:4',
                                         ])
                                         ->fetchFileInformation(false)
-                                        ->directory(fn ($get) => 'berkas/pkh/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                        ->directory(fn($get) => 'berkas/pkh/' . $get('nisn')) // Dinamis berdasarkan NISN
                                         ->downloadable()
                                         ->openable()
                                         ->maxSize(500)
                                         ->minSize(10)
                                         ->visibility('private'),
                                     // Berkas Prestasi Belajar Calon Peserta Didik Baru
-                                    FileUpload::make('berkas_prestasi')
-                                        ->required(fn ($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
-                                        ->visible(fn ($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
-                                        ->label('Berkas Prestasi')
-                                        ->helperText(new HtmlString('<small><i>Gabungkan semua berkas jika memiliki lebih dari satu prestasi.</i></small>'))
-                                        ->fetchFileInformation(false)
-                                        ->directory(fn ($get) => 'berkas/prestasi/'.$get('nisn')) // Dinamis berdasarkan NISN
-                                        ->downloadable()
-                                        ->openable()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->acceptedFileTypes(['application/pdf'])
-                                        ->maxSize(500)
-                                        ->minSize(10)
-                                        ->visibility('private'),
+                                    // FileUpload::make('berkas_prestasi')
+                                    //     ->required(fn($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
+                                    //     ->visible(fn($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
+                                    //     ->label('Berkas Prestasi')
+                                    //     ->helperText(new HtmlString('<small><i>Gabungkan semua berkas jika memiliki lebih dari satu prestasi.</i></small>'))
+                                    //     ->fetchFileInformation(false)
+                                    //     ->directory(fn($get) => 'berkas/prestasi/' . $get('nisn')) // Dinamis berdasarkan NISN
+                                    //     ->downloadable()
+                                    //     ->openable()
+                                    //     ->validationMessages([
+                                    //         'required' => 'Form ini wajib diisi.',
+                                    //     ])
+                                    //     ->acceptedFileTypes(['application/pdf'])
+                                    //     ->maxSize(500)
+                                    //     ->minSize(10)
+                                    //     ->visibility('private'),
                                 ]),
 
                         ])
@@ -6607,7 +6619,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('ibu_provinsi_id')
                                         ->label('Provinsi')
-                                        ->options(fn (Get $get): Collection => Provinsi::query()
+                                        ->options(fn(Get $get): Collection => Provinsi::query()
                                             ->where('negara_id', $get('ibu_negara_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -6624,7 +6636,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('ibu_kabupaten_id')
                                         ->label('Kabupaten')
-                                        ->options(fn (Get $get): Collection => Kabupaten::query()
+                                        ->options(fn(Get $get): Collection => Kabupaten::query()
                                             ->where('provinsi_id', $get('ibu_provinsi_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -6640,7 +6652,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('ibu_kecamatan_id')
                                         ->label('Kecamatan')
-                                        ->options(fn (Get $get): Collection => Kecamatan::query()
+                                        ->options(fn(Get $get): Collection => Kecamatan::query()
                                             ->where('kabupaten_id', $get('ibu_kabupaten_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -6655,7 +6667,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('ibu_kelurahan_id')
                                         ->label('Kelurahan')
-                                        ->options(fn (Get $get): Collection => Kelurahan::query()
+                                        ->options(fn(Get $get): Collection => Kelurahan::query()
                                             ->where('kecamatan_id', $get('ibu_kecamatan_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -6802,7 +6814,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('ayah_provinsi_id')
                                         ->label('Provinsi')
-                                        ->options(fn (Get $get): Collection => Provinsi::query()
+                                        ->options(fn(Get $get): Collection => Provinsi::query()
                                             ->where('negara_id', $get('ayah_negara_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -6819,7 +6831,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('ayah_kabupaten_id')
                                         ->label('Kabupaten')
-                                        ->options(fn (Get $get): Collection => Kabupaten::query()
+                                        ->options(fn(Get $get): Collection => Kabupaten::query()
                                             ->where('provinsi_id', $get('ayah_provinsi_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -6835,7 +6847,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('ayah_kecamatan_id')
                                         ->label('Kecamatan')
-                                        ->options(fn (Get $get): Collection => Kecamatan::query()
+                                        ->options(fn(Get $get): Collection => Kecamatan::query()
                                             ->where('kabupaten_id', $get('ayah_kabupaten_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -6850,7 +6862,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('ayah_kelurahan_id')
                                         ->label('Kelurahan')
-                                        ->options(fn (Get $get): Collection => Kelurahan::query()
+                                        ->options(fn(Get $get): Collection => Kelurahan::query()
                                             ->where('kecamatan_id', $get('ayah_kecamatan_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -6966,7 +6978,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('wali_provinsi_id')
                                         ->label('Provinsi')
-                                        ->options(fn (Get $get): Collection => Provinsi::query()
+                                        ->options(fn(Get $get): Collection => Provinsi::query()
                                             ->where('negara_id', $get('wali_negara_id'))
                                             ->pluck('nama', 'id'))
                                         ->native(false)
@@ -6979,7 +6991,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('wali_kabupaten_id')
                                         ->label('Kabupaten')
-                                        ->options(fn (Get $get): Collection => Kabupaten::query()
+                                        ->options(fn(Get $get): Collection => Kabupaten::query()
                                             ->where('provinsi_id', $get('wali_provinsi_id'))
                                             ->pluck('nama', 'id'))
                                         ->native(false)
@@ -6991,7 +7003,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('wali_kecamatan_id')
                                         ->label('Kecamatan')
-                                        ->options(fn (Get $get): Collection => Kecamatan::query()
+                                        ->options(fn(Get $get): Collection => Kecamatan::query()
                                             ->where('kabupaten_id', $get('wali_kabupaten_id'))
                                             ->pluck('nama', 'id'))
                                         ->native(false)
@@ -7002,7 +7014,7 @@ class CreateCalonSiswa extends CreateRecord
                                         }),
                                     Select::make('wali_kelurahan_id')
                                         ->label('Kelurahan')
-                                        ->options(fn (Get $get): Collection => Kelurahan::query()
+                                        ->options(fn(Get $get): Collection => Kelurahan::query()
                                             ->where('kecamatan_id', $get('wali_kecamatan_id'))
                                             ->pluck('nama', 'id'))
                                         ->native(false),
@@ -7043,6 +7055,15 @@ class CreateCalonSiswa extends CreateRecord
                 ])
                 ->columnSpanFull(),
         ];
+    }
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        $data['user_id'] = auth()->id();
+
+        $tahun = TahunPendaftaran::where('status', 'Aktif')->first();
+        $data['tahun_pendaftaran_id'] = $tahun?->id;
+
+        return $data;
     }
 }
 
@@ -7137,7 +7158,7 @@ class EditCalonSiswa extends EditRecord
                             // Data Kelas Pendaftaran Calon Peserta Didik Baru
                             Select::make('kelas_id')
                                 ->label('Kelas')
-                                ->visible(fn ($get) => in_array($get('status_pendaftaran'), [
+                                ->visible(fn($get) => in_array($get('status_pendaftaran'), [
                                     'Diterima Di Kelas Reguler',
                                     'Diterima Di Kelas Unggulan',
                                 ]))
@@ -7162,21 +7183,21 @@ class EditCalonSiswa extends EditRecord
                                     // Jalur Pendaftaran
                                     Select::make('jalur_pendaftaran_id')
                                         ->label('Jalur Pendaftaran')
-                                        ->relationship('jalurPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif'))
+                                        ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
                                         ->required()
                                         ->validationMessages([
                                             'required' => 'Form ini wajib diisi.',
                                         ])
                                         ->native(false)
                                         ->live()
-                                        ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->nama} | {$record->tahunPendaftaran->nama}"),
+                                        ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->nama} | {$record->tahunPendaftaran->nama}"),
                                     // Nama Lengkap Calon Peserta Didik Baru
                                     TextInput::make('nama')
                                         ->label('Nama Lengkap')
                                         ->required()
                                         ->disabledOn('edit')
                                         ->dehydrated()
-                                        ->default(fn () => Auth::user()->name)
+                                        ->default(fn() => Auth::user()->name)
                                         ->validationMessages([
                                             'required' => 'Form ini wajib diisi.',
                                         ]),
@@ -7185,8 +7206,8 @@ class EditCalonSiswa extends EditRecord
                                         ->label('Nomor Induk Kependudukan (NIK)')
                                         ->required()
                                         ->unique(ignoreRecord: true)
-                                        ->rule(fn ($record) => $record === null ? 'unique:calon_siswas,nik' : 'unique:calon_siswas,nik,'.$record->id)
-                                        ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
+                                        ->rule(fn($record) => $record === null ? 'unique:calon_siswas,nik' : 'unique:calon_siswas,nik,' . $record->id)
+                                        ->dehydrateStateUsing(fn($state) => $state ? $state : null)
                                         ->numeric()
                                         ->maxLength(16)
                                         ->minLength(16)
@@ -7214,10 +7235,10 @@ class EditCalonSiswa extends EditRecord
                                         ->required()
                                         ->disabledOn('edit')
                                         ->dehydrated()
-                                        ->default(fn () => Auth::user()->username)
+                                        ->default(fn() => Auth::user()->username)
                                         ->unique(ignoreRecord: true)
-                                        ->rule(fn ($record) => $record === null ? 'unique:calon_siswas,nisn' : 'unique:calon_siswas,nisn,'.$record->id)
-                                        ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
+                                        ->rule(fn($record) => $record === null ? 'unique:calon_siswas,nisn' : 'unique:calon_siswas,nisn,' . $record->id)
+                                        ->dehydrateStateUsing(fn($state) => $state ? $state : null)
                                         ->numeric()
                                         ->maxLength(10)
                                         ->minLength(10)
@@ -7381,8 +7402,8 @@ class EditCalonSiswa extends EditRecord
                                         ->label('Nomor Kartu Indonesia Pintar')
                                         ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Indonesia Pintar (KIP).<sup style="color:red">*</sup></i></small>'))
                                         ->unique(ignoreRecord: true)
-                                        ->rule(fn ($record) => $record === null ? 'unique:calon_siswas,no_kip' : 'unique:calon_siswas,no_kip,'.$record->id)
-                                        ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
+                                        ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_kip' : 'unique:calon_siswas,no_kip,' . $record->id)
+                                        ->dehydrateStateUsing(fn($state) => $state ? $state : null)
                                         ->maxLength(6)
                                         ->minLength(6)
                                         ->live()
@@ -7396,8 +7417,8 @@ class EditCalonSiswa extends EditRecord
                                         ->label('Nomor Kartu Keluarga Sejahtera')
                                         ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Keluarga Sejahtera (KKS).<sup style="color:red">*</sup></i></small>'))
                                         ->unique(ignoreRecord: true)
-                                        ->rule(fn ($record) => $record === null ? 'unique:calon_siswas,no_kks' : 'unique:calon_siswas,no_kks,'.$record->id)
-                                        ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
+                                        ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_kks' : 'unique:calon_siswas,no_kks,' . $record->id)
+                                        ->dehydrateStateUsing(fn($state) => $state ? $state : null)
                                         ->maxLength(6)
                                         ->minLength(6)
                                         ->live()
@@ -7411,8 +7432,8 @@ class EditCalonSiswa extends EditRecord
                                         ->label('Nomor Kartu Program Keluarga Harapan')
                                         ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Program Keluarga Harapan (PKH).<sup style="color:red">*</sup></i></small>'))
                                         ->unique(ignoreRecord: true)
-                                        ->rule(fn ($record) => $record === null ? 'unique:calon_siswas,no_pkh' : 'unique:calon_siswas,no_pkh,'.$record->id)
-                                        ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
+                                        ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_pkh' : 'unique:calon_siswas,no_pkh,' . $record->id)
+                                        ->dehydrateStateUsing(fn($state) => $state ? $state : null)
                                         ->maxLength(6)
                                         ->minLength(6)
                                         ->live()
@@ -7435,7 +7456,7 @@ class EditCalonSiswa extends EditRecord
                                         ->native(false)
                                         ->searchable()
                                         ->preload()
-                                        ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->nama} | NPSN: {$record->npsn}")
+                                        ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->nama} | NPSN: {$record->npsn}")
                                         ->editOptionForm([
                                             Wizard::make([
                                                 Step::make('Data Instansi')
@@ -7492,7 +7513,7 @@ class EditCalonSiswa extends EditRecord
                                                                 'required' => 'Form ini wajib diisi.',
                                                             ]),
                                                         TextInput::make('nss')
-                                                            ->visible(fn ($get) => in_array($get('jenjang'), ['MI', 'MTS', 'MA']))
+                                                            ->visible(fn($get) => in_array($get('jenjang'), ['MI', 'MTS', 'MA']))
                                                             ->label('NSS/NSM')
                                                             ->required()
                                                             ->numeric()
@@ -7568,7 +7589,7 @@ class EditCalonSiswa extends EditRecord
                                                             }),
                                                         Select::make('provinsi_id')
                                                             ->label('Provinsi')
-                                                            ->options(fn (Get $get): Collection => Provinsi::query()
+                                                            ->options(fn(Get $get): Collection => Provinsi::query()
                                                                 ->where('negara_id', $get('negara_id'))
                                                                 ->pluck('nama', 'id'))
                                                             ->required()
@@ -7585,7 +7606,7 @@ class EditCalonSiswa extends EditRecord
                                                             }),
                                                         Select::make('kabupaten_id')
                                                             ->label('Kabupaten/Kota')
-                                                            ->options(fn (Get $get): Collection => Kabupaten::query()
+                                                            ->options(fn(Get $get): Collection => Kabupaten::query()
                                                                 ->where('provinsi_id', $get('provinsi_id'))
                                                                 ->pluck('nama', 'id'))
                                                             ->required()
@@ -7601,7 +7622,7 @@ class EditCalonSiswa extends EditRecord
                                                             }),
                                                         Select::make('kecamatan_id')
                                                             ->label('Kecamatan')
-                                                            ->options(fn (Get $get): Collection => Kecamatan::query()
+                                                            ->options(fn(Get $get): Collection => Kecamatan::query()
                                                                 ->where('kabupaten_id', $get('kabupaten_id'))
                                                                 ->pluck('nama', 'id'))
                                                             ->required()
@@ -7616,7 +7637,7 @@ class EditCalonSiswa extends EditRecord
                                                             }),
                                                         Select::make('kelurahan_id')
                                                             ->label('Kelurahan/Desa')
-                                                            ->options(fn (Get $get): Collection => Kelurahan::query()
+                                                            ->options(fn(Get $get): Collection => Kelurahan::query()
                                                                 ->where('kecamatan_id', $get('kecamatan_id'))
                                                                 ->pluck('nama', 'id'))
                                                             ->required()
@@ -7680,118 +7701,118 @@ class EditCalonSiswa extends EditRecord
                                         ]),
 
                                     // Data Prestasi Calon Peserta Didik Baru
-                                    Select::make('prestasi_id')
-                                        ->visible(fn ($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
-                                        ->label('Prestasi')
-                                        ->helperText(new HtmlString('<small><i>Pilih prestasi yang paling tinggi jika memiliki lebih dari satu prestasi.</i></small>'))
-                                        ->relationship('prestasi', 'nama')
-                                        ->preload()
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->editOptionForm([
-                                            // Prestasi
-                                            // Section::make('Prestasi')
-                                            //     ->collapsible()
-                                            //     ->schema([
-                                            Section::make('')
-                                                ->schema([
-                                                    TextInput::make('nama')
-                                                        ->label('Nama Prestasi')
-                                                        ->required()
-                                                        ->validationMessages([
-                                                            'required' => 'Form ini wajib diisi.',
-                                                        ]),
-                                                    Select::make('jenis')
-                                                        ->label('Jenis Prestasi')
-                                                        ->options([
-                                                            'Hafalan Al-Quran' => 'Hafalan Al-Quran (Minimal 3 Juz)',
-                                                            'Olimpiade/Kejuaraan' => 'Olimpiade/Kejuaraan',
-                                                        ])
-                                                        ->required()
-                                                        ->native(false)
-                                                        ->validationMessages([
-                                                            'required' => 'Form ini wajib diisi.',
-                                                        ])
-                                                        ->live(),
-                                                ])
-                                                ->columns([
-                                                    'sm' => '100%',
-                                                    'md' => 2,
-                                                    'lg' => 2,
-                                                ]),
+                                    // Select::make('prestasi_id')
+                                    //     ->visible(fn ($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
+                                    //     ->label('Prestasi')
+                                    //     ->helperText(new HtmlString('<small><i>Pilih prestasi yang paling tinggi jika memiliki lebih dari satu prestasi.</i></small>'))
+                                    //     ->relationship('prestasi', 'nama')
+                                    //     ->preload()
+                                    //     ->required()
+                                    //     ->validationMessages([
+                                    //         'required' => 'Form ini wajib diisi.',
+                                    //     ])
+                                    //     ->editOptionForm([
+                                    //         // Prestasi
+                                    //         // Section::make('Prestasi')
+                                    //         //     ->collapsible()
+                                    //         //     ->schema([
+                                    //         Section::make('')
+                                    //             ->schema([
+                                    //                 TextInput::make('nama')
+                                    //                     ->label('Nama Prestasi')
+                                    //                     ->required()
+                                    //                     ->validationMessages([
+                                    //                         'required' => 'Form ini wajib diisi.',
+                                    //                     ]),
+                                    //                 Select::make('jenis')
+                                    //                     ->label('Jenis Prestasi')
+                                    //                     ->options([
+                                    //                         'Hafalan Al-Quran' => 'Hafalan Al-Quran (Minimal 3 Juz)',
+                                    //                         'Olimpiade/Kejuaraan' => 'Olimpiade/Kejuaraan',
+                                    //                     ])
+                                    //                     ->required()
+                                    //                     ->native(false)
+                                    //                     ->validationMessages([
+                                    //                         'required' => 'Form ini wajib diisi.',
+                                    //                     ])
+                                    //                     ->live(),
+                                    //             ])
+                                    //             ->columns([
+                                    //                 'sm' => '100%',
+                                    //                 'md' => 2,
+                                    //                 'lg' => 2,
+                                    //             ]),
 
-                                            Section::make('')
-                                                ->schema([
-                                                    Select::make('tingkat')
-                                                        ->label('Tingkat')
-                                                        ->native(false)
-                                                        ->options([
-                                                            'Nasional' => 'Nasional',
-                                                            'Provinsi' => 'Provinsi',
-                                                            'Kabupaten/Kota' => 'Kabupaten/Kota',
-                                                        ])
-                                                        ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
-                                                    Select::make('kategori')
-                                                        ->label('Kategori')
-                                                        ->native(false)
-                                                        ->options([
-                                                            'Regu/Kelompok' => 'Regu/Kelompok',
-                                                            'Individu' => 'Individu',
-                                                        ])
-                                                        ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
-                                                    Select::make('peringkat')
-                                                        ->label('Peringkat')
-                                                        ->options([
-                                                            '1' => '1',
-                                                            '2' => '2',
-                                                            '3' => '3',
-                                                        ])
-                                                        ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
-                                                ])
-                                                ->columns([
-                                                    'sm' => '100%',
-                                                    'md' => 3,
-                                                    'lg' => 3,
-                                                ])
-                                                ->visible(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
-                                        ])
-                                        ->columns([
-                                            'sm' => '100%',
-                                            'md' => 3,
-                                            'lg' => 3,
-                                            // ]),
-                                        ])
-                                        ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->jenis} | {$record->nama} | {$record->tingkat} | {$record->kategori} | {$record->peringkat}")
-                                        ->searchable()
-                                        ->native(false),
-                                    // Data Peminatan Ekstrakurikuler Calon Peserta Didik Baru
-                                    Select::make('ekstrakurikuler_id')
-                                        ->label('Peminatan Ekstrakurikuler')
-                                        ->required()
-                                        ->searchable()
-                                        ->preload()
-                                        ->native(false)
-                                        ->relationship('ekstrakurikuler', 'nama')
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
-                                    // Data Peminatan Pelajaran Calon Peserta Didik Baru
-                                    Select::make('mata_pelajaran_id')
-                                        // ->visible(fn($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
-                                        ->label('Peminatan Mata Pelajaran')
-                                        ->searchable()
-                                        ->preload()
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->native(false)
-                                        ->relationship('mataPelajaran', 'nama')
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ]),
+                                    //         Section::make('')
+                                    //             ->schema([
+                                    //                 Select::make('tingkat')
+                                    //                     ->label('Tingkat')
+                                    //                     ->native(false)
+                                    //                     ->options([
+                                    //                         'Nasional' => 'Nasional',
+                                    //                         'Provinsi' => 'Provinsi',
+                                    //                         'Kabupaten/Kota' => 'Kabupaten/Kota',
+                                    //                     ])
+                                    //                     ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                    //                 Select::make('kategori')
+                                    //                     ->label('Kategori')
+                                    //                     ->native(false)
+                                    //                     ->options([
+                                    //                         'Regu/Kelompok' => 'Regu/Kelompok',
+                                    //                         'Individu' => 'Individu',
+                                    //                     ])
+                                    //                     ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                    //                 Select::make('peringkat')
+                                    //                     ->label('Peringkat')
+                                    //                     ->options([
+                                    //                         '1' => '1',
+                                    //                         '2' => '2',
+                                    //                         '3' => '3',
+                                    //                     ])
+                                    //                     ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                    //             ])
+                                    //             ->columns([
+                                    //                 'sm' => '100%',
+                                    //                 'md' => 3,
+                                    //                 'lg' => 3,
+                                    //             ])
+                                    //             ->visible(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                    //     ])
+                                    //     ->columns([
+                                    //         'sm' => '100%',
+                                    //         'md' => 3,
+                                    //         'lg' => 3,
+                                    //         // ]),
+                                    //     ])
+                                    //     ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->jenis} | {$record->nama} | {$record->tingkat} | {$record->kategori} | {$record->peringkat}")
+                                    //     ->searchable()
+                                    //     ->native(false),
+                                    // // Data Peminatan Ekstrakurikuler Calon Peserta Didik Baru
+                                    // Select::make('ekstrakurikuler_id')
+                                    //     ->label('Peminatan Ekstrakurikuler')
+                                    //     ->required()
+                                    //     ->searchable()
+                                    //     ->preload()
+                                    //     ->native(false)
+                                    //     ->relationship('ekstrakurikuler', 'nama')
+                                    //     ->validationMessages([
+                                    //         'required' => 'Form ini wajib diisi.',
+                                    //     ]),
+                                    // // Data Peminatan Pelajaran Calon Peserta Didik Baru
+                                    // Select::make('mata_pelajaran_id')
+                                    //     // ->visible(fn($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
+                                    //     ->label('Peminatan Mata Pelajaran')
+                                    //     ->searchable()
+                                    //     ->preload()
+                                    //     ->required()
+                                    //     ->validationMessages([
+                                    //         'required' => 'Form ini wajib diisi.',
+                                    //     ])
+                                    //     ->native(false)
+                                    //     ->relationship('mataPelajaran', 'nama')
+                                    //     ->validationMessages([
+                                    //         'required' => 'Form ini wajib diisi.',
+                                    //     ]),
                                 ]),
 
                             // Tab Alamat Calon Peserta Didik Baru
@@ -7818,7 +7839,7 @@ class EditCalonSiswa extends EditRecord
                                         }),
                                     Select::make('siswa_provinsi_id')
                                         ->label('Provinsi')
-                                        ->options(fn (Get $get): Collection => Provinsi::query()
+                                        ->options(fn(Get $get): Collection => Provinsi::query()
                                             ->where('negara_id', $get('siswa_negara_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -7835,7 +7856,7 @@ class EditCalonSiswa extends EditRecord
                                         }),
                                     Select::make('siswa_kabupaten_id')
                                         ->label('Kabupaten')
-                                        ->options(fn (Get $get): Collection => Kabupaten::query()
+                                        ->options(fn(Get $get): Collection => Kabupaten::query()
                                             ->where('provinsi_id', $get('siswa_provinsi_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -7851,7 +7872,7 @@ class EditCalonSiswa extends EditRecord
                                         }),
                                     Select::make('siswa_kecamatan_id')
                                         ->label('Kecamatan')
-                                        ->options(fn (Get $get): Collection => Kecamatan::query()
+                                        ->options(fn(Get $get): Collection => Kecamatan::query()
                                             ->where('kabupaten_id', $get('siswa_kabupaten_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -7866,7 +7887,7 @@ class EditCalonSiswa extends EditRecord
                                         }),
                                     Select::make('siswa_kelurahan_id')
                                         ->label('Kelurahan')
-                                        ->options(fn (Get $get): Collection => Kelurahan::query()
+                                        ->options(fn(Get $get): Collection => Kelurahan::query()
                                             ->where('kecamatan_id', $get('siswa_kecamatan_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -7899,7 +7920,7 @@ class EditCalonSiswa extends EditRecord
                                             '3:4' => '3:4',
                                         ])
                                         ->fetchFileInformation(false)
-                                        ->directory(fn ($get) => 'berkas/foto/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                        ->directory(fn($get) => 'berkas/foto/' . $get('nisn')) // Dinamis berdasarkan NISN
                                         ->downloadable()
                                         ->openable()
                                         ->maxSize(500)
@@ -7920,7 +7941,7 @@ class EditCalonSiswa extends EditRecord
                                             '3:4' => '3:4',
                                         ])
                                         ->fetchFileInformation(false)
-                                        ->directory(fn ($get) => 'berkas/kk/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                        ->directory(fn($get) => 'berkas/kk/' . $get('nisn')) // Dinamis berdasarkan NISN
                                         ->downloadable()
                                         ->openable()
                                         ->maxSize(500)
@@ -7941,7 +7962,7 @@ class EditCalonSiswa extends EditRecord
                                             '3:4' => '3:4',
                                         ])
                                         ->fetchFileInformation(false)
-                                        ->directory(fn ($get) => 'berkas/akta/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                        ->directory(fn($get) => 'berkas/akta/' . $get('nisn')) // Dinamis berdasarkan NISN
                                         ->downloadable()
                                         ->openable()
                                         ->maxSize(500)
@@ -7962,7 +7983,7 @@ class EditCalonSiswa extends EditRecord
                                             '3:4' => '3:4',
                                         ])
                                         ->fetchFileInformation(false)
-                                        ->directory(fn ($get) => 'berkas/nisn/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                        ->directory(fn($get) => 'berkas/nisn/' . $get('nisn')) // Dinamis berdasarkan NISN
                                         ->downloadable()
                                         ->openable()
                                         ->maxSize(500)
@@ -7980,7 +8001,7 @@ class EditCalonSiswa extends EditRecord
                                             'required' => 'Form ini wajib diisi.',
                                         ])
                                         ->fetchFileInformation(false)
-                                        ->directory(fn ($get) => 'berkas/skbb/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                        ->directory(fn($get) => 'berkas/skbb/' . $get('nisn')) // Dinamis berdasarkan NISN
                                         ->downloadable()
                                         ->openable()
                                         ->acceptedFileTypes(['application/pdf'])
@@ -7995,7 +8016,7 @@ class EditCalonSiswa extends EditRecord
                                             'required' => 'Form ini wajib diisi.',
                                         ])
                                         ->fetchFileInformation(false)
-                                        ->directory(fn ($get) => 'berkas/skab/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                        ->directory(fn($get) => 'berkas/skab/' . $get('nisn')) // Dinamis berdasarkan NISN
                                         ->downloadable()
                                         ->openable()
                                         ->acceptedFileTypes(['application/pdf'])
@@ -8004,8 +8025,8 @@ class EditCalonSiswa extends EditRecord
                                         ->visibility('private'),
                                     // Berkas KIP Calon Peserta Didik Baru
                                     FileUpload::make('berkas_kip')
-                                        ->required(fn ($get) => $get('no_kip') !== null)
-                                        ->visible(fn ($get) => $get('no_kip') !== null)
+                                        ->required(fn($get) => $get('no_kip') !== null)
+                                        ->visible(fn($get) => $get('no_kip') !== null)
                                         ->label('Kartu Indonesia Pintar')
                                         ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Indonesia Pintar (KIP).<sup style="color:red">*</sup></i></small>'))
                                         ->image()
@@ -8016,7 +8037,7 @@ class EditCalonSiswa extends EditRecord
                                             '3:4' => '3:4',
                                         ])
                                         ->fetchFileInformation(false)
-                                        ->directory(fn ($get) => 'berkas/kip/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                        ->directory(fn($get) => 'berkas/kip/' . $get('nisn')) // Dinamis berdasarkan NISN
                                         ->downloadable()
                                         ->openable()
                                         ->maxSize(500)
@@ -8024,8 +8045,8 @@ class EditCalonSiswa extends EditRecord
                                         ->visibility('private'),
                                     // Berkas KKS Calon Peserta Didik Baru
                                     FileUpload::make('berkas_kks')
-                                        ->required(fn ($get) => $get('no_kks') !== null)
-                                        ->visible(fn ($get) => $get('no_kks') !== null)
+                                        ->required(fn($get) => $get('no_kks') !== null)
+                                        ->visible(fn($get) => $get('no_kks') !== null)
                                         ->label('Kartu Keluarga Sejahtera')
                                         ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Keluarga Sejahtera (KKS).<sup style="color:red">*</sup></i></small>'))
                                         ->image()
@@ -8036,7 +8057,7 @@ class EditCalonSiswa extends EditRecord
                                             '3:4' => '3:4',
                                         ])
                                         ->fetchFileInformation(false)
-                                        ->directory(fn ($get) => 'berkas/kks/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                        ->directory(fn($get) => 'berkas/kks/' . $get('nisn')) // Dinamis berdasarkan NISN
                                         ->downloadable()
                                         ->openable()
                                         ->maxSize(500)
@@ -8044,8 +8065,8 @@ class EditCalonSiswa extends EditRecord
                                         ->visibility('private'),
                                     // Berkas PKH Calon Peserta Didik Baru
                                     FileUpload::make('berkas_pkh')
-                                        ->required(fn ($get) => $get('no_pkh') !== null)
-                                        ->visible(fn ($get) => $get('no_pkh') !== null)
+                                        ->required(fn($get) => $get('no_pkh') !== null)
+                                        ->visible(fn($get) => $get('no_pkh') !== null)
                                         ->label('Kartu Program Keluarga Harapan')
                                         ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Program Keluarga Harapan (PKH).<sup style="color:red">*</sup></i></small>'))
                                         ->image()
@@ -8056,7 +8077,7 @@ class EditCalonSiswa extends EditRecord
                                             '3:4' => '3:4',
                                         ])
                                         ->fetchFileInformation(false)
-                                        ->directory(fn ($get) => 'berkas/pkh/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                        ->directory(fn($get) => 'berkas/pkh/' . $get('nisn')) // Dinamis berdasarkan NISN
                                         ->downloadable()
                                         ->openable()
                                         ->maxSize(500)
@@ -8064,22 +8085,22 @@ class EditCalonSiswa extends EditRecord
                                         ->visibility('private'),
 
                                     // Berkas Prestasi Belajar Calon Peserta Didik Baru
-                                    FileUpload::make('berkas_prestasi')
-                                        ->visible(fn ($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
-                                        ->label('Berkas Prestasi')
-                                        ->required()
-                                        ->validationMessages([
-                                            'required' => 'Form ini wajib diisi.',
-                                        ])
-                                        ->helperText(new HtmlString('<small><i>Gabungkan semua berkas jika memiliki lebih dari satu prestasi.</i></small>'))
-                                        ->fetchFileInformation(false)
-                                        ->directory(fn ($get) => 'berkas/prestasi/'.$get('nisn')) // Dinamis berdasarkan NISN
-                                        ->downloadable()
-                                        ->openable()
-                                        ->acceptedFileTypes(['application/pdf'])
-                                        ->maxSize(500)
-                                        ->minSize(10)
-                                        ->visibility('private'),
+                                    // FileUpload::make('berkas_prestasi')
+                                    //     ->visible(fn ($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
+                                    //     ->label('Berkas Prestasi')
+                                    //     ->required()
+                                    //     ->validationMessages([
+                                    //         'required' => 'Form ini wajib diisi.',
+                                    //     ])
+                                    //     ->helperText(new HtmlString('<small><i>Gabungkan semua berkas jika memiliki lebih dari satu prestasi.</i></small>'))
+                                    //     ->fetchFileInformation(false)
+                                    //     ->directory(fn ($get) => 'berkas/prestasi/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                    //     ->downloadable()
+                                    //     ->openable()
+                                    //     ->acceptedFileTypes(['application/pdf'])
+                                    //     ->maxSize(500)
+                                    //     ->minSize(10)
+                                    //     ->visibility('private'),
                                 ]),
 
                         ])
@@ -8216,7 +8237,7 @@ class EditCalonSiswa extends EditRecord
                                         }),
                                     Select::make('ibu_provinsi_id')
                                         ->label('Provinsi')
-                                        ->options(fn (Get $get): Collection => Provinsi::query()
+                                        ->options(fn(Get $get): Collection => Provinsi::query()
                                             ->where('negara_id', $get('ibu_negara_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -8233,7 +8254,7 @@ class EditCalonSiswa extends EditRecord
                                         }),
                                     Select::make('ibu_kabupaten_id')
                                         ->label('Kabupaten')
-                                        ->options(fn (Get $get): Collection => Kabupaten::query()
+                                        ->options(fn(Get $get): Collection => Kabupaten::query()
                                             ->where('provinsi_id', $get('ibu_provinsi_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -8249,7 +8270,7 @@ class EditCalonSiswa extends EditRecord
                                         }),
                                     Select::make('ibu_kecamatan_id')
                                         ->label('Kecamatan')
-                                        ->options(fn (Get $get): Collection => Kecamatan::query()
+                                        ->options(fn(Get $get): Collection => Kecamatan::query()
                                             ->where('kabupaten_id', $get('ibu_kabupaten_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -8264,7 +8285,7 @@ class EditCalonSiswa extends EditRecord
                                         }),
                                     Select::make('ibu_kelurahan_id')
                                         ->label('Kelurahan')
-                                        ->options(fn (Get $get): Collection => Kelurahan::query()
+                                        ->options(fn(Get $get): Collection => Kelurahan::query()
                                             ->where('kecamatan_id', $get('ibu_kecamatan_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -8410,7 +8431,7 @@ class EditCalonSiswa extends EditRecord
                                         }),
                                     Select::make('ayah_provinsi_id')
                                         ->label('Provinsi')
-                                        ->options(fn (Get $get): Collection => Provinsi::query()
+                                        ->options(fn(Get $get): Collection => Provinsi::query()
                                             ->where('negara_id', $get('ayah_negara_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -8427,7 +8448,7 @@ class EditCalonSiswa extends EditRecord
                                         }),
                                     Select::make('ayah_kabupaten_id')
                                         ->label('Kabupaten')
-                                        ->options(fn (Get $get): Collection => Kabupaten::query()
+                                        ->options(fn(Get $get): Collection => Kabupaten::query()
                                             ->where('provinsi_id', $get('ayah_provinsi_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -8443,7 +8464,7 @@ class EditCalonSiswa extends EditRecord
                                         }),
                                     Select::make('ayah_kecamatan_id')
                                         ->label('Kecamatan')
-                                        ->options(fn (Get $get): Collection => Kecamatan::query()
+                                        ->options(fn(Get $get): Collection => Kecamatan::query()
                                             ->where('kabupaten_id', $get('ayah_kabupaten_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -8458,7 +8479,7 @@ class EditCalonSiswa extends EditRecord
                                         }),
                                     Select::make('ayah_kelurahan_id')
                                         ->label('Kelurahan')
-                                        ->options(fn (Get $get): Collection => Kelurahan::query()
+                                        ->options(fn(Get $get): Collection => Kelurahan::query()
                                             ->where('kecamatan_id', $get('ayah_kecamatan_id'))
                                             ->pluck('nama', 'id'))
                                         ->required()
@@ -8573,7 +8594,7 @@ class EditCalonSiswa extends EditRecord
                                         }),
                                     Select::make('wali_provinsi_id')
                                         ->label('Provinsi')
-                                        ->options(fn (Get $get): Collection => Provinsi::query()
+                                        ->options(fn(Get $get): Collection => Provinsi::query()
                                             ->where('negara_id', $get('wali_negara_id'))
                                             ->pluck('nama', 'id'))
                                         ->native(false)
@@ -8586,7 +8607,7 @@ class EditCalonSiswa extends EditRecord
                                         }),
                                     Select::make('wali_kabupaten_id')
                                         ->label('Kabupaten')
-                                        ->options(fn (Get $get): Collection => Kabupaten::query()
+                                        ->options(fn(Get $get): Collection => Kabupaten::query()
                                             ->where('provinsi_id', $get('wali_provinsi_id'))
                                             ->pluck('nama', 'id'))
                                         ->native(false)
@@ -8598,7 +8619,7 @@ class EditCalonSiswa extends EditRecord
                                         }),
                                     Select::make('wali_kecamatan_id')
                                         ->label('Kecamatan')
-                                        ->options(fn (Get $get): Collection => Kecamatan::query()
+                                        ->options(fn(Get $get): Collection => Kecamatan::query()
                                             ->where('kabupaten_id', $get('wali_kabupaten_id'))
                                             ->pluck('nama', 'id'))
                                         ->native(false)
@@ -8609,7 +8630,7 @@ class EditCalonSiswa extends EditRecord
                                         }),
                                     Select::make('wali_kelurahan_id')
                                         ->label('Kelurahan')
-                                        ->options(fn (Get $get): Collection => Kelurahan::query()
+                                        ->options(fn(Get $get): Collection => Kelurahan::query()
                                             ->where('kecamatan_id', $get('wali_kecamatan_id'))
                                             ->pluck('nama', 'id'))
                                         ->native(false),
@@ -8880,13 +8901,13 @@ class ViewCalonSiswa extends ViewRecord
                 ->label('Formulir')
                 ->outlined()
                 ->icon('heroicon-o-printer')
-                ->filename(fn ($record) => 'Formulir_'.$record->nama.'_'.$record->nisn.'.pdf')
+                ->filename(fn($record) => 'Formulir_' . $record->nama . '_' . $record->nisn . '.pdf')
                 ->savePdf()
                 ->orientation('portrait')
                 ->format('a4', 'mm')
                 ->enableLinks()
                 ->margin([10, 10, 10, 10])
-                ->content(fn ($record) => view('formulir', ['record' => $record]))
+                ->content(fn($record) => view('formulir', ['record' => $record]))
                 ->visible(function () {
                     $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
                     if (! $calonSiswa) {
@@ -8901,13 +8922,13 @@ class ViewCalonSiswa extends ViewRecord
                 ->label('Kartu Tes')
                 ->outlined()
                 ->icon('heroicon-o-printer')
-                ->filename(fn ($record) => 'Kartu Tes_'.$record->nama.'_'.$record->nisn.'.pdf')
+                ->filename(fn($record) => 'Kartu Tes_' . $record->nama . '_' . $record->nisn . '.pdf')
                 ->savePdf()
                 ->orientation('portrait')
                 ->format('a4', 'mm')
                 ->enableLinks()
                 ->margin([10, 10, 10, 10])
-                ->content(fn ($record) => view('kartu-tes', ['record' => $record]))
+                ->content(fn($record) => view('kartu-tes', ['record' => $record]))
                 ->visible(function () {
                     $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
 
@@ -8934,13 +8955,13 @@ class ViewCalonSiswa extends ViewRecord
                 ->label('Hasil')
                 ->outlined()
                 ->icon('heroicon-o-printer')
-                ->filename(fn ($record) => 'Hasil_'.$record->nama.'_'.$record->nisn.'.pdf')
+                ->filename(fn($record) => 'Hasil_' . $record->nama . '_' . $record->nisn . '.pdf')
                 ->savePdf()
                 ->orientation('portrait')
                 ->format('a4', 'mm')
                 ->enableLinks()
                 ->margin([10, 10, 10, 10])
-                ->content(fn ($record) => view('skl', ['record' => $record]))
+                ->content(fn($record) => view('skl', ['record' => $record]))
                 ->visible(function () {
                     $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
                     if (! $calonSiswa || in_array($calonSiswa->status_pendaftaran, ['Diproses', 'Diverifikasi', 'Berkas Tidak Lengkap'])) {
@@ -8956,12 +8977,12 @@ class ViewCalonSiswa extends ViewRecord
                         ['tanggal_pengumuman_jalur_afirmasi_mulai', 'tanggal_pengumuman_jalur_afirmasi_selesai'],
                         ['tanggal_pengumuman_jalur_zonasi_mulai', 'tanggal_pengumuman_jalur_zonasi_selesai'],
                         ['tanggal_pengumuman_jalur_mutasi_mulai', 'tanggal_pengumuman_jalur_mutasi_selesai'],
-                    ])->map(fn ($dates) => [
+                    ])->map(fn($dates) => [
                         optional($tahunPendaftaran)->{$dates[0]} ? Carbon::parse($tahunPendaftaran->{$dates[0]}) : null,
                         optional($tahunPendaftaran)->{$dates[1]} ? Carbon::parse($tahunPendaftaran->{$dates[1]}) : null,
                     ]);
 
-                    return $periodePengumuman->contains(fn ($range) => now()->between(...$range));
+                    return $periodePengumuman->contains(fn($range) => now()->between(...$range));
                 }),
 
         ];
@@ -9017,21 +9038,21 @@ class ViewCalonSiswa extends ViewRecord
                                             // Jalur Pendaftaran
                                             Select::make('jalur_pendaftaran_id')
                                                 ->label('Jalur Pendaftaran')
-                                                ->relationship('jalurPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif')) // Menampilkan data jalurPendaftaran dengan kondisi statusnya aktif saja
+                                                ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif')) // Menampilkan data jalurPendaftaran dengan kondisi statusnya aktif saja
                                                 ->required()
                                                 ->validationMessages([
                                                     'required' => 'Form ini wajib diisi.',
                                                 ])
                                                 ->native(false)
                                                 ->live()
-                                                ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->nama} | {$record->tahunPendaftaran->nama}"),
+                                                ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->nama} | {$record->tahunPendaftaran->nama}"),
                                             // Nama Lengkap Calon Peserta Didik Baru
                                             TextInput::make('nama')
                                                 ->label('Nama Lengkap')
                                                 ->required()
                                                 ->disabledOn('create')
                                                 ->dehydrated()
-                                                ->default(fn () => Auth::user()->name)
+                                                ->default(fn() => Auth::user()->name)
                                                 ->validationMessages([
                                                     'required' => 'Form ini wajib diisi.',
                                                 ]),
@@ -9040,8 +9061,8 @@ class ViewCalonSiswa extends ViewRecord
                                                 ->label('Nomor Induk Kependudukan (NIK)')
                                                 ->required()
                                                 ->unique(ignoreRecord: true)
-                                                ->rule(fn ($record) => $record === null ? 'unique:calon_siswas,nik' : 'unique:calon_siswas,nik,'.$record->id)
-                                                ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
+                                                ->rule(fn($record) => $record === null ? 'unique:calon_siswas,nik' : 'unique:calon_siswas,nik,' . $record->id)
+                                                ->dehydrateStateUsing(fn($state) => $state ? $state : null)
                                                 ->numeric()
                                                 ->maxLength(16)
                                                 ->minLength(16)
@@ -9069,10 +9090,10 @@ class ViewCalonSiswa extends ViewRecord
                                                 ->required()
                                                 ->disabledOn('create')
                                                 ->dehydrated()
-                                                ->default(fn () => Auth::user()->username)
+                                                ->default(fn() => Auth::user()->username)
                                                 ->unique(ignoreRecord: true)
-                                                ->rule(fn ($record) => $record === null ? 'unique:calon_siswas,nisn' : 'unique:calon_siswas,nisn,'.$record->id)
-                                                ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
+                                                ->rule(fn($record) => $record === null ? 'unique:calon_siswas,nisn' : 'unique:calon_siswas,nisn,' . $record->id)
+                                                ->dehydrateStateUsing(fn($state) => $state ? $state : null)
                                                 ->numeric()
                                                 ->maxLength(10)
                                                 ->minLength(10)
@@ -9236,8 +9257,8 @@ class ViewCalonSiswa extends ViewRecord
                                                 ->label('Nomor Kartu Indonesia Pintar')
                                                 ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Indonesia Pintar (KIP).<sup style="color:red">*</sup></i></small>'))
                                                 ->unique(ignoreRecord: true)
-                                                ->rule(fn ($record) => $record === null ? 'unique:calon_siswas,no_kip' : 'unique:calon_siswas,no_kip,'.$record->id)
-                                                ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
+                                                ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_kip' : 'unique:calon_siswas,no_kip,' . $record->id)
+                                                ->dehydrateStateUsing(fn($state) => $state ? $state : null)
                                                 ->maxLength(6)
                                                 ->minLength(6)
                                                 ->live()
@@ -9251,8 +9272,8 @@ class ViewCalonSiswa extends ViewRecord
                                                 ->label('Nomor Kartu Keluarga Sejahtera')
                                                 ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Keluarga Sejahtera (KKS).<sup style="color:red">*</sup></i></small>'))
                                                 ->unique(ignoreRecord: true)
-                                                ->rule(fn ($record) => $record === null ? 'unique:calon_siswas,no_kks' : 'unique:calon_siswas,no_kks,'.$record->id)
-                                                ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
+                                                ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_kks' : 'unique:calon_siswas,no_kks,' . $record->id)
+                                                ->dehydrateStateUsing(fn($state) => $state ? $state : null)
                                                 ->maxLength(6)
                                                 ->minLength(6)
                                                 ->live()
@@ -9266,8 +9287,8 @@ class ViewCalonSiswa extends ViewRecord
                                                 ->label('Nomor Kartu Program Keluarga Harapan')
                                                 ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Program Keluarga Harapan (PKH).<sup style="color:red">*</sup></i></small>'))
                                                 ->unique(ignoreRecord: true)
-                                                ->rule(fn ($record) => $record === null ? 'unique:calon_siswas,no_pkh' : 'unique:calon_siswas,no_pkh,'.$record->id)
-                                                ->dehydrateStateUsing(fn ($state) => $state ? $state : null)
+                                                ->rule(fn($record) => $record === null ? 'unique:calon_siswas,no_pkh' : 'unique:calon_siswas,no_pkh,' . $record->id)
+                                                ->dehydrateStateUsing(fn($state) => $state ? $state : null)
                                                 ->maxLength(6)
                                                 ->minLength(6)
                                                 ->live()
@@ -9291,7 +9312,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 ->native(false)
                                                 ->searchable()
                                                 ->preload()
-                                                ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->nama} | NPSN: {$record->npsn}")
+                                                ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->nama} | NPSN: {$record->npsn}")
                                                 ->createOptionForm([
                                                     Wizard::make([
                                                         Step::make('Data Instansi')
@@ -9348,7 +9369,7 @@ class ViewCalonSiswa extends ViewRecord
                                                                         'required' => 'Form ini wajib diisi.',
                                                                     ]),
                                                                 TextInput::make('nss')
-                                                                    ->visible(fn ($get) => in_array($get('jenjang'), ['MI', 'MTS', 'MA']))
+                                                                    ->visible(fn($get) => in_array($get('jenjang'), ['MI', 'MTS', 'MA']))
                                                                     ->label('NSS/NSM')
                                                                     ->required()
                                                                     ->numeric()
@@ -9424,7 +9445,7 @@ class ViewCalonSiswa extends ViewRecord
                                                                     }),
                                                                 Select::make('provinsi_id')
                                                                     ->label('Provinsi')
-                                                                    ->options(fn (Get $get): Collection => Provinsi::query()
+                                                                    ->options(fn(Get $get): Collection => Provinsi::query()
                                                                         ->where('negara_id', $get('negara_id'))
                                                                         ->pluck('nama', 'id'))
                                                                     ->required()
@@ -9441,7 +9462,7 @@ class ViewCalonSiswa extends ViewRecord
                                                                     }),
                                                                 Select::make('kabupaten_id')
                                                                     ->label('Kabupaten/Kota')
-                                                                    ->options(fn (Get $get): Collection => Kabupaten::query()
+                                                                    ->options(fn(Get $get): Collection => Kabupaten::query()
                                                                         ->where('provinsi_id', $get('provinsi_id'))
                                                                         ->pluck('nama', 'id'))
                                                                     ->required()
@@ -9457,7 +9478,7 @@ class ViewCalonSiswa extends ViewRecord
                                                                     }),
                                                                 Select::make('kecamatan_id')
                                                                     ->label('Kecamatan')
-                                                                    ->options(fn (Get $get): Collection => Kecamatan::query()
+                                                                    ->options(fn(Get $get): Collection => Kecamatan::query()
                                                                         ->where('kabupaten_id', $get('kabupaten_id'))
                                                                         ->pluck('nama', 'id'))
                                                                     ->required()
@@ -9472,7 +9493,7 @@ class ViewCalonSiswa extends ViewRecord
                                                                     }),
                                                                 Select::make('kelurahan_id')
                                                                     ->label('Kelurahan/Desa')
-                                                                    ->options(fn (Get $get): Collection => Kelurahan::query()
+                                                                    ->options(fn(Get $get): Collection => Kelurahan::query()
                                                                         ->where('kecamatan_id', $get('kecamatan_id'))
                                                                         ->pluck('nama', 'id'))
                                                                     ->required()
@@ -9535,115 +9556,115 @@ class ViewCalonSiswa extends ViewRecord
                                                     ]),
                                                 ]),
                                             // Data Prestasi Calon Peserta Didik Baru
-                                            Select::make('prestasi_id')
-                                                ->visible(fn ($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
-                                                ->label('Prestasi')
-                                                ->helperText(new HtmlString('<small><i>Pilih prestasi yang paling tinggi jika memiliki lebih dari satu prestasi.</i></small>'))
-                                                ->relationship('prestasi', 'nama')
-                                                ->preload()
-                                                ->createOptionForm([
-                                                    // Prestasi
-                                                    // Section::make('Prestasi')
-                                                    //     ->collapsible()
-                                                    //     ->schema([
-                                                    Section::make('')
-                                                        ->schema([
-                                                            TextInput::make('nama')
-                                                                ->label('Nama Prestasi')
-                                                                ->required()
-                                                                ->validationMessages([
-                                                                    'required' => 'Form ini wajib diisi.',
-                                                                ]),
-                                                            Select::make('jenis')
-                                                                ->label('Jenis Prestasi')
-                                                                ->options([
-                                                                    'Hafalan Al-Quran' => 'Hafalan Al-Quran (Minimal 3 Juz)',
-                                                                    'Olimpiade/Kejuaraan' => 'Olimpiade/Kejuaraan',
-                                                                ])
-                                                                ->required()
-                                                                ->native(false)
-                                                                ->validationMessages([
-                                                                    'required' => 'Form ini wajib diisi.',
-                                                                ])
-                                                                ->live(),
-                                                        ])
-                                                        ->columns([
-                                                            'sm' => '100%',
-                                                            'md' => 2,
-                                                            'lg' => 2,
-                                                        ]),
+                                            // Select::make('prestasi_id')
+                                            //     ->visible(fn ($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
+                                            //     ->label('Prestasi')
+                                            //     ->helperText(new HtmlString('<small><i>Pilih prestasi yang paling tinggi jika memiliki lebih dari satu prestasi.</i></small>'))
+                                            //     ->relationship('prestasi', 'nama')
+                                            //     ->preload()
+                                            //     ->createOptionForm([
+                                            //         // Prestasi
+                                            //         // Section::make('Prestasi')
+                                            //         //     ->collapsible()
+                                            //         //     ->schema([
+                                            //         Section::make('')
+                                            //             ->schema([
+                                            //                 TextInput::make('nama')
+                                            //                     ->label('Nama Prestasi')
+                                            //                     ->required()
+                                            //                     ->validationMessages([
+                                            //                         'required' => 'Form ini wajib diisi.',
+                                            //                     ]),
+                                            //                 Select::make('jenis')
+                                            //                     ->label('Jenis Prestasi')
+                                            //                     ->options([
+                                            //                         'Hafalan Al-Quran' => 'Hafalan Al-Quran (Minimal 3 Juz)',
+                                            //                         'Olimpiade/Kejuaraan' => 'Olimpiade/Kejuaraan',
+                                            //                     ])
+                                            //                     ->required()
+                                            //                     ->native(false)
+                                            //                     ->validationMessages([
+                                            //                         'required' => 'Form ini wajib diisi.',
+                                            //                     ])
+                                            //                     ->live(),
+                                            //             ])
+                                            //             ->columns([
+                                            //                 'sm' => '100%',
+                                            //                 'md' => 2,
+                                            //                 'lg' => 2,
+                                            //             ]),
 
-                                                    Section::make('')
-                                                        ->schema([
-                                                            Select::make('tingkat')
-                                                                ->label('Tingkat')
-                                                                ->native(false)
-                                                                ->options([
-                                                                    'Nasional' => 'Nasional',
-                                                                    'Provinsi' => 'Provinsi',
-                                                                    'Kabupaten/Kota' => 'Kabupaten/Kota',
-                                                                ])
-                                                                ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
-                                                            Select::make('kategori')
-                                                                ->label('Kategori')
-                                                                ->native(false)
-                                                                ->options([
-                                                                    'Regu/Kelompok' => 'Regu/Kelompok',
-                                                                    'Individu' => 'Individu',
-                                                                ])
-                                                                ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
-                                                            Select::make('peringkat')
-                                                                ->label('Peringkat')
-                                                                ->options([
-                                                                    '1' => '1',
-                                                                    '2' => '2',
-                                                                    '3' => '3',
-                                                                ])
-                                                                ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
-                                                        ])
-                                                        ->columns([
-                                                            'sm' => '100%',
-                                                            'md' => 3,
-                                                            'lg' => 3,
-                                                        ])
-                                                        ->visible(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
-                                                ])
-                                                ->columns([
-                                                    'sm' => '100%',
-                                                    'md' => 3,
-                                                    'lg' => 3,
-                                                    // ]),
-                                                ])
-                                                ->required()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->jenis} | {$record->nama} | {$record->tingkat} | {$record->kategori} | {$record->peringkat}")
-                                                ->searchable()
-                                                ->native(false),
-                                            // Data Peminatan Ekstrakurikuler Calon Peserta Didik Baru
-                                            Select::make('ekstrakurikuler_id')
-                                                ->label('Peminatan Ekstrakurikuler')
-                                                ->required()
-                                                ->searchable()
-                                                ->preload()
-                                                ->native(false)
-                                                ->relationship('ekstrakurikuler', 'nama')
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ]),
-                                            // Data Peminatan Pelajaran Calon Peserta Didik Baru
-                                            Select::make('mata_pelajaran_id')
-                                                ->visible(fn ($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
-                                                ->label('Peminatan Mata Pelajaran')
-                                                ->searchable()
-                                                ->preload()
-                                                ->required()
-                                                ->native(false)
-                                                ->relationship('mataPelajaran', 'nama')
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ]),
+                                            //         Section::make('')
+                                            //             ->schema([
+                                            //                 Select::make('tingkat')
+                                            //                     ->label('Tingkat')
+                                            //                     ->native(false)
+                                            //                     ->options([
+                                            //                         'Nasional' => 'Nasional',
+                                            //                         'Provinsi' => 'Provinsi',
+                                            //                         'Kabupaten/Kota' => 'Kabupaten/Kota',
+                                            //                     ])
+                                            //                     ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                            //                 Select::make('kategori')
+                                            //                     ->label('Kategori')
+                                            //                     ->native(false)
+                                            //                     ->options([
+                                            //                         'Regu/Kelompok' => 'Regu/Kelompok',
+                                            //                         'Individu' => 'Individu',
+                                            //                     ])
+                                            //                     ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                            //                 Select::make('peringkat')
+                                            //                     ->label('Peringkat')
+                                            //                     ->options([
+                                            //                         '1' => '1',
+                                            //                         '2' => '2',
+                                            //                         '3' => '3',
+                                            //                     ])
+                                            //                     ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                            //             ])
+                                            //             ->columns([
+                                            //                 'sm' => '100%',
+                                            //                 'md' => 3,
+                                            //                 'lg' => 3,
+                                            //             ])
+                                            //             ->visible(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                                            //     ])
+                                            //     ->columns([
+                                            //         'sm' => '100%',
+                                            //         'md' => 3,
+                                            //         'lg' => 3,
+                                            //         // ]),
+                                            //     ])
+                                            //     ->required()
+                                            //     ->validationMessages([
+                                            //         'required' => 'Form ini wajib diisi.',
+                                            //     ])
+                                            //     ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->jenis} | {$record->nama} | {$record->tingkat} | {$record->kategori} | {$record->peringkat}")
+                                            //     ->searchable()
+                                            //     ->native(false),
+                                            // // Data Peminatan Ekstrakurikuler Calon Peserta Didik Baru
+                                            // Select::make('ekstrakurikuler_id')
+                                            //     ->label('Peminatan Ekstrakurikuler')
+                                            //     ->required()
+                                            //     ->searchable()
+                                            //     ->preload()
+                                            //     ->native(false)
+                                            //     ->relationship('ekstrakurikuler', 'nama')
+                                            //     ->validationMessages([
+                                            //         'required' => 'Form ini wajib diisi.',
+                                            //     ]),
+                                            // // Data Peminatan Pelajaran Calon Peserta Didik Baru
+                                            // Select::make('mata_pelajaran_id')
+                                            //     ->visible(fn ($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
+                                            //     ->label('Peminatan Mata Pelajaran')
+                                            //     ->searchable()
+                                            //     ->preload()
+                                            //     ->required()
+                                            //     ->native(false)
+                                            //     ->relationship('mataPelajaran', 'nama')
+                                            //     ->validationMessages([
+                                            //         'required' => 'Form ini wajib diisi.',
+                                            //     ]),
                                         ]),
 
                                     // Tab Alamat Calon Peserta Didik Baru
@@ -9670,7 +9691,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('siswa_provinsi_id')
                                                 ->label('Provinsi')
-                                                ->options(fn (Get $get): Collection => Provinsi::query()
+                                                ->options(fn(Get $get): Collection => Provinsi::query()
                                                     ->where('negara_id', $get('siswa_negara_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->required()
@@ -9687,7 +9708,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('siswa_kabupaten_id')
                                                 ->label('Kabupaten')
-                                                ->options(fn (Get $get): Collection => Kabupaten::query()
+                                                ->options(fn(Get $get): Collection => Kabupaten::query()
                                                     ->where('provinsi_id', $get('siswa_provinsi_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->required()
@@ -9703,7 +9724,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('siswa_kecamatan_id')
                                                 ->label('Kecamatan')
-                                                ->options(fn (Get $get): Collection => Kecamatan::query()
+                                                ->options(fn(Get $get): Collection => Kecamatan::query()
                                                     ->where('kabupaten_id', $get('siswa_kabupaten_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->required()
@@ -9718,7 +9739,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('siswa_kelurahan_id')
                                                 ->label('Kelurahan')
-                                                ->options(fn (Get $get): Collection => Kelurahan::query()
+                                                ->options(fn(Get $get): Collection => Kelurahan::query()
                                                     ->where('kecamatan_id', $get('siswa_kecamatan_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->required()
@@ -9751,7 +9772,7 @@ class ViewCalonSiswa extends ViewRecord
                                                     '3:4' => '3:4',
                                                 ])
                                                 ->fetchFileInformation(false)
-                                                ->directory(fn ($get) => 'berkas/foto/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                                ->directory(fn($get) => 'berkas/foto/' . $get('nisn')) // Dinamis berdasarkan NISN
                                                 ->downloadable()
                                                 ->openable()
                                                 ->maxSize(500)
@@ -9772,7 +9793,7 @@ class ViewCalonSiswa extends ViewRecord
                                                     '3:4' => '3:4',
                                                 ])
                                                 ->fetchFileInformation(false)
-                                                ->directory(fn ($get) => 'berkas/kk/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                                ->directory(fn($get) => 'berkas/kk/' . $get('nisn')) // Dinamis berdasarkan NISN
                                                 ->downloadable()
                                                 ->openable()
                                                 ->maxSize(500)
@@ -9793,7 +9814,7 @@ class ViewCalonSiswa extends ViewRecord
                                                     '3:4' => '3:4',
                                                 ])
                                                 ->fetchFileInformation(false)
-                                                ->directory(fn ($get) => 'berkas/akta/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                                ->directory(fn($get) => 'berkas/akta/' . $get('nisn')) // Dinamis berdasarkan NISN
                                                 ->downloadable()
                                                 ->openable()
                                                 ->maxSize(500)
@@ -9815,7 +9836,7 @@ class ViewCalonSiswa extends ViewRecord
                                                     '3:4' => '3:4',
                                                 ])
                                                 ->fetchFileInformation(false)
-                                                ->directory(fn ($get) => 'berkas/nisn/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                                ->directory(fn($get) => 'berkas/nisn/' . $get('nisn')) // Dinamis berdasarkan NISN
                                                 ->downloadable()
                                                 ->openable()
                                                 ->maxSize(500)
@@ -9833,7 +9854,7 @@ class ViewCalonSiswa extends ViewRecord
                                                     'required' => 'Form ini wajib diisi.',
                                                 ])
                                                 ->fetchFileInformation(false)
-                                                ->directory(fn ($get) => 'berkas/skbb/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                                ->directory(fn($get) => 'berkas/skbb/' . $get('nisn')) // Dinamis berdasarkan NISN
                                                 ->downloadable()
                                                 ->openable()
                                                 ->acceptedFileTypes(['application/pdf'])
@@ -9848,7 +9869,7 @@ class ViewCalonSiswa extends ViewRecord
                                                     'required' => 'Form ini wajib diisi.',
                                                 ])
                                                 ->fetchFileInformation(false)
-                                                ->directory(fn ($get) => 'berkas/skab/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                                ->directory(fn($get) => 'berkas/skab/' . $get('nisn')) // Dinamis berdasarkan NISN
                                                 ->downloadable()
                                                 ->openable()
                                                 ->acceptedFileTypes(['application/pdf'])
@@ -9858,8 +9879,8 @@ class ViewCalonSiswa extends ViewRecord
 
                                             // Berkas KIP Calon Peserta Didik Baru
                                             FileUpload::make('berkas_kip')
-                                                ->required(fn ($get) => $get('no_kip') !== null)
-                                                ->visible(fn ($get) => $get('no_kip') !== null)
+                                                ->required(fn($get) => $get('no_kip') !== null)
+                                                ->visible(fn($get) => $get('no_kip') !== null)
                                                 ->label('Kartu Indonesia Pintar')
                                                 ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Indonesia Pintar (KIP).<sup style="color:red">*</sup></i></small>'))
                                                 ->image()
@@ -9870,7 +9891,7 @@ class ViewCalonSiswa extends ViewRecord
                                                     '3:4' => '3:4',
                                                 ])
                                                 ->fetchFileInformation(false)
-                                                ->directory(fn ($get) => 'berkas/kip/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                                ->directory(fn($get) => 'berkas/kip/' . $get('nisn')) // Dinamis berdasarkan NISN
                                                 ->downloadable()
                                                 ->openable()
                                                 ->maxSize(500)
@@ -9878,8 +9899,8 @@ class ViewCalonSiswa extends ViewRecord
                                                 ->visibility('private'),
                                             // Berkas KKS Calon Peserta Didik Baru
                                             FileUpload::make('berkas_kks')
-                                                ->required(fn ($get) => $get('no_kks') !== null)
-                                                ->visible(fn ($get) => $get('no_kks') !== null)
+                                                ->required(fn($get) => $get('no_kks') !== null)
+                                                ->visible(fn($get) => $get('no_kks') !== null)
                                                 ->label('Kartu Keluarga Sejahtera')
                                                 ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Keluarga Sejahtera (KKS).<sup style="color:red">*</sup></i></small>'))
                                                 ->image()
@@ -9890,7 +9911,7 @@ class ViewCalonSiswa extends ViewRecord
                                                     '3:4' => '3:4',
                                                 ])
                                                 ->fetchFileInformation(false)
-                                                ->directory(fn ($get) => 'berkas/kks/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                                ->directory(fn($get) => 'berkas/kks/' . $get('nisn')) // Dinamis berdasarkan NISN
                                                 ->downloadable()
                                                 ->openable()
                                                 ->maxSize(500)
@@ -9898,8 +9919,8 @@ class ViewCalonSiswa extends ViewRecord
                                                 ->visibility('private'),
                                             // Berkas PKH Calon Peserta Didik Baru
                                             FileUpload::make('berkas_pkh')
-                                                ->required(fn ($get) => $get('no_pkh') !== null)
-                                                ->visible(fn ($get) => $get('no_pkh') !== null)
+                                                ->required(fn($get) => $get('no_pkh') !== null)
+                                                ->visible(fn($get) => $get('no_pkh') !== null)
                                                 ->label('Kartu Program Keluarga Harapan')
                                                 ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki Kartu Program Keluarga Harapan (PKH).<sup style="color:red">*</sup></i></small>'))
                                                 ->image()
@@ -9910,29 +9931,29 @@ class ViewCalonSiswa extends ViewRecord
                                                     '3:4' => '3:4',
                                                 ])
                                                 ->fetchFileInformation(false)
-                                                ->directory(fn ($get) => 'berkas/pkh/'.$get('nisn')) // Dinamis berdasarkan NISN
+                                                ->directory(fn($get) => 'berkas/pkh/' . $get('nisn')) // Dinamis berdasarkan NISN
                                                 ->downloadable()
                                                 ->openable()
                                                 ->maxSize(500)
                                                 ->minSize(10)
                                                 ->visibility('private'),
                                             // Berkas Prestasi Belajar Calon Peserta Didik Baru
-                                            FileUpload::make('berkas_prestasi')
-                                                ->required(fn ($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
-                                                ->visible(fn ($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
-                                                ->label('Berkas Prestasi')
-                                                ->helperText(new HtmlString('<small><i>Gabungkan semua berkas jika memiliki lebih dari satu prestasi.</i></small>'))
-                                                ->fetchFileInformation(false)
-                                                ->directory(fn ($get) => 'berkas/prestasi/'.$get('nisn')) // Dinamis berdasarkan NISN
-                                                ->downloadable()
-                                                ->openable()
-                                                ->validationMessages([
-                                                    'required' => 'Form ini wajib diisi.',
-                                                ])
-                                                ->acceptedFileTypes(['application/pdf'])
-                                                ->maxSize(500)
-                                                ->minSize(10)
-                                                ->visibility('private'),
+                                            // FileUpload::make('berkas_prestasi')
+                                            //     ->required(fn($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
+                                            //     ->visible(fn($get) => in_array(optional(JalurPendaftaran::find($get('jalur_pendaftaran_id')))->nama, ['Prestasi']))
+                                            //     ->label('Berkas Prestasi')
+                                            //     ->helperText(new HtmlString('<small><i>Gabungkan semua berkas jika memiliki lebih dari satu prestasi.</i></small>'))
+                                            //     ->fetchFileInformation(false)
+                                            //     ->directory(fn($get) => 'berkas/prestasi/' . $get('nisn')) // Dinamis berdasarkan NISN
+                                            //     ->downloadable()
+                                            //     ->openable()
+                                            //     ->validationMessages([
+                                            //         'required' => 'Form ini wajib diisi.',
+                                            //     ])
+                                            //     ->acceptedFileTypes(['application/pdf'])
+                                            //     ->maxSize(500)
+                                            //     ->minSize(10)
+                                            //     ->visibility('private'),
                                         ]),
 
                                 ])
@@ -10070,7 +10091,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('ibu_provinsi_id')
                                                 ->label('Provinsi')
-                                                ->options(fn (Get $get): Collection => Provinsi::query()
+                                                ->options(fn(Get $get): Collection => Provinsi::query()
                                                     ->where('negara_id', $get('ibu_negara_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->required()
@@ -10087,7 +10108,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('ibu_kabupaten_id')
                                                 ->label('Kabupaten')
-                                                ->options(fn (Get $get): Collection => Kabupaten::query()
+                                                ->options(fn(Get $get): Collection => Kabupaten::query()
                                                     ->where('provinsi_id', $get('ibu_provinsi_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->required()
@@ -10103,7 +10124,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('ibu_kecamatan_id')
                                                 ->label('Kecamatan')
-                                                ->options(fn (Get $get): Collection => Kecamatan::query()
+                                                ->options(fn(Get $get): Collection => Kecamatan::query()
                                                     ->where('kabupaten_id', $get('ibu_kabupaten_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->required()
@@ -10118,7 +10139,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('ibu_kelurahan_id')
                                                 ->label('Kelurahan')
-                                                ->options(fn (Get $get): Collection => Kelurahan::query()
+                                                ->options(fn(Get $get): Collection => Kelurahan::query()
                                                     ->where('kecamatan_id', $get('ibu_kecamatan_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->required()
@@ -10265,7 +10286,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('ayah_provinsi_id')
                                                 ->label('Provinsi')
-                                                ->options(fn (Get $get): Collection => Provinsi::query()
+                                                ->options(fn(Get $get): Collection => Provinsi::query()
                                                     ->where('negara_id', $get('ayah_negara_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->required()
@@ -10282,7 +10303,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('ayah_kabupaten_id')
                                                 ->label('Kabupaten')
-                                                ->options(fn (Get $get): Collection => Kabupaten::query()
+                                                ->options(fn(Get $get): Collection => Kabupaten::query()
                                                     ->where('provinsi_id', $get('ayah_provinsi_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->required()
@@ -10298,7 +10319,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('ayah_kecamatan_id')
                                                 ->label('Kecamatan')
-                                                ->options(fn (Get $get): Collection => Kecamatan::query()
+                                                ->options(fn(Get $get): Collection => Kecamatan::query()
                                                     ->where('kabupaten_id', $get('ayah_kabupaten_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->required()
@@ -10313,7 +10334,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('ayah_kelurahan_id')
                                                 ->label('Kelurahan')
-                                                ->options(fn (Get $get): Collection => Kelurahan::query()
+                                                ->options(fn(Get $get): Collection => Kelurahan::query()
                                                     ->where('kecamatan_id', $get('ayah_kecamatan_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->required()
@@ -10429,7 +10450,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('wali_provinsi_id')
                                                 ->label('Provinsi')
-                                                ->options(fn (Get $get): Collection => Provinsi::query()
+                                                ->options(fn(Get $get): Collection => Provinsi::query()
                                                     ->where('negara_id', $get('wali_negara_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->native(false)
@@ -10442,7 +10463,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('wali_kabupaten_id')
                                                 ->label('Kabupaten')
-                                                ->options(fn (Get $get): Collection => Kabupaten::query()
+                                                ->options(fn(Get $get): Collection => Kabupaten::query()
                                                     ->where('provinsi_id', $get('wali_provinsi_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->native(false)
@@ -10454,7 +10475,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('wali_kecamatan_id')
                                                 ->label('Kecamatan')
-                                                ->options(fn (Get $get): Collection => Kecamatan::query()
+                                                ->options(fn(Get $get): Collection => Kecamatan::query()
                                                     ->where('kabupaten_id', $get('wali_kabupaten_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->native(false)
@@ -10465,7 +10486,7 @@ class ViewCalonSiswa extends ViewRecord
                                                 }),
                                             Select::make('wali_kelurahan_id')
                                                 ->label('Kelurahan')
-                                                ->options(fn (Get $get): Collection => Kelurahan::query()
+                                                ->options(fn(Get $get): Collection => Kelurahan::query()
                                                     ->where('kecamatan_id', $get('wali_kecamatan_id'))
                                                     ->pluck('nama', 'id'))
                                                 ->native(false),
@@ -10557,11 +10578,9 @@ class CalonSiswaResource extends Resource
 
     protected static ?string $navigationLabel = 'Formulir Pendaftaran';
 
-    protected static ?string $label = 'Formulir Pendaftaran';
+    protected static ?string $navigationGroup = 'Pendaftaran';
 
     protected static ?string $slug = 'formulir';
-
-    // protected static ?string $navigationGroup = 'Formulir';
 
     protected static ?int $navigationSort = 1;
 
@@ -10637,14 +10656,14 @@ class CalonSiswaResource extends Resource
                 TextColumn::make('jalurPendaftaran.nama')
                     ->label('Jalur Pendaftaran')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'Reguler' => 'success',
                         'Prestasi' => 'primary',
                         'Afirmasi' => 'warning',
                         'Zonasi' => 'danger',
                         'Mutasi' => 'info',
                     })
-                    ->icon(fn (string $state): string => match ($state) {
+                    ->icon(fn(string $state): string => match ($state) {
                         'Reguler' => 'heroicon-o-sparkles',
                         'Prestasi' => 'heroicon-o-trophy',
                         'Afirmasi' => 'heroicon-o-gift',
@@ -10655,7 +10674,7 @@ class CalonSiswaResource extends Resource
                 TextColumn::make('status_pendaftaran')
                     ->label('Status Pendaftaran')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'Diproses' => 'warning',
                         'Diverifikasi' => 'success',
                         'Berkas Tidak Lengkap' => 'warning',
@@ -10664,7 +10683,7 @@ class CalonSiswaResource extends Resource
                         'Diterima Di Kelas Reguler' => 'success',
                         'Diterima Di Kelas Unggulan' => 'primary',
                     })
-                    ->icon(fn (string $state): string => match ($state) {
+                    ->icon(fn(string $state): string => match ($state) {
                         'Diproses' => 'heroicon-o-arrow-path',
                         'Diverifikasi' => 'heroicon-o-clipboard-document-check',
                         'Berkas Tidak Lengkap' => 'heroicon-o-document-minus',
@@ -10898,35 +10917,13 @@ class CalonSiswaResource extends Resource
 
                         return $currentDate->between($tesMulai, $tesSelesai) || optional(Auth::user()->roles->first())->name !== 'calon_siswa';
                     }),
-
-                // Lainnya
-                // TextColumn::make('prestasi.nama')
-                //     ->label('Nama Prestasi')
-                //     //     ->visible(fn() => optional(Auth::user()->roles->first())->name === 'super_admin')
-                //     ->toggleable(isToggledHiddenByDefault: true),
-
-                // TextColumn::make('ekstrakurikuler.nama')
-                //     ->visible(fn() => optional(Auth::user()->roles->first())->name === 'super_admin')
-                //     ->label('Peminatan Ekstrakurikuler')
-                //     ->toggleable(isToggledHiddenByDefault: true),
-
-                // TextColumn::make('mataPelajaran.nama')
-                //     ->visible(fn() => optional(Auth::user()->roles->first())->name === 'super_admin')
-                //     ->label('Peminatan Pelajaran')
-                //     ->formatStateUsing(
-                //         fn($state) => is_array($state)
-                //             ? implode(', ', array_map(fn($item) => Str::headline($item), $state))
-                //             : Str::headline($state)
-                //     )
-                //     ->toggleable(isToggledHiddenByDefault: true),
-
             ])
             ->filters([
                 TrashedFilter::make()
                     ->visible(Auth::user()->roles->first()->name === 'super_admin'),
                 SelectFilter::make('jalur_pendaftaran')
                     ->label('Jalur Pendaftaran')
-                    ->relationship('jalurPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif'))
+                    ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
                     ->visible(optional(Auth::user()->roles->first())->name !== 'calon_siswa'),
                 SelectFilter::make('status_pendaftaran')
                     ->label('Status Pendaftaran')
@@ -10956,40 +10953,40 @@ class CalonSiswaResource extends Resource
                     Html2MediaAction::make('cetak_formulir')
                         ->label('Formulir')
                         ->icon('heroicon-o-printer')
-                        ->filename(fn ($record) => 'Formulir_'.$record->nama.'_'.$record->nisn.'.pdf')
+                        ->filename(fn($record) => 'Formulir_' . $record->nama . '_' . $record->nisn . '.pdf')
                         ->savePdf()
                         // ->pagebreak('section', ['css', 'legacy'])
                         ->orientation('portrait')
                         ->format('a4', 'mm')
                         ->enableLinks()
                         ->margin([10, 10, 10, 10])
-                        ->content(fn ($record) => view('formulir', ['record' => $record])),
+                        ->content(fn($record) => view('formulir', ['record' => $record])),
 
                     // Kartu Tes
                     Html2MediaAction::make('cetak_kartu_tes')
                         ->label('Kartu Tes')
                         ->icon('heroicon-o-printer')
-                        ->filename(fn ($record) => 'Kartu Tes_'.$record->nama.'_'.$record->nisn.'.pdf')
+                        ->filename(fn($record) => 'Kartu Tes_' . $record->nama . '_' . $record->nisn . '.pdf')
                         ->savePdf()
                         // ->pagebreak('section', ['css', 'legacy'])
                         ->orientation('portrait')
                         ->format('a4', 'mm')
                         ->enableLinks()
                         ->margin([10, 10, 10, 10])
-                        ->content(fn ($record) => view('kartu-tes', ['record' => $record])),
+                        ->content(fn($record) => view('kartu-tes', ['record' => $record])),
 
                     // SKL/Hasil
                     Html2MediaAction::make('cetak_skl')
                         ->label('Hasil')
                         ->icon('heroicon-o-printer')
-                        ->filename(fn ($record) => 'Hasil_'.$record->nama.'_'.$record->nisn.'.pdf')
+                        ->filename(fn($record) => 'Hasil_' . $record->nama . '_' . $record->nisn . '.pdf')
                         ->savePdf()
                         // ->pagebreak('section', ['css', 'legacy'])
                         ->orientation('portrait')
                         ->format('a4', 'mm')
                         ->enableLinks()
                         ->margin([10, 10, 10, 10])
-                        ->content(fn ($record) => view('skl', ['record' => $record])),
+                        ->content(fn($record) => view('skl', ['record' => $record])),
                 ])
                     ->visible(optional(Auth::user()->roles->first())->name !== 'calon_siswa'),
             ], ActionsPosition::BeforeColumns)
@@ -11013,7 +11010,7 @@ class CalonSiswaResource extends Resource
                         ->form([
                             Select::make('jalur_pendaftaran')
                                 ->label('Jalur Pendaftaran')
-                                ->relationship('jalurPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif'))
+                                ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
                                 ->required(),
                         ])
                         ->action(function (Collection $records, array $data) {
@@ -11771,20 +11768,46 @@ class FormulirPrestasiResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
-    public static function shouldRegisterNavigation(): bool
+    // -----------------------------------------------------------------------
+    // Helper: cek apakah calon siswa yang login memilih jalur prestasi
+    // Menggunakan once() agar query hanya jalan sekali per request
+    // -----------------------------------------------------------------------
+
+    protected static function isCalonSiswaJalurPrestasi(): bool
     {
-        return auth()->user()?->hasAnyRole([
-            'calon_siswa',
-            'verifikator',
-            'panitia',
-            'admin',
-            'super_admin',
-        ]) ?? false;
+        return once(function () {
+            $calonSiswa = CalonSiswa::withoutGlobalScopes()
+                ->with('jalurPendaftaran')
+                ->where('user_id', auth()->id())
+                ->first();
+
+            if (! $calonSiswa || ! $calonSiswa->jalurPendaftaran) {
+                return false;
+            }
+
+            return $calonSiswa->jalurPendaftaran->nama === 'Prestasi';
+        });
     }
 
     // -----------------------------------------------------------------------
-    // Query: calon_siswa hanya lihat milik sendiri
-    // Pakai withoutGlobalScopes() agar tidak bergantung pada tahun aktif
+    // Navigasi: calon_siswa hanya lihat jika jalurnya Prestasi
+    // -----------------------------------------------------------------------
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        $user = auth()->user();
+
+        if (! $user) return false;
+
+        if ($user->hasRole('calon_siswa')) {
+            return self::isCalonSiswaJalurPrestasi();
+        }
+
+        return $user->hasAnyRole(['verifikator', 'panitia', 'admin', 'super_admin']);
+    }
+
+    // -----------------------------------------------------------------------
+    // Query: calon_siswa hanya lihat milik sendiri + wajib jalur prestasi
     // -----------------------------------------------------------------------
 
     public static function getEloquentQuery(): Builder
@@ -11792,7 +11815,11 @@ class FormulirPrestasiResource extends Resource
         $query = parent::getEloquentQuery();
 
         if (auth()->user()?->hasRole('calon_siswa')) {
-            // withoutGlobalScopes() agar tidak kena scope tahun_aktif & milik_sendiri
+            // Block akses total jika bukan jalur prestasi (paksa via URL sekalipun)
+            if (! self::isCalonSiswaJalurPrestasi()) {
+                return $query->whereRaw('0 = 1');
+            }
+
             $calonSiswaId = CalonSiswa::withoutGlobalScopes()
                 ->where('user_id', auth()->id())
                 ->value('id');
@@ -11809,32 +11836,24 @@ class FormulirPrestasiResource extends Resource
 
     public static function form(Form $form): Form
     {
-        $isCalonSiswa  = auth()->user()?->hasRole('calon_siswa');
-        $isEditor      = auth()->user()?->hasAnyRole(['admin', 'super_admin']);
+        $isCalonSiswa = auth()->user()?->hasRole('calon_siswa');
+        $isEditor     = auth()->user()?->hasAnyRole(['admin', 'super_admin']);
 
-        // Ambil calon siswa yang login (bypass global scope)
-        $calonSiswaId  = $isCalonSiswa
+        $calonSiswaId = $isCalonSiswa
             ? CalonSiswa::withoutGlobalScopes()->where('user_id', auth()->id())->value('id')
             : null;
 
-        // Ambil NISN untuk path upload (nullable-safe)
         $nisn = $isCalonSiswa
             ? CalonSiswa::withoutGlobalScopes()->where('user_id', auth()->id())->value('nisn')
             : null;
 
         return $form->schema([
 
-            // ------------------------------------------------------------------
-            // Calon Siswa — hidden untuk calon_siswa (auto-inject via mutate),
-            // tampil untuk admin/super_admin supaya bisa koreksi manual.
-            // WAJIB dehydrated(true) agar nilai tetap dikirim meski hidden.
-            // ------------------------------------------------------------------
             Select::make('calon_siswa_id')
                 ->label('Calon Siswa')
                 ->relationship(
                     'calonSiswa',
                     'nama',
-                    // Tampilkan semua calon siswa lintas tahun untuk admin
                     fn(Builder $query) => $query->withoutGlobalScopes()
                 )
                 ->getOptionLabelFromRecordUsing(
@@ -11845,11 +11864,8 @@ class FormulirPrestasiResource extends Resource
                 ->required()
                 ->default($calonSiswaId)
                 ->hidden($isCalonSiswa)
-                ->dehydrated(true), // ← FIX: nilai tetap dikirim meski field hidden
+                ->dehydrated(true),
 
-            // ------------------------------------------------------------------
-            // Jenis Prestasi
-            // ------------------------------------------------------------------
             Select::make('prestasi_id')
                 ->label('Jenis Prestasi')
                 ->options(
@@ -11861,13 +11877,9 @@ class FormulirPrestasiResource extends Resource
                 )
                 ->searchable()
                 ->required()
-                // Verifikator & panitia hanya view — tidak bisa edit
                 ->disabled(! $isCalonSiswa && ! $isEditor)
                 ->columnSpanFull(),
 
-            // ------------------------------------------------------------------
-            // Detail Prestasi
-            // ------------------------------------------------------------------
             TextInput::make('nama_prestasi')
                 ->label('Nama / Judul Prestasi')
                 ->required()
@@ -11891,11 +11903,6 @@ class FormulirPrestasiResource extends Resource
                 ->placeholder('Contoh: Kementerian Agama Kabupaten Pandeglang')
                 ->disabled(! $isCalonSiswa && ! $isEditor),
 
-            // ------------------------------------------------------------------
-            // Berkas Prestasi
-            // Directory menggunakan NISN agar konsisten dengan CalonSiswa
-            // Fallback ke 'umum' jika NISN tidak ditemukan (edge case admin input)
-            // ------------------------------------------------------------------
             FileUpload::make('berkas_prestasi')
                 ->label('Berkas Bukti Prestasi')
                 ->helperText('Format: JPG, PNG, atau PDF. Ukuran: 10 KB – 1 MB.')
@@ -67103,1053 +67110,6 @@ Artisan::command('inspire', function () {
 
 ## 🖼️ Views (Custom)
 
-### 📄 `./resources/views/formulir.blade.php`
-
-```blade
-<?php
-use App\Models\Ketua;
-use App\Models\Sekolah;
-use App\Models\Pimpinan;
-use App\Models\CalonSiswa;
-use App\Models\Sekretaris;
-use App\Models\JalurPendaftaran;
-use App\Models\TahunPendaftaran;
-use Illuminate\Support\Facades\Storage;
-
-$calonSiswa = CalonSiswa::first(); // Pastikan deklarasi dilakukan lebih awal
-
-$jalurPendaftaranPrestasi = in_array(optional(JalurPendaftaran::find(optional($calonSiswa)->jalur_pendaftaran_id))->nama, ['Prestasi']);
-
-$instansi = Sekolah::first();
-$tahunPendaftaran = TahunPendaftaran::where('status', 'Aktif')->first();
-$sekretaris = Sekretaris::where('status', 'Aktif')->first();
-$ketua = Ketua::where('status', 'Aktif')->first();
-$pimpinan = Pimpinan::where('status', 'Aktif')->first();
-$jenisKelamin = $record->jenis_kelamin === 'Pria' ? 'Laki-laki' : 'Perempuan';
-
-?>
-
-<table width="100%">
-    <tr>
-        <td align="center">
-            <img src="{{ optional($instansi)->logo_institusi
-                ? Storage::url($instansi->logo_institusi)
-                : Storage::url(optional($instansi)->logo ?? '') }}"
-                alt="Logo Institusi/Instansi" width="90px">
-        </td>
-
-        <td align="center">
-            <b> KEMENTERIAN AGAMA REPUBLIK INDONESIA </b> <br>
-            <b> KANTOR KEMENTERIAN AGAMA KABUPATEN PANDEGLANG </b> <br>
-            <b> MADRASAH TSANAWIYAH NEGERI 1 PANDEGLANG </b> <br>
-            <small>
-                {{ ucwords(strtolower($instansi->alamat)) ?? '' }}
-                {{ ucwords(strtolower($instansi->kelurahan->nama)) ?? '' }},
-                {{ ucwords(strtolower($instansi->kecamatan->nama)) ?? '' }},
-                {{ ucwords(strtolower($instansi->kabupaten->nama)) ?? '' }} -
-                {{ ucwords(strtolower($instansi->provinsi->nama)) ?? '' }}
-            </small>
-            <br>
-            <small> Website: {{ $instansi->website ?? 'https://mtsn1pandeglang.sch.id' }} Email:
-                {{ $instansi->email ?? 'adm@mtsn1pandeglang.sch.id' }}
-            </small> <br>
-        </td>
-
-        <td align="center">
-            <img src="{{ optional($instansi)->logo && optional($instansi)->logo_institusi
-                ? Storage::url($instansi->logo)
-                : (optional($instansi)->logo ?:
-                    '') }}"
-                alt="Logo Instansi" width="90px">
-        </td>
-    </tr>
-</table>
-<hr style="border: 1px solid">
-<table width="100%">
-    <tr>
-        <td>
-            <br>
-        </td>
-    </tr>
-    <tr>
-        <td align="center" colspan="4">
-            <b>FORMULIR PENDAFTARAN</b>
-        </td>
-    </tr>
-
-    <tr>
-        <td align="center" colspan="4">
-            <b>TAHUN PELAJARAN {{ $tahunPendaftaran->nama ?? '' }}</b>
-        </td>
-    </tr>
-
-    <tr>
-        <td>
-            <br>
-        </td>
-    </tr>
-
-    <tr>
-        <td colspan="4">
-            <b>DATA PESERTA</b>
-        </td>
-    </tr>
-
-    <tr>
-        <td width="170px">
-            <span>Nama Lengkap</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            <strong>
-                {{ ucwords(strtoupper($record->nama)) ?? '' }}
-            </strong>
-        </td>
-        <td rowspan="9" width="140px" style="align-content: flex-start">
-            <img src="{{ Storage::url($record->berkas_foto ?? '') }}" alt="Foto">
-        </td>
-    </tr>
-
-    <tr>
-        <td>
-            <span>Jalur Pendaftaran</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            {{ ucwords(strtolower($record->jalurPendaftaran->nama)) ?? '' }}
-        </td>
-    </tr>
-
-    <tr>
-        <td>
-            <span>NISN</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            {{ $record->nisn ?? '' }}
-        </td>
-    </tr>
-
-    <tr>
-        <td>
-            <span>Tempat, Tanggal Lahir</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            {{ ucwords(strtolower($record->tempat_lahir)) ?? '' }},
-            {{ ucwords(strtolower(date('d F Y', strtotime($record->tanggal_lahir)))) ?? '' }}
-        </td>
-    </tr>
-
-    <tr>
-        <td>
-            <span>Asal Sekolah</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            {{ ucwords(strtoupper($record->sekolahAsal->nama)) ?? '' }}
-        </td>
-    </tr>
-
-    <tr>
-        <td>
-            <span>Tahun Lulus</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            {{ $record->tahun_lulus ?? '' }}
-        </td>
-    </tr>
-
-    <tr>
-        <td>
-            <span>Jenis Lelamin</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            {{ $jenisKelamin ?? '' }}
-        </td>
-    </tr>
-
-    <tr>
-        <td>
-            <span>Golongan Darah</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            {{ $record->golongan_darah ?? '' }}
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <span>Agama</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            {{ ucwords(strtolower($record->agama)) ?? '' }}
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <span>Alamat Lengkap</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td colspan="2">
-            {{ ucwords(strtolower($record->siswa_alamat)) ?? '' }},
-            {{ ucwords(strtolower($record->siswaKelurahan->nama)) ?? '' }},
-            {{ ucwords(strtolower($record->siswaKecamatan->nama)) ?? '' }},
-            {{ ucwords(strtolower($record->siswaKabupaten->nama)) ?? '' }} -
-            {{ ucwords(strtolower($record->siswaProvinsi->nama)) ?? '' }}
-        </td>
-    </tr>
-</table>
-<br>
-@if ($jalurPendaftaranPrestasi)
-    <table width="100%" style="border: 1px solid;">
-        <thead style="border: 1px solid;">
-            <td colspan="5" align="center">
-                <span>
-                    <strong>
-                        DATA PRESTASI
-                    </strong>
-                </span>
-            </td>
-        </thead>
-        <tr style="border: 1px solid;">
-            <th style="border: 1px solid;">
-                <span>
-                    <strong>
-                        Jenis
-                    </strong>
-                </span>
-            </th>
-            <th style="border: 1px solid;">
-                <span>
-                    <strong>
-                        Nama
-                    </strong>
-                </span>
-            </th>
-            <th style="border: 1px solid;">
-                <span>
-                    <strong>
-                        Tingkat
-                    </strong>
-                </span>
-            </th style="border: 1px solid;">
-            <th style="border: 1px solid;">
-                <span>
-                    <strong>
-                        Kategori
-                    </strong>
-                </span>
-            </th>
-            <th style="border: 1px solid;">
-                <span>
-                    <strong>
-                        Peringkat
-                    </strong>
-                </span>
-            </th>
-        </tr>
-        <tr style="border: 1px solid center;">
-            <td style="border: 1px solid center;">{{ $record->prestasi->jenis }}</td>
-            <td style="border: 1px solid center;">{{ $record->prestasi->nama }}</td>
-            <td style="border: 1px solid center;">{{ $record->prestasi->tingkat }}</td>
-            <td style="border: 1px solid center;">{{ $record->prestasi->kategori }}</td>
-            <td style="border: 1px solid center;">{{ $record->prestasi->peringkat }}</td>
-        </tr>
-    </table>
-    <br>
-@endif
-
-<table width="100%">
-    <tr>
-        <td width="70%">
-        </td>
-        <td>
-            <span>
-                {{ ucwords(strtolower($instansi->kabupaten->nama)) ?? '' }},
-                {{ date('d F Y', strtotime($record->updated_at)) ?? '' }}
-            </span>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <span>
-                Ketua,
-            </span>
-        </td>
-        <td>
-            <span>
-                Sekretaris,
-            </span>
-        </td>
-    </tr>
-    <tr height="90px">
-        <td>
-            <span>
-                <img src="{{ Storage::url($ketua->berkas_tte) ?? null }}" alt="TTE Ketua" width="90px">
-                {{-- <img src="{{ $ketua->berkas_tte ? Storage::url($ketua->berkas_tte) : null }}" alt="TTE Ketua"
-                    width="90px"> --}}
-            </span>
-        </td>
-        <td>
-            <span>
-                <img src="{{ Storage::url($sekretaris->berkas_tte) ?? null }}" alt="TTE Sekretaris" width="90px">
-                {{-- <img src="{{ $sekretaris->berkas_tte ? Storage::url($sekretaris->berkas_tte) : null }}"
-                    alt="TTE Sekretaris" width="90px"> --}}
-            </span>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <span>
-                <strong>
-                    {{ $ketua->nama ?? '' }}
-                </strong>
-            </span>
-        </td>
-        <td>
-            <span>
-                <strong>
-                    {{ $sekretaris->nama ?? '' }}
-                </strong>
-            </span>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <span>
-                NIP {{ $ketua->nip ?? '' }}
-            </span>
-        </td>
-        <td>
-            <span>
-                NIP {{ $sekretaris->nip ?? '' }}
-            </span>
-        </td>
-    </tr>
-</table>
-
-```
-
----
-
-### 📄 `./resources/views/kartu-tes.blade.php`
-
-```blade
-<?php
-use Carbon\Carbon;
-use App\Models\Ketua;
-use App\Models\Sekolah;
-use App\Models\Pimpinan;
-use App\Models\Sekretaris;
-use App\Models\TahunPendaftaran;
-use Illuminate\Support\Facades\Storage;
-
-$instansi = Sekolah::first();
-$tahunPendaftaran = TahunPendaftaran::where('status', 'Aktif')->first();
-$sekretaris = Sekretaris::where('status', 'Aktif')->first();
-$ketua = Ketua::where('status', 'Aktif')->first();
-$pimpinan = Pimpinan::where('status', 'Aktif')->first();
-$jenisKelamin = $record->jenis_kelamin === 'Pria' ? 'Laki-laki' : 'Perempuan';
-
-?>
-
-<table width="100%">
-    <tr>
-        <td align="center">
-            <img src="{{ optional($instansi)->logo_institusi
-                ? Storage::url($instansi->logo_institusi)
-                : Storage::url(optional($instansi)->logo ?? '') }}"
-                alt="Logo Institusi/Instansi" width="90px">
-        </td>
-
-        <td align="center">
-            <b> KEMENTERIAN AGAMA REPUBLIK INDONESIA </b> <br>
-            <b> KANTOR KEMENTERIAN AGAMA KABUPATEN PANDEGLANG </b> <br>
-            <b> MADRASAH TSANAWIYAH NEGERI 1 PANDEGLANG </b> <br>
-            <small>
-                {{ ucwords(strtolower($instansi->alamat)) ?? '' }}
-                {{ ucwords(strtolower($instansi->kelurahan->nama)) ?? '' }},
-                {{ ucwords(strtolower($instansi->kecamatan->nama)) ?? '' }},
-                {{ ucwords(strtolower($instansi->kabupaten->nama)) ?? '' }} -
-                {{ ucwords(strtolower($instansi->provinsi->nama)) ?? '' }}
-            </small>
-            <br>
-            <small> Website: {{ $instansi->website ?? 'https://mtsn1pandeglang.sch.id' }} Email:
-                {{ $instansi->email ?? 'adm@mtsn1pandeglang.sch.id' }}
-            </small> <br>
-        </td>
-
-        <td align="center">
-            <img src="{{ optional($instansi)->logo && optional($instansi)->logo_institusi
-                ? Storage::url($instansi->logo)
-                : (optional($instansi)->logo ?:
-                    '') }}"
-                alt="Logo Instansi" width="90px">
-        </td>
-    </tr>
-</table>
-<hr style="border: 1px solid">
-<table width="100%">
-    <tr>
-        <td>
-            <br>
-        </td>
-    </tr>
-    <tr>
-        <td align="center" colspan="4">
-            <b>KARTU TES PRAKTIK DAN AKADEMIK</b>
-        </td>
-    </tr>
-
-    <tr>
-        <td>
-            <br>
-        </td>
-    </tr>
-</table>
-
-{{-- Tabel Identitas --}}
-<table width="100%">
-    <tr>
-        <td colspan="4">
-            <span>
-                <strong>
-                    DATA PESERTA
-                </strong>
-            </span>
-        </td>
-    </tr>
-    <tr>
-        <td width="170px">
-            <span>Nama Lengkap</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            <strong>
-                {{ ucwords(strtoupper($record->nama)) ?? '' }}
-            </strong>
-        </td>
-        <td rowspan="9" width="140px" style="align-content: flex-start">
-            <img src="{{ Storage::url($record->berkas_foto ?? '') }}" alt="Foto">
-        </td>
-    </tr>
-
-    <tr>
-        <td>
-            <span>Jalur Pendaftaran</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            {{ ucwords(strtolower($record->jalurPendaftaran->nama)) ?? '' }}
-        </td>
-    </tr>
-
-    <tr>
-        <td>
-            <span>NISN</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            {{ $record->nisn ?? '' }}
-        </td>
-    </tr>
-
-    <tr>
-        <td>
-            <span>Tempat, Tanggal Lahir</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            {{ ucwords(strtolower($record->tempat_lahir)) ?? '' }},
-            {{ ucwords(strtolower(date('d F Y', strtotime($record->tanggal_lahir)))) ?? '' }}
-        </td>
-    </tr>
-
-    <tr>
-        <td>
-            <span>Asal Sekolah</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            {{ ucwords(strtoupper($record->sekolahAsal->nama)) ?? '' }}
-        </td>
-    </tr>
-
-    <tr>
-        <td>
-            <span>Tahun Lulus</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            {{ $record->tahun_lulus ?? '' }}
-        </td>
-    </tr>
-
-    <tr>
-        <td>
-            <span>Jenis Lelamin</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            {{ $jenisKelamin ?? '' }}
-        </td>
-    </tr>
-</table>
-
-{{-- Tabel Tes --}}
-<table width="100%">
-    <tr>
-        <td colspan=6>
-            <br>
-        </td>
-    </tr>
-    <tr>
-        <td colspan=6>
-            <span>
-                <strong>
-                    JADWAL TES
-                </strong>
-            </span>
-        </td>
-    <tr>
-        <td colspan="3">
-            <span>
-                <strong>
-                    TES AKADEMIK
-                </strong>
-            </span>
-        </td>
-        <td colspan="3">
-            <span>
-                <strong>
-                    TES PRAKTIK
-                </strong>
-            </span>
-        </td>
-    </tr>
-    <tr>
-        <td width="15%">
-            <span>Sesi</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            {{ $record->tes_sesi ?? '' }}
-        </td>
-        <td width="15%">
-            <span>Sesi</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            {{ $record->tes_sesi ?? '' }}
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <span>Ruang</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            {{ $record->tes_ruang ?? '' }}
-        </td>
-        <td>
-            <span>Ruang</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            {{ $record->tes_ruang ?? '' }}
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <span>Hari, Tanggal</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            <span>
-                {{ Carbon::parse($record->tes_akademik ?? '')->translatedFormat('l, d F Y') }}
-            </span>
-        </td>
-        <td>
-            <span>Hari, Tanggal</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            <span>
-                {{ Carbon::parse($record->tes_praktik ?? '')->translatedFormat('l, d F Y') }}
-            </span>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <span>Waktu</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            <span>
-                {{ date('H:i', strtotime($record->tes_akademik ?? '')) . ' WIB' }}
-            </span>
-        </td>
-        <td>
-            <span>Waktu</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            <span>
-                {{ date('H:i', strtotime($record->tes_praktik ?? '')) . ' WIB' }}
-            </span>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <span>
-                Username
-            </span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            <span>
-                <strong>
-                    {{ $record->nisn ?? '' }}
-                </strong>
-            </span>
-        </td>
-        <td>
-            <span></span>
-        </td>
-        <td>
-            <span></span>
-        </td>
-        <td>
-            <span></span>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <span>Password</span>
-        </td>
-        <td>
-            <span>:</span>
-        </td>
-        <td>
-            <span>
-                <strong>
-                    {{ $record->nik ?? '' }}
-                </strong>
-            </span>
-        </td>
-        <td>
-            <span></span>
-        </td>
-        <td>
-            <span></span>
-        </td>
-        <td>
-            <span></span>
-        </td>
-    </tr>
-    <tr>
-        <td colspan=6>
-            <br>
-        </td>
-    </tr>
-</table>
-
-{{-- Tabel Tanda Tangan --}}
-<table width="100%">
-    <tr>
-        <td width="70%">
-        </td>
-        <td>
-            <span>
-                {{ ucwords(strtolower($instansi->kabupaten->nama)) ?? 'Pandeglang' }},
-                {{ date('d F Y', strtotime(optional($tahunPendaftaran)->tanggal_penerbitan_kartu_tes_mulai)) ?? '' }}
-            </span>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <span>
-                Ketua,
-            </span>
-        </td>
-        <td>
-            <span>
-                Sekretaris,
-            </span>
-        </td>
-    </tr>
-    <tr height="90px">
-        <td>
-            <span>
-                <img src="{{ $ketua->berkas_tte ? Storage::url($ketua->berkas_tte) : null }}" alt="TTE Ketua"
-                    width="90px">
-            </span>
-        </td>
-        <td>
-            <span>
-                <img src="{{ $sekretaris->berkas_tte ? Storage::url($sekretaris->berkas_tte) : '' }}"
-                    alt="TTE Sekretaris" width="90px">
-            </span>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <span>
-                <strong>
-                    {{ $ketua->nama ?? '' }}
-                </strong>
-            </span>
-        </td>
-        <td>
-            <span>
-                <strong>
-                    {{ $sekretaris->nama ?? '' }}
-                </strong>
-            </span>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <span>
-                NIP {{ $ketua->nip ?? '' }}
-            </span>
-        </td>
-        <td>
-            <span>
-                NIP {{ $sekretaris->nip ?? '' }}
-            </span>
-        </td>
-    </tr>
-</table>
-
-```
-
----
-
-### 📄 `./resources/views/skl.blade.php`
-
-```blade
-<?php
-/**
- * View ini menerima $record dari action PDF di CalonSiswaResource.
- * Tidak boleh ada query CalonSiswa::first() di sini.
- *
- * Variabel yang diexpect:
- * @var \App\Models\CalonSiswa $record
- */
-
-use Carbon\Carbon;
-use App\Models\Ketua;
-use App\Models\Sekolah;
-use App\Models\Pimpinan;
-use App\Models\Sekretaris;
-use App\Models\JalurPendaftaran;
-use App\Models\TahunPendaftaran;
-use Illuminate\Support\Facades\Storage;
-
-$jalurPendaftaranPrestasi = optional($record->jalurPendaftaran)->nama === 'Prestasi';
-
-$instansi = Sekolah::first();
-$tahunPendaftaran = TahunPendaftaran::where('status', 'Aktif')->first();
-$sekretaris = Sekretaris::where('tahun_pendaftaran_id', optional($tahunPendaftaran)->id)->where('status', 'Aktif')->first();
-$ketua = Ketua::where('tahun_pendaftaran_id', optional($tahunPendaftaran)->id)->where('status', 'Aktif')->first();
-$pimpinan = Pimpinan::where('tahun_pendaftaran_id', optional($tahunPendaftaran)->id)->where('status', 'Aktif')->first();
-$jenisKelamin = $record->jenis_kelamin === 'Pria' ? 'Laki-laki' : 'Perempuan';
-?>
-
-<table width="100%">
-    <tr>
-        <td align="center">
-            <img src="{{ optional($instansi)->logo_institusi
-                ? Storage::url($instansi->logo_institusi)
-                : Storage::url(optional($instansi)->logo ?? '') }}"
-                alt="Logo Institusi/Instansi" width="90px">
-        </td>
-        <td align="center">
-            <b> KEMENTERIAN AGAMA REPUBLIK INDONESIA </b> <br>
-            <b> KANTOR KEMENTERIAN AGAMA KABUPATEN PANDEGLANG </b> <br>
-            <b> MADRASAH TSANAWIYAH NEGERI 1 PANDEGLANG </b> <br>
-            <small>
-                {{ ucwords(strtolower($instansi->alamat)) ?? '' }}
-                {{ ucwords(strtolower(optional($instansi->kelurahan)->nama)) ?? '' }},
-                {{ ucwords(strtolower(optional($instansi->kecamatan)->nama)) ?? '' }},
-                {{ ucwords(strtolower(optional($instansi->kabupaten)->nama)) ?? '' }} -
-                {{ ucwords(strtolower(optional($instansi->provinsi)->nama)) ?? '' }}
-            </small><br>
-            <small>
-                Website: {{ $instansi->website ?? 'https://mtsn1pandeglang.sch.id' }}
-                Email: {{ $instansi->email ?? 'adm@mtsn1pandeglang.sch.id' }}
-            </small><br>
-        </td>
-        <td align="center">
-            <img src="{{ optional($instansi)->logo && optional($instansi)->logo_institusi
-                ? Storage::url($instansi->logo)
-                : (optional($instansi)->logo ?:
-                    '') }}"
-                alt="Logo Instansi" width="90px">
-        </td>
-    </tr>
-</table>
-<hr style="border: 1px solid">
-
-<table width="100%">
-    <tr>
-        <td><br></td>
-    </tr>
-    <tr>
-        <td align="center" colspan="4">
-            <b>SURAT KEPUTUSAN KELULUSAN PPDBM</b>
-        </td>
-    </tr>
-    <tr>
-        <td align="center" colspan="4">
-            <span>Nomor : {{ $instansi->nomor_surat ?? '' }}</span>
-        </td>
-    </tr>
-    <tr>
-        <td><br></td>
-    </tr>
-</table>
-
-<span style="text-align: justify">
-    @if (
-        $tahunPendaftaran &&
-            Carbon::now()->between(Carbon::parse($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_mulai),
-                Carbon::parse($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_selesai)))
-        <p>
-            Berdasarkan hasil <b>Sidang Panitia Penerimaan Peserta Didik Baru Madrasah (PPDBM)</b>
-            Tahun Pelajaran {{ $tahunPendaftaran->nama ?? '' }} yang mengacu pada hasil Verifikasi
-            Berkas Prestasi dan atau Tes Hafalan Al-Quran, memutuskan:
-        </p>
-    @else
-        <p>
-            Berdasarkan hasil <b>Sidang Panitia Penerimaan Peserta Didik Baru Madrasah (PPDBM)</b>
-            Tahun Pelajaran {{ $tahunPendaftaran->nama ?? '' }} yang mengacu pada hasil Tes Akademik,
-            Praktik Ibadah, dan Baca Tulis Al-Qur'an (BTQ), memutuskan:
-        </p>
-    @endif
-</span>
-
-{{-- Tabel Identitas --}}
-<table width="100%">
-    <tr>
-        <td width="170px"><span>Nama Lengkap</span></td>
-        <td><span>:</span></td>
-        <td><strong>{{ ucwords(strtoupper($record->nama)) ?? '' }}</strong></td>
-        <td rowspan="8" width="140px" style="align-content: flex-start">
-            <img src="{{ Storage::url($record->berkas_foto ?? '') }}" alt="Foto">
-        </td>
-    </tr>
-    <tr>
-        <td><span>Jalur Pendaftaran</span></td>
-        <td><span>:</span></td>
-        <td>{{ ucwords(strtolower(optional($record->jalurPendaftaran)->nama)) ?? '' }}</td>
-    </tr>
-    <tr>
-        <td><span>NISN</span></td>
-        <td><span>:</span></td>
-        <td>{{ $record->nisn ?? '' }}</td>
-    </tr>
-    <tr>
-        <td><span>Tempat, Tanggal Lahir</span></td>
-        <td><span>:</span></td>
-        <td>
-            {{ ucwords(strtolower($record->tempat_lahir)) ?? '' }},
-            {{ ucwords(strtolower(date('d F Y', strtotime($record->tanggal_lahir)))) ?? '' }}
-        </td>
-    </tr>
-    <tr>
-        <td><span>Asal Sekolah</span></td>
-        <td><span>:</span></td>
-        <td>{{ ucwords(strtoupper(optional($record->sekolahAsal)->nama)) ?? '' }}</td>
-    </tr>
-    <tr>
-        <td><span>Tahun Lulus</span></td>
-        <td><span>:</span></td>
-        <td>{{ $record->tahun_lulus ?? '' }}</td>
-    </tr>
-    <tr>
-        <td><span>Jenis Kelamin</span></td>
-        <td><span>:</span></td>
-        <td>{{ $jenisKelamin ?? '' }}</td>
-    </tr>
-    <tr>
-        <td><span>Status Pendaftaran</span></td>
-        <td><span>:</span></td>
-        <td><b>{{ ucwords(strtoupper($record->status_pendaftaran)) ?? '' }}</b></td>
-    </tr>
-</table>
-
-<span style="text-align: justify">
-    <p>Demikian Surat Keputusan ini kami sampaikan untuk dapat ditindaklanjuti sebagaimana mestinya.</p>
-</span>
-
-{{-- Tabel Tanda Tangan --}}
-<table width="100%">
-    <tr>
-        <td width="70%"></td>
-        <td>
-            @if ($tahunPendaftaran)
-                @php
-                    $tanggalTtd = match (true) {
-                        Carbon::now()->between(
-                            Carbon::parse($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_mulai),
-                            Carbon::parse($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_selesai),
-                        )
-                            => $tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_mulai,
-
-                        Carbon::now()->between(
-                            Carbon::parse($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_mulai),
-                            Carbon::parse($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_selesai),
-                        )
-                            => $tahunPendaftaran->tanggal_pengumuman_jalur_reguler_mulai,
-
-                        Carbon::now()->between(
-                            Carbon::parse($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai),
-                            Carbon::parse($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_selesai),
-                        )
-                            => $tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai,
-
-                        Carbon::now()->between(
-                            Carbon::parse($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai),
-                            Carbon::parse($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_selesai),
-                        )
-                            => $tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai,
-
-                        Carbon::now()->between(
-                            Carbon::parse($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai),
-                            Carbon::parse($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai),
-                        )
-                            => $tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai,
-
-                        default => now(),
-                    };
-                @endphp
-                {{ ucwords(strtolower(optional($instansi->kabupaten)->nama ?? 'Pandeglang')) }},
-                {{ date('d F Y', strtotime($tanggalTtd)) }}
-            @endif
-        </td>
-    </tr>
-    <tr>
-        <td><span>Ketua,</span></td>
-        <td><span>Sekretaris,</span></td>
-    </tr>
-    <tr height="90px">
-        <td>
-            @if ($ketua?->berkas_tte)
-                <img src="{{ Storage::url($ketua->berkas_tte) }}" alt="TTE Ketua" width="90px">
-            @endif
-        </td>
-        <td>
-            @if ($sekretaris?->berkas_tte)
-                <img src="{{ Storage::url($sekretaris->berkas_tte) }}" alt="TTE Sekretaris" width="90px">
-            @endif
-        </td>
-    </tr>
-    <tr>
-        <td><strong>{{ $ketua->nama ?? '' }}</strong></td>
-        <td><strong>{{ $sekretaris->nama ?? '' }}</strong></td>
-    </tr>
-    <tr>
-        <td>NIP {{ $ketua->nip ?? '' }}</td>
-        <td>NIP {{ $sekretaris->nip ?? '' }}</td>
-    </tr>
-</table>
-
-{{-- Mengetahui: Kepala Madrasah --}}
-<table border="1" width="100%">
-    <tr align="center">
-        <td>Mengetahui,</td>
-    </tr>
-    <tr align="center">
-        <td>
-            Kepala {{ ucwords(strtolower($instansi->nama ?? 'Madrasah Tsanawiyah Negeri 1 Pandeglang')) }},
-        </td>
-    </tr>
-    <tr align="center" height="90px">
-        <td>
-            @if ($pimpinan?->berkas_tte)
-                <img src="{{ Storage::url($pimpinan->berkas_tte) }}" alt="TTE Pimpinan" width="90px">
-            @endif
-        </td>
-    </tr>
-    <tr align="center">
-        <td><strong>{{ $pimpinan->nama ?? '' }}</strong></td>
-    </tr>
-    <tr align="center">
-        <td>NIP {{ $pimpinan->nip ?? '' }}</td>
-    </tr>
-</table>
-
-<!-- Lembar Ke-2 (Surat Keterangan Orang Tua) -->
-<h1>2</h1>
-
-<!-- Lembar Ke-3 (Surat Keterangan Calon Siswa) -->
-<h1>3</h1>
-
-<!-- Lembar Ke-4 (Tata Tertib) -->
-<h1>4</h1>
-
-```
-
----
-
 ### 📄 `./resources/views/filament/pages/auth/forgot-password-custom.blade.php`
 
 ```blade
@@ -68162,9 +67122,12 @@ $jenisKelamin = $record->jenis_kelamin === 'Pria' ? 'Laki-laki' : 'Perempuan';
         </x-filament::button>
     </x-filament-panels::form>
 
-    <div class="mt-4 text-sm text-center text-gray-500 dark:text-gray-400">
+    <div class="mt-6 text-sm text-center text-gray-600 dark:text-gray-400">
         Sudah ingat password?
-        <a href="{{ filament()->getLoginUrl() }}" class="font-medium text-primary-600 hover:underline">
+        <a
+            href="{{ filament()->getLoginUrl() }}"
+            class="font-semibold transition duration-200 text-primary-600 hover:text-primary-500 hover:underline dark:text-primary-400 dark:hover:text-primary-300"
+        >
             Kembali ke Login
         </a>
     </div>
@@ -68186,9 +67149,12 @@ $jenisKelamin = $record->jenis_kelamin === 'Pria' ? 'Laki-laki' : 'Perempuan';
         </x-filament::button>
     </x-filament-panels::form>
 
-    <div class="mt-2 text-sm text-center text-gray-500 dark:text-gray-400">
-        <a href="{{ route('otp.forgot-password') }}" class="font-medium text-primary-600 hover:underline">
-            Kembali
+    <div class="mt-6 text-sm text-center">
+        <a
+            href="{{ route('otp.forgot-password') }}"
+            class="font-medium text-gray-500 transition duration-200 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+        >
+            &larr; Kembali
         </a>
     </div>
 </x-filament-panels::page.simple>
@@ -68209,21 +67175,28 @@ $jenisKelamin = $record->jenis_kelamin === 'Pria' ? 'Laki-laki' : 'Perempuan';
         </x-filament::button>
     </x-filament-panels::form>
 
-    <div class="mt-4 text-sm text-center text-gray-500 dark:text-gray-400">
-        Belum menerima kode OTP?
-        <button
-            wire:click="resend"
-            type="button"
-            class="font-medium text-primary-600 hover:underline"
-        >
-            Kirim ulang
-        </button>
-    </div>
+    <div class="mt-6 space-y-4 text-sm text-center text-gray-600 dark:text-gray-400">
+        <div>
+            Belum menerima kode OTP?
+            <button
+                wire:click="resend"
+                wire:loading.attr="disabled"
+                wire:loading.class="opacity-50 cursor-not-allowed"
+                type="button"
+                class="font-semibold transition duration-200 text-primary-600 hover:text-primary-500 hover:underline dark:text-primary-400 dark:hover:text-primary-300"
+            >
+                Kirim ulang
+            </button>
+        </div>
 
-    <div class="mt-2 text-sm text-center text-gray-500 dark:text-gray-400">
-        <a href="{{ route('otp.forgot-password') }}" class="font-medium text-primary-600 hover:underline">
-            Kembali
-        </a>
+        <div>
+            <a
+                href="{{ route('otp.forgot-password') }}"
+                class="inline-block font-medium text-gray-500 transition duration-200 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+            >
+                &larr; Kembali
+            </a>
+        </div>
     </div>
 </x-filament-panels::page.simple>
 
@@ -68238,26 +67211,826 @@ $jenisKelamin = $record->jenis_kelamin === 'Pria' ? 'Laki-laki' : 'Perempuan';
     <x-filament-panels::form wire:submit="verifikasi">
         {{ $this->form }}
 
-        <x-filament::button
-            type="submit"
-            size="lg"
-            class="w-full"
-        >
+        <x-filament::button type="submit" size="lg" class="w-full">
             Verifikasi
         </x-filament::button>
     </x-filament-panels::form>
 
-    <div class="mt-4 text-sm text-center text-gray-500 dark:text-gray-400">
+    <div class="mt-6 text-sm text-center text-gray-600 dark:text-gray-400">
         Belum menerima kode OTP?
         <button
             wire:click="resend"
+            wire:loading.attr="disabled"
+            wire:loading.class="opacity-50 cursor-not-allowed"
             type="button"
-            class="font-medium text-primary-600 hover:underline"
+            class="font-semibold transition duration-200 text-primary-600 hover:text-primary-500 hover:underline dark:text-primary-400 dark:hover:text-primary-300"
         >
             Kirim ulang
         </button>
     </div>
 </x-filament-panels::page.simple>
+
+```
+
+---
+
+### 📄 `./resources/views/formulir.blade.php`
+
+```blade
+@php
+    use App\Helpers\PdfDataHelper;
+    use Illuminate\Support\Facades\Storage;
+
+    $instansi         = PdfDataHelper::instansi();
+    $tahunPendaftaran = PdfDataHelper::tahunAktif();
+    $sekretaris       = PdfDataHelper::sekretarisAktif();
+    $ketua            = PdfDataHelper::ketuaAktif();
+
+    $isJalurPrestasi = optional($record->jalurPendaftaran)->nama === 'Prestasi';
+    $jenisKelamin    = $record->jenis_kelamin === 'Pria' ? 'Laki-laki' : 'Perempuan';
+    $fotoUrl         = $record->berkas_foto ? Storage::url($record->berkas_foto) : null;
+    $qrPayload       = url('/admin/formulir/' . $record->id);
+    $isDraft         = $record->status_formulir !== 'Disetujui';
+    $kota            = ucwords(strtolower(optional($instansi?->kabupaten)->nama ?? 'Pandeglang'));
+
+    $alamatSiswa = collect([
+        $record->siswa_alamat, optional($record->siswaKelurahan)->nama,
+        optional($record->siswaKecamatan)->nama, optional($record->siswaKabupaten)->nama,
+        optional($record->siswaProvinsi)->nama,
+    ])->filter()->implode(', ');
+
+    $biodata = [
+        ['No. Pendaftaran', $record->nomor_pendaftaran ?? '-'],
+        ['Nama Lengkap', strtoupper($record->nama ?? '-')],
+        ['Jalur Pendaftaran', strtoupper(optional($record->jalurPendaftaran)->nama ?? '-')],
+        ['NISN / NIK', ($record->nisn ?? '-') . '  /  ' . ($record->nik ?? '-')],
+        ['Tempat, Tgl Lahir', ucwords(strtolower($record->tempat_lahir ?? '')) . ', ' . ($record->tanggal_lahir ? date('d F Y', strtotime($record->tanggal_lahir)) : '-')],
+        ['Jenis Kelamin', $jenisKelamin],
+        ['Agama', ucwords(strtolower($record->agama ?? '-'))],
+        ['Asal Sekolah', strtoupper(optional($record->sekolahAsal)->nama ?? '-')],
+        ['No. Telepon', $record->siswa_telepon ?? '-'],
+        ['Alamat Siswa', ucwords(strtolower($alamatSiswa))],
+    ];
+
+    if ($record->penerima_kip) {
+        $biodata[] = ['KIP / KKS / PKH', ($record->no_kip ?? '-') . ' / ' . ($record->no_kks ?? '-') . ' / ' . ($record->no_pkh ?? '-')];
+    }
+@endphp
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<style>
+    @page { size: A4 portrait; margin: 15mm; }
+    body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 9.5pt; color: #374151; line-height: 1.5; }
+    table { border-collapse: collapse; width: 100%; }
+
+    /* Typography */
+    .title-doc { font-family: 'Georgia', serif; text-align: center; font-size: 14pt; font-weight: bold; color: #111827; letter-spacing: 1px; text-transform: uppercase; margin-top: 15px; }
+    .subtitle-doc { text-align: center; font-size: 10pt; color: #6b7280; margin-bottom: 20px; letter-spacing: 0.5px; }
+
+    /* Modern Section Header */
+    .section-title { background-color: #f3f4f6; color: #111827; padding: 6px 10px; font-size: 9pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; border-left: 4px solid #059669; margin: 15px 0 8px 0; }
+
+    /* Modern Data Table */
+    .data-table td { padding: 6px 4px; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table .lbl { width: 30%; color: #6b7280; font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.5px; }
+    .data-table .cln { width: 3%; text-align: center; color: #9ca3af; }
+    .data-table .val { font-weight: bold; color: #1f2937; }
+
+    /* Elegant Photo Box */
+    .photo-wrapper { width: 3.5cm; padding-left: 15px; vertical-align: top; }
+    .photo-box { width: 3cm; height: 4cm; border: 2px solid #e5e7eb; border-radius: 4px; padding: 3px; text-align: center; background: #f9fafb; display: table-cell; vertical-align: middle; }
+    .photo-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 2px; }
+    .photo-text { font-size: 8pt; color: #9ca3af; letter-spacing: 1px; }
+
+    /* Watermark */
+    .watermark { position: absolute; top: 35%; left: 0; right: 0; text-align: center; font-size: 80pt; font-family: 'Georgia', serif; color: rgba(220, 38, 38, 0.05); transform: rotate(-30deg); z-index: -1000; letter-spacing: 5px; }
+
+    /* Signatures */
+    .signature-area { margin-top: 30px; page-break-inside: avoid; }
+    .sig-box { text-align: center; font-size: 9.5pt; color: #374151; vertical-align: bottom; }
+    .sig-name { font-weight: bold; color: #111827; text-decoration: underline; margin-bottom: 2px; display: inline-block; }
+</style>
+</head>
+<body>
+
+@if ($isDraft) <div class="watermark">DRAFT DOCUMENT</div> @endif
+
+@include('partials.pdf-header', ['instansi' => $instansi])
+
+<div class="title-doc">Formulir Pendaftaran Calon Peserta Didik</div>
+<div class="subtitle-doc">Tahun Pelajaran {{ $tahunPendaftaran?->nama ?? '' }}</div>
+
+<div class="section-title">A. Identitas Calon Peserta Didik</div>
+<table>
+    <tr>
+        <td style="vertical-align: top; padding: 0;">
+            <table class="data-table">
+                @foreach ($biodata as [$label, $value])
+                <tr>
+                    <td class="lbl">{{ $label }}</td><td class="cln">:</td><td class="val">{{ $value }}</td>
+                </tr>
+                @endforeach
+            </table>
+        </td>
+        <td class="photo-wrapper">
+            <div class="photo-box">
+                @if ($fotoUrl) <img src="{{ $fotoUrl }}" alt="Foto">
+                @else <span class="photo-text">FOTO<br>3x4</span> @endif
+            </div>
+        </td>
+    </tr>
+</table>
+
+<div class="section-title">B. Data Orang Tua / Wali</div>
+<table class="data-table">
+    <tr>
+        <td class="lbl" style="width: 25%;">Nama Ayah / Ibu</td><td class="cln">:</td>
+        <td class="val">{{ strtoupper($record->ayah_nama ?? '-') }} &nbsp;|&nbsp; {{ strtoupper($record->ibu_nama ?? '-') }}</td>
+    </tr>
+    <tr>
+        <td class="lbl">Pekerjaan</td><td class="cln">:</td>
+        <td class="val">{{ $record->ayah_pekerjaan ?? '-' }} &nbsp;|&nbsp; {{ $record->ibu_pekerjaan ?? '-' }}</td>
+    </tr>
+    <tr>
+        <td class="lbl">No. Telepon/WhatsApp</td><td class="cln">:</td>
+        <td class="val">{{ $record->ayah_telepon ?? $record->ibu_telepon ?? '-' }}</td>
+    </tr>
+</table>
+
+@if ($isJalurPrestasi)
+<div class="section-title">C. Rekam Prestasi</div>
+<table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
+    <thead>
+        <tr style="background-color: #f9fafb; border-bottom: 2px solid #e5e7eb;">
+            <th style="padding: 8px; text-align: left; font-size: 8.5pt; color: #6b7280; text-transform: uppercase;">No</th>
+            <th style="padding: 8px; text-align: left; font-size: 8.5pt; color: #6b7280; text-transform: uppercase;">Nama Prestasi / Perlombaan</th>
+            <th style="padding: 8px; text-align: center; font-size: 8.5pt; color: #6b7280; text-transform: uppercase;">Tingkat</th>
+            <th style="padding: 8px; text-align: center; font-size: 8.5pt; color: #6b7280; text-transform: uppercase;">Peringkat</th>
+        </tr>
+    </thead>
+    <tbody>
+        @forelse ($record->formulirPrestasis as $i => $fp)
+        <tr style="border-bottom: 1px solid #f3f4f6;">
+            <td style="padding: 8px; font-weight: bold;">{{ $i + 1 }}</td>
+            <td style="padding: 8px; color: #111827;">{{ $fp->nama_prestasi }}</td>
+            <td style="padding: 8px; text-align: center;">{{ optional($fp->prestasi)->tingkat ?? '-' }}</td>
+            <td style="padding: 8px; text-align: center; font-weight: bold;">{{ optional($fp->prestasi)->peringkat ?? '-' }}</td>
+        </tr>
+        @empty
+        <tr><td colspan="4" style="padding: 15px; text-align: center; font-style: italic; color: #9ca3af;">Tidak ada data prestasi yang dilampirkan.</td></tr>
+        @endforelse
+    </tbody>
+</table>
+@endif
+
+<div class="signature-area">
+    <table>
+        <tr>
+            <td style="width: 25%; vertical-align: bottom;">
+                {!! QrCode::size(70)->margin(0)->generate($qrPayload) !!}
+                <div style="font-size: 7.5pt; color: #9ca3af; margin-top: 5px; letter-spacing: 0.5px;">SCAN TO VERIFY</div>
+            </td>
+            <td class="sig-box" style="width: 37.5%;">
+                {{ $kota }}, {{ date('d F Y', strtotime($record->updated_at)) }}<br>
+                <span style="color: #6b7280; font-size: 9pt;">Ketua Panitia PPDB,</span>
+                <div style="height: 70px;">
+                    @if ($ketua?->berkas_tte) <img src="{{ Storage::url($ketua->berkas_tte) }}" style="height:60px; margin-top:5px;"> @endif
+                </div>
+                <div class="sig-name">{{ $ketua?->nama ?? str_repeat('.', 35) }}</div><br>
+                <span style="font-size: 8.5pt; color: #6b7280;">NIP. {{ $ketua?->nip ?? '-' }}</span>
+            </td>
+            <td class="sig-box" style="width: 37.5%;">
+                <br>
+                <span style="color: #6b7280; font-size: 9pt;">Sekretaris Panitia,</span>
+                <div style="height: 70px;">
+                    @if ($sekretaris?->berkas_tte) <img src="{{ Storage::url($sekretaris->berkas_tte) }}" style="height:60px; margin-top:5px;"> @endif
+                </div>
+                <div class="sig-name">{{ $sekretaris?->nama ?? str_repeat('.', 35) }}</div><br>
+                <span style="font-size: 8.5pt; color: #6b7280;">NIP. {{ $sekretaris?->nip ?? '-' }}</span>
+            </td>
+        </tr>
+    </table>
+</div>
+
+</body>
+</html>
+
+```
+
+---
+
+### 📄 `./resources/views/kartu-tes.blade.php`
+
+```blade
+@php
+    use Carbon\Carbon;
+    use App\Helpers\PdfDataHelper;
+    use Illuminate\Support\Facades\Storage;
+
+    $instansi         = PdfDataHelper::instansi();
+    $tahunPendaftaran = PdfDataHelper::tahunAktif();
+    $sekretaris       = PdfDataHelper::sekretarisAktif();
+    $ketua            = PdfDataHelper::ketuaAktif();
+
+    $fotoUrl      = $record->berkas_foto ? Storage::url($record->berkas_foto) : null;
+    $qrPayload    = url('/admin/formulir/' . $record->id);
+    $tglAkademik  = $record->tes_akademik ? Carbon::parse($record->tes_akademik) : null;
+    $tglPraktik   = $record->tes_praktik  ? Carbon::parse($record->tes_praktik)  : null;
+    $kota         = ucwords(strtolower(optional($instansi?->kabupaten)->nama ?? 'Pandeglang'));
+    $tglTtd       = $tahunPendaftaran?->tanggal_penerbitan_kartu_tes_mulai ? date('d F Y', strtotime($tahunPendaftaran->tanggal_penerbitan_kartu_tes_mulai)) : date('d F Y');
+@endphp
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<style>
+    @page { size: A4 portrait; margin: 15mm; }
+    body { font-family: 'Helvetica', sans-serif; font-size: 10pt; color: #1f2937; line-height: 1.4; }
+    table { border-collapse: collapse; width: 100%; }
+
+    /* The Card Container */
+    .card-container { border: 2px solid #111827; border-radius: 8px; padding: 20px; position: relative; }
+
+    .card-header { text-align: center; border-bottom: 2px dashed #d1d5db; padding-bottom: 15px; margin-bottom: 15px; }
+    .card-title { font-family: 'Georgia', serif; font-size: 16pt; font-weight: bold; color: #111827; text-transform: uppercase; letter-spacing: 2px; }
+    .card-subtitle { font-size: 10pt; color: #4b5563; margin-top: 5px; letter-spacing: 1px; }
+
+    /* Data Layout */
+    .info-lbl { font-size: 9pt; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+    .info-val { font-size: 11pt; font-weight: bold; color: #111827; margin-bottom: 12px; }
+
+    /* Photo */
+    .photo-box { width: 3.5cm; height: 4.5cm; border: 3px solid #e5e7eb; border-radius: 6px; padding: 3px; text-align: center; display: table-cell; vertical-align: middle; }
+    .photo-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 3px; }
+
+    /* Schedule Grid */
+    .schedule-box { border: 1px solid #d1d5db; border-radius: 6px; overflow: hidden; margin-top: 10px; }
+    .schedule-header { background-color: #f3f4f6; padding: 8px; text-align: center; font-weight: bold; font-size: 9.5pt; letter-spacing: 1px; color: #374151; border-bottom: 1px solid #d1d5db; }
+    .schedule-cell { padding: 10px; text-align: center; }
+    .schedule-time { font-size: 12pt; font-weight: bold; color: #059669; }
+    .schedule-date { font-size: 9pt; color: #4b5563; margin-top: 4px; }
+
+    /* CBT Highlight Box */
+    .cbt-alert { background-color: #eff6ff; border: 1px solid #bfdbfe; border-left: 4px solid #3b82f6; border-radius: 4px; padding: 12px 15px; margin-top: 20px; }
+    .cbt-title { font-size: 9pt; font-weight: bold; color: #1e3a8a; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .cbt-creds { font-family: 'Courier New', Courier, monospace; font-size: 14pt; font-weight: bold; color: #1e40af; letter-spacing: 2px; }
+
+    /* Footer */
+    .card-footer { margin-top: 25px; border-top: 2px dashed #d1d5db; padding-top: 15px; }
+</style>
+</head>
+<body>
+
+@include('partials.pdf-header', ['instansi' => $instansi])
+
+<div class="card-container">
+    <div class="card-header">
+        <div class="card-title">Kartu Ujian Peserta</div>
+        <div class="card-subtitle">Penerimaan Peserta Didik Baru &mdash; {{ $tahunPendaftaran?->nama ?? '' }}</div>
+    </div>
+
+    <table>
+        <tr>
+            <td style="vertical-align: top; width: 70%;">
+                <div class="info-lbl">Nomor Registrasi</div>
+                <div class="info-val" style="font-size: 14pt; color: #059669;">{{ $record->nomor_pendaftaran ?? '-' }}</div>
+
+                <div class="info-lbl">Nama Lengkap Peserta</div>
+                <div class="info-val" style="font-size: 13pt;">{{ strtoupper($record->nama ?? '-') }}</div>
+
+                <div class="info-lbl">Asal Sekolah</div>
+                <div class="info-val">{{ strtoupper(optional($record->sekolahAsal)->nama ?? '-') }}</div>
+
+                <div class="info-lbl">Jalur Pendaftaran</div>
+                <div class="info-val">{{ strtoupper(optional($record->jalurPendaftaran)->nama ?? '-') }}</div>
+            </td>
+            <td style="vertical-align: top; text-align: right; width: 30%;">
+                <div class="photo-box" style="float: right;">
+                    @if ($fotoUrl) <img src="{{ $fotoUrl }}" alt="Foto">
+                    @else <span style="font-size: 9pt; color: #9ca3af;">PAS FOTO</span> @endif
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <table class="schedule-box">
+        <tr>
+            <td style="width: 50%; border-right: 1px solid #d1d5db; padding: 0;">
+                <div class="schedule-header">UJIAN AKADEMIK (CBT)</div>
+                <div class="schedule-cell">
+                    <div class="info-lbl">Ruang / Sesi</div>
+                    <div style="font-weight: bold; font-size: 11pt; color: #111827; margin-bottom: 8px;">{{ $record->tes_ruang ?? '-' }} / Sesi {{ $record->tes_sesi ?? '-' }}</div>
+                    <div class="schedule-time">{{ $tglAkademik ? $tglAkademik->format('H:i') . ' WIB' : '-' }}</div>
+                    <div class="schedule-date">{{ $tglAkademik ? $tglAkademik->translatedFormat('l, d F Y') : '-' }}</div>
+                </div>
+            </td>
+            <td style="width: 50%; padding: 0;">
+                <div class="schedule-header">UJIAN PRAKTIK IBADAH</div>
+                <div class="schedule-cell">
+                    <div class="info-lbl">Ruang / Sesi</div>
+                    <div style="font-weight: bold; font-size: 11pt; color: #111827; margin-bottom: 8px;">{{ $record->tes_ruang ?? '-' }} / Sesi {{ $record->tes_sesi ?? '-' }}</div>
+                    <div class="schedule-time">{{ $tglPraktik ? $tglPraktik->format('H:i') . ' WIB' : '-' }}</div>
+                    <div class="schedule-date">{{ $tglPraktik ? $tglPraktik->translatedFormat('l, d F Y') : '-' }}</div>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <div class="cbt-alert">
+        <div class="cbt-title">Kredensial Login Aplikasi Ujian (CBT)</div>
+        <table>
+            <tr>
+                <td style="width: 120px; color: #3b82f6; font-size: 10pt;">Username</td>
+                <td class="cbt-creds">{{ $record->nisn ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td style="color: #3b82f6; font-size: 10pt;">Password</td>
+                <td class="cbt-creds">{{ $record->nik ?? '-' }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="card-footer">
+        <table>
+            <tr>
+                <td style="width: 25%; vertical-align: middle;">
+                    {!! QrCode::size(70)->margin(0)->generate($qrPayload) !!}
+                </td>
+                <td style="width: 75%; text-align: right; vertical-align: bottom;">
+                    <span style="font-size: 9pt; color: #6b7280;">{{ $kota }}, {{ $tglTtd }}</span><br>
+                    <span style="font-size: 9.5pt; font-weight: bold; color: #111827;">Panitia Penerimaan Peserta Didik Baru</span>
+                    <div style="height: 60px; margin-top: 5px;">
+                        @if ($ketua?->berkas_tte) <img src="{{ Storage::url($ketua->berkas_tte) }}" style="height:55px;"> @endif
+                    </div>
+                    <span style="font-size: 9.5pt; font-weight: bold; text-decoration: underline;">{{ $ketua?->nama ?? '............................................' }}</span><br>
+                    <span style="font-size: 8.5pt; color: #6b7280;">Ketua Pelaksana</span>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>
+
+```
+
+---
+
+### 📄 `./resources/views/partials/pdf-header.blade.php`
+
+```blade
+@php
+    use Illuminate\Support\Facades\Storage;
+    $logoInstitusi = $instansi?->logo_institusi ? Storage::url($instansi->logo_institusi) : null;
+    $logoMadrasah  = $instansi?->logo ? Storage::url($instansi->logo) : null;
+
+    $alamat = collect([
+        $instansi?->alamat,
+        optional($instansi?->kelurahan)->nama,
+        optional($instansi?->kecamatan)->nama,
+        optional($instansi?->kabupaten)->nama,
+        optional($instansi?->provinsi)->nama,
+    ])->filter()->map(fn($item) => ucwords(strtolower($item)))->implode(', ');
+
+    $kontak = collect([
+        $instansi?->website ? 'Website: ' . $instansi->website : null,
+        $instansi?->email   ? 'Email: '   . $instansi->email   : null,
+        $instansi?->telepon ? 'Telp: '    . $instansi->telepon : null,
+    ])->filter()->implode('  |  ');
+@endphp
+
+<table width="100%" style="border-collapse: collapse; margin-bottom: 0; padding: 0;">
+    <tr>
+        <td width="85" align="left" valign="middle">
+            @if ($logoInstitusi)
+                <img src="{{ $logoInstitusi }}" alt="Logo Kemenag" style="width: 75px; height: auto;">
+            @else
+                <div style="width: 75px; height: 75px;"></div>
+            @endif
+        </td>
+
+        <td align="center" valign="middle" style="padding: 0 10px; line-height: 1.3;">
+            <div style="font-size: 11pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5pt;">
+                Kementerian Agama Republik Indonesia<br>
+                Kantor Kementerian Agama {{ ucwords(strtolower(optional($instansi?->kabupaten)->nama ?? 'Kabupaten Pandeglang')) }}
+            </div>
+            <div style="font-size: 14pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1pt; margin-top: 3px;">
+                {{ $instansi?->nama ?? 'MTs Negeri 1 Pandeglang' }}
+            </div>
+            @if ($alamat)
+                <div style="font-size: 9pt; margin-top: 4px; color: #111;">{{ $alamat }}</div>
+            @endif
+            @if ($kontak)
+                <div style="font-size: 8.5pt; margin-top: 1px; color: #333;">{{ $kontak }}</div>
+            @endif
+        </td>
+
+        <td width="85" align="right" valign="middle">
+            @if ($logoMadrasah)
+                <img src="{{ $logoMadrasah }}" alt="Logo Madrasah" style="width: 75px; height: auto;">
+            @else
+                <div style="width: 75px; height: 75px;"></div>
+            @endif
+        </td>
+    </tr>
+</table>
+
+<div style="border-top: 3px solid #000; margin-top: 6px;"></div>
+<div style="border-top: 1px solid #000; margin-top: 2px; margin-bottom: 15px;"></div>
+
+```
+
+---
+
+### 📄 `./resources/views/skl.blade.php`
+
+```blade
+@php
+    use Carbon\Carbon;
+    use App\Helpers\PdfDataHelper;
+    use Illuminate\Support\Facades\Storage;
+
+    $instansi         = PdfDataHelper::instansi();
+    $tahunPendaftaran = PdfDataHelper::tahunAktif();
+    $sekretaris       = PdfDataHelper::sekretarisAktif();
+    $ketua            = PdfDataHelper::ketuaAktif();
+    $pimpinan         = PdfDataHelper::pimpinanAktif();
+
+    $fotoUrl      = $record->berkas_foto ? Storage::url($record->berkas_foto) : null;
+    $qrPayload    = url('/admin/formulir/' . $record->id);
+
+    $now = Carbon::now();
+    $tanggalTtd = $now;
+    if ($tahunPendaftaran) {
+        $periodes = [
+            [$tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_mulai, $tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_selesai],
+            [$tahunPendaftaran->tanggal_pengumuman_jalur_reguler_mulai, $tahunPendaftaran->tanggal_pengumuman_jalur_reguler_selesai],
+            [$tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai, $tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_selesai],
+            [$tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai, $tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_selesai],
+            [$tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai, $tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai],
+        ];
+        foreach ($periodes as [$mulai, $selesai]) {
+            if ($mulai && $selesai && $now->between(Carbon::parse($mulai), Carbon::parse($selesai))) {
+                $tanggalTtd = Carbon::parse($mulai); break;
+            }
+        }
+    }
+
+    $kota         = ucwords(strtolower(optional($instansi?->kabupaten)->nama ?? 'Pandeglang'));
+    $namaMadrasah = $instansi?->nama ?? 'MTsN 1 Pandeglang';
+    $diterima     = in_array($record->status_pendaftaran, ['Diterima', 'Diterima Di Kelas Reguler', 'Diterima Di Kelas Unggulan']);
+@endphp
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<style>
+    @page { size: A4 portrait; margin: 15mm 20mm; }
+    body { font-family: 'Georgia', 'Times New Roman', serif; font-size: 11pt; color: #111827; line-height: 1.6; text-align: justify; }
+    table { border-collapse: collapse; width: 100%; text-align: left; }
+    .sans { font-family: 'Helvetica', sans-serif; }
+
+    .doc-title { text-align: center; font-size: 14pt; font-weight: bold; letter-spacing: 1.5px; text-decoration: underline; margin-top: 10px; }
+    .doc-nomor { text-align: center; font-size: 10.5pt; font-family: 'Helvetica', sans-serif; color: #4b5563; margin-bottom: 25px; }
+
+    /* Elegant Data Box */
+    .data-box { border: 1px solid #d1d5db; padding: 15px; margin: 20px 0; background-color: #fcfcfc; }
+    .data-box td { padding: 4px; vertical-align: top; font-family: 'Helvetica', sans-serif; font-size: 10pt; }
+    .data-box .lbl { color: #6b7280; font-weight: bold; width: 35%; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* The Stamp (Status Kelulusan) */
+    .stamp-container { text-align: center; margin: 30px 0; }
+    .stamp { display: inline-block; padding: 10px 40px; font-family: 'Helvetica', sans-serif; font-size: 16pt; font-weight: 900; letter-spacing: 4px; text-transform: uppercase; border: 4px solid; border-radius: 8px; transform: rotate(-3deg); }
+    .stamp-pass { color: #047857; border-color: #047857; background-color: rgba(4, 120, 87, 0.05); }
+    .stamp-fail { color: #b91c1c; border-color: #b91c1c; background-color: rgba(185, 28, 28, 0.05); }
+
+    /* Signatures */
+    .sig-area { margin-top: 40px; page-break-inside: avoid; }
+    .sig-block { text-align: center; font-family: 'Helvetica', sans-serif; font-size: 9.5pt; }
+    .sig-title { color: #4b5563; margin-bottom: 60px; display: block; }
+    .sig-name { font-weight: bold; color: #111827; text-decoration: underline; font-size: 10pt; }
+
+    .page-break { page-break-before: always; }
+
+    /* Modern Tables for Checklist */
+    .clean-table { border: 1px solid #e5e7eb; font-family: 'Helvetica', sans-serif; font-size: 9.5pt; }
+    .clean-table th { background-color: #f3f4f6; padding: 10px; text-align: left; color: #374151; font-weight: bold; border-bottom: 2px solid #d1d5db; text-transform: uppercase; font-size: 8.5pt; letter-spacing: 0.5px; }
+    .clean-table td { padding: 10px; border-bottom: 1px solid #e5e7eb; color: #1f2937; }
+</style>
+</head>
+<body>
+
+{{-- ==================== LEMBAR 1: SKL ==================== --}}
+@include('partials.pdf-header', ['instansi' => $instansi])
+
+<div class="doc-title">SURAT KEPUTUSAN KELULUSAN</div>
+<div class="doc-nomor">Nomor: {{ $instansi?->nomor_surat ?? '......./Mts.01/PPDB/' . date('Y') }}</div>
+
+<p>
+    Berdasarkan hasil Keputusan Sidang Pleno Panitia Penerimaan Peserta Didik Baru (PPDB) <b>{{ $namaMadrasah }}</b> Tahun Pelajaran {{ $tahunPendaftaran?->nama ?? '' }}, setelah melakukan evaluasi terhadap kelengkapan administrasi dan hasil uji seleksi, maka Panitia menetapkan bahwa peserta didik di bawah ini:
+</p>
+
+<div class="data-box">
+    <table>
+        <tr>
+            <td class="lbl">Nomor Registrasi</td><td>:</td>
+            <td style="font-weight: bold; font-size: 11pt; color: #111827;">{{ $record->nomor_pendaftaran ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td class="lbl">Nama Lengkap</td><td>:</td>
+            <td style="font-weight: bold; font-size: 11pt; color: #111827;">{{ strtoupper($record->nama ?? '-') }}</td>
+        </tr>
+        <tr>
+            <td class="lbl">Jalur Pendaftaran</td><td>:</td>
+            <td>{{ strtoupper(optional($record->jalurPendaftaran)->nama ?? '-') }}</td>
+        </tr>
+        <tr>
+            <td class="lbl">Asal Sekolah Dasar</td><td>:</td>
+            <td>{{ strtoupper(optional($record->sekolahAsal)->nama ?? '-') }}</td>
+        </tr>
+    </table>
+</div>
+
+<p style="text-align: center; font-size: 12pt; margin-top: 30px;">Dinyatakan:</p>
+
+<div class="stamp-container">
+    <div class="stamp {{ $diterima ? 'stamp-pass' : 'stamp-fail' }}">
+        {{ $diterima ? 'L U L U S' : 'TIDAK LULUS' }}
+    </div>
+</div>
+
+<p>
+    Demikian Surat Keputusan ini diterbitkan agar dapat dipergunakan sebagaimana mestinya. Keputusan Panitia bersifat mutlak dan tidak dapat diganggu gugat. Bagi peserta didik yang dinyatakan <b>LULUS</b>, diwajibkan untuk segera melakukan tahapan Daftar Ulang sesuai dengan jadwal yang telah ditentukan.
+</p>
+
+<div class="sig-area">
+    <table>
+        <tr>
+            <td style="width: 25%; vertical-align: bottom;">{!! QrCode::size(70)->margin(0)->generate($qrPayload) !!}</td>
+            <td class="sig-block" style="width: 37.5%; vertical-align: top;">
+                <span class="sig-title">{{ $kota }}, {{ $tanggalTtd->translatedFormat('d F Y') }}<br>Ketua Panitia PPDB,</span>
+                <div style="position: relative; top: -50px; height: 0;">@if ($ketua?->berkas_tte) <img src="{{ Storage::url($ketua->berkas_tte) }}" style="height:60px;"> @endif</div>
+                <span class="sig-name">{{ $ketua?->nama ?? '.....................................' }}</span><br>
+                NIP. {{ $ketua?->nip ?? '-' }}
+            </td>
+            <td class="sig-block" style="width: 37.5%; vertical-align: top;">
+                <span class="sig-title">Mengetahui,<br>Kepala {{ ucwords(strtolower($namaMadrasah)) }}</span>
+                <div style="position: relative; top: -50px; height: 0;">@if ($pimpinan?->berkas_tte) <img src="{{ Storage::url($pimpinan->berkas_tte) }}" style="height:60px;"> @endif</div>
+                <span class="sig-name">{{ $pimpinan?->nama ?? '.....................................' }}</span><br>
+                NIP. {{ $pimpinan?->nip ?? '-' }}
+            </td>
+        </tr>
+    </table>
+</div>
+
+{{-- ==================== LEMBAR 2: PAKTA INTEGRITAS ==================== --}}
+<div class="page-break"></div>
+@include('partials.pdf-header', ['instansi' => $instansi])
+
+<div class="doc-title" style="font-size: 13pt; margin-bottom: 25px;">PAKTA INTEGRITAS ORANG TUA / WALI</div>
+
+<p>Saya yang bertanda tangan di bawah ini:</p>
+<table class="sans" style="margin: 15px 0 20px 20px; width: 90%;">
+    <tr><td style="width: 30%; color: #4b5563;">Nama Lengkap</td><td style="width: 2%;">:</td><td style="font-weight: bold;">{{ strtoupper($record->ayah_nama ?? $record->wali_nama ?? '......................................') }}</td></tr>
+    <tr><td style="color: #4b5563;">Status Hubungan</td><td>:</td><td>Orang Tua / Wali Peserta Didik</td></tr>
+</table>
+
+<p>Adalah benar orang tua / wali dari Calon Peserta Didik Baru:</p>
+<table class="sans" style="margin: 15px 0 20px 20px; width: 90%;">
+    <tr><td style="width: 30%; color: #4b5563;">Nama Lengkap Siswa</td><td style="width: 2%;">:</td><td style="font-weight: bold; font-size: 12pt;">{{ strtoupper($record->nama) }}</td></tr>
+    <tr><td style="color: #4b5563;">Nomor Registrasi</td><td>:</td><td>{{ $record->nomor_pendaftaran }}</td></tr>
+</table>
+
+<p>Menyatakan dengan sesungguhnya bahwa:</p>
+<ol style="margin-top: 10px; padding-left: 25px; line-height: 1.8;">
+    <li>Seluruh data dan dokumen yang saya berikan kepada pihak panitia adalah <b>benar, absah, dan dapat dipertanggungjawabkan secara hukum</b>.</li>
+    <li>Apabila dikemudian hari ditemukan indikasi pemalsuan data/dokumen, saya bersedia menerima sanksi berupa <b>pembatalan kelulusan</b> putra/putri saya.</li>
+    <li>Saya sepenuhnya sanggup dan bersedia bekerja sama dengan pihak madrasah untuk membimbing putra/putri saya agar senantiasa mematuhi <b>Tata Tertib dan Peraturan Madarasah</b>.</li>
+    <li>Saya berkomitmen untuk tidak melakukan tindakan penyuapan, pemaksaan, maupun gratifikasi kepada panitia pelaksana, dewan guru, atau staf madrasah dalam bentuk apa pun.</li>
+</ol>
+
+<p style="margin-top: 20px;">Demikian Pakta Integritas ini saya buat dalam keadaan sadar, sehat jasmani dan rohani, serta tanpa adanya tekanan dari pihak mana pun.</p>
+
+<table class="sig-area sans">
+    <tr>
+        <td style="width: 55%;"></td>
+        <td class="sig-block" style="width: 45%;">
+            <span style="display: block; margin-bottom: 10px;">{{ $kota }}, {{ $tanggalTtd->translatedFormat('d F Y') }}<br>Yang Membuat Pernyataan,</span>
+            <div style="border: 1px dashed #9ca3af; width: 80px; height: 40px; line-height: 40px; margin: 0 auto 10px; font-size: 8pt; color: #9ca3af;">Meterai 10rb</div>
+            <span class="sig-name" style="font-size: 11pt;">{{ strtoupper($record->ayah_nama ?? $record->wali_nama ?? '......................................') }}</span>
+        </td>
+    </tr>
+</table>
+
+{{-- ==================== LEMBAR 3: SURAT PERNYATAAN SISWA ==================== --}}
+<div class="page-break"></div>
+@include('partials.pdf-header', ['instansi' => $instansi])
+
+<div class="doc-title" style="font-size: 13pt; margin-bottom: 25px;">SURAT PERNYATAAN PESERTA DIDIK</div>
+
+<p>Saya yang bertanda tangan di bawah ini, Calon Peserta Didik Baru {{ $namaMadrasah }}:</p>
+<table class="sans" style="margin: 15px 0 20px 20px; width: 90%; background-color: #f9fafb; padding: 15px; border-left: 3px solid #059669;">
+    <tr><td style="width: 30%; color: #4b5563; padding: 4px;">Nama Lengkap</td><td style="width: 2%;">:</td><td style="font-weight: bold; font-size: 12pt;">{{ strtoupper($record->nama) }}</td></tr>
+    <tr><td style="color: #4b5563; padding: 4px;">NISN</td><td>:</td><td>{{ $record->nisn }}</td></tr>
+    <tr><td style="color: #4b5563; padding: 4px;">Asal Sekolah</td><td>:</td><td>{{ strtoupper(optional($record->sekolahAsal)->nama ?? '-') }}</td></tr>
+</table>
+
+<p>Dengan memohon ridha Allah SWT, saya berjanji dan menyatakan bahwa saya:</p>
+<ol style="margin-top: 10px; padding-left: 25px; line-height: 1.8;">
+    <li>Akan senantiasa menjaga nama baik agama, keluarga, dan almamater {{ $namaMadrasah }} di mana pun saya berada.</li>
+    <li>Sanggup mematuhi dan melaksanakan segala tata tertib, peraturan madrasah, serta menjunjung tinggi norma kesopanan dan akhlakul karimah terhadap Guru dan sesama teman.</li>
+    <li>Bersedia mengikuti seluruh kegiatan intrakurikuler maupun ekstrakurikuler yang telah ditetapkan oleh pihak madrasah dengan penuh tanggung jawab.</li>
+    <li><b>TIDAK AKAN</b> terlibat secara langsung maupun tidak langsung dalam tindakan kriminalitas, perkelahian/tawuran pelajar, perundungan (<i>bullying</i>), mengkonsumsi rokok/miras/narkotika, serta pergaulan bebas.</li>
+    <li>Apabila saya terbukti melanggar pernyataan di atas, saya <b>SIAP MENERIMA SANKSI TERBERAT</b> dari pihak madrasah, yaitu dikembalikan pembinaannya kepada orang tua / wali (Dikeluarkan).</li>
+</ol>
+
+<table class="sig-area sans">
+    <tr>
+        <td class="sig-block" style="width: 45%;">
+            <span style="display: block; margin-bottom: 70px;">Mengetahui dan Menyetujui,<br>Orang Tua / Wali Siswa</span>
+            <span class="sig-name" style="font-size: 11pt;">{{ strtoupper($record->ayah_nama ?? $record->wali_nama ?? '......................................') }}</span>
+        </td>
+        <td style="width: 10%;"></td>
+        <td class="sig-block" style="width: 45%;">
+            <span style="display: block; margin-bottom: 70px;">{{ $kota }}, {{ $tanggalTtd->translatedFormat('d F Y') }}<br>Calon Peserta Didik</span>
+            <span class="sig-name" style="font-size: 11pt;">{{ strtoupper($record->nama) }}</span>
+        </td>
+    </tr>
+</table>
+
+{{-- ==================== LEMBAR 4: CHECKLIST ==================== --}}
+<div class="page-break"></div>
+@include('partials.pdf-header', ['instansi' => $instansi])
+
+<div class="doc-title" style="font-size: 13pt; margin-bottom: 25px; font-family: 'Helvetica', sans-serif;">PANDUAN & CHECKLIST DAFTAR ULANG</div>
+
+<p class="sans" style="font-size: 10.5pt; color: #374151; margin-bottom: 15px;">
+    Selamat, Anda telah dinyatakan Lulus! Sebagai syarat akhir penerimaan, harap membawa dokumen-dokumen di bawah ini saat proses Daftar Ulang. Masukkan seluruh dokumen ke dalam <b>MAP SNELHECTER PLASTIK</b> (Warna Merah untuk Laki-laki, Warna Kuning untuk Perempuan).
+</p>
+
+<table class="clean-table" style="width: 100%;">
+    <thead>
+        <tr>
+            <th style="width: 5%; text-align: center;">No</th>
+            <th style="width: 45%;">Nama Dokumen Pemberkasan</th>
+            <th style="width: 10%; text-align: center;">Jumlah</th>
+            <th style="width: 30%;">Keterangan</th>
+            <th style="width: 10%; text-align: center;">Cek (✓)</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr><td style="text-align:center;">1</td><td>Formulir Pendaftaran (Lembar 1)</td><td style="text-align:center; font-weight:bold;">1 Lembar</td><td>Dicetak dari sistem PPDB</td><td style="font-size: 14pt; text-align:center;">☐</td></tr>
+        <tr><td style="text-align:center;">2</td><td>Pakta Integritas (Lembar 2)</td><td style="text-align:center; font-weight:bold;">1 Lembar</td><td>Bermeterai 10.000 & Ditandatangani</td><td style="font-size: 14pt; text-align:center;">☐</td></tr>
+        <tr><td style="text-align:center;">3</td><td>Surat Pernyataan (Lembar 3)</td><td style="text-align:center; font-weight:bold;">1 Lembar</td><td>Ditandatangani Siswa & Ortu</td><td style="font-size: 14pt; text-align:center;">☐</td></tr>
+        <tr><td style="text-align:center;">4</td><td>Fotokopi Kartu Keluarga (KK)</td><td style="text-align:center; font-weight:bold;">2 Lembar</td><td>Dilegalisir Desa/Kelurahan</td><td style="font-size: 14pt; text-align:center;">☐</td></tr>
+        <tr><td style="text-align:center;">5</td><td>Fotokopi Akta Kelahiran</td><td style="text-align:center; font-weight:bold;">2 Lembar</td><td>Jelas & Terbaca</td><td style="font-size: 14pt; text-align:center;">☐</td></tr>
+        <tr><td style="text-align:center;">6</td><td>Fotokopi Ijazah / SKL</td><td style="text-align:center; font-weight:bold;">2 Lembar</td><td>Dilegalisir Asal Sekolah</td><td style="font-size: 14pt; text-align:center;">☐</td></tr>
+        <tr><td style="text-align:center;">7</td><td>Pas Foto Resmi 3x4</td><td style="text-align:center; font-weight:bold;">4 Lembar</td><td>Berlatar Belakang Merah</td><td style="font-size: 14pt; text-align:center;">☐</td></tr>
+        <tr><td style="text-align:center;">8</td><td>Kartu KIP / PKH / KKS</td><td style="text-align:center; font-weight:bold;">1 Lembar</td><td><i style="color: #6b7280;">Hanya bagi yang memiliki</i></td><td style="font-size: 14pt; text-align:center;">☐</td></tr>
+    </tbody>
+</table>
+
+</body>
+</html>
+
+```
+
+---
+
+### 📄 `./resources/views/vendor/filament-easy-footer/easy-footer.blade.php`
+
+```blade
+@php
+    use Filament\Support\Enums\MaxWidth;
+@endphp
+
+<footer
+    @class([
+        'fi-footer my-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-gray-500 dark:text-gray-400',
+        'border-t border-gray-200 dark:border-gray-700 py-4 text-center' => in_array($footerPosition, ['sidebar', 'sidebar.footer']) || $borderTopEnabled,
+        'fi-sidebar flex-col md:flex-row' => in_array($footerPosition, ['sidebar', 'sidebar.footer']),
+        'mx-auto w-full px-4 md:px-6 lg:px-8' => $footerPosition === 'footer',
+        match ($maxContentWidth ??= filament()->getMaxContentWidth() ?? MaxWidth::SevenExtraLarge) {
+            MaxWidth::ExtraSmall, 'xs' => 'max-w-xs',
+            MaxWidth::Small, 'sm' => 'max-w-sm',
+            MaxWidth::Medium, 'md' => 'max-w-md',
+            MaxWidth::Large, 'lg' => 'max-w-lg',
+            MaxWidth::ExtraLarge, 'xl' => 'max-w-xl',
+            MaxWidth::TwoExtraLarge, '2xl' => 'max-w-2xl',
+            MaxWidth::ThreeExtraLarge, '3xl' => 'max-w-3xl',
+            MaxWidth::FourExtraLarge, '4xl' => 'max-w-4xl',
+            MaxWidth::FiveExtraLarge, '5xl' => 'max-w-5xl',
+            MaxWidth::SixExtraLarge, '6xl' => 'max-w-6xl',
+            MaxWidth::SevenExtraLarge, '7xl' => 'max-w-7xl',
+            MaxWidth::Full, 'full' => 'max-w-full',
+            default => $maxContentWidth,
+        } => $footerPosition === 'footer',
+    ])
+>
+    <!-- Copyright & Title -->
+    <div class="flex items-center gap-2 font-medium text-gray-600 dark:text-gray-300">
+        <a href="https://mtsn1pandeglang.sch.id" target="_blank" class="transition hover:text-primary-600 dark:hover:text-primary-400">
+            &copy; 1970 &mdash; {{ now()->format('Y') }} MTs Negeri 1 Pandeglang
+        </a>
+
+        @if($sentence)
+            <span class="hidden md:inline">&bull;</span>
+            <span class="inline-flex items-center">
+                @if($isHtmlSentence)
+                    {!! $sentence !!}
+                @else
+                    {{ $sentence }}
+                @endif
+            </span>
+        @endif
+    </div>
+
+    <!-- Links -->
+    @if(count($links) > 0)
+        <ul class="flex items-center gap-4">
+            @foreach($links as $link)
+                <li>
+                    <a href="{{ $link['url'] }}" target="_blank" class="font-medium transition hover:text-primary-600 dark:hover:text-primary-400">
+                        {{ $link['title'] }}
+                    </a>
+                </li>
+            @endforeach
+        </ul>
+    @endif
+
+    <!-- Logo -->
+    @if($logoPath)
+        <div class="flex items-center gap-2">
+            @if($logoText)
+                <span class="font-medium">{{ $logoText }}</span>
+            @endif
+            @if($logoUrl)
+                <a href="{{ $logoUrl }}" target="_blank" class="transition hover:opacity-80">
+            @endif
+                <img src="{{ $logoPath }}" alt="Logo Footer" class="object-contain w-auto" style="height: {{ $logoHeight }}px;">
+            @if($logoUrl)
+                </a>
+            @endif
+        </div>
+    @endif
+
+    <!-- Github Info -->
+    @if($githubEnabled)
+        <div class="flex items-center pl-4 border-l border-gray-300 dark:border-gray-600">
+            <livewire:devonab.filament-easy-footer.github-version :show-logo="$showLogo" :show-url="$showUrl" />
+        </div>
+    @endif
+
+    <!-- Load Time -->
+    @if($loadTime)
+        <div class="font-mono text-xs text-gray-400 dark:text-gray-500">
+            {{ $loadTimePrefix ?? '' }} {{ $loadTime }}s 🚀
+        </div>
+    @endif
+</footer>
+
+```
+
+---
+
+### 📄 `./resources/views/vendor/filament-easy-footer/github-version.blade.php`
+
+```blade
+<div class="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+    @if($version)
+        <span>{{ str()->startsWith($version, 'v') ? $version : 'v' . $version }}</span>
+
+        @if($showUrl)
+            <a
+                href="{{ $this->getGithubUrl() }}"
+                target="_blank"
+                class="transition-transform hover:scale-110"
+                title="View on GitHub"
+            >
+                @if($showLogo)
+                    <svg viewBox="0 0 24 24" aria-hidden="true" class="transition size-5 fill-gray-500 hover:fill-gray-900 dark:fill-gray-400 dark:hover:fill-white">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.463 2 11.97c0 4.404 2.865 8.14 6.839 9.458.5.092.682-.216.682-.48 0-.236-.008-.864-.013-1.695-2.782.602-3.369-1.337-3.369-1.337-.454-1.151-1.11-1.458-1.11-1.458-.908-.618.069-.606.069-.606 1.003.07 1.531 1.027 1.531 1.027.892 1.524 2.341 1.084 2.91.828.092-.643.35-1.083.636-1.332-2.22-.251-4.555-1.107-4.555-4.927 0-1.088.39-1.979 1.029-2.675-.103-.252-.446-1.266.098-2.638 0 0 .84-.268 2.75 1.022A9.607 9.607 0 0 1 12 6.82c.85.004 1.705.114 2.504.336 1.909-1.29 2.747-1.022 2.747-1.022.546 1.372.202 2.386.1 2.638.64.696 1.028 1.587 1.028 2.675 0 3.83-2.339 4.673-4.566 4.92.359.307.678.915.678 1.846 0 1.332-.012 2.407-.012 2.734 0 .267.18.577.688.48 3.97-1.32 6.833-5.054 6.833-9.458C22 6.463 17.522 2 12 2Z"></path>
+                    </svg>
+                @endif
+            </a>
+        @endif
+    @endif
+</div>
+
+```
+
+---
+
+### 📄 `./resources/views/vendor/filament-easy-footer/.gitkeep`
+
+```
 
 ```
 
@@ -68669,6 +68442,7 @@ return Application::configure(basePath: dirname(__DIR__))
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
         "livewire/livewire": "^3.0",
+        "simplesoftwareio/simple-qrcode": "^4.2",
         "torgodly/html2media": "^1.1"
     },
     "require-dev": {
