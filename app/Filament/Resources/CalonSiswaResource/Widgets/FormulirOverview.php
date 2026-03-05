@@ -150,7 +150,7 @@ class FormulirOverview extends BaseWidget
                     )
                     ->extraAttributes([
                         'class' => 'cursor-pointer',
-                        'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Ditolak'",
+                        'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Tidak+Diterima'",
                     ]),
             ];
         }

@@ -11255,7 +11255,7 @@ class FormulirOverview extends BaseWidget
                     )
                     ->extraAttributes([
                         'class' => 'cursor-pointer',
-                        'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Ditolak'",
+                        'onclick' => "window.location.href='/formulir?tableFilters[status_pendaftaran][value]=Tidak+Diterima'",
                     ]),
             ];
         }
@@ -11539,23 +11539,69 @@ class EkstrakurikulerResource extends Resource
 ```php
 <?php
 
-// CreateFormulirPrestasi.php
-
 namespace App\Filament\Resources\FormulirPrestasiResource\Pages;
 
 use App\Filament\Resources\FormulirPrestasiResource;
 use App\Models\CalonSiswa;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateFormulirPrestasi extends CreateRecord
 {
     protected static string $resource = FormulirPrestasiResource::class;
 
-    // Auto-inject calon_siswa_id saat calon_siswa bikin record baru
+    // -----------------------------------------------------------------------
+    // Validasi awal: calon_siswa harus sudah mendaftar lewat jalur prestasi
+    // -----------------------------------------------------------------------
+
+    public function mount(): void
+    {
+        parent::mount();
+
+        if (auth()->user()?->hasRole('calon_siswa')) {
+            $calonSiswa = CalonSiswa::withoutGlobalScopes()
+                ->where('user_id', auth()->id())
+                ->with('jalurPendaftaran')
+                ->first();
+
+            // Belum isi formulir utama
+            if (! $calonSiswa) {
+                Notification::make()
+                    ->title('Formulir Pendaftaran Belum Diisi')
+                    ->body('Isi formulir pendaftaran utama terlebih dahulu.')
+                    ->warning()
+                    ->send();
+
+                $this->redirect(route('filament.admin.resources.formulir.index'));
+                return;
+            }
+
+            // Bukan jalur prestasi
+            if (
+                $calonSiswa->jalurPendaftaran &&
+                strtolower($calonSiswa->jalurPendaftaran->nama) !== 'prestasi'
+            ) {
+                Notification::make()
+                    ->title('Bukan Jalur Prestasi')
+                    ->body('Fitur ini hanya untuk pendaftar jalur Prestasi.')
+                    ->danger()
+                    ->send();
+
+                $this->redirect(route('filament.admin.resources.formulir.index'));
+            }
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Auto-inject calon_siswa_id untuk calon_siswa
+    // Bypass withoutGlobalScopes() agar tidak kena scope tahun_aktif
+    // -----------------------------------------------------------------------
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         if (auth()->user()?->hasRole('calon_siswa')) {
-            $data['calon_siswa_id'] = CalonSiswa::where('user_id', auth()->id())
+            $data['calon_siswa_id'] = CalonSiswa::withoutGlobalScopes()
+                ->where('user_id', auth()->id())
                 ->value('id');
         }
 
@@ -11577,17 +11623,41 @@ class CreateFormulirPrestasi extends CreateRecord
 ```php
 <?php
 
-// EditFormulirPrestasi.php
-
 namespace App\Filament\Resources\FormulirPrestasiResource\Pages;
 
 use App\Filament\Resources\FormulirPrestasiResource;
+use App\Models\CalonSiswa;
 use Filament\Actions;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 
 class EditFormulirPrestasi extends EditRecord
 {
     protected static string $resource = FormulirPrestasiResource::class;
+
+    // -----------------------------------------------------------------------
+    // Validasi akses: calon_siswa hanya bisa edit milik sendiri
+    // -----------------------------------------------------------------------
+
+    public function mount(int|string $record): void
+    {
+        parent::mount($record);
+
+        if (auth()->user()?->hasRole('calon_siswa')) {
+            $calonSiswaId = CalonSiswa::withoutGlobalScopes()
+                ->where('user_id', auth()->id())
+                ->value('id');
+
+            if ($this->record->calon_siswa_id !== $calonSiswaId) {
+                Notification::make()
+                    ->title('Akses Ditolak')
+                    ->danger()
+                    ->send();
+
+                $this->redirect($this->getResource()::getUrl('index'));
+            }
+        }
+    }
 
     protected function getHeaderActions(): array
     {
@@ -11701,7 +11771,6 @@ class FormulirPrestasiResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
-    // Hanya tampil di navigasi untuk calon_siswa dan role yang perlu review
     public static function shouldRegisterNavigation(): bool
     {
         return auth()->user()?->hasAnyRole([
@@ -11713,64 +11782,98 @@ class FormulirPrestasiResource extends Resource
         ]) ?? false;
     }
 
-    // calon_siswa hanya bisa lihat milik sendiri
+    // -----------------------------------------------------------------------
+    // Query: calon_siswa hanya lihat milik sendiri
+    // Pakai withoutGlobalScopes() agar tidak bergantung pada tahun aktif
+    // -----------------------------------------------------------------------
+
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();
 
         if (auth()->user()?->hasRole('calon_siswa')) {
-            $calonSiswa = CalonSiswa::where('user_id', auth()->id())->first();
+            // withoutGlobalScopes() agar tidak kena scope tahun_aktif & milik_sendiri
+            $calonSiswaId = CalonSiswa::withoutGlobalScopes()
+                ->where('user_id', auth()->id())
+                ->value('id');
 
-            return $query->where(
-                'calon_siswa_id',
-                $calonSiswa?->id
-            );
+            return $query->where('calon_siswa_id', $calonSiswaId);
         }
 
         return $query;
     }
 
+    // -----------------------------------------------------------------------
+    // Form
+    // -----------------------------------------------------------------------
+
     public static function form(Form $form): Form
     {
-        $isCalonSiswa = auth()->user()?->hasRole('calon_siswa');
+        $isCalonSiswa  = auth()->user()?->hasRole('calon_siswa');
+        $isEditor      = auth()->user()?->hasAnyRole(['admin', 'super_admin']);
+
+        // Ambil calon siswa yang login (bypass global scope)
+        $calonSiswaId  = $isCalonSiswa
+            ? CalonSiswa::withoutGlobalScopes()->where('user_id', auth()->id())->value('id')
+            : null;
+
+        // Ambil NISN untuk path upload (nullable-safe)
+        $nisn = $isCalonSiswa
+            ? CalonSiswa::withoutGlobalScopes()->where('user_id', auth()->id())->value('nisn')
+            : null;
 
         return $form->schema([
-            // calon_siswa: otomatis diisi dari akun login
-            // role lain: bisa pilih manual (untuk koreksi admin)
+
+            // ------------------------------------------------------------------
+            // Calon Siswa — hidden untuk calon_siswa (auto-inject via mutate),
+            // tampil untuk admin/super_admin supaya bisa koreksi manual.
+            // WAJIB dehydrated(true) agar nilai tetap dikirim meski hidden.
+            // ------------------------------------------------------------------
             Select::make('calon_siswa_id')
                 ->label('Calon Siswa')
-                ->relationship('calonSiswa', 'nama')
+                ->relationship(
+                    'calonSiswa',
+                    'nama',
+                    // Tampilkan semua calon siswa lintas tahun untuk admin
+                    fn(Builder $query) => $query->withoutGlobalScopes()
+                )
+                ->getOptionLabelFromRecordUsing(
+                    fn($record) => "{$record->nama} — {$record->nisn}"
+                )
                 ->searchable()
                 ->preload()
                 ->required()
+                ->default($calonSiswaId)
                 ->hidden($isCalonSiswa)
-                ->default(function () use ($isCalonSiswa) {
-                    if ($isCalonSiswa) {
-                        return CalonSiswa::where('user_id', auth()->id())
-                            ->value('id');
-                    }
+                ->dehydrated(true), // ← FIX: nilai tetap dikirim meski field hidden
 
-                    return null;
-                }),
-
+            // ------------------------------------------------------------------
+            // Jenis Prestasi
+            // ------------------------------------------------------------------
             Select::make('prestasi_id')
                 ->label('Jenis Prestasi')
                 ->options(
-                    Prestasi::all()->mapWithKeys(fn ($p) => [
-                        $p->id => "{$p->jenis} — {$p->nama}".($p->tingkat ? " ({$p->tingkat})" : ''),
-                    ])
+                    Prestasi::all()->mapWithKeys(
+                        fn($p) => [
+                            $p->id => "{$p->jenis} — {$p->nama}" . ($p->tingkat ? " ({$p->tingkat})" : ''),
+                        ]
+                    )
                 )
                 ->searchable()
                 ->required()
-                ->disabled(! $isCalonSiswa && ! auth()->user()?->hasAnyRole(['admin', 'super_admin']))
+                // Verifikator & panitia hanya view — tidak bisa edit
+                ->disabled(! $isCalonSiswa && ! $isEditor)
                 ->columnSpanFull(),
 
+            // ------------------------------------------------------------------
+            // Detail Prestasi
+            // ------------------------------------------------------------------
             TextInput::make('nama_prestasi')
                 ->label('Nama / Judul Prestasi')
                 ->required()
                 ->maxLength(100)
                 ->placeholder('Contoh: Juara 1 MTQ Tingkat Kabupaten')
-                ->disabled(! $isCalonSiswa && ! auth()->user()?->hasAnyRole(['admin', 'super_admin'])),
+                ->disabled(! $isCalonSiswa && ! $isEditor),
 
             TextInput::make('tahun_prestasi')
                 ->label('Tahun Prestasi')
@@ -11779,15 +11882,20 @@ class FormulirPrestasiResource extends Resource
                 ->minValue(2000)
                 ->maxValue((int) date('Y'))
                 ->placeholder((string) date('Y'))
-                ->disabled(! $isCalonSiswa && ! auth()->user()?->hasAnyRole(['admin', 'super_admin'])),
+                ->disabled(! $isCalonSiswa && ! $isEditor),
 
             TextInput::make('penyelenggara_prestasi')
                 ->label('Penyelenggara')
                 ->required()
                 ->maxLength(100)
                 ->placeholder('Contoh: Kementerian Agama Kabupaten Pandeglang')
-                ->disabled(! $isCalonSiswa && ! auth()->user()?->hasAnyRole(['admin', 'super_admin'])),
+                ->disabled(! $isCalonSiswa && ! $isEditor),
 
+            // ------------------------------------------------------------------
+            // Berkas Prestasi
+            // Directory menggunakan NISN agar konsisten dengan CalonSiswa
+            // Fallback ke 'umum' jika NISN tidak ditemukan (edge case admin input)
+            // ------------------------------------------------------------------
             FileUpload::make('berkas_prestasi')
                 ->label('Berkas Bukti Prestasi')
                 ->helperText('Format: JPG, PNG, atau PDF. Ukuran: 10 KB – 1 MB.')
@@ -11795,12 +11903,19 @@ class FormulirPrestasiResource extends Resource
                 ->minSize(10)
                 ->maxSize(1024)
                 ->visibility('private')
-                ->directory('berkas/prestasi')
+                ->directory(fn() => 'berkas/prestasi/' . ($nisn ?? 'umum'))
                 ->downloadable()
-                ->disabled(! $isCalonSiswa && ! auth()->user()?->hasAnyRole(['admin', 'super_admin']))
+                ->openable()
+                ->fetchFileInformation(false)
+                ->disabled(! $isCalonSiswa && ! $isEditor)
                 ->columnSpanFull(),
+
         ])->columns(2);
     }
+
+    // -----------------------------------------------------------------------
+    // Table
+    // -----------------------------------------------------------------------
 
     public static function table(Table $table): Table
     {
@@ -11825,11 +11940,11 @@ class FormulirPrestasiResource extends Resource
                 TextColumn::make('prestasi.tingkat')
                     ->label('Tingkat')
                     ->badge()
-                    ->color(fn ($state) => match ($state) {
-                        'Nasional' => 'danger',
-                        'Provinsi' => 'warning',
+                    ->color(fn($state) => match ($state) {
+                        'Nasional'       => 'danger',
+                        'Provinsi'       => 'warning',
                         'Kabupaten/Kota' => 'info',
-                        default => 'gray',
+                        default          => 'gray',
                     }),
 
                 TextColumn::make('tahun_prestasi')
@@ -11843,9 +11958,9 @@ class FormulirPrestasiResource extends Resource
 
                 TextColumn::make('berkas_prestasi')
                     ->label('Berkas')
-                    ->formatStateUsing(fn ($state) => $state ? '✅ Ada' : '❌ Belum upload')
+                    ->formatStateUsing(fn($state) => $state ? '✅ Ada' : '❌ Belum upload')
                     ->badge()
-                    ->color(fn ($state) => $state ? 'success' : 'danger'),
+                    ->color(fn($state) => $state ? 'success' : 'danger'),
 
                 TextColumn::make('updated_at')
                     ->label('Diperbarui')
@@ -11854,7 +11969,7 @@ class FormulirPrestasiResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('prestasi.jenis')
+                Tables\Filters\SelectFilter::make('prestasi_id')
                     ->relationship('prestasi', 'jenis')
                     ->label('Jenis Prestasi'),
             ])
@@ -11881,10 +11996,10 @@ class FormulirPrestasiResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListFormulirPrestasis::route('/'),
+            'index'  => Pages\ListFormulirPrestasis::route('/'),
             'create' => Pages\CreateFormulirPrestasi::route('/create'),
-            'view' => Pages\ViewFormulirPrestasi::route('/{record}'),
-            'edit' => Pages\EditFormulirPrestasi::route('/{record}/edit'),
+            'view'   => Pages\ViewFormulirPrestasi::route('/{record}'),
+            'edit'   => Pages\EditFormulirPrestasi::route('/{record}/edit'),
         ];
     }
 }
@@ -22142,7 +22257,7 @@ class CalonSiswaImporter extends Importer
 
             ImportColumn::make('status_pendaftaran')
                 ->label('Status Pendaftaran')
-                ->rules(['nullable', 'in:Diproses,Berkas Tidak Lengkap,Diverifikasi,Ditolak,Diterima,Diterima Di Kelas Reguler,Diterima Di Kelas Unggulan']),
+                ->rules(['nullable', 'in:Diproses,Berkas Tidak Lengkap,Diverifikasi,Ditolak,Diterima,Tidak Diterima,Diterima Di Kelas Reguler,Diterima Di Kelas Unggulan']),
 
             ImportColumn::make('kelas')
                 ->label('Kelas')
@@ -22163,14 +22278,14 @@ class CalonSiswaImporter extends Importer
     public static function getCompletedNotificationBody(Import $import): string
     {
         $body = 'Import calon siswa selesai. '
-            .number_format($import->successful_rows).' '
-            .str('baris')->plural($import->successful_rows)
-            .' berhasil diimport.';
+            . number_format($import->successful_rows) . ' '
+            . str('baris')->plural($import->successful_rows)
+            . ' berhasil diimport.';
 
         if ($failedRowsCount = $import->getFailedRowsCount()) {
-            $body .= ' '.number_format($failedRowsCount).' '
-                .str('baris')->plural($failedRowsCount)
-                .' gagal diimport.';
+            $body .= ' ' . number_format($failedRowsCount) . ' '
+                . str('baris')->plural($failedRowsCount)
+                . ' gagal diimport.';
         }
 
         return $body;

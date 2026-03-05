@@ -1,4 +1,3 @@
-
 # Skills & Project Convention Reference
 
 Dokumen ini digunakan sebagai konteks bagi AI assistant saat membantu pengembangan project **MTsN 1 Pandeglang**. Baca dokumen ini sebelum memberikan saran kode atau arsitektur.
@@ -52,21 +51,20 @@ WHATSAPP_ENDPOINT=https://wapi.zedlabs.id/api/messages/send
 WHATSAPP_API_KEY=78606c1a720db7ec075dcc4eb81be4c6015cb8324f649bba
 ```
 
-Integrasi dilakukan via HTTP POST ke endpoint di atas. Semua notifikasi (OTP, verifikasi, hasil seleksi, dll.) dikirim melalui gateway yang sama.
-
-#### Contoh Service
+Integrasi dilakukan via HTTP POST ke endpoint di atas. Header menggunakan `X-Api-Key`, body menggunakan `number` (format `628xx`) dan `message`. Semua notifikasi dikirim melalui gateway yang sama.
 
 ```php
 // app/Services/WhatsAppService.php
-
 class WhatsAppService
 {
     public function send(string $phone, string $message): bool
     {
+        $normalized = $this->normalizePhone($phone); // 08xx → 628xx
+
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . config('services.whatsapp.api_key'),
+            'X-Api-Key' => config('services.whatsapp.api_key'),
         ])->post(config('services.whatsapp.endpoint'), [
-            'phone'   => $phone,
+            'number'  => $normalized,
             'message' => $message,
         ]);
 
@@ -88,19 +86,26 @@ class WhatsAppService
 Semua entitas utama memiliki relasi ke `TahunPendaftaran`. Query wajib selalu di-scope berdasarkan `tahun_pendaftaran_id` yang aktif agar data antar periode tidak bercampur.
 
 ```php
-// Contoh global scope pada CalonSiswa
+// Global scope pada CalonSiswa — menggunakan once() agar tidak N+1
 protected static function booted(): void
 {
     static::addGlobalScope('tahun_aktif', function (Builder $builder) {
-        $tahun = TahunPendaftaran::where('status', 'Aktif')->first();
+        $tahun = once(fn () => TahunPendaftaran::where('status', 'Aktif')->first());
         if ($tahun) {
             $builder->where('tahun_pendaftaran_id', $tahun->id);
+        }
+    });
+
+    // Scope tambahan: calon_siswa hanya bisa lihat data milik sendiri
+    static::addGlobalScope('milik_sendiri', function (Builder $builder) {
+        if (auth()->check() && auth()->user()->hasRole('calon_siswa')) {
+            $builder->where('user_id', auth()->id());
         }
     });
 }
 ```
 
-> Admin dapat menonaktifkan scope ini saat mengakses data historis lintas tahun.
+> Admin dapat menonaktifkan scope ini saat mengakses data historis lintas tahun menggunakan `withoutGlobalScopes()`.
 
 ---
 
@@ -128,47 +133,55 @@ Branding, nama instansi, dan logo dikonfigurasi di `AdminPanelProvider` dan tida
 | `panitia` | Input nilai tes, assign jadwal, cetak kartu |
 | `calon_siswa` | Registrasi, isi formulir, upload berkas, cetak dokumen |
 
-Role `calon_siswa` di-assign otomatis saat registrasi via `User::booted()`.
+Role `calon_siswa` di-assign otomatis saat registrasi via `User::booted()`. Super admin dikonfigurasi di `filament-shield.php` dengan `name = 'super_admin'` dan `define_via_gate = true`.
 
 ---
 
 ## 📋 Alur Pendaftaran
 
 ### 1. Registrasi Akun
-Calon siswa mengisi nama lengkap, username (NISN), nomor telepon (WhatsApp), email, dan password. Sistem membuat akun dengan `status_aktif = false`.
+Calon siswa mengisi nama lengkap, username (NISN — 10 digit, unique), nomor telepon (WhatsApp), email, dan password. Sistem membuat akun dengan `status = 'Aktif'` (default) dan `email_verified_at = null`.
+
+Registrasi hanya dibuka jika `now()` berada dalam rentang `tanggal_ppdb_mulai` s/d `tanggal_ppdb_selesai` pada `TahunPendaftaran` yang aktif. Pengecekan dilakukan di `RegisterCustom::mount()` dengan cache 60 detik.
 
 ### 2. Verifikasi OTP via WhatsApp
-- Sistem generate OTP 6 digit, disimpan di Redis dengan TTL 5 menit (`key: reset_otp:{user_id}`)
-- OTP dikirim ke nomor WhatsApp via gateway
-- Setelah OTP valid → `status_aktif = true`, `email_verified_at` terisi
+- Sistem generate OTP 6 digit, disimpan di Redis TTL 5 menit (`key: otp:{user_id}`)
+- Cooldown 60 detik per request (`key: otp_cooldown:{user_id}`)
+- OTP dikirim ke nomor WhatsApp via `WhatsAppService`
+- Setelah OTP valid → `email_verified_at = now()`, `status = 'Aktif'`, user di-login otomatis
+- Redis key OTP & cooldown dihapus setelah verifikasi berhasil
 
 ### 3. Login
-Login menggunakan username/email + password. Sistem memvalidasi credentials dan `status_aktif = true`.
+Login menggunakan email atau username (NISN). Sistem memvalidasi credentials via `LoginCustom` yang meng-override `getCredentialsFromFormData()` untuk detect tipe login.
 
 ### 4. Isi Formulir Prestasi *(Jalur Prestasi)*
-Calon siswa memilih jenis prestasi dari `PrestasiPendaftaran` yang aktif, mengisi `nama_prestasi`, `tahun_prestasi`, `penyelenggara_prestasi`. Data disimpan ke `FormulirPrestasi` (belum upload berkas).
+Calon siswa memilih jenis prestasi dari master `Prestasi`, mengisi `nama_prestasi`, `tahun_prestasi`, `penyelenggara_prestasi`. Data disimpan ke tabel `formulir_prestasis` dengan `calon_siswa_id` (UUID FK) dan `prestasi_id`.
 
 ### 5. Isi Formulir Pendaftaran
-Mengisi `FormulirPendaftaran` lengkap:
-- Identitas diri: NIK, KK, akta, tempat/tanggal lahir, jenis kelamin, agama, dll.
-- Data keluarga: ayah, ibu, wali (nama, NIK, alamat, pekerjaan, penghasilan, pendidikan)
-- Alamat domisili dengan RT/RW + cascade dropdown wilayah
-- Sekolah asal dari tabel `Instansi`
-- Data KIP jika `penerima_kip = true`
+Mengisi `CalonSiswa` lengkap:
+- Identitas diri: NIK, KK, NISN, akta, tempat/tanggal lahir, jenis kelamin, agama, dll.
+- Data keluarga: ayah, ibu, wali (nama, NIK, alamat, pekerjaan, penghasilan, pendidikan, status hidup/meninggal)
+- Alamat domisili dengan cascade dropdown wilayah (Negara → Provinsi → Kabupaten → Kecamatan → Kelurahan)
+- Sekolah asal dari tabel `SekolahAsal`
+- Data KIP/KKS/PKH jika `penerima_kip = true`
 
-Sistem generate `nomor_pendaftaran` otomatis, `status_formulir = Diproses`.
+`nomor_pendaftaran` di-generate otomatis saat `creating` dengan format `PPDB-{TAHUN}-{6 digit seq}`, menggunakan `lockForUpdate()` untuk mencegah race condition.
+
+`status_formulir` default `'Diproses'`.
 
 ### 6. Upload Berkas Pendaftaran
 
 | Berkas | Wajib |
 |---|---|
-| Foto formal berlatar merah | ✅ |
-| Kartu Keluarga (KK) | ✅ |
-| Akta Kelahiran | ✅ |
-| Surat Keterangan Berkelakuan Baik (SKBB) | ✅ |
-| Surat Keterangan Aktif Belajar (SKAB) | ✅ |
-| Screenshot NISN | Opsional |
-| Kartu Indonesia Pintar (KIP) | Opsional (jika penerima KIP) |
+| Foto formal berlatar merah (`berkas_foto`) | ✅ |
+| Kartu Keluarga (`berkas_kk`) | ✅ |
+| Akta Kelahiran (`berkas_akta`) | ✅ |
+| Surat Keterangan Berkelakuan Baik (`berkas_skbb`) | ✅ |
+| Surat Keterangan Aktif Belajar (`berkas_skab`) | ✅ |
+| Screenshot NISN (`berkas_nisn`) | Opsional |
+| Kartu Indonesia Pintar (`berkas_kip`) | Opsional |
+| Berkas KKS (`berkas_kks`) | Opsional |
+| Berkas PKH (`berkas_pkh`) | Opsional |
 
 **Validasi:** format image/PDF, ukuran min 10 KB – max 1 MB.
 
@@ -176,55 +189,44 @@ Sistem generate `nomor_pendaftaran` otomatis, `status_formulir = Diproses`.
 Upload `berkas_prestasi` per entri `FormulirPrestasi`. Validasi format dan ukuran sama.
 
 ### 8. Validasi oleh Verifikator
-Verifikator me-review formulir dan berkas. Status diubah ke `Disetujui` atau `Ditolak`. Notifikasi hasil dikirim via WhatsApp. Jika ditolak, calon siswa dapat merevisi.
+Verifikator me-review formulir dan berkas. `status_formulir` diubah ke `'Disetujui'` atau `'Ditolak'`. Notifikasi hasil dikirim via WhatsApp.
 
 ### 9. Cetak Formulir Pendaftaran
-Tersedia setelah `status_formulir = Disetujui`. PDF berisi nomor pendaftaran dan seluruh data tervalidasi.
+Tersedia setelah `status_formulir = 'Disetujui'`. PDF dirender dari `resources/views/formulir.blade.php`.
 
 ### 10. Pengumuman Jalur Prestasi
 Panitia input nilai prestasi → sistem ranking otomatis → generate `status_pendaftaran`. Notifikasi via WhatsApp. Yang **diterima** langsung mendapat kartu penempatan kelas; yang **tidak diterima** ikut tes akademik/praktik.
 
 ### 11. Cetak Kartu Tes
-Panitia assign jadwal tes (tanggal, ruang, sesi) dan generate `tes_nomor`. Calon siswa cetak kartu tes.
+Panitia assign `tes_sesi`, `tes_ruang`, `tes_akademik` (datetime), `tes_praktik` (datetime). Calon siswa cetak kartu tes dari `resources/views/kartu-tes.blade.php`. Kartu memuat username (NISN) dan password (NIK) untuk login CBT.
 
 ### 12. Tes Akademik & Praktik
-Panitia input `nilai_akademik_tes` dan `nilai_praktik_tes`. Sistem menghitung:
+Panitia input `nilai_akademik` dan `nilai_praktik`. Sistem menghitung:
 
 ```
-Nilai Total = (Nilai Akademik × Bobot%) + (Nilai Praktik × Bobot%)
+Nilai Total = (nilai_akademik × bobot_nilai_akademik%) + (nilai_praktik × bobot_nilai_praktik%)
 ```
-
-Ranking tes di-generate otomatis.
 
 ### 13. Pengumuman Hasil Tes
-Panitia tentukan passing grade dan kuota. Sistem generate `status_pendaftaran = Diterima / Tidak Diterima` berdasarkan ranking. Notifikasi via WhatsApp. Pengumuman dipublish di landing page sesuai jadwal `TahunPendaftaran`.
+Sistem generate `status_pendaftaran` berdasarkan ranking. Notifikasi via WhatsApp. PDF hasil dari `resources/views/skl.blade.php` — konten berubah dinamis tergantung periode pengumuman jalur yang sedang aktif.
 
 ### 14. Cetak Dokumen Daftar Ulang
-Calon siswa yang diterima dapat mencetak:
-- Formulir Daftar Ulang
-- Pakta Integritas Wali
-- Pakta Integritas Siswa
-- Tata Tertib Madrasah
+Calon siswa yang diterima dapat mencetak dokumen daftar ulang (trigger: `status_pendaftaran = 'Diterima'`).
 
-Semua dokumen berisi nomor pendaftaran, data lengkap, dan QR code verifikasi.
-
-### 15. Pemberkasan
-Calon siswa datang ke sekolah membawa printout dokumen + berkas asli. Panitia verifikasi fisik dokumen.
-
-### 16. MATSAMA
-Calon siswa resmi terdaftar. Mengikuti Masa Ta'aruf Siswa Madrasah (MATSAMA). Data siap migrasi ke sistem akademik.
+### 15. Pemberkasan & MATSAMA
+Calon siswa datang membawa printout + berkas asli. Data siap migrasi ke sistem akademik.
 
 ---
 
 ## 🔄 Reset Password via WhatsApp
 
-1. Calon siswa input username/email/nomor telepon
-2. Sistem validasi ke tabel `Users`, cek `status_aktif = true`
-3. Generate OTP 6 digit → simpan di Redis TTL 5 menit (`key: reset_otp:{user_id}`)
-4. OTP dikirim via WhatsApp gateway
-5. Calon siswa input OTP → jika valid, generate token reset (TTL 15 menit) di Redis
-6. Input password baru (min 8 karakter) → hash bcrypt → update ke `users`
-7. Token dihapus dari Redis → notifikasi WhatsApp konfirmasi → redirect login
+1. Input username / email / nomor telepon di `ForgotPasswordCustom`
+2. Sistem cari user (`username OR email OR telepon`) dengan `status = 'Aktif'`
+3. Cek cooldown 60 detik (`key: otp_cooldown:{user_id}`)
+4. Generate OTP 6 digit → simpan di Redis TTL 5 menit (`key: reset_otp:{user_id}`)
+5. Input OTP di `ResetPasswordOtp` → jika valid, generate token reset TTL 15 menit (`key: reset_token:{user_id}`)
+6. Input password baru di `NewPassword` → hash bcrypt → update ke `users`
+7. Hapus `reset_token`, `otp_cooldown` dari Redis → kirim notifikasi WhatsApp konfirmasi → redirect login
 
 ---
 
@@ -247,47 +249,81 @@ Semua notifikasi dikirim melalui `WhatsAppService`. Trigger notifikasi:
 
 ### Prinsip Isolasi Data
 
-Setiap tabel utama memiliki kolom `tahun_pendaftaran_id` sebagai foreign key ke `tahun_pendaftarans`. Ini menjamin data tiap periode PPDB berdiri sendiri.
-
 ```
 tahun_pendaftarans
     └── jalur_pendaftarans       (tahun_pendaftaran_id)
     └── calon_siswas             (tahun_pendaftaran_id)
     └── informasis               (tahun_pendaftaran_id)
-    └── panitia (pimpinan, ketua, sekretaris, bendahara, anggota)
+    └── pimpinans                (tahun_pendaftaran_id)
+    └── ketuas                   (tahun_pendaftaran_id)
+    └── sekretaris               (tahun_pendaftaran_id)
+    └── bendaharas               (tahun_pendaftaran_id)
+    └── anggotas                 (tahun_pendaftaran_id)
 ```
 
 ### `users`
 ```
-name, username (NISN – unique), email (unique),
-password (hashed), avatar, status (Aktif/Nonaktif), soft deletes
+id, name (50), username (13, unique — NISN untuk calon_siswa),
+telepon (20, nullable), status (Aktif/Nonaktif),
+email (50, unique), email_verified_at, password (hashed),
+avatar, remember_token, timestamps, soft_deletes
 ```
 
 ### `calon_siswas` (UUID PK)
 ```
-90+ kolom — data pribadi, orang tua, alamat multi-level,
-berkas dokumen, nilai tes, status pendaftaran
-FK: tahun_pendaftaran_id, jalur_pendaftaran_id, sekolah_asal_id,
-    kelas_id, ekstrakurikuler_id, mata_pelajaran_id,
-    15x wilayah (negara/provinsi/kabupaten/kecamatan/kelurahan)
+id (uuid), user_id (FK), nomor_pendaftaran (unique),
+tahun_pendaftaran_id (FK), nama, nisn (unique), nik (encrypted, unique),
+kk (encrypted), tempat_lahir, tanggal_lahir, tahun_lulus,
+jenis_kelamin (Pria/Wanita), golongan_darah, agama, anak_ke,
+jumlah_saudara, tinggal_bersama, jarak_ke_sekolah, disabilitas,
+tinggi_badan, berat_badan, penerima_kip (boolean),
+no_kip, no_kks, no_pkh, siswa_telepon (encrypted),
+siswa_alamat, 5x siswa_*_id (wilayah FK),
+berkas_foto, berkas_kk, berkas_akta, berkas_kip, berkas_kks,
+berkas_pkh, berkas_nisn, berkas_skbb, berkas_skab, berkas_prestasi,
+[data ibu: nama, nik encrypted, telepon encrypted, pekerjaan,
+ penghasilan, pendidikan, status, alamat, 5x ibu_*_id],
+[data ayah: sama + kepemilikan_rumah],
+[data wali: sama, semua nullable],
+sekolah_asal_id, jalur_pendaftaran_id, prestasi_id,
+ekstrakurikuler_id, mata_pelajaran_id, kelas_id,
+bobot_nilai_akademik, bobot_nilai_praktik,
+nilai_akademik, nilai_praktik,
+status_pendaftaran (enum), status_formulir (enum),
+tes_sesi, tes_ruang, tes_akademik (datetime), tes_praktik (datetime),
+timestamps, soft_deletes
+```
+
+### `formulir_prestasis`
+```
+id, calon_siswa_id (char 36, FK UUID), prestasi_id (FK),
+nama_prestasi, tahun_prestasi (year), penyelenggara_prestasi,
+berkas_prestasi (nullable), timestamps
 ```
 
 ### Data Terenkripsi
 ```php
-'nik'            => 'encrypted',
-'kk'             => 'encrypted',
-'ibu_nik'        => 'encrypted',
-'ayah_nik'       => 'encrypted',
-'wali_nik'       => 'encrypted',
-'siswa_telepon'  => 'encrypted',
-'ibu_telepon'    => 'encrypted',
-'ayah_telepon'   => 'encrypted',
-'wali_telepon'   => 'encrypted',
+'nik'           => 'encrypted',
+'kk'            => 'encrypted',
+'ibu_nik'       => 'encrypted',
+'ayah_nik'      => 'encrypted',
+'wali_nik'      => 'encrypted',
+'siswa_telepon' => 'encrypted',
+'ibu_telepon'   => 'encrypted',
+'ayah_telepon'  => 'encrypted',
+'wali_telepon'  => 'encrypted',
+```
+
+### Status Formulir
+```php
+'Diproses'   // default saat formulir pertama dibuat
+'Disetujui'
+'Ditolak'
 ```
 
 ### Status Pendaftaran
 ```php
-'Diproses'
+'Diproses'                  // default
 'Berkas Tidak Lengkap'
 'Diverifikasi'
 'Tidak Diterima'
@@ -300,7 +336,19 @@ FK: tahun_pendaftaran_id, jalur_pendaftaran_id, sekolah_asal_id,
 ```
 Negara → Provinsi → Kabupaten → Kecamatan → Kelurahan
 ```
-Digunakan untuk alamat siswa, orang tua/wali, sekolah asal, dan sekolah tujuan.
+Digunakan untuk alamat siswa, orang tua/wali, sekolah asal, dan sekolah tujuan (15 FK total di `calon_siswas`).
+
+### Master Data (Non-isolated)
+```
+prestasis      — jenis, nama, tingkat, kategori, peringkat
+ekstrakurikulers — nama
+mata_pelajarans  — nama
+jurusans         — nama
+kelas            — nama, jurusan_id
+sekolah_asals    — nama, npsn, jenjang, status, wilayah, dll
+sekolahs         — profil instansi MTsN, FK ke pimpinan
+negaras / provinsis / kabupatens / kecamatans / kelurahans
+```
 
 ---
 
@@ -310,89 +358,91 @@ Digunakan untuk alamat siswa, orang tua/wali, sekolah asal, dan sekolah tujuan.
 
 | Milestone | Field |
 |---|---|
-| Periode PPDB global | `tanggal_ppdb_mulai` / `selesai` |
-| Pendaftaran Jalur Prestasi | `tanggal_pendaftaran_jalur_prestasi_mulai` / `selesai` |
-| Pengumuman Jalur Prestasi | `tanggal_pengumuman_jalur_prestasi_mulai` / `selesai` |
-| Pendaftaran Jalur Reguler | `tanggal_pendaftaran_jalur_reguler_mulai` / `selesai` |
-| Pengumuman Jalur Reguler | `tanggal_pengumuman_jalur_reguler_mulai` / `selesai` |
-| Pendaftaran Jalur Afirmasi | `tanggal_pendaftaran_jalur_afirmasi_mulai` / `selesai` |
-| Pendaftaran Jalur Zonasi | `tanggal_pendaftaran_jalur_zonasi_mulai` / `selesai` |
-| Pendaftaran Jalur Mutasi | `tanggal_pendaftaran_jalur_mutasi_mulai` / `selesai` |
-| Penerbitan Kartu Tes | `tanggal_penerbitan_kartu_tes_mulai` / `selesai` |
-| Tes Akademik | `tanggal_tes_akademik_mulai` / `selesai` |
-| Tes Praktik | `tanggal_tes_praktik_mulai` / `selesai` |
-| Registrasi Berkas | `tanggal_registrasi_berkas_mulai` / `selesai` |
+| Periode PPDB global | `tanggal_ppdb_mulai` / `tanggal_ppdb_selesai` |
+| Pendaftaran Jalur Prestasi | `tanggal_pendaftaran_jalur_prestasi_mulai` / `_selesai` |
+| Pengumuman Jalur Prestasi | `tanggal_pengumuman_jalur_prestasi_mulai` / `_selesai` |
+| Pendaftaran Jalur Reguler | `tanggal_pendaftaran_jalur_reguler_mulai` / `_selesai` |
+| Pengumuman Jalur Reguler | `tanggal_pengumuman_jalur_reguler_mulai` / `_selesai` |
+| Pendaftaran Jalur Afirmasi | `tanggal_pendaftaran_jalur_afirmasi_mulai` / `_selesai` |
+| Pengumuman Jalur Afirmasi | `tanggal_pengumuman_jalur_afirmasi_mulai` / `_selesai` |
+| Pendaftaran Jalur Zonasi | `tanggal_pendaftaran_jalur_zonasi_mulai` / `_selesai` |
+| Pengumuman Jalur Zonasi | `tanggal_pengumuman_jalur_zonasi_mulai` / `_selesai` |
+| Pendaftaran Jalur Mutasi | `tanggal_pendaftaran_jalur_mutasi_mulai` / `_selesai` |
+| Pengumuman Jalur Mutasi | `tanggal_pengumuman_jalur_mutasi_mulai` / `_selesai` |
+| Penerbitan Kartu Tes | `tanggal_penerbitan_kartu_tes_mulai` / `_selesai` |
+| Tes Akademik | `tanggal_tes_akademik_mulai` / `_selesai` |
+| Tes Praktik | `tanggal_tes_praktik_mulai` / `_selesai` |
+| Registrasi Berkas | `tanggal_registrasi_berkas_mulai` / `_selesai` |
+
+Field tambahan: `kuantitas` (total daya tampung), `status` (Aktif/Nonaktif).
 
 ---
 
 ## 🖨️ Dokumen PDF
 
-| Dokumen | Trigger |
-|---|---|
-| Formulir Pendaftaran | `status_formulir = Disetujui` |
-| Kartu Tes | Jadwal tes sudah di-assign oleh panitia |
-| Kartu Penempatan Kelas | Diterima via jalur prestasi |
-| Formulir Daftar Ulang | `status_pendaftaran = Diterima` |
-| Pakta Integritas Wali | `status_pendaftaran = Diterima` |
-| Pakta Integritas Siswa | `status_pendaftaran = Diterima` |
-| Tata Tertib Madrasah | `status_pendaftaran = Diterima` |
+| Dokumen | View | Trigger |
+|---|---|---|
+| Formulir Pendaftaran | `formulir.blade.php` | `status_formulir = 'Disetujui'` |
+| Kartu Tes | `kartu-tes.blade.php` | `tes_akademik` atau `tes_praktik` sudah di-assign |
+| SKL / Pengumuman | `skl.blade.php` | `status_pendaftaran` sudah di-set |
+| Dokumen Daftar Ulang | *(belum diimplementasi)* | `status_pendaftaran = 'Diterima'` |
+
+Semua view PDF menerima variabel `$record` (instance `CalonSiswa`) dari action Filament. View juga mengambil data `Sekolah::first()`, `TahunPendaftaran` aktif, `Ketua`, `Sekretaris`, `Pimpinan` aktif per `tahun_pendaftaran_id`.
+
+View `skl.blade.php` memiliki logika dinamis — konten teks pembuka dan tanggal TTD berubah sesuai periode pengumuman jalur yang sedang aktif (prestasi / reguler / afirmasi / zonasi / mutasi).
 
 ---
 
-## 🛡️ Keamanan
+## 📊 Filament Resources
 
-- Data sensitif (NIK, KK, telepon) dienkripsi di database via Laravel `encrypted` cast
-- Role-Based Access Control via Spatie Laravel Permission + Filament Shield
-- File upload divalidasi format (image/PDF) dan ukuran (10 KB – 1 MB)
-- OTP disimpan di Redis dengan TTL terbatas (bukan di database)
-- Soft delete untuk semua data penting (audit trail)
-- CSRF protection, SQL injection prevention (Eloquent ORM), XSS protection (Blade)
+Setiap resource memiliki struktur pages standar: `List`, `Create`, `Edit`, `View`.
 
----
-
-## 🌐 Landing Page
-
-| Halaman |
-|---|
-| Landing Page (beranda) |
-| Autentikasi (login, register, lupa password) |
-| Persyaratan Pendaftaran |
-| Alur Pendaftaran |
-| FAQ |
-| Testimonial |
-| Personil Madrasah |
-| Program Madrasah |
-| Ekstrakurikuler |
-| Kebijakan Privasi |
-
----
-
-## 📊 Widgets Dashboard
-
-| Widget | Deskripsi |
-|---|---|
-| Total Pendaftar | Jumlah semua pendaftar tahun aktif |
-| Total Per-Jalur | Breakdown per jalur pendaftaran |
-| Total Per-Gender | Breakdown laki-laki / perempuan |
-| Total Instansi | Jumlah sekolah asal yang mendaftar |
-
-Semua widget di-scope ke `tahun_pendaftaran_id` aktif.
+| Resource | Model | Catatan |
+|---|---|---|
+| `CalonSiswaResource` | `CalonSiswa` | Widget `FormulirOverview` |
+| `UserResource` | `User` | Widget `UserRegisters` |
+| `InformasiResource` | `Informasi` | Widget `InformasiPublished` |
+| `TahunPendaftaranResource` | `TahunPendaftaran` | |
+| `JalurPendaftaranResource` | `JalurPendaftaran` | |
+| `FormulirPrestasiResource` | `FormulirPrestasi` | |
+| `PrestasiResource` | `Prestasi` | |
+| `SekolahResource` | `Sekolah` | Data instansi MTsN |
+| `SekolahAsalResource` | `SekolahAsal` | |
+| `KelasResource` | `Kelas` | |
+| `JurusanResource` | `Jurusan` | |
+| `EkstrakurikulerResource` | `Ekstrakurikuler` | |
+| `MataPelajaranResource` | `MataPelajaran` | |
+| `PimpinanResource` | `Pimpinan` | |
+| `KetuaResource` | `Ketua` | |
+| `SekretarisResource` | `Sekretaris` | |
+| `BendaharaResource` | `Bendahara` | |
+| `AnggotaResource` | `Anggota` | |
+| `NegaraResource` | `Negara` | |
+| `ProvinsiResource` | `Provinsi` | |
+| `KabupatenResource` | `Kabupaten` | |
+| `KecamatanResource` | `Kecamatan` | |
+| `KelurahanResource` | `Kelurahan` | |
+| `RoleResource` | `Role` (Spatie) | Via Filament Shield |
 
 ---
 
-## 🔄 Import / Export
+## 📤 Export / 📥 Import
 
-- Export ke Excel/CSV dengan pilihan kolom dan filter
-- Import bulk via Excel/CSV dengan validasi per baris dan tracking baris gagal
-- Background processing via Laravel Queue
+### CalonSiswaExporter
+Export ke Excel/CSV. Kolom yang tersedia mencakup semua field `CalonSiswa` beserta relasi (sekolah asal, jalur, prestasi, wilayah per entitas, berkas, nilai tes, dll.).
 
-### Field yang dapat diimport (`CalonSiswaImporter`)
+### CalonSiswaImporter
+Import bulk via Excel/CSV. Field yang dapat diimport:
+
 ```
-nisn, nama, tes_sesi, tes_ruang,
-tes_akademik, tes_praktik,
+nisn (required), nama (required),
+tes_sesi, tes_ruang, tes_akademik (date), tes_praktik (date),
+bobot_nilai_akademik, bobot_nilai_praktik,
 nilai_akademik, nilai_praktik,
-status_pendaftaran, kelas (via relationship)
+status_pendaftaran, kelas (via relationship nama)
 ```
+
+`resolveRecord()` menggunakan `firstOrNew(['nisn' => ...])` dengan `withoutGlobalScopes()` — update existing record jika NISN sudah ada, buat baru jika belum.
 
 ---
 
@@ -405,9 +455,11 @@ status_pendaftaran, kelas (via relationship)
 | `spatie/laravel-permission` | RBAC system |
 | `barryvdh/laravel-dompdf` | PDF generation |
 | `flowframe/laravel-trend` | Statistik & trending |
-| `diogogpinto/filament-auth-ui-enhancer` | Custom auth UI |
-| `devonab/filament-easy-footer` | Custom footer |
+| `diogogpinto/filament-auth-ui-enhancer` | Custom auth UI (split layout) |
+| `devonab/filament-easy-footer` | Custom footer dengan load time |
 | `andreia/filament-nord-theme` | Nord color theme |
+| `laravel/octane` + FrankenPHP | High-performance runtime |
+| `torgodly/html2media` | HTML to media export |
 
 ---
 
@@ -418,8 +470,42 @@ status_pendaftaran, kelas (via relationship)
 ->brandLogo(asset('/img/brand-lightmode.png'))
 ->brandLogoHeight('2.6rem')
 ->favicon(asset('/favicon.ico'))
-// Default: Dark mode, Primary: Green (Nord Palette), Font: Figtree
+->defaultThemeMode(ThemeMode::Dark)
+->colors(['primary' => Color::Green])  // Nord Green palette
+// Font: Figtree
+// Layout: top navigation, full max content width, SPA mode
 ```
+
+Auth UI menggunakan `AuthUIEnhancerPlugin` dengan form panel kiri (45%), background image kanan, form panel background `#010101`.
+
+---
+
+## 🔐 Auth Pages (Custom)
+
+| Class | Route Name | Keterangan |
+|---|---|---|
+| `LoginCustom` | *(Filament default)* | Login via email atau username |
+| `RegisterCustom` | *(Filament default)* | Cek jadwal PPDB, kirim OTP |
+| `VerifikasiOtp` | `otp.verifikasi` | Verifikasi OTP registrasi |
+| `ForgotPasswordCustom` | `otp.forgot-password` | Input identity, kirim OTP reset |
+| `ResetPasswordOtp` | `otp.reset-password` | Verifikasi OTP reset |
+| `NewPassword` | `otp.new-password` | Input password baru |
+| `EditProfileCustom` | *(Filament profile)* | Edit profil + avatar |
+
+Semua page OTP dilindungi via `session` check di `mount()`. Route didaftarkan di `routes/web.php` dengan middleware `web`.
+
+---
+
+## 🛡️ Keamanan
+
+- Data sensitif (NIK, KK, telepon) dienkripsi via Laravel `encrypted` cast
+- RBAC via Spatie Laravel Permission + Filament Shield (`policies_and_permissions`)
+- File upload divalidasi format (image/PDF) dan ukuran (min 10 KB – max 1 MB); avatar max 500 KB
+- OTP disimpan di Redis dengan TTL terbatas (bukan di database)
+- Cooldown OTP 60 detik untuk mencegah spam
+- Nomor pendaftaran di-generate dengan `lockForUpdate()` untuk concurrency safety
+- Soft delete untuk semua data penting (audit trail)
+- `calon_siswa` hanya bisa mengakses data milik sendiri via global scope `milik_sendiri`
 
 ---
 
@@ -431,7 +517,7 @@ composer install && npm install
 cp .env.example .env && php artisan key:generate
 php artisan migrate --seed
 php artisan shield:install && php artisan shield:generate --all
-composer dev  # Laravel + Queue + Pail + Vite
+composer dev  # Laravel + Queue + Pail + Vite (concurrently)
 
 # Production
 php artisan config:cache
@@ -456,16 +542,19 @@ php artisan migrate:fresh --seed     # Reset database (dev only)
 
 ## ⚠️ Known Limitations
 
-- Registrasi dibuka/tutup otomatis berdasarkan tanggal di `TahunPendaftaran` (tidak perlu toggle manual)
+- Registrasi dibuka/tutup otomatis berdasarkan tanggal `TahunPendaftaran` — tidak perlu toggle manual; cache 60 detik
 - File: max avatar 500 KB, max dokumen 1 MB, min 10 KB
-- Concurrent updates: last-write-wins (belum ada optimistic locking)
-- Data wilayah memerlukan seeding awal
+- Concurrent updates: last-write-wins (belum ada optimistic locking) — kecuali `nomor_pendaftaran` yang sudah pakai `lockForUpdate()`
+- Data wilayah memerlukan seeding awal (data besar — Provinsi, Kabupaten, Kecamatan, Kelurahan Indonesia)
+- `CalonSiswa` menggunakan UUID sebagai PK — FK dari tabel lain (`formulir_prestasis`) harus menggunakan `char(36)`, bukan `foreignId()`
 
 ---
 
 ## 🔮 Future Enhancements
 
 - [ ] Advanced analytics dashboard (per-wilayah, per-sekolah asal)
+- [ ] Dokumen daftar ulang (Pakta Integritas, Tata Tertib) — view `skl.blade.php` masih placeholder `<h1>2</h1>`, `<h1>3</h1>`, `<h1>4</h1>`
+- [ ] Landing page publik (persyaratan, alur, FAQ, testimonial, dll.)
 
 ---
 
