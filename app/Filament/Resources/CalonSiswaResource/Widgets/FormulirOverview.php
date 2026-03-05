@@ -11,15 +11,18 @@ use Illuminate\Support\Facades\Auth;
 class FormulirOverview extends BaseWidget
 {
     protected static bool $isLazy = false;
+
     protected ?string $heading = '♾️ Statistik Pendaftaran';
+
     protected static ?int $sort = 0;
+
     // Refresh tiap 60 detik agar data tetap live
     protected static ?string $pollingInterval = '60s';
 
     protected function getStats(): array
     {
         $isCalonSiswa = Auth::user()->hasRole('calon_siswa');
-        $isAdmin      = ! $isCalonSiswa;
+        $isAdmin = ! $isCalonSiswa;
 
         // ----------------------------------------------------------------
         // 1 query — hitung semua status_pendaftaran sekaligus
@@ -37,16 +40,16 @@ class FormulirOverview extends BaseWidget
             ->pluck('total', 'status_formulir')
             ->toArray();
 
-        $totalPendaftar      = array_sum($statusCount);
-        $diproses            = $statusCount['Diproses'] ?? 0;
-        $berkasTidakLengkap  = $statusCount['Berkas Tidak Lengkap'] ?? 0;
-        $diverifikasi        = $statusCount['Diverifikasi'] ?? 0;
-        $diterimaPrestasi    = $statusCount['Diterima'] ?? 0;
-        $diterimaReguler     = $statusCount['Diterima Di Kelas Reguler'] ?? 0;
-        $diterimaUnggulan    = $statusCount['Diterima Di Kelas Unggulan'] ?? 0;
-        $tidakDiterima       = $statusCount['Tidak Diterima'] ?? 0;
-        $formulirDisetujui   = $formulirCount['Disetujui'] ?? 0;
-        $formulirDitolak     = $formulirCount['Ditolak'] ?? 0;
+        $totalPendaftar = array_sum($statusCount);
+        $diproses = $statusCount['Diproses'] ?? 0;
+        $berkasTidakLengkap = $statusCount['Berkas Tidak Lengkap'] ?? 0;
+        $diverifikasi = $statusCount['Diverifikasi'] ?? 0;
+        $diterimaPrestasi = $statusCount['Diterima'] ?? 0;
+        $diterimaReguler = $statusCount['Diterima Di Kelas Reguler'] ?? 0;
+        $diterimaUnggulan = $statusCount['Diterima Di Kelas Unggulan'] ?? 0;
+        $tidakDiterima = $statusCount['Tidak Diterima'] ?? 0;
+        $formulirDisetujui = $formulirCount['Disetujui'] ?? 0;
+        $formulirDitolak = $formulirCount['Ditolak'] ?? 0;
 
         // ----------------------------------------------------------------
         // Chart helper — 1 query per stat, dijalankan lazy
@@ -55,7 +58,7 @@ class FormulirOverview extends BaseWidget
             return CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
                 ->when(
                     $status,
-                    fn($q) => $q->where('status_pendaftaran', $status)
+                    fn ($q) => $q->where('status_pendaftaran', $status)
                 )
                 ->groupBy('hari')
                 ->orderBy('hari')
@@ -63,17 +66,17 @@ class FormulirOverview extends BaseWidget
                 ->toArray();
         };
 
-        $url = fn(string $path) => "/formulir{$path}";
+        $url = fn (string $path) => "/formulir{$path}";
 
         // ----------------------------------------------------------------
         // Stat builder helper
         // ----------------------------------------------------------------
-        $makeStat = fn(
+        $makeStat = fn (
             string $value,
             string $description,
             string $icon,
             string $color,
-            array  $chartData,
+            array $chartData,
             string $href
         ) => Stat::make('', $value)
             ->description($description)
@@ -81,7 +84,7 @@ class FormulirOverview extends BaseWidget
             ->color($color)
             ->chart($chartData)
             ->extraAttributes([
-                'class'   => 'cursor-pointer transition hover:opacity-80',
+                'class' => 'cursor-pointer transition hover:opacity-80',
                 'onclick' => "window.location.href='{$href}'",
             ]);
 

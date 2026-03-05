@@ -1,9 +1,14 @@
 <?php
 
+// MataPelajaranResource.php
+
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\MataPelajaranResource\Pages;
 use App\Models\MataPelajaran;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
 use Filament\Resources\Resource;
 
 class MataPelajaranResource extends Resource
@@ -23,6 +28,19 @@ class MataPelajaranResource extends Resource
     protected static bool $shouldRegisterNavigation = true;
 
     protected static ?string $navigationIcon = 'heroicon-o-book-open';
+
+    public static function form(Form $form): Form
+    {
+        return $form->schema([
+            Section::make('Informasi Mata Pelajaran')
+                ->schema([
+                    TextInput::make('nama')
+                        ->label('Mata Pelajaran')
+                        ->required()
+                        ->maxLength(255),
+                ]),
+        ]);
+    }
 
     public static function getPages(): array
     {

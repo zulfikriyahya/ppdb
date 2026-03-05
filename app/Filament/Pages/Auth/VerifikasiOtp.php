@@ -18,6 +18,7 @@ class VerifikasiOtp extends SimplePage implements HasForms
     use InteractsWithForms;
 
     protected static string $view = 'filament.pages.auth.verifikasi-otp';
+
     protected static bool $shouldRegisterNavigation = false;
 
     public ?array $data = [];
@@ -26,12 +27,14 @@ class VerifikasiOtp extends SimplePage implements HasForms
     {
         if (! session('otp_user_id')) {
             $this->redirect(filament()->getLoginUrl());
+
             return;
         }
 
         $user = User::find(session('otp_user_id'));
         if ($user?->hasVerifiedEmail()) {
             $this->redirect(filament()->getUrl());
+
             return;
         }
 
@@ -67,6 +70,7 @@ class VerifikasiOtp extends SimplePage implements HasForms
         if (! $user) {
             Notification::make()->title('Sesi tidak valid. Silakan daftar ulang.')->danger()->send();
             $this->redirect(filament()->getLoginUrl());
+
             return;
         }
 
@@ -74,12 +78,14 @@ class VerifikasiOtp extends SimplePage implements HasForms
 
         if (! $storedOtp) {
             Notification::make()->title('Kode OTP sudah kadaluarsa.')->body('Silakan minta kode OTP baru.')->danger()->send();
+
             return;
         }
 
         // OPTIMASI: Mencegah Timing Attack
         if (! hash_equals((string) $storedOtp, (string) $data['otp'])) {
             Notification::make()->title('Kode OTP tidak valid.')->body('Periksa kembali kode yang dikirim ke WhatsApp Anda.')->danger()->send();
+
             return;
         }
 
@@ -105,6 +111,7 @@ class VerifikasiOtp extends SimplePage implements HasForms
 
         if (! $user) {
             Notification::make()->title('Sesi tidak valid.')->danger()->send();
+
             return;
         }
 
@@ -112,6 +119,7 @@ class VerifikasiOtp extends SimplePage implements HasForms
         if (Redis::exists($cooldownKey)) {
             $ttl = Redis::ttl($cooldownKey);
             Notification::make()->title("Tunggu {$ttl} detik sebelum meminta OTP baru.")->warning()->send();
+
             return;
         }
 

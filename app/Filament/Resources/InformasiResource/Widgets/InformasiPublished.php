@@ -26,21 +26,93 @@ class InformasiPublished extends TableWidget
         return 'ℹ️ Informasi';
     }
 
-    public function table(Table $table): Table
-    {
-        if (Auth::check()) {
-            $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
-            $label = $calonSiswa ? $calonSiswa->status_pendaftaran : '';
-            $urlFormulir = '';
-            $urlViewFormulir = '';
-            $urlInformasi = '';
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
 
-            if ($calonSiswa) {
-                $urlFormulir = '/formulir';
-                $urlViewFormulir = '/formulir/'.$calonSiswa->id;
-                $urlInformasi = '/informasi';
+    private function getCalonSiswa(): ?CalonSiswa
+    {
+        return CalonSiswa::where('nisn', Auth::user()->username)->first();
+    }
+
+    private function statusColor(string $status): string
+    {
+        return match ($status) {
+            'Diverifikasi' => 'success',
+            'Diterima',
+            'Diterima Di Kelas Reguler' => 'success',
+            'Diterima Di Kelas Unggulan' => 'info',
+            'Tidak Diterima' => 'danger',
+            default => 'warning',
+        };
+    }
+
+    private function statusIcon(string $status): string
+    {
+        return match ($status) {
+            'Diverifikasi' => 'heroicon-o-clipboard-document-check',
+            'Berkas Tidak Lengkap' => 'heroicon-o-document-minus',
+            'Tidak Diterima' => 'heroicon-o-no-symbol',
+            'Diterima' => 'heroicon-o-check-circle',
+            'Diterima Di Kelas Reguler',
+            'Diterima Di Kelas Unggulan' => 'heroicon-o-shield-check',
+            default => 'heroicon-o-arrow-path',
+        };
+    }
+
+    private function isInPengumumanPeriod(): bool
+    {
+        $tahun = DB::table('tahun_pendaftarans')->where('status', 'Aktif')->first();
+        $sekarang = Carbon::now();
+
+        $jalurs = ['prestasi', 'reguler', 'afirmasi', 'zonasi', 'mutasi'];
+
+        foreach ($jalurs as $jalur) {
+            $mulaiRaw = $tahun->{"tanggal_pengumuman_jalur_{$jalur}_mulai"} ?? null;
+            $selesaiRaw = $tahun->{"tanggal_pengumuman_jalur_{$jalur}_selesai"} ?? null;
+
+            if (empty($mulaiRaw) || empty($selesaiRaw)) {
+                continue;
+            }
+
+            $mulai = Carbon::createFromFormat('Y-m-d H:i:s', trim($mulaiRaw));
+            $selesai = Carbon::createFromFormat('Y-m-d H:i:s', trim($selesaiRaw));
+
+            if ($sekarang->between($mulai, $selesai)) {
+                return true;
             }
         }
+
+        return false;
+    }
+
+    private function isCalonSiswa(): bool
+    {
+        return Auth::user()->roles->first()->name === 'calon_siswa';
+    }
+
+    // -------------------------------------------------------------------------
+    // Table
+    // -------------------------------------------------------------------------
+
+    public function table(Table $table): Table
+    {
+        $calonSiswa = $this->getCalonSiswa();
+        $label = $calonSiswa?->status_pendaftaran ?? '';
+
+        $urlFormulir = $calonSiswa ? '/formulir' : '';
+        $urlViewFormulir = $calonSiswa ? '/formulir/'.$calonSiswa->id : '';
+        $urlInformasi = $calonSiswa ? '/informasi' : '';
+
+        $isCalonSiswa = $this->isCalonSiswa();
+        $hasTerminalStatus = $calonSiswa && in_array($calonSiswa->status_pendaftaran, [
+            'Diterima',
+            'Diterima Di Kelas Unggulan',
+            'Diterima Di Kelas Reguler',
+            'Tidak Diterima',
+        ]);
+        $hidePendaftaranBadge = ! $isCalonSiswa || $calonSiswa === null || $hasTerminalStatus;
+        $inPengumuman = $this->isInPengumumanPeriod();
 
         return $table
             ->headerActions([
@@ -50,67 +122,16 @@ class InformasiPublished extends TableWidget
                     ->color('gray')
                     ->disabled()
                     ->size('sm')
-                    ->hidden(Auth::user()->roles->first()->name !== 'calon_siswa' || $calonSiswa === null || $calonSiswa->status_pendaftaran === 'Diterima' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Unggulan' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Reguler' || $calonSiswa->status_pendaftaran === 'Tidak Diterima'),
+                    ->hidden($hidePendaftaranBadge),
+
                 Action::make('status_pendaftaran')
                     ->label($label)
-                    ->color(function () {
-                        $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
-
-                        if (! $calonSiswa) {
-                            return 'warning'; // Default jika data calon siswa tidak ditemukan
-                        }
-
-                        $status = $calonSiswa->status_pendaftaran;
-
-                        if ($status === 'Diproses') {
-                            return 'warning';
-                        } elseif ($status === 'Diverifikasi') {
-                            return 'success';
-                        } elseif ($status === 'Berkas Tidak Lengkap') {
-                            return 'warning';
-                        } elseif ($status === 'Tidak Diterima') {
-                            return 'danger';
-                        } elseif ($status === 'Diterima') {
-                            return 'success';
-                        } elseif ($status === 'Diterima Di Kelas Reguler') {
-                            return 'success';
-                        } elseif ($status === 'Diterima Di Kelas Unggulan') {
-                            return 'info';
-                        }
-
-                        return 'warning';
-                    })
-                    ->icon(function () {
-                        $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
-
-                        if (! $calonSiswa) {
-                            return 'heroicon-o-arrow-path'; // Default jika data calon siswa tidak ditemukan
-                        }
-
-                        $status = $calonSiswa->status_pendaftaran;
-
-                        if ($status === 'Diproses') {
-                            return 'heroicon-o-arrow-path';
-                        } elseif ($status === 'Diverifikasi') {
-                            return 'heroicon-o-clipboard-document-check';
-                        } elseif ($status === 'Berkas Tidak Lengkap') {
-                            return 'heroicon-o-document-minus';
-                        } elseif ($status === 'Tidak Diterima') {
-                            return 'heroicon-o-no-symbol';
-                        } elseif ($status === 'Diterima') {
-                            return 'heroicon-o-check-circle';
-                        } elseif ($status === 'Diterima Di Kelas Reguler') {
-                            return 'heroicon-o-shield-check';
-                        } elseif ($status === 'Diterima Di Kelas Unggulan') {
-                            return 'heroicon-o-shield-check';
-                        }
-
-                        return 'gray';
-                    })
+                    ->color(fn () => $calonSiswa ? $this->statusColor($calonSiswa->status_pendaftaran) : 'warning')
+                    ->icon(fn () => $calonSiswa ? $this->statusIcon($calonSiswa->status_pendaftaran) : 'heroicon-o-arrow-path')
                     ->outlined()
                     ->size('sm')
                     ->url($urlFormulir)
-                    ->hidden(Auth::user()->roles->first()->name !== 'calon_siswa' || $calonSiswa === null || $calonSiswa->status_pendaftaran === 'Diterima' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Unggulan' || $calonSiswa->status_pendaftaran === 'Diterima Di Kelas Reguler' || $calonSiswa->status_pendaftaran === 'Tidak Diterima'),
+                    ->hidden($hidePendaftaranBadge),
 
                 Action::make('label_status_kelulusan')
                     ->label('Status Pendaftaran :')
@@ -118,194 +139,19 @@ class InformasiPublished extends TableWidget
                     ->color('gray')
                     ->disabled()
                     ->size('sm')
-                    ->hidden(function () {
-                        $tahunPendaftaran = DB::table('tahun_pendaftarans')
-                            ->where('status', 'Aktif')
-                            ->first();
-                        $sekarang = Carbon::now();
+                    ->hidden(! $inPengumuman),
 
-                        $mulaiPengumumanPrestasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_mulai)
-                            ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_mulai))
-                            : null;
-
-                        $akhirPengumumanPrestasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_selesai)
-                            ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_selesai))
-                            : null;
-
-                        $mulaiPengumumanReguler = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_mulai)
-                            ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_mulai))
-                            : null;
-
-                        $akhirPengumumanReguler = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_selesai)
-                            ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_selesai))
-                            : null;
-
-                        $mulaiPengumumanAfirmasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai)
-                            ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai))
-                            : null;
-
-                        $akhirPengumumanAfirmasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_selesai)
-                            ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_selesai))
-                            : null;
-
-                        $mulaiPengumumanZonasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai)
-                            ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai))
-                            : null;
-
-                        $akhirPengumumanZonasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_selesai)
-                            ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_selesai))
-                            : null;
-
-                        $mulaiPengumumanMutasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai)
-                            ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai))
-                            : null;
-
-                        $akhirPengumumanMutasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai)
-                            ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai))
-                            : null;
-
-                        $periodePengumuman = [
-                            [$mulaiPengumumanPrestasi, $akhirPengumumanPrestasi],
-                            [$mulaiPengumumanReguler, $akhirPengumumanReguler],
-                            [$mulaiPengumumanAfirmasi, $akhirPengumumanAfirmasi],
-                            [$mulaiPengumumanZonasi, $akhirPengumumanZonasi],
-                            [$mulaiPengumumanMutasi, $akhirPengumumanMutasi],
-                        ];
-
-                        foreach ($periodePengumuman as [$mulai, $selesai]) {
-                            if ($sekarang >= $mulai && $sekarang <= $selesai) {
-                                return false;
-                            }
-                        }
-
-                        return true;
-                    }),
                 Action::make('status_kelulusan')
                     ->label($label)
-                    ->color(function () {
-                        $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
-
-                        if (! $calonSiswa) {
-                            return ''; // Default jika data calon siswa tidak ditemukan
-                        }
-
-                        $status = $calonSiswa->status_pendaftaran;
-
-                        if ($status === 'Diproses') {
-                            return 'warning';
-                        } elseif ($status === 'Diverifikasi') {
-                            return 'success';
-                        } elseif ($status === 'Berkas Tidak Lengkap') {
-                            return 'warning';
-                        } elseif ($status === 'Tidak Diterima') {
-                            return 'danger';
-                        } elseif ($status === 'Diterima') {
-                            return 'success';
-                        } elseif ($status === 'Diterima Di Kelas Reguler') {
-                            return 'success';
-                        } elseif ($status === 'Diterima Di Kelas Unggulan') {
-                            return 'info';
-                        }
-
-                        return 'warning';
-                    })
-                    ->icon(function () {
-                        $calonSiswa = CalonSiswa::where('nisn', Auth::user()->username)->first();
-
-                        if (! $calonSiswa) {
-                            return ''; // Default jika data calon siswa tidak ditemukan
-                        }
-
-                        $status = $calonSiswa->status_pendaftaran;
-
-                        if ($status === 'Diproses') {
-                            return 'heroicon-o-arrow-path';
-                        } elseif ($status === 'Diverifikasi') {
-                            return 'heroicon-o-clipboard-document-check';
-                        } elseif ($status === 'Berkas Tidak Lengkap') {
-                            return 'heroicon-o-document-minus';
-                        } elseif ($status === 'Tidak Diterima') {
-                            return 'heroicon-o-no-symbol';
-                        } elseif ($status === 'Diterima') {
-                            return 'heroicon-o-check-circle';
-                        } elseif ($status === 'Diterima Di Kelas Reguler') {
-                            return 'heroicon-o-shield-check';
-                        } elseif ($status === 'Diterima Di Kelas Unggulan') {
-                            return 'heroicon-o-shield-check';
-                        }
-
-                        return 'gray';
-                    })
+                    ->color(fn () => $calonSiswa ? $this->statusColor($calonSiswa->status_pendaftaran) : '')
+                    ->icon(fn () => $calonSiswa ? $this->statusIcon($calonSiswa->status_pendaftaran) : '')
                     ->outlined()
                     ->size('sm')
                     ->url($urlViewFormulir)
-                    ->hidden(function () {
-                        $tahunPendaftaran = DB::table('tahun_pendaftarans')
-                            ->where('status', 'Aktif')
-                            ->first();
-
-                        $sekarang = Carbon::now();
-
-                        $mulaiPengumumanPrestasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_mulai)
-                            ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_mulai))
-                            : null;
-
-                        $akhirPengumumanPrestasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_selesai)
-                            ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_selesai))
-                            : null;
-
-                        $mulaiPengumumanReguler = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_mulai)
-                            ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_mulai))
-                            : null;
-
-                        $akhirPengumumanReguler = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_selesai)
-                            ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_reguler_selesai))
-                            : null;
-
-                        $mulaiPengumumanAfirmasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai)
-                            ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai))
-                            : null;
-
-                        $akhirPengumumanAfirmasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_selesai)
-                            ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_selesai))
-                            : null;
-
-                        $mulaiPengumumanZonasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai)
-                            ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai))
-                            : null;
-
-                        $akhirPengumumanZonasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_selesai)
-                            ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_selesai))
-                            : null;
-
-                        $mulaiPengumumanMutasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai)
-                            ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai))
-                            : null;
-
-                        $akhirPengumumanMutasi = ! empty($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai)
-                            ? Carbon::createFromFormat('Y-m-d H:i:s', trim($tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai))
-                            : null;
-
-                        $periodePengumuman = [
-                            [$mulaiPengumumanPrestasi, $akhirPengumumanPrestasi],
-                            [$mulaiPengumumanReguler, $akhirPengumumanReguler],
-                            [$mulaiPengumumanAfirmasi, $akhirPengumumanAfirmasi],
-                            [$mulaiPengumumanZonasi, $akhirPengumumanZonasi],
-                            [$mulaiPengumumanMutasi, $akhirPengumumanMutasi],
-                        ];
-
-                        foreach ($periodePengumuman as [$mulai, $selesai]) {
-                            if ($sekarang >= $mulai && $sekarang <= $selesai) {
-                                return false;
-                            }
-                        }
-
-                        return true;
-                    }),
+                    ->hidden(! $inPengumuman),
             ])
             ->query(
-                Informasi::where('status', 'Publish')
-                    ->latest('updated_at')
+                Informasi::where('status', 'Publish')->latest('updated_at')
             )
             ->columns([
                 TextColumn::make('judul')
@@ -313,8 +159,10 @@ class InformasiPublished extends TableWidget
                     ->description(fn (Informasi $record): string => Str::limit($record->isi, 50))
                     ->icon('heroicon-o-information-circle')
                     ->iconColor('info'),
+
                 ImageColumn::make('gambar')
                     ->label('Lampiran'),
+
                 TextColumn::make('tanggal')
                     ->label('Tanggal')
                     ->dateTime('d F Y H:i:s')

@@ -10,7 +10,7 @@ use Filament\Resources\Pages\CreateRecord\Concerns\HasWizard;
 
 class CreateCalonSiswa extends CreateRecord
 {
-    use HasWizard, CalonSiswaFormTrait;
+    use CalonSiswaFormTrait, HasWizard;
 
     protected static string $resource = CalonSiswaResource::class;
 

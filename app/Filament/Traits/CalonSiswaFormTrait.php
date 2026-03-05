@@ -34,12 +34,12 @@ trait CalonSiswaFormTrait
     {
         return Select::make('jalur_pendaftaran_id')
             ->label('Jalur Pendaftaran')
-            ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
+            ->relationship('jalurPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif'))
             ->required()
             ->validationMessages(['required' => 'Form ini wajib diisi.'])
             ->native(false)
             ->live()
-            ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->nama} | {$record->tahunPendaftaran->nama}");
+            ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->nama} | {$record->tahunPendaftaran->nama}");
     }
 
     protected function getNamaField(): TextInput
@@ -49,7 +49,7 @@ trait CalonSiswaFormTrait
             ->required()
             ->disabledOn('create')
             ->dehydrated()
-            ->default(fn() => Auth::user()->name)
+            ->default(fn () => Auth::user()->name)
             ->validationMessages(['required' => 'Form ini wajib diisi.']);
     }
 
@@ -59,7 +59,7 @@ trait CalonSiswaFormTrait
             ->label('Nomor Induk Kependudukan (NIK)')
             ->required()
             ->unique(ignoreRecord: true)
-            ->dehydrateStateUsing(fn($state) => $state ?: null)
+            ->dehydrateStateUsing(fn ($state) => $state ?: null)
             ->numeric()
             ->maxLength(16)
             ->minLength(16)
@@ -93,9 +93,9 @@ trait CalonSiswaFormTrait
             ->required()
             ->disabled(true)
             ->dehydrated()
-            ->default(fn() => Auth::user()->username)
+            ->default(fn () => Auth::user()->username)
             ->unique(ignoreRecord: true)
-            ->dehydrateStateUsing(fn($state) => $state ?: null)
+            ->dehydrateStateUsing(fn ($state) => $state ?: null)
             ->numeric()
             ->maxLength(10)
             ->minLength(10)
@@ -148,7 +148,7 @@ trait CalonSiswaFormTrait
 
             Select::make("{$prefix}_provinsi_id")
                 ->label('Provinsi')
-                ->options(fn(Get $get): Collection => Provinsi::query()
+                ->options(fn (Get $get): Collection => Provinsi::query()
                     ->where('negara_id', $get("{$prefix}_negara_id"))
                     ->pluck('nama', 'id'))
                 ->required($required)
@@ -164,7 +164,7 @@ trait CalonSiswaFormTrait
 
             Select::make("{$prefix}_kabupaten_id")
                 ->label('Kabupaten')
-                ->options(fn(Get $get): Collection => Kabupaten::query()
+                ->options(fn (Get $get): Collection => Kabupaten::query()
                     ->where('provinsi_id', $get("{$prefix}_provinsi_id"))
                     ->pluck('nama', 'id'))
                 ->required($required)
@@ -179,7 +179,7 @@ trait CalonSiswaFormTrait
 
             Select::make("{$prefix}_kecamatan_id")
                 ->label('Kecamatan')
-                ->options(fn(Get $get): Collection => Kecamatan::query()
+                ->options(fn (Get $get): Collection => Kecamatan::query()
                     ->where('kabupaten_id', $get("{$prefix}_kabupaten_id"))
                     ->pluck('nama', 'id'))
                 ->required($required)
@@ -193,7 +193,7 @@ trait CalonSiswaFormTrait
 
             Select::make("{$prefix}_kelurahan_id")
                 ->label('Kelurahan')
-                ->options(fn(Get $get): Collection => Kelurahan::query()
+                ->options(fn (Get $get): Collection => Kelurahan::query()
                     ->where('kecamatan_id', $get("{$prefix}_kecamatan_id"))
                     ->pluck('nama', 'id'))
                 ->required($required)
@@ -273,7 +273,7 @@ trait CalonSiswaFormTrait
             ->required($required)
             ->validationMessages(['required' => 'Form ini wajib diisi.'])
             ->fetchFileInformation(false)
-            ->directory(fn($get) => "berkas/{$type}/" . $get('nisn'))
+            ->directory(fn ($get) => "berkas/{$type}/".$get('nisn'))
             ->downloadable()
             ->openable()
             ->maxSize(500)
@@ -388,7 +388,7 @@ trait CalonSiswaFormTrait
                     ->label('Nomor Kartu Indonesia Pintar')
                     ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki KIP.<sup style="color:red">*</sup></i></small>'))
                     ->unique(ignoreRecord: true)
-                    ->dehydrateStateUsing(fn($state) => $state ?: null)
+                    ->dehydrateStateUsing(fn ($state) => $state ?: null)
                     ->maxLength(6)
                     ->minLength(6)
                     ->live()
@@ -402,7 +402,7 @@ trait CalonSiswaFormTrait
                     ->label('Nomor Kartu Keluarga Sejahtera')
                     ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki KKS.<sup style="color:red">*</sup></i></small>'))
                     ->unique(ignoreRecord: true)
-                    ->dehydrateStateUsing(fn($state) => $state ?: null)
+                    ->dehydrateStateUsing(fn ($state) => $state ?: null)
                     ->maxLength(6)
                     ->minLength(6)
                     ->live()
@@ -416,7 +416,7 @@ trait CalonSiswaFormTrait
                     ->label('Nomor Kartu Program Keluarga Harapan')
                     ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki PKH.<sup style="color:red">*</sup></i></small>'))
                     ->unique(ignoreRecord: true)
-                    ->dehydrateStateUsing(fn($state) => $state ?: null)
+                    ->dehydrateStateUsing(fn ($state) => $state ?: null)
                     ->maxLength(6)
                     ->minLength(6)
                     ->live()
@@ -445,7 +445,7 @@ trait CalonSiswaFormTrait
             ->native(false)
             ->searchable()
             ->preload()
-            ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->nama} | NPSN: {$record->npsn}")
+            ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->nama} | NPSN: {$record->npsn}")
             ->createOptionForm($this->getSekolahAsalForm());
     }
 
@@ -468,7 +468,7 @@ trait CalonSiswaFormTrait
                             ->required()
                             ->live()
                             ->validationMessages(['required' => 'Form ini wajib diisi.'])
-                            ->options(fn() => FormOptions::jenjangSekolahAsal(Sekolah::first()?->jenjang)),
+                            ->options(fn () => FormOptions::jenjangSekolahAsal(Sekolah::first()?->jenjang)),
 
                         TextInput::make('npsn')
                             ->label('NPSN')
@@ -483,7 +483,7 @@ trait CalonSiswaFormTrait
                             ]),
 
                         TextInput::make('nss')
-                            ->visible(fn($get) => in_array($get('jenjang'), ['MI', 'MTS', 'MA']))
+                            ->visible(fn ($get) => in_array($get('jenjang'), ['MI', 'MTS', 'MA']))
                             ->label('NSS/NSM')
                             ->required()
                             ->numeric()
@@ -565,7 +565,7 @@ trait CalonSiswaFormTrait
             ->schema([
                 Select::make('status_pendaftaran')
                     ->label('Status Pendaftaran')
-                    ->options(fn() => Auth::user()->hasRole('super_admin')
+                    ->options(fn () => Auth::user()->hasRole('super_admin')
                         ? FormOptions::STATUS_PENDAFTARAN_SUPER_ADMIN
                         : FormOptions::STATUS_PENDAFTARAN_REGULAR)
                     ->native(false)
@@ -574,7 +574,7 @@ trait CalonSiswaFormTrait
 
                 Select::make('kelas_id')
                     ->label('Kelas')
-                    ->visible(fn($get) => in_array($get('status_pendaftaran'), [
+                    ->visible(fn ($get) => in_array($get('status_pendaftaran'), [
                         'Diterima Di Kelas Reguler',
                         'Diterima Di Kelas Unggulan',
                     ]))
@@ -683,23 +683,23 @@ trait CalonSiswaFormTrait
                 $this->getBerkasField(
                     'kip',
                     'Kartu Indonesia Pintar',
-                    fn($get) => $get('no_kip') !== null,
+                    fn ($get) => $get('no_kip') !== null,
                     '<small><i>Abaikan jika tidak memiliki KIP.<sup style="color:red">*</sup></i></small>'
-                )->visible(fn($get) => $get('no_kip') !== null),
+                )->visible(fn ($get) => $get('no_kip') !== null),
 
                 $this->getBerkasField(
                     'kks',
                     'Kartu Keluarga Sejahtera',
-                    fn($get) => $get('no_kks') !== null,
+                    fn ($get) => $get('no_kks') !== null,
                     '<small><i>Abaikan jika tidak memiliki KKS.<sup style="color:red">*</sup></i></small>'
-                )->visible(fn($get) => $get('no_kks') !== null),
+                )->visible(fn ($get) => $get('no_kks') !== null),
 
                 $this->getBerkasField(
                     'pkh',
                     'Kartu Program Keluarga Harapan',
-                    fn($get) => $get('no_pkh') !== null,
+                    fn ($get) => $get('no_pkh') !== null,
                     '<small><i>Abaikan jika tidak memiliki PKH.<sup style="color:red">*</sup></i></small>'
-                )->visible(fn($get) => $get('no_pkh') !== null),
+                )->visible(fn ($get) => $get('no_pkh') !== null),
             ]);
     }
 

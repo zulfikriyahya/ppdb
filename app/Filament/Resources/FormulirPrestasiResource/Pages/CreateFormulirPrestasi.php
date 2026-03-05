@@ -34,6 +34,7 @@ class CreateFormulirPrestasi extends CreateRecord
                     ->send();
 
                 $this->redirect(route('filament.admin.resources.formulir.index'));
+
                 return;
             }
 

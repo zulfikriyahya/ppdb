@@ -37,7 +37,7 @@ class ListCalonSiswas extends ListRecords
 
     private function getCalonSiswaRecord(): ?CalonSiswa
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return null;
         }
 
@@ -58,7 +58,7 @@ class ListCalonSiswas extends ListRecords
     {
         $baseUrl = '/formulir';
 
-        if (!$calonSiswa) {
+        if (! $calonSiswa) {
             return $action === 'create' ? "{$baseUrl}/create" : '';
         }
 
@@ -81,7 +81,7 @@ class ListCalonSiswas extends ListRecords
             ->outlined()
             ->color('primary')
             ->url($this->getFormulirUrl(null, 'create'))
-            ->hidden(!$this->isCalonSiswa() || $calonSiswa !== null);
+            ->hidden(! $this->isCalonSiswa() || $calonSiswa !== null);
     }
 
     private function getLihatFormulirAction(?CalonSiswa $calonSiswa): Action
@@ -95,7 +95,7 @@ class ListCalonSiswas extends ListRecords
             ->url($this->getFormulirUrl($calonSiswa, 'view'))
             ->color(Color::Zinc)
             ->hidden(
-                !$this->isCalonSiswa()
+                ! $this->isCalonSiswa()
                     || $calonSiswa === null
                     || in_array($calonSiswa->status_pendaftaran, $allowedStatuses)
             );
@@ -118,7 +118,7 @@ class ListCalonSiswas extends ListRecords
             ->color('success')
             ->outlined()
             ->hidden(
-                !$this->isCalonSiswa()
+                ! $this->isCalonSiswa()
                     || $calonSiswa === null
                     || in_array($calonSiswa->status_pendaftaran, $blockedStatuses)
             )
@@ -134,7 +134,7 @@ class ListCalonSiswas extends ListRecords
             ->color('success')
             ->exporter(CalonSiswaExporter::class)
             ->chunkSize(250)
-            ->visible(fn() => CalonSiswa::count() > 0 && !$this->isCalonSiswa());
+            ->visible(fn () => CalonSiswa::count() > 0 && ! $this->isCalonSiswa());
     }
 
     private function getImportAction(): ImportAction
@@ -147,7 +147,7 @@ class ListCalonSiswas extends ListRecords
             ->importer(CalonSiswaImporter::class)
             ->chunkSize(250)
             ->visible(function () {
-                if (!$this->isSuperAdmin()) {
+                if (! $this->isSuperAdmin()) {
                     return false;
                 }
 

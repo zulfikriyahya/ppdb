@@ -4,6 +4,9 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\JurusanResource\Pages;
 use App\Models\Jurusan;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
 use Filament\Resources\Resource;
 
 class JurusanResource extends Resource
@@ -23,6 +26,22 @@ class JurusanResource extends Resource
     protected static bool $shouldRegisterNavigation = true;
 
     protected static ?string $navigationIcon = 'heroicon-o-bookmark-square';
+
+    public static function form(Form $form): Form
+    {
+        return $form->schema([
+            Section::make('Jurusan')
+                ->collapsible()
+                ->schema([
+                    TextInput::make('nama')
+                        ->label('Nama Jurusan')
+                        ->required()
+                        ->validationMessages([
+                            'required' => 'Form ini wajib diisi.',
+                        ]),
+                ]),
+        ]);
+    }
 
     public static function getPages(): array
     {

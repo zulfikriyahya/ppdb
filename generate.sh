@@ -1,6 +1,6 @@
 #!/bin/bash
 # generate.sh - Generator Blueprint Otomatis
-# Hanya menghasilkan file yang benar-benar dibutuhkan untuk membangun ulang project.
+# Scan seluruh project, kecualikan direktori & file yang tidak relevan.
 
 set -euo pipefail
 
@@ -8,66 +8,116 @@ OUT="draft.md"
 ROOT="."
 
 # ===========================================================================
-# WHITELIST — Hanya file dalam path ini yang akan diinclude.
-# Glob pattern (mis. **/*.blade.php) didukung via find + manual matching.
+# EXCLUDE DIRS — direktori yang di-skip sepenuhnya (find -prune)
 # ===========================================================================
-INCLUDE_PATHS=(
-  # --- Domain / Business Logic ---
-  "app/Models"
-  "app/Policies"
-  "app/Services"
-  "app/Http/Controllers"
-
-  # --- Filament (Admin Panel) ---
-  "app/Filament/Resources"
-  "app/Filament/Widgets"
-  "app/Filament/Pages"
-  "app/Filament/Exports"
-  "app/Filament/Imports"
-  "app/Providers/Filament"
-
-  # --- App Providers ---
-  "app/Providers/AppServiceProvider.php"
-
-  # --- Database ---
-  "database/migrations"
-  "database/seeders"
-
-  # --- Routing ---
-  "routes/web.php"
-  "routes/api.php"
-  "routes/console.php"
-
-  # --- Views (hanya yang custom, bukan vendor) ---
-  "resources/views"
-
-  # --- Config yang sudah dikustomisasi ---
-  "config/filament-shield.php"
-  "config/permission.php"
-  "config/services.php"
-
-  # --- App Bootstrap ---
-  "bootstrap/app.php"
-
-  # --- Project Root ---
-  "composer.json"
-  "vite.config.js"
-  "tailwind.config.js"
-  "package.json"
+EXCLUDE_DIRS=(
+  "node_modules"
+  "vendor"
+  ".yarn"
+  ".git"
+  "tests"
+  "storage"
+  "bootstrap/cache"
+  "public/build"
+  "public/js/filament"
+  "public/js/html2media"
+  "public/js/qrcode"
+  "public/css/filament"
+  "public/css/devonab"
+  "public/vendor"
 )
 
 # ===========================================================================
-# EXCLUDE — File/pattern yang di-skip meski masuk INCLUDE_PATHS
+# EXCLUDE FILE PATTERNS — file yang di-skip meski ada di path yang di-scan
 # ===========================================================================
 EXCLUDE_PATTERNS=(
-  "*.log"
-  "*.sql"
-  "*.sqlite"
+  # Biner & aset
   "*.png" "*.jpg" "*.jpeg" "*.gif" "*.svg" "*.ico" "*.webp" "*.avif"
   "*.woff" "*.woff2" "*.ttf" "*.otf" "*.eot"
   "*.mp3" "*.mp4" "*.avi" "*.mov"
+  "*.pdf" "*.xlsx" "*.xls" "*.csv"
+  "*.zip" "*.tar" "*.gz" "*.rar"
+  "*.sqlite" "*.sql"
+  # Compiled / lock / cache
+  "*.map"
+  "composer.lock"
+  "yarn.lock"
+  "pnp.cjs"
+  "pnp.loader.mjs"
+  "package-lock.json"
+  "README.md"
+  "draft.md"
+  "LICENSE"
+  "todo.md"
+  # OS & editor
   ".DS_Store"
   "Thumbs.db"
+  # Log
+  "*.log"
+  # PHP compiled views (di storage/framework/views)
+  "*.php.cache"
+)
+
+# ===========================================================================
+# SECTION mapping — path prefix → label
+# Urutan penting: lebih spesifik di atas.
+# ===========================================================================
+SECTION_KEYS=(
+  "app/Models"
+  "app/Policies"
+  "app/Services"
+  "app/Helpers"
+  "app/Constants"
+  "app/Http"
+  "app/Filament/Resources"
+  "app/Filament/Exports"
+  "app/Filament/Imports"
+  "app/Filament/Pages"
+  "app/Filament/Concerns"
+  "app/Filament/Traits"
+  "app/Filament/Widgets"
+  "app/Filament"
+  "app/Providers"
+  "app"
+  "database/migrations"
+  "database/seeders"
+  "database"
+  "routes"
+  "resources/views"
+  "resources"
+  "config"
+  "bootstrap"
+  "public"
+  "root"
+)
+
+SECTION_LABELS=(
+  "## 🗃️ Models"
+  "## 🔐 Policies"
+  "## ⚙️ Services"
+  "## 🔧 Helpers"
+  "## 📌 Constants"
+  "## 🎮 Http (Controllers, Middleware, Requests)"
+  "## 🧩 Filament Resources"
+  "## 📤 Filament Exports"
+  "## 📥 Filament Imports"
+  "## 📄 Filament Pages"
+  "## 🔗 Filament Concerns"
+  "## 🔗 Filament Traits"
+  "## 📊 Filament Widgets"
+  "## 🧩 Filament (Other)"
+  "## ⚙️ Providers"
+  "## 🧱 App (Other)"
+  "## 🏗️ Migrations"
+  "## 🌱 Seeders"
+  "## 🗄️ Database (Other)"
+  "## 🛣️ Routes"
+  "## 🖼️ Views"
+  "## 🎨 Resources (Other)"
+  "## ⚙️ Config"
+  "## 🚀 Bootstrap"
+  "## 🌐 Public (Custom)"
+  "## 📦 Root"
 )
 
 # ===========================================================================
@@ -86,14 +136,14 @@ lang_for_ext() {
     md|mdx)      printf "markdown" ;;
     sh|bash)     printf "bash" ;;
     html)        printf "html" ;;
+    env)         printf "bash" ;;
     *)           printf "" ;;
   esac
 }
 
-is_excluded() {
-  local file="$1"
+is_excluded_file() {
   local filename
-  filename="$(basename -- "$file")"
+  filename="$(basename -- "$1")"
   for pat in "${EXCLUDE_PATTERNS[@]}"; do
     # shellcheck disable=SC2254
     case "$filename" in
@@ -132,63 +182,6 @@ write_file() {
   printf '\n```\n\n---\n\n' >> "$OUT"
 }
 
-# ===========================================================================
-# Sections
-# ===========================================================================
-# Key menggunakan index numerik agar aman di semua versi bash,
-# karena key dengan '/' dan '.' bisa bermasalah pada associative array.
-# ===========================================================================
-SECTION_KEYS=(
-  "app/Models"
-  "app/Policies"
-  "app/Services"
-  "app/Http/Controllers"
-  "app/Filament/Resources"
-  "app/Filament/Widgets"
-  "app/Filament/Pages"
-  "app/Filament/Exports"
-  "app/Filament/Imports"
-  "app/Providers/Filament"
-  "app/Providers/AppServiceProvider.php"
-  "database/migrations"
-  "database/seeders"
-  "routes"
-  "resources/views"
-  "config"
-  "bootstrap"
-  "root"
-)
-
-SECTION_LABELS=(
-  "## 🗃️ Models"
-  "## 🔐 Policies"
-  "## ⚙️ Services"
-  "## 🎮 Controllers"
-  "## 🧩 Filament Resources"
-  "## 📊 Filament Widgets (Global)"
-  "## 📄 Filament Pages"
-  "## 📤 Filament Exports"
-  "## 📥 Filament Imports"
-  "## ⚙️ Filament Panel Provider"
-  "## ⚙️ App Service Provider"
-  "## 🏗️ Migrations"
-  "## 🌱 Seeders"
-  "## 🛣️ Routes"
-  "## 🖼️ Views (Custom)"
-  "## ⚙️ Config (Custom)"
-  "## 🚀 Bootstrap"
-  "## 📦 Root Config Files"
-)
-
-# Storage per section — index sesuai SECTION_KEYS
-declare -a section_files
-for i in "${!SECTION_KEYS[@]}"; do
-  section_files[$i]=""
-done
-
-# ===========================================================================
-# Classify file ke index section
-# ===========================================================================
 classify() {
   local rel="$1"
   local i
@@ -199,30 +192,52 @@ classify() {
       return
     fi
   done
-  # fallback ke index "root" (index terakhir)
+  # fallback → "root" (index terakhir)
   printf "%s" "$(( ${#SECTION_KEYS[@]} - 1 ))"
+}
+
+# ===========================================================================
+# Build find -prune args untuk EXCLUDE_DIRS
+# ===========================================================================
+build_prune_args() {
+  local args=()
+  for dir in "${EXCLUDE_DIRS[@]}"; do
+    args+=( -path "$ROOT/$dir" -prune -o )
+  done
+  printf '%s\n' "${args[@]}"
 }
 
 # ===========================================================================
 # Collect files
 # ===========================================================================
-for inc in "${INCLUDE_PATHS[@]}"; do
-  full_path="$ROOT/$inc"
-
-  if [ -f "$full_path" ]; then
-    is_excluded "$full_path" && continue
-    idx="$(classify "$inc")"
-    section_files[$idx]+=$'\n'"$inc"
-
-  elif [ -d "$full_path" ]; then
-    while IFS= read -r -d '' f; do
-      rel="${f#"$ROOT"/}"
-      is_excluded "$f" && continue
-      idx="$(classify "$rel")"
-      section_files[$idx]+=$'\n'"$rel"
-    done < <(find "$full_path" -type f -print0 | sort -z)
-  fi
+declare -a section_files
+for i in "${!SECTION_KEYS[@]}"; do
+  section_files[$i]=""
 done
+
+# Build prune expression sebagai array
+prune_args=()
+for dir in "${EXCLUDE_DIRS[@]}"; do
+  prune_args+=( -path "$ROOT/$dir" -prune -o )
+done
+
+while IFS= read -r -d '' f; do
+  rel="${f#"$ROOT"/}"
+
+  # Skip jika path kosong atau titik
+  [[ -z "$rel" || "$rel" == "." ]] && continue
+
+  # Skip file yang di-exclude
+  is_excluded_file "$f" && continue
+
+  idx="$(classify "$rel")"
+  section_files[$idx]+=$'\n'"$rel"
+done < <(
+  find "$ROOT" \
+    "${prune_args[@]}" \
+    -type f -print0 \
+  | sort -z
+)
 
 # ===========================================================================
 # Write draft.md
@@ -232,29 +247,24 @@ done
 cat >> "$OUT" << 'EOF'
 # Laravel Project Blueprint — PPDB MTsN 1 Pandeglang
 
-> Auto-generated. Berisi file-file inti yang dibutuhkan untuk membangun ulang project.
-> File boilerplate, vendor, compiled assets, dan cache **tidak disertakan**.
+> Auto-generated. Berisi seluruh file inti project.
+> Dikecualikan: node_modules, vendor, tests, .yarn, public/vendor,
+>               public/build, storage, bootstrap/cache, dan file biner.
 
 EOF
 
-# Tree ringkas
-printf "## 🗂️ Included File Tree\n\n\`\`\`\n" >> "$OUT"
-for inc in "${INCLUDE_PATHS[@]}"; do
-  full_path="$ROOT/$inc"
-  if [ -f "$full_path" ]; then
-    is_excluded "$full_path" && continue
-    printf "%s\n" "$inc" >> "$OUT"
-  elif [ -d "$full_path" ]; then
-    while IFS= read -r f; do
-      rel="${f#"$ROOT"/}"
-      is_excluded "$f" && continue
-      printf "%s\n" "$rel" >> "$OUT"
-    done < <(find "$full_path" -type f | sort)
-  fi
+# Ringkasan file yang ter-include
+printf "## 🗂️ File Tree\n\n\`\`\`\n" >> "$OUT"
+for i in "${!SECTION_KEYS[@]}"; do
+  [[ -z "${section_files[$i]}" ]] && continue
+  while IFS= read -r rel; do
+    [[ -z "$rel" ]] && continue
+    printf "%s\n" "$rel" >> "$OUT"
+  done <<< "${section_files[$i]}"
 done
 printf "\`\`\`\n\n---\n\n" >> "$OUT"
 
-# Tulis per section sesuai urutan
+# Tulis isi per section
 total_files=0
 for i in "${!SECTION_KEYS[@]}"; do
   [[ -z "${section_files[$i]}" ]] && continue

@@ -83,14 +83,14 @@ class CalonSiswaImporter extends Importer
     public static function getCompletedNotificationBody(Import $import): string
     {
         $body = 'Import calon siswa selesai. '
-            . number_format($import->successful_rows) . ' '
-            . str('baris')->plural($import->successful_rows)
-            . ' berhasil diimport.';
+            .number_format($import->successful_rows).' '
+            .str('baris')->plural($import->successful_rows)
+            .' berhasil diimport.';
 
         if ($failedRowsCount = $import->getFailedRowsCount()) {
-            $body .= ' ' . number_format($failedRowsCount) . ' '
-                . str('baris')->plural($failedRowsCount)
-                . ' gagal diimport.';
+            $body .= ' '.number_format($failedRowsCount).' '
+                .str('baris')->plural($failedRowsCount)
+                .' gagal diimport.';
         }
 
         return $body;

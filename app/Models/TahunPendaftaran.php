@@ -83,7 +83,7 @@ class TahunPendaftaran extends Model
 
     protected static function booted(): void
     {
-        $flushCache = fn() => Cache::forget('tahun_pendaftaran_aktif');
+        $flushCache = fn () => Cache::forget('tahun_pendaftaran_aktif');
         static::saved($flushCache);
         static::deleted($flushCache);
     }

@@ -4,13 +4,13 @@ namespace App\Filament\Resources\CalonSiswaResource\Pages;
 
 use App\Filament\Resources\CalonSiswaResource;
 use App\Filament\Traits\CalonSiswaFormTrait;
+use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord\Concerns\HasWizard;
 use Filament\Resources\Pages\EditRecord;
-use Illuminate\Database\Eloquent\Model;
 
 class EditCalonSiswa extends EditRecord
 {
-    use HasWizard, CalonSiswaFormTrait;
+    use CalonSiswaFormTrait, HasWizard;
 
     protected static string $resource = CalonSiswaResource::class;
 
@@ -22,13 +22,6 @@ class EditCalonSiswa extends EditRecord
         );
     }
 
-    protected function handleRecordUpdate(Model $record, array $data): Model
-    {
-        $updatedRecord = parent::handleRecordUpdate($record, $data);
-
-        return $updatedRecord;
-    }
-
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');
@@ -37,9 +30,9 @@ class EditCalonSiswa extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            \Filament\Actions\DeleteAction::make(),
-            \Filament\Actions\ForceDeleteAction::make(),
-            \Filament\Actions\RestoreAction::make(),
+            Actions\DeleteAction::make(),
+            Actions\ForceDeleteAction::make(),
+            Actions\RestoreAction::make(),
         ];
     }
 }

@@ -142,6 +142,7 @@ class FormOptions
     public static function tahunLulusOptions(): array
     {
         $tahun = range(date('Y'), date('Y') - 2);
+
         return array_combine($tahun, $tahun);
     }
 

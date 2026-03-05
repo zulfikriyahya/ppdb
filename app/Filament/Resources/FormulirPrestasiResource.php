@@ -57,7 +57,9 @@ class FormulirPrestasiResource extends Resource
     {
         $user = auth()->user();
 
-        if (! $user) return false;
+        if (! $user) {
+            return false;
+        }
 
         if ($user->hasRole('calon_siswa')) {
             return self::isCalonSiswaJalurPrestasi();
@@ -97,7 +99,7 @@ class FormulirPrestasiResource extends Resource
     public static function form(Form $form): Form
     {
         $isCalonSiswa = auth()->user()?->hasRole('calon_siswa');
-        $isEditor     = auth()->user()?->hasAnyRole(['admin', 'super_admin']);
+        $isEditor = auth()->user()?->hasAnyRole(['admin', 'super_admin']);
 
         $calonSiswaId = $isCalonSiswa
             ? CalonSiswa::withoutGlobalScopes()->where('user_id', auth()->id())->value('id')
@@ -114,10 +116,10 @@ class FormulirPrestasiResource extends Resource
                 ->relationship(
                     'calonSiswa',
                     'nama',
-                    fn(Builder $query) => $query->withoutGlobalScopes()
+                    fn (Builder $query) => $query->withoutGlobalScopes()
                 )
                 ->getOptionLabelFromRecordUsing(
-                    fn($record) => "{$record->nama} — {$record->nisn}"
+                    fn ($record) => "{$record->nama} — {$record->nisn}"
                 )
                 ->searchable()
                 ->preload()
@@ -130,8 +132,8 @@ class FormulirPrestasiResource extends Resource
                 ->label('Jenis Prestasi')
                 ->options(
                     Prestasi::all()->mapWithKeys(
-                        fn($p) => [
-                            $p->id => "{$p->jenis} — {$p->nama}" . ($p->tingkat ? " ({$p->tingkat})" : ''),
+                        fn ($p) => [
+                            $p->id => "{$p->jenis} — {$p->nama}".($p->tingkat ? " ({$p->tingkat})" : ''),
                         ]
                     )
                 )
@@ -170,7 +172,7 @@ class FormulirPrestasiResource extends Resource
                 ->minSize(10)
                 ->maxSize(1024)
                 ->visibility('private')
-                ->directory(fn() => 'berkas/prestasi/' . ($nisn ?? 'umum'))
+                ->directory(fn () => 'berkas/prestasi/'.($nisn ?? 'umum'))
                 ->downloadable()
                 ->openable()
                 ->fetchFileInformation(false)
@@ -207,11 +209,11 @@ class FormulirPrestasiResource extends Resource
                 TextColumn::make('prestasi.tingkat')
                     ->label('Tingkat')
                     ->badge()
-                    ->color(fn($state) => match ($state) {
-                        'Nasional'       => 'danger',
-                        'Provinsi'       => 'warning',
+                    ->color(fn ($state) => match ($state) {
+                        'Nasional' => 'danger',
+                        'Provinsi' => 'warning',
                         'Kabupaten/Kota' => 'info',
-                        default          => 'gray',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('tahun_prestasi')
@@ -225,9 +227,9 @@ class FormulirPrestasiResource extends Resource
 
                 TextColumn::make('berkas_prestasi')
                     ->label('Berkas')
-                    ->formatStateUsing(fn($state) => $state ? '✅ Ada' : '❌ Belum upload')
+                    ->formatStateUsing(fn ($state) => $state ? '✅ Ada' : '❌ Belum upload')
                     ->badge()
-                    ->color(fn($state) => $state ? 'success' : 'danger'),
+                    ->color(fn ($state) => $state ? 'success' : 'danger'),
 
                 TextColumn::make('updated_at')
                     ->label('Diperbarui')
@@ -263,10 +265,10 @@ class FormulirPrestasiResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListFormulirPrestasis::route('/'),
+            'index' => Pages\ListFormulirPrestasis::route('/'),
             'create' => Pages\CreateFormulirPrestasi::route('/create'),
-            'view'   => Pages\ViewFormulirPrestasi::route('/{record}'),
-            'edit'   => Pages\EditFormulirPrestasi::route('/{record}/edit'),
+            'view' => Pages\ViewFormulirPrestasi::route('/{record}'),
+            'edit' => Pages\EditFormulirPrestasi::route('/{record}/edit'),
         ];
     }
 }
