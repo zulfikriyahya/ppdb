@@ -28,20 +28,46 @@ class FormulirPrestasiResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
-    public static function shouldRegisterNavigation(): bool
+    // -----------------------------------------------------------------------
+    // Helper: cek apakah calon siswa yang login memilih jalur prestasi
+    // Menggunakan once() agar query hanya jalan sekali per request
+    // -----------------------------------------------------------------------
+
+    protected static function isCalonSiswaJalurPrestasi(): bool
     {
-        return auth()->user()?->hasAnyRole([
-            'calon_siswa',
-            'verifikator',
-            'panitia',
-            'admin',
-            'super_admin',
-        ]) ?? false;
+        return once(function () {
+            $calonSiswa = CalonSiswa::withoutGlobalScopes()
+                ->with('jalurPendaftaran')
+                ->where('user_id', auth()->id())
+                ->first();
+
+            if (! $calonSiswa || ! $calonSiswa->jalurPendaftaran) {
+                return false;
+            }
+
+            return $calonSiswa->jalurPendaftaran->nama === 'Prestasi';
+        });
     }
 
     // -----------------------------------------------------------------------
-    // Query: calon_siswa hanya lihat milik sendiri
-    // Pakai withoutGlobalScopes() agar tidak bergantung pada tahun aktif
+    // Navigasi: calon_siswa hanya lihat jika jalurnya Prestasi
+    // -----------------------------------------------------------------------
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        $user = auth()->user();
+
+        if (! $user) return false;
+
+        if ($user->hasRole('calon_siswa')) {
+            return self::isCalonSiswaJalurPrestasi();
+        }
+
+        return $user->hasAnyRole(['verifikator', 'panitia', 'admin', 'super_admin']);
+    }
+
+    // -----------------------------------------------------------------------
+    // Query: calon_siswa hanya lihat milik sendiri + wajib jalur prestasi
     // -----------------------------------------------------------------------
 
     public static function getEloquentQuery(): Builder
@@ -49,7 +75,11 @@ class FormulirPrestasiResource extends Resource
         $query = parent::getEloquentQuery();
 
         if (auth()->user()?->hasRole('calon_siswa')) {
-            // withoutGlobalScopes() agar tidak kena scope tahun_aktif & milik_sendiri
+            // Block akses total jika bukan jalur prestasi (paksa via URL sekalipun)
+            if (! self::isCalonSiswaJalurPrestasi()) {
+                return $query->whereRaw('0 = 1');
+            }
+
             $calonSiswaId = CalonSiswa::withoutGlobalScopes()
                 ->where('user_id', auth()->id())
                 ->value('id');
@@ -66,32 +96,24 @@ class FormulirPrestasiResource extends Resource
 
     public static function form(Form $form): Form
     {
-        $isCalonSiswa  = auth()->user()?->hasRole('calon_siswa');
-        $isEditor      = auth()->user()?->hasAnyRole(['admin', 'super_admin']);
+        $isCalonSiswa = auth()->user()?->hasRole('calon_siswa');
+        $isEditor     = auth()->user()?->hasAnyRole(['admin', 'super_admin']);
 
-        // Ambil calon siswa yang login (bypass global scope)
-        $calonSiswaId  = $isCalonSiswa
+        $calonSiswaId = $isCalonSiswa
             ? CalonSiswa::withoutGlobalScopes()->where('user_id', auth()->id())->value('id')
             : null;
 
-        // Ambil NISN untuk path upload (nullable-safe)
         $nisn = $isCalonSiswa
             ? CalonSiswa::withoutGlobalScopes()->where('user_id', auth()->id())->value('nisn')
             : null;
 
         return $form->schema([
 
-            // ------------------------------------------------------------------
-            // Calon Siswa — hidden untuk calon_siswa (auto-inject via mutate),
-            // tampil untuk admin/super_admin supaya bisa koreksi manual.
-            // WAJIB dehydrated(true) agar nilai tetap dikirim meski hidden.
-            // ------------------------------------------------------------------
             Select::make('calon_siswa_id')
                 ->label('Calon Siswa')
                 ->relationship(
                     'calonSiswa',
                     'nama',
-                    // Tampilkan semua calon siswa lintas tahun untuk admin
                     fn(Builder $query) => $query->withoutGlobalScopes()
                 )
                 ->getOptionLabelFromRecordUsing(
@@ -102,11 +124,8 @@ class FormulirPrestasiResource extends Resource
                 ->required()
                 ->default($calonSiswaId)
                 ->hidden($isCalonSiswa)
-                ->dehydrated(true), // ← FIX: nilai tetap dikirim meski field hidden
+                ->dehydrated(true),
 
-            // ------------------------------------------------------------------
-            // Jenis Prestasi
-            // ------------------------------------------------------------------
             Select::make('prestasi_id')
                 ->label('Jenis Prestasi')
                 ->options(
@@ -118,13 +137,9 @@ class FormulirPrestasiResource extends Resource
                 )
                 ->searchable()
                 ->required()
-                // Verifikator & panitia hanya view — tidak bisa edit
                 ->disabled(! $isCalonSiswa && ! $isEditor)
                 ->columnSpanFull(),
 
-            // ------------------------------------------------------------------
-            // Detail Prestasi
-            // ------------------------------------------------------------------
             TextInput::make('nama_prestasi')
                 ->label('Nama / Judul Prestasi')
                 ->required()
@@ -148,11 +163,6 @@ class FormulirPrestasiResource extends Resource
                 ->placeholder('Contoh: Kementerian Agama Kabupaten Pandeglang')
                 ->disabled(! $isCalonSiswa && ! $isEditor),
 
-            // ------------------------------------------------------------------
-            // Berkas Prestasi
-            // Directory menggunakan NISN agar konsisten dengan CalonSiswa
-            // Fallback ke 'umum' jika NISN tidak ditemukan (edge case admin input)
-            // ------------------------------------------------------------------
             FileUpload::make('berkas_prestasi')
                 ->label('Berkas Bukti Prestasi')
                 ->helperText('Format: JPG, PNG, atau PDF. Ukuran: 10 KB – 1 MB.')

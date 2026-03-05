@@ -264,13 +264,13 @@ $jenisKelamin = $record->jenis_kelamin === 'Pria' ? 'Laki-laki' : 'Perempuan';
                 </span>
             </th>
         </tr>
-        <tr style="border: 1px solid center;">
+        {{-- <tr style="border: 1px solid center;">
             <td style="border: 1px solid center;">{{ $record->prestasi->jenis }}</td>
             <td style="border: 1px solid center;">{{ $record->prestasi->nama }}</td>
             <td style="border: 1px solid center;">{{ $record->prestasi->tingkat }}</td>
             <td style="border: 1px solid center;">{{ $record->prestasi->kategori }}</td>
             <td style="border: 1px solid center;">{{ $record->prestasi->peringkat }}</td>
-        </tr>
+        </tr> --}}
     </table>
     <br>
 @endif

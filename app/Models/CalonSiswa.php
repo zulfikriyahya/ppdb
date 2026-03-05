@@ -167,10 +167,14 @@ class CalonSiswa extends Model
     {
         // Scope 1: Isolasi per tahun pendaftaran aktif.
         static::addGlobalScope('tahun_aktif', function (Builder $builder) {
-            // Cache di request lifecycle — hindari N+1 query per model load
-            $tahun = once(fn () => TahunPendaftaran::where('status', 'Aktif')->first());
+            $tahun = once(fn() => TahunPendaftaran::where('status', 'Aktif')->first());
+
+            // Hanya terapkan scope jika tahun aktif ditemukan
             if ($tahun) {
-                $builder->where('tahun_pendaftaran_id', $tahun->id);
+                $builder->where(function (Builder $q) use ($tahun) {
+                    $q->where('tahun_pendaftaran_id', $tahun->id)
+                        ->orWhereNull('tahun_pendaftaran_id'); // fallback: record lama tanpa tahun
+                });
             }
         });
 
@@ -198,18 +202,18 @@ class CalonSiswa extends Model
     public static function generateNomorPendaftaran(): string
     {
         $tahun = TahunPendaftaran::where('status', 'Aktif')->first();
-        $prefix = 'PPDB-'.($tahun ? substr($tahun->nama, 0, 4) : date('Y'));
+        $prefix = 'PPDB-' . ($tahun ? substr($tahun->nama, 0, 4) : date('Y'));
 
         // Ambil nomor urut terakhir untuk tahun ini, bypass global scope
         $last = static::withoutGlobalScopes()
-            ->where('nomor_pendaftaran', 'like', $prefix.'-%')
+            ->where('nomor_pendaftaran', 'like', $prefix . '-%')
             ->orderByDesc('nomor_pendaftaran')
             ->lockForUpdate()
             ->value('nomor_pendaftaran');
 
         $seq = $last ? ((int) substr($last, -6)) + 1 : 1;
 
-        return $prefix.'-'.str_pad($seq, 6, '0', STR_PAD_LEFT);
+        return $prefix . '-' . str_pad($seq, 6, '0', STR_PAD_LEFT);
     }
 
     // -----------------------------------------------------------------------
