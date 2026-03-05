@@ -117,10 +117,10 @@ class FormOptions
     ];
 
     public const STATUS_PENDAFTARAN_SUPER_ADMIN = [
-        'Diproses'                 => 'Diproses',
-        'Tidak Diterima'           => 'Tidak Diterima',
-        'Diterima'                 => 'Diterima',
-        'Diterima Di Kelas Reguler'  => 'Diterima Di Kelas Reguler',
+        'Diproses' => 'Diproses',
+        'Tidak Diterima' => 'Tidak Diterima',
+        'Diterima' => 'Diterima',
+        'Diterima Di Kelas Reguler' => 'Diterima Di Kelas Reguler',
         'Diterima Di Kelas Unggulan' => 'Diterima Di Kelas Unggulan',
     ];
 
@@ -129,10 +129,10 @@ class FormOptions
     ];
 
     public const STATUS_FORMULIR = [
-        'Diproses'            => 'Diproses',
+        'Diproses' => 'Diproses',
         'Berkas Tidak Lengkap' => 'Berkas Tidak Lengkap',
-        'Disetujui'           => 'Disetujui',
-        'Ditolak'             => 'Ditolak',
+        'Disetujui' => 'Disetujui',
+        'Ditolak' => 'Ditolak',
     ];
 
     // Helper untuk tahun lulus

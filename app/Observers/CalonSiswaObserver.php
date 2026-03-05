@@ -18,13 +18,13 @@ class CalonSiswaObserver
         $this->kirim(
             $model,
             "✅ *Pendaftaran Berhasil*\n\n"
-                . "Halo, *{$model->nama}*!\n"
-                . "Formulir pendaftaran kamu telah kami terima.\n\n"
-                . "📋 No. Pendaftaran : *{$model->nomor_pendaftaran}*\n"
-                . "📄 Status Formulir : *{$model->status_formulir}*\n"
-                . "📌 Status Pendaftaran : *{$model->status_pendaftaran}*\n\n"
-                . "Pantau status pendaftaran kamu secara berkala.\n"
-                . '_MTsN 1 Pandeglang_'
+                ."Halo, *{$model->nama}*!\n"
+                ."Formulir pendaftaran kamu telah kami terima.\n\n"
+                ."📋 No. Pendaftaran : *{$model->nomor_pendaftaran}*\n"
+                ."📄 Status Formulir : *{$model->status_formulir}*\n"
+                ."📌 Status Pendaftaran : *{$model->status_pendaftaran}*\n\n"
+                ."Pantau status pendaftaran kamu secara berkala.\n"
+                .'_MTsN 1 Pandeglang_'
         );
     }
 
@@ -32,10 +32,9 @@ class CalonSiswaObserver
     // Saat status_formulir atau status_pendaftaran berubah
     // -------------------------------------------------------------------------
 
-
     public function updated(CalonSiswa $model): void
     {
-        $formulirBerubah    = $model->wasChanged('status_formulir');
+        $formulirBerubah = $model->wasChanged('status_formulir');
         $pendaftaranBerubah = $model->wasChanged('status_pendaftaran');
 
         if (! $formulirBerubah && ! $pendaftaranBerubah) {
@@ -46,25 +45,23 @@ class CalonSiswaObserver
 
         if ($pendaftaranBerubah) {
             $pesan = match ($model->status_pendaftaran) {
-                'Diterima', 'Diterima Di Kelas Reguler', 'Diterima Di Kelas Unggulan' =>
-                "🎉 *Selamat, Kamu Diterima!*\n\n"
-                    . "Halo, *{$model->nama}*!\n"
-                    . "Kamu dinyatakan *{$model->status_pendaftaran}* di MTsN 1 Pandeglang.\n\n"
-                    . "📋 No. Pendaftaran : *{$model->nomor_pendaftaran}*\n"
-                    . "📄 Status Formulir : *{$model->status_formulir}*\n"
-                    . "📌 Status Pendaftaran : *{$model->status_pendaftaran}*\n\n"
-                    . "Segera lakukan registrasi ulang.\n"
-                    . '_MTsN 1 Pandeglang_',
+                'Diterima', 'Diterima Di Kelas Reguler', 'Diterima Di Kelas Unggulan' => "🎉 *Selamat, Kamu Diterima!*\n\n"
+                    ."Halo, *{$model->nama}*!\n"
+                    ."Kamu dinyatakan *{$model->status_pendaftaran}* di MTsN 1 Pandeglang.\n\n"
+                    ."📋 No. Pendaftaran : *{$model->nomor_pendaftaran}*\n"
+                    ."📄 Status Formulir : *{$model->status_formulir}*\n"
+                    ."📌 Status Pendaftaran : *{$model->status_pendaftaran}*\n\n"
+                    ."Segera lakukan registrasi ulang.\n"
+                    .'_MTsN 1 Pandeglang_',
 
-                'Tidak Diterima' =>
-                "ℹ️ *Hasil Seleksi*\n\n"
-                    . "Halo, *{$model->nama}*!\n"
-                    . "Mohon maaf, kamu dinyatakan *tidak diterima* pada seleksi ini.\n\n"
-                    . "📋 No. Pendaftaran : *{$model->nomor_pendaftaran}*\n"
-                    . "📄 Status Formulir : *{$model->status_formulir}*\n"
-                    . "📌 Status Pendaftaran : *{$model->status_pendaftaran}*\n\n"
-                    . "Tetap semangat!\n"
-                    . '_MTsN 1 Pandeglang_',
+                'Tidak Diterima' => "ℹ️ *Hasil Seleksi*\n\n"
+                    ."Halo, *{$model->nama}*!\n"
+                    ."Mohon maaf, kamu dinyatakan *tidak diterima* pada seleksi ini.\n\n"
+                    ."📋 No. Pendaftaran : *{$model->nomor_pendaftaran}*\n"
+                    ."📄 Status Formulir : *{$model->status_formulir}*\n"
+                    ."📌 Status Pendaftaran : *{$model->status_pendaftaran}*\n\n"
+                    ."Tetap semangat!\n"
+                    .'_MTsN 1 Pandeglang_',
 
                 default => null,
             };
@@ -72,34 +69,31 @@ class CalonSiswaObserver
 
         if (! $pesan && $formulirBerubah) {
             $pesan = match ($model->status_formulir) {
-                'Berkas Tidak Lengkap' =>
-                "⚠️ *Berkas Tidak Lengkap*\n\n"
-                    . "Halo, *{$model->nama}*!\n"
-                    . "Berkas pendaftaran kamu dinyatakan *tidak lengkap*.\n"
-                    . "Segera lengkapi berkas melalui sistem PPDB.\n\n"
-                    . "📋 No. Pendaftaran : *{$model->nomor_pendaftaran}*\n"
-                    . "📄 Status Formulir : *{$model->status_formulir}*\n"
-                    . "📌 Status Pendaftaran : *{$model->status_pendaftaran}*\n"
-                    . '_MTsN 1 Pandeglang_',
+                'Berkas Tidak Lengkap' => "⚠️ *Berkas Tidak Lengkap*\n\n"
+                    ."Halo, *{$model->nama}*!\n"
+                    ."Berkas pendaftaran kamu dinyatakan *tidak lengkap*.\n"
+                    ."Segera lengkapi berkas melalui sistem PPDB.\n\n"
+                    ."📋 No. Pendaftaran : *{$model->nomor_pendaftaran}*\n"
+                    ."📄 Status Formulir : *{$model->status_formulir}*\n"
+                    ."📌 Status Pendaftaran : *{$model->status_pendaftaran}*\n"
+                    .'_MTsN 1 Pandeglang_',
 
-                'Disetujui' =>
-                "✅ *Formulir Disetujui*\n\n"
-                    . "Halo, *{$model->nama}*!\n"
-                    . "Formulir pendaftaran kamu telah *disetujui* oleh panitia.\n\n"
-                    . "📋 No. Pendaftaran : *{$model->nomor_pendaftaran}*\n"
-                    . "📄 Status Formulir : *{$model->status_formulir}*\n"
-                    . "📌 Status Pendaftaran : *{$model->status_pendaftaran}*\n"
-                    . '_MTsN 1 Pandeglang_',
+                'Disetujui' => "✅ *Formulir Disetujui*\n\n"
+                    ."Halo, *{$model->nama}*!\n"
+                    ."Formulir pendaftaran kamu telah *disetujui* oleh panitia.\n\n"
+                    ."📋 No. Pendaftaran : *{$model->nomor_pendaftaran}*\n"
+                    ."📄 Status Formulir : *{$model->status_formulir}*\n"
+                    ."📌 Status Pendaftaran : *{$model->status_pendaftaran}*\n"
+                    .'_MTsN 1 Pandeglang_',
 
-                'Ditolak' =>
-                "❌ *Formulir Ditolak*\n\n"
-                    . "Halo, *{$model->nama}*!\n"
-                    . "Formulir pendaftaran kamu *ditolak* oleh panitia.\n"
-                    . "Silakan hubungi panitia untuk informasi lebih lanjut.\n\n"
-                    . "📋 No. Pendaftaran : *{$model->nomor_pendaftaran}*\n"
-                    . "📄 Status Formulir : *{$model->status_formulir}*\n"
-                    . "📌 Status Pendaftaran : *{$model->status_pendaftaran}*\n"
-                    . '_MTsN 1 Pandeglang_',
+                'Ditolak' => "❌ *Formulir Ditolak*\n\n"
+                    ."Halo, *{$model->nama}*!\n"
+                    ."Formulir pendaftaran kamu *ditolak* oleh panitia.\n"
+                    ."Silakan hubungi panitia untuk informasi lebih lanjut.\n\n"
+                    ."📋 No. Pendaftaran : *{$model->nomor_pendaftaran}*\n"
+                    ."📄 Status Formulir : *{$model->status_formulir}*\n"
+                    ."📌 Status Pendaftaran : *{$model->status_pendaftaran}*\n"
+                    .'_MTsN 1 Pandeglang_',
 
                 default => null,
             };

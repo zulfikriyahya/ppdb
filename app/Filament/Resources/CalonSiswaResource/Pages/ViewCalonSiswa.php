@@ -27,19 +27,19 @@ class ViewCalonSiswa extends ViewRecord
                 'cetak_formulir',
                 'Formulir',
                 'formulir',
-                fn() => $this->canPrintFormulir()
+                fn () => $this->canPrintFormulir()
             ),
             $this->buildPdfAction(
                 'cetak_kartu_tes',
                 'Kartu Tes',
                 'kartu-tes',
-                fn() => $this->canPrintKartuTes()
+                fn () => $this->canPrintKartuTes()
             ),
             $this->buildPdfAction(
                 'cetak_skl',
                 'Hasil',
                 'skl',
-                fn() => $this->canPrintHasil()
+                fn () => $this->canPrintHasil()
             ),
         ];
     }
@@ -59,7 +59,7 @@ class ViewCalonSiswa extends ViewRecord
                 ->icon('heroicon-o-trophy')
                 ->collapsible()
                 ->columnSpanFull()
-                ->visible(fn() => $this->record->formulirPrestasis()->exists())
+                ->visible(fn () => $this->record->formulirPrestasis()->exists())
                 ->schema([
                     \Filament\Forms\Components\Repeater::make('formulirPrestasis')
                         ->relationship('formulirPrestasis')
@@ -112,13 +112,13 @@ class ViewCalonSiswa extends ViewRecord
             ->label($label)
             ->outlined()
             ->icon('heroicon-o-printer')
-            ->filename(fn($record) => "{$label}_{$record->nama}_{$record->nisn}.pdf")
+            ->filename(fn ($record) => "{$label}_{$record->nama}_{$record->nisn}.pdf")
             ->savePdf()
             ->orientation('portrait')
             ->format('a4', 'mm')
             ->enableLinks()
             ->margin([10, 10, 10, 10])
-            ->content(fn($record) => view($view, ['record' => $record]))
+            ->content(fn ($record) => view($view, ['record' => $record]))
             ->visible($visibleCallback);
     }
 
@@ -134,7 +134,9 @@ class ViewCalonSiswa extends ViewRecord
     private function canPrintFormulir(): bool
     {
         $cs = $this->getCalonSiswa();
-        if (! $cs) return false;
+        if (! $cs) {
+            return false;
+        }
 
         // Boleh cetak jika formulir sudah Disetujui
         return $cs->status_formulir === 'Disetujui';
@@ -143,7 +145,9 @@ class ViewCalonSiswa extends ViewRecord
     private function canPrintKartuTes(): bool
     {
         $cs = $this->getCalonSiswa();
-        if (! $cs) return false;
+        if (! $cs) {
+            return false;
+        }
 
         // Blokir jika belum disetujui atau sudah final
         if (! in_array($cs->status_formulir, ['Disetujui'])) {
@@ -164,7 +168,9 @@ class ViewCalonSiswa extends ViewRecord
     private function canPrintHasil(): bool
     {
         $cs = $this->getCalonSiswa();
-        if (! $cs) return false;
+        if (! $cs) {
+            return false;
+        }
 
         // Hanya yang sudah punya keputusan final
         if (! in_array($cs->status_pendaftaran, [

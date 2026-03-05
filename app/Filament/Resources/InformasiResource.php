@@ -70,7 +70,7 @@ class InformasiResource extends Resource
                     ->schema([
                         Select::make('tahun_pendaftaran_id')
                             ->label('Tahun Pendaftaran')
-                            ->relationship('tahunPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
+                            ->relationship('tahunPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif'))
                             ->required()
                             ->native(false)
                             ->live()
@@ -79,7 +79,7 @@ class InformasiResource extends Resource
                     ]),
 
                 Section::make()
-                    ->visible(fn($get) => $get('tahun_pendaftaran_id') !== null)
+                    ->visible(fn ($get) => $get('tahun_pendaftaran_id') !== null)
                     ->schema([
                         TextInput::make('judul')
                             ->label('Judul')
@@ -88,8 +88,8 @@ class InformasiResource extends Resource
                             ->maxLength(30)
                             ->validationMessages([
                                 'required' => 'Form ini wajib diisi.',
-                                'min'      => 'Masukkan maksimal 30 karakter.',
-                                'max'      => 'Masukkan maksimal 30 karakter.',
+                                'min' => 'Masukkan maksimal 30 karakter.',
+                                'max' => 'Masukkan maksimal 30 karakter.',
                             ]),
 
                         Select::make('status')
@@ -105,7 +105,7 @@ class InformasiResource extends Resource
                             ->default(now())
                             ->dehydrated()
                             ->required()
-                            ->hidden(fn(Get $get) => $get('status') !== 'Publish')
+                            ->hidden(fn (Get $get) => $get('status') !== 'Publish')
                             ->validationMessages(['required' => 'Form ini wajib diisi.']),
 
                         FileUpload::make('gambar')
@@ -159,7 +159,7 @@ class InformasiResource extends Resource
 
                     TextColumn::make('judul')
                         ->label('Informasi')
-                        ->description(fn(Informasi $r) => Str::limit($r->isi, 50))
+                        ->description(fn (Informasi $r) => Str::limit($r->isi, 50))
                         ->icon('heroicon-o-information-circle')
                         ->iconColor('info'),
 
@@ -175,15 +175,15 @@ class InformasiResource extends Resource
                     TextColumn::make('status')
                         ->label('Status')
                         ->badge()
-                        ->color(fn(string $state) => match ($state) {
+                        ->color(fn (string $state) => match ($state) {
                             'Publish' => 'success',
-                            'Draft'   => 'gray',
+                            'Draft' => 'gray',
                         }),
                 ])
                 ->filters([
                     SelectFilter::make('tahun_pendaftaran')
                         ->label('Tahun Pendaftaran')
-                        ->relationship('tahunPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif')),
+                        ->relationship('tahunPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif')),
 
                     SelectFilter::make('status')
                         ->label('Status')
@@ -217,7 +217,7 @@ class InformasiResource extends Resource
             ->columns([
                 TextColumn::make('judul')
                     ->label('Informasi')
-                    ->description(fn(Informasi $r) => Str::limit($r->isi, 50))
+                    ->description(fn (Informasi $r) => Str::limit($r->isi, 50))
                     ->icon('heroicon-o-information-circle')
                     ->iconColor('info'),
 
@@ -247,10 +247,10 @@ class InformasiResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListInformasis::route('/'),
+            'index' => Pages\ListInformasis::route('/'),
             'create' => Pages\CreateInformasi::route('/create'),
-            'view'   => Pages\ViewInformasi::route('/{record}'),
-            'edit'   => Pages\EditInformasi::route('/{record}/edit'),
+            'view' => Pages\ViewInformasi::route('/{record}'),
+            'edit' => Pages\EditInformasi::route('/{record}/edit'),
         ];
     }
 
@@ -264,11 +264,11 @@ class InformasiResource extends Resource
             ->label('Kirim Notifikasi WA')
             ->icon('heroicon-o-chat-bubble-left-ellipsis')
             ->color('info')
-            ->disabled(fn($record) => $record->status !== 'Publish')
-            ->tooltip(fn($record) => $record->status !== 'Publish' ? 'Hanya informasi berstatus Publish yang dapat dikirim' : null)
+            ->disabled(fn ($record) => $record->status !== 'Publish')
+            ->tooltip(fn ($record) => $record->status !== 'Publish' ? 'Hanya informasi berstatus Publish yang dapat dikirim' : null)
             ->form(self::targetForm())
             ->modalHeading('Kirim Notifikasi Informasi via WhatsApp')
-            ->modalDescription(fn($record) => "Informasi: \"{$record->judul}\" akan dikirim ke calon siswa yang dipilih.")
+            ->modalDescription(fn ($record) => "Informasi: \"{$record->judul}\" akan dikirim ke calon siswa yang dipilih.")
             ->modalSubmitActionLabel('Kirim Sekarang')
             ->action(function ($record, array $data) {
                 // Guard — tolak jika somehow Draft lolos (misal via direct call)
@@ -278,6 +278,7 @@ class InformasiResource extends Resource
                         ->body('Hanya informasi berstatus Publish yang dapat dikirim.')
                         ->danger()
                         ->send();
+
                     return;
                 }
                 $phones = self::resolvePhones($data['targets'] ?? []);
@@ -326,13 +327,13 @@ class InformasiResource extends Resource
                     return;
                 }
 
-                $wa         = app(WhatsAppService::class);
-                $totalJob   = 0;
-                $skipped    = 0;
+                $wa = app(WhatsAppService::class);
+                $totalJob = 0;
+                $skipped = 0;
 
                 // Filter — hanya kirim yang Publish
-                $published = $records->filter(fn($r) => $r->status === 'Publish');
-                $skipped   = $records->count() - $published->count();
+                $published = $records->filter(fn ($r) => $r->status === 'Publish');
+                $skipped = $records->count() - $published->count();
 
                 foreach ($published as $record) {
                     $pesan = self::buildPesan($record);
@@ -349,6 +350,7 @@ class InformasiResource extends Resource
                         ->body('Semua informasi yang dipilih berstatus Draft.')
                         ->warning()
                         ->send();
+
                     return;
                 }
 
@@ -372,14 +374,14 @@ class InformasiResource extends Resource
             CheckboxList::make('targets')
                 ->label('Kirim ke')
                 ->options([
-                    'semua'        => '📋 Semua Calon Siswa',
+                    'semua' => '📋 Semua Calon Siswa',
                     'diverifikasi' => '🔍 Hanya yang Diverifikasi',
-                    'diterima'     => '🎉 Hanya yang Diterima',
+                    'diterima' => '🎉 Hanya yang Diterima',
                 ])
                 ->descriptions([
-                    'semua'        => 'Seluruh calon siswa yang terdaftar (semua status)',
+                    'semua' => 'Seluruh calon siswa yang terdaftar (semua status)',
                     'diverifikasi' => 'Calon siswa dengan status Diverifikasi',
-                    'diterima'     => 'Status Diterima, Diterima Di Kelas Reguler, atau Diterima Di Kelas Unggulan',
+                    'diterima' => 'Status Diterima, Diterima Di Kelas Reguler, atau Diterima Di Kelas Unggulan',
                 ])
                 ->required()
                 ->validationMessages(['required' => 'Pilih minimal satu target penerima.']),
@@ -390,13 +392,13 @@ class InformasiResource extends Resource
     {
         $query = CalonSiswa::withoutGlobalScopes()
             ->with('user:id,telepon')
-            ->whereHas('user', fn($q) => $q->whereNotNull('telepon'));
+            ->whereHas('user', fn ($q) => $q->whereNotNull('telepon'));
 
         // Jika 'semua' dipilih → abaikan filter status lain
         if (in_array('semua', $targets)) {
             return $query
                 ->get()
-                ->map(fn($cs) => $cs->user?->telepon)
+                ->map(fn ($cs) => $cs->user?->telepon)
                 ->filter()
                 ->unique()
                 ->values();
@@ -404,11 +406,11 @@ class InformasiResource extends Resource
 
         $statusMap = [
             'diverifikasi' => ['Diverifikasi'],
-            'diterima'     => ['Diterima', 'Diterima Di Kelas Reguler', 'Diterima Di Kelas Unggulan'],
+            'diterima' => ['Diterima', 'Diterima Di Kelas Reguler', 'Diterima Di Kelas Unggulan'],
         ];
 
         $statuses = collect($targets)
-            ->flatMap(fn($t) => $statusMap[$t] ?? [])
+            ->flatMap(fn ($t) => $statusMap[$t] ?? [])
             ->unique()
             ->values()
             ->all();
@@ -419,7 +421,7 @@ class InformasiResource extends Resource
 
         return $query
             ->get()
-            ->map(fn($cs) => $cs->user?->telepon)
+            ->map(fn ($cs) => $cs->user?->telepon)
             ->filter()
             ->unique()
             ->values();
@@ -443,10 +445,10 @@ class InformasiResource extends Resource
             : now()->translatedFormat('d F Y');
 
         return "📢 *Informasi PPDB MTsN 1 Pandeglang*\n\n"
-            . "📌 *{$record->judul}*\n"
-            . "🗓️ {$tanggal}\n\n"
-            . strip_tags($record->isi) . "\n\n"
-            . "Silakan login ke sistem PPDB untuk informasi lebih lanjut.\n"
-            . '_MTsN 1 Pandeglang_';
+            ."📌 *{$record->judul}*\n"
+            ."🗓️ {$tanggal}\n\n"
+            .strip_tags($record->isi)."\n\n"
+            ."Silakan login ke sistem PPDB untuk informasi lebih lanjut.\n"
+            .'_MTsN 1 Pandeglang_';
     }
 }

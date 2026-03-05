@@ -12,20 +12,51 @@ class FormulirOverview extends BaseWidget
 {
     protected static bool $isLazy = false;
 
-    protected ?string $heading = '♾️ Statistik Pendaftaran';
+    protected ?string $heading = 'Statistik Pendaftaran';
 
     protected static ?int $sort = 0;
 
     protected static ?string $pollingInterval = '60s';
 
+    private function chartBy(string $col, ?string $val = null): array
+    {
+        return CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
+            ->when($val, fn($q) => $q->where($col, $val))
+            ->groupBy('hari')
+            ->orderBy('hari')
+            ->pluck('total')
+            ->toArray();
+    }
+
+    private function makeStat(
+        string $value,
+        string $label,
+        string $icon,
+        string $color,
+        array $chart,
+        string $href
+    ): Stat {
+        return Stat::make('', $value)
+            ->description($label)
+            ->descriptionIcon($icon, IconPosition::Before)
+            ->color($color)
+            ->chart($chart)
+            ->extraAttributes([
+                'class' => 'cursor-pointer transition hover:opacity-80',
+                'onclick' => "window.location.href='{$href}'",
+            ]);
+    }
+
+    private function url(string $filter = ''): string
+    {
+        return "/formulir{$filter}";
+    }
+
     protected function getStats(): array
     {
-        $user         = Auth::user();
+        $user = Auth::user();
         $isCalonSiswa = $user->hasRole('calon_siswa');
 
-        // ----------------------------------------------------------------
-        // Query counts
-        // ----------------------------------------------------------------
         $statusCount = CalonSiswa::selectRaw('status_pendaftaran, COUNT(*) as total')
             ->groupBy('status_pendaftaran')
             ->pluck('total', 'status_pendaftaran')
@@ -36,7 +67,6 @@ class FormulirOverview extends BaseWidget
             ->pluck('total', 'status_formulir')
             ->toArray();
 
-        // status_pendaftaran
         $totalPendaftar   = array_sum($statusCount);
         $diproses         = $statusCount['Diproses'] ?? 0;
         $diterima         = $statusCount['Diterima'] ?? 0;
@@ -44,52 +74,18 @@ class FormulirOverview extends BaseWidget
         $diterimaUnggulan = $statusCount['Diterima Di Kelas Unggulan'] ?? 0;
         $tidakDiterima    = $statusCount['Tidak Diterima'] ?? 0;
 
-        // status_formulir
         $fDiproses  = $formulirCount['Diproses'] ?? 0;
         $fBerkas    = $formulirCount['Berkas Tidak Lengkap'] ?? 0;
         $fDisetujui = $formulirCount['Disetujui'] ?? 0;
         $fDitolak   = $formulirCount['Ditolak'] ?? 0;
 
-        // ----------------------------------------------------------------
-        // Chart helpers
-        // ----------------------------------------------------------------
-        $chartBy = fn(string $col, ?string $val = null) => CalonSiswa
-            ::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-            ->when($val, fn($q) => $q->where($col, $val))
-            ->groupBy('hari')
-            ->orderBy('hari')
-            ->pluck('total')
-            ->toArray();
-
-        $url = fn(string $filter = '') => "/formulir{$filter}";
-
-        // ----------------------------------------------------------------
-        // Stat builder
-        // ----------------------------------------------------------------
-        $stat = fn(
-            string $value,
-            string $label,
-            string $icon,
-            string $color,
-            array  $chart,
-            string $href
-        ) => Stat::make('', $value)
-            ->description($label)
-            ->descriptionIcon($icon, IconPosition::Before)
-            ->color($color)
-            ->chart($chart)
-            ->extraAttributes([
-                'class'   => 'cursor-pointer transition hover:opacity-80',
-                'onclick' => "window.location.href='{$href}'",
-            ]);
-
-        // ================================================================
-        // VIEW: calon_siswa — total + status milik sendiri
-        // ================================================================
         if ($isCalonSiswa) {
-            $cs = CalonSiswa::where('user_id', $user->id)->first();
+            $cs = CalonSiswa::withoutGlobalScope('tahun_aktif')
+                ->where('user_id', $user->id)
+                ->latest()
+                ->first();
 
-            $statusLabel = $cs?->status_pendaftaran ?? 'Belum Mendaftar';
+            $statusLabel  = $cs?->status_pendaftaran ?? 'Belum Mendaftar';
             $formulirLabel = $cs?->status_formulir ?? '-';
 
             [$statusColor, $statusIcon] = match ($cs?->status_pendaftaran) {
@@ -101,136 +97,123 @@ class FormulirOverview extends BaseWidget
             };
 
             [$formulirColor, $formulirIcon] = match ($cs?->status_formulir) {
-                'Disetujui'            => ['success', 'heroicon-o-document-check'],
-                'Berkas Tidak Lengkap' => ['danger',  'heroicon-o-document-minus'],
-                'Ditolak'              => ['danger',  'heroicon-o-x-circle'],
-                default                => ['warning', 'heroicon-o-arrow-path'],
+                'Disetujui'          => ['success', 'heroicon-o-document-check'],
+                'Berkas Tidak Lengkap',
+                'Ditolak'            => ['danger',  match ($cs?->status_formulir) {
+                    'Berkas Tidak Lengkap' => 'heroicon-o-document-minus',
+                    default                => 'heroicon-o-x-circle',
+                }],
+                default              => ['warning', 'heroicon-o-arrow-path'],
             };
 
             return [
-                $stat(
+                $this->makeStat(
                     "{$totalPendaftar} Peserta",
                     'Total Pendaftar',
                     'heroicon-o-users',
                     'gray',
-                    $chartBy('status_pendaftaran'),
-                    $url()
+                    $this->chartBy('status_pendaftaran'),
+                    $this->url()
                 ),
-                $stat(
+                $this->makeStat(
                     $statusLabel,
                     'Status Pendaftaran Kamu',
                     $statusIcon,
                     $statusColor,
-                    $chartBy('status_pendaftaran', $cs?->status_pendaftaran),
-                    $url()
+                    $this->chartBy('status_pendaftaran', $cs?->status_pendaftaran),
+                    $this->url()
                 ),
-                $stat(
+                $this->makeStat(
                     $formulirLabel,
                     'Status Formulir Kamu',
                     $formulirIcon,
                     $formulirColor,
-                    $chartBy('status_formulir', $cs?->status_formulir),
-                    $url()
+                    $this->chartBy('status_formulir', $cs?->status_formulir),
+                    $this->url()
                 ),
             ];
         }
 
-        // ================================================================
-        // VIEW: admin — grouped & ordered by flow proses
-        //
-        // Urutan flow:
-        //   [Total]
-        //   --- Formulir ---
-        //   Diproses → Berkas Tidak Lengkap → Disetujui → Ditolak
-        //   --- Pendaftaran ---
-        //   Diproses → Diterima → Reguler → Unggulan → Tidak Diterima
-        // ================================================================
         return [
-
-            // ── RINGKASAN ─────────────────────────────────────────────
-            $stat(
+            $this->makeStat(
                 "{$totalPendaftar} Peserta",
                 'Total Pendaftar',
                 'heroicon-o-users',
                 'gray',
-                $chartBy('status_pendaftaran'),
-                $url()
+                $this->chartBy('status_pendaftaran'),
+                $this->url()
             ),
-
-            // ── STATUS FORMULIR (flow verifikasi berkas) ──────────────
-            $stat(
+            $this->makeStat(
                 "{$fDiproses} Formulir",
                 'Formulir Diproses',
                 'heroicon-o-arrow-path',
                 'warning',
-                $chartBy('status_formulir', 'Diproses'),
-                $url('?tableFilters[status_formulir][value]=Diproses')
+                $this->chartBy('status_formulir', 'Diproses'),
+                $this->url('?tableFilters[status_formulir][value]=Diproses')
             ),
-            $stat(
+            $this->makeStat(
                 "{$fBerkas} Formulir",
                 'Berkas Tidak Lengkap',
                 'heroicon-o-document-minus',
                 'danger',
-                $chartBy('status_formulir', 'Berkas Tidak Lengkap'),
-                $url('?tableFilters[status_formulir][value]=Berkas+Tidak+Lengkap')
+                $this->chartBy('status_formulir', 'Berkas Tidak Lengkap'),
+                $this->url('?tableFilters[status_formulir][value]=Berkas+Tidak+Lengkap')
             ),
-            $stat(
+            $this->makeStat(
                 "{$fDisetujui} Formulir",
                 'Formulir Disetujui',
                 'heroicon-o-document-check',
                 'success',
-                $chartBy('status_formulir', 'Disetujui'),
-                $url('?tableFilters[status_formulir][value]=Disetujui')
+                $this->chartBy('status_formulir', 'Disetujui'),
+                $this->url('?tableFilters[status_formulir][value]=Disetujui')
             ),
-            $stat(
+            $this->makeStat(
                 "{$fDitolak} Formulir",
                 'Formulir Ditolak',
                 'heroicon-o-x-circle',
                 'danger',
-                $chartBy('status_formulir', 'Ditolak'),
-                $url('?tableFilters[status_formulir][value]=Ditolak')
+                $this->chartBy('status_formulir', 'Ditolak'),
+                $this->url('?tableFilters[status_formulir][value]=Ditolak')
             ),
-
-            // ── STATUS PENDAFTARAN (flow keputusan akhir) ─────────────
-            $stat(
+            $this->makeStat(
                 "{$diproses} Peserta",
                 'Pendaftaran Diproses',
                 'heroicon-o-clock',
                 'gray',
-                $chartBy('status_pendaftaran', 'Diproses'),
-                $url('?tableFilters[status_pendaftaran][value]=Diproses')
+                $this->chartBy('status_pendaftaran', 'Diproses'),
+                $this->url('?tableFilters[status_pendaftaran][value]=Diproses')
             ),
-            $stat(
+            $this->makeStat(
                 "{$diterima} Peserta",
                 'Diterima — Jalur Prestasi',
                 'heroicon-o-star',
                 'success',
-                $chartBy('status_pendaftaran', 'Diterima'),
-                $url('?tableFilters[status_pendaftaran][value]=Diterima')
+                $this->chartBy('status_pendaftaran', 'Diterima'),
+                $this->url('?tableFilters[status_pendaftaran][value]=Diterima')
             ),
-            $stat(
+            $this->makeStat(
                 "{$diterimaReguler} Peserta",
                 'Diterima — Kelas Reguler',
                 'heroicon-o-shield-check',
                 'success',
-                $chartBy('status_pendaftaran', 'Diterima Di Kelas Reguler'),
-                $url('?tableFilters[status_pendaftaran][value]=Diterima+Di+Kelas+Reguler')
+                $this->chartBy('status_pendaftaran', 'Diterima Di Kelas Reguler'),
+                $this->url('?tableFilters[status_pendaftaran][value]=Diterima+Di+Kelas+Reguler')
             ),
-            $stat(
+            $this->makeStat(
                 "{$diterimaUnggulan} Peserta",
                 'Diterima — Kelas Unggulan',
                 'heroicon-o-shield-check',
                 'info',
-                $chartBy('status_pendaftaran', 'Diterima Di Kelas Unggulan'),
-                $url('?tableFilters[status_pendaftaran][value]=Diterima+Di+Kelas+Unggulan')
+                $this->chartBy('status_pendaftaran', 'Diterima Di Kelas Unggulan'),
+                $this->url('?tableFilters[status_pendaftaran][value]=Diterima+Di+Kelas+Unggulan')
             ),
-            $stat(
+            $this->makeStat(
                 "{$tidakDiterima} Peserta",
                 'Tidak Diterima',
                 'heroicon-o-no-symbol',
                 'danger',
-                $chartBy('status_pendaftaran', 'Tidak Diterima'),
-                $url('?tableFilters[status_pendaftaran][value]=Tidak+Diterima')
+                $this->chartBy('status_pendaftaran', 'Tidak Diterima'),
+                $this->url('?tableFilters[status_pendaftaran][value]=Tidak+Diterima')
             ),
         ];
     }

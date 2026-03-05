@@ -23,22 +23,19 @@ class InformasiPublished extends TableWidget
 
     protected function getTableHeading(): string
     {
-        return 'ℹ️ Informasi';
+        return 'Informasi';
     }
-
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
 
     private function getCalonSiswa(): ?CalonSiswa
     {
-        return CalonSiswa::where('nisn', Auth::user()->username)->first();
+        return CalonSiswa::withoutGlobalScope('milik_sendiri')
+            ->where('user_id', Auth::id())
+            ->first();
     }
 
     private function statusColor(string $status): string
     {
         return match ($status) {
-            'Diverifikasi',
             'Diterima',
             'Diterima Di Kelas Reguler' => 'success',
             'Diterima Di Kelas Unggulan' => 'info',
@@ -50,7 +47,6 @@ class InformasiPublished extends TableWidget
     private function statusIcon(string $status): string
     {
         return match ($status) {
-            'Diverifikasi'               => 'heroicon-o-clipboard-document-check',
             'Berkas Tidak Lengkap'       => 'heroicon-o-document-minus',
             'Tidak Diterima'             => 'heroicon-o-no-symbol',
             'Diterima'                   => 'heroicon-o-check-circle',
@@ -62,23 +58,23 @@ class InformasiPublished extends TableWidget
 
     private function isInPengumumanPeriod(): bool
     {
-        $tahun   = DB::table('tahun_pendaftarans')->where('status', 'Aktif')->first();
-        $sekarang = Carbon::now();
+        $tahun = DB::table('tahun_pendaftarans')->where('status', 'Aktif')->first();
 
-        $jalurs = ['prestasi', 'reguler', 'afirmasi', 'zonasi', 'mutasi'];
+        if (! $tahun) {
+            return false;
+        }
 
-        foreach ($jalurs as $jalur) {
-            $mulaiRaw   = $tahun->{"tanggal_pengumuman_jalur_{$jalur}_mulai"}   ?? null;
+        $now = Carbon::now();
+
+        foreach (['prestasi', 'reguler', 'afirmasi', 'zonasi', 'mutasi'] as $jalur) {
+            $mulaiRaw   = $tahun->{"tanggal_pengumuman_jalur_{$jalur}_mulai"} ?? null;
             $selesaiRaw = $tahun->{"tanggal_pengumuman_jalur_{$jalur}_selesai"} ?? null;
 
             if (empty($mulaiRaw) || empty($selesaiRaw)) {
                 continue;
             }
 
-            $mulai   = Carbon::createFromFormat('Y-m-d H:i:s', trim($mulaiRaw));
-            $selesai = Carbon::createFromFormat('Y-m-d H:i:s', trim($selesaiRaw));
-
-            if ($sekarang->between($mulai, $selesai)) {
+            if ($now->between(Carbon::parse($mulaiRaw), Carbon::parse($selesaiRaw))) {
                 return true;
             }
         }
@@ -88,23 +84,15 @@ class InformasiPublished extends TableWidget
 
     private function isCalonSiswa(): bool
     {
-        return Auth::user()->roles->first()->name === 'calon_siswa';
+        return Auth::user()->hasRole('calon_siswa');
     }
-
-    // -------------------------------------------------------------------------
-    // Table
-    // -------------------------------------------------------------------------
 
     public function table(Table $table): Table
     {
-        $calonSiswa = $this->getCalonSiswa();
-        $label      = $calonSiswa?->status_pendaftaran ?? '';
+        $calonSiswa = $this->isCalonSiswa() ? $this->getCalonSiswa() : null;
 
-        $urlFormulir     = $calonSiswa ? '/formulir' : '';
-        $urlViewFormulir = $calonSiswa ? "/formulir/{$calonSiswa->id}" : '';
-        $urlInformasi    = $calonSiswa ? '/informasi' : '';
-
-        $isCalonSiswa = $this->isCalonSiswa();
+        $statusPendaftaran = $calonSiswa?->status_pendaftaran ?? '';
+        $inPengumuman      = $this->isInPengumumanPeriod();
 
         $terminalStatuses = [
             'Diterima',
@@ -113,48 +101,14 @@ class InformasiPublished extends TableWidget
             'Tidak Diterima',
         ];
 
-        $hasTerminalStatus     = $calonSiswa && in_array($calonSiswa->status_pendaftaran, $terminalStatuses);
-        $hidePendaftaranBadge  = ! $isCalonSiswa || $calonSiswa === null || $hasTerminalStatus;
-        $inPengumuman          = $this->isInPengumumanPeriod();
+        $hasTerminalStatus      = $calonSiswa && in_array($statusPendaftaran, $terminalStatuses);
+        $showPendaftaranBadge   = $this->isCalonSiswa() && $calonSiswa !== null && ! $hasTerminalStatus;
+
+        $urlFormulir     = $calonSiswa ? '/formulir' : '';
+        $urlViewFormulir = $calonSiswa ? "/formulir/{$calonSiswa->id}" : '';
+        $urlInformasi    = $calonSiswa ? '/informasi' : '';
 
         return $table
-            ->headerActions([
-                // --- Status Pendaftaran (non-terminal) ---
-                Action::make('label_status_pendaftaran')
-                    ->label('Status Pendaftaran :')
-                    ->outlined()
-                    ->color('gray')
-                    ->disabled()
-                    ->size('sm')
-                    ->hidden($hidePendaftaranBadge),
-
-                Action::make('status_pendaftaran')
-                    ->label($label)
-                    ->color(fn() => $calonSiswa ? $this->statusColor($calonSiswa->status_pendaftaran) : 'warning')
-                    ->icon(fn() => $calonSiswa ? $this->statusIcon($calonSiswa->status_pendaftaran) : 'heroicon-o-arrow-path')
-                    ->outlined()
-                    ->size('sm')
-                    ->url($urlFormulir)
-                    ->hidden($hidePendaftaranBadge),
-
-                // --- Status Kelulusan (periode pengumuman) ---
-                Action::make('label_status_kelulusan')
-                    ->label('Status Pendaftaran :')
-                    ->outlined()
-                    ->color('gray')
-                    ->disabled()
-                    ->size('sm')
-                    ->hidden(! $inPengumuman),
-
-                Action::make('status_kelulusan')
-                    ->label($label)
-                    ->color(fn() => $calonSiswa ? $this->statusColor($calonSiswa->status_pendaftaran) : '')
-                    ->icon(fn() => $calonSiswa ? $this->statusIcon($calonSiswa->status_pendaftaran) : '')
-                    ->outlined()
-                    ->size('sm')
-                    ->url($urlViewFormulir)
-                    ->hidden(! $inPengumuman),
-            ])
             ->query(
                 Informasi::where('status', 'Publish')->latest('updated_at')
             )

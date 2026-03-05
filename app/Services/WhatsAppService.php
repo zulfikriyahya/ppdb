@@ -36,28 +36,28 @@ class WhatsAppService
             $response = Http::withHeaders([
                 'X-Api-Key' => config('services.whatsapp.api_key'),
             ])->post(config('services.whatsapp.endpoint'), [
-                'number'  => $normalized,
+                'number' => $normalized,
                 'message' => $message,
             ]);
 
             Log::info('WhatsApp send', [
-                'phone'    => $normalized,
+                'phone' => $normalized,
                 'endpoint' => config('services.whatsapp.endpoint'),
-                'status'   => $response->status(),
-                'body'     => $response->body(),
+                'status' => $response->status(),
+                'body' => $response->body(),
             ]);
 
             if (! $response->successful()) {
                 Log::warning('WhatsApp send failed', [
-                    'phone'  => $normalized,
+                    'phone' => $normalized,
                     'status' => $response->status(),
-                    'body'   => $response->body(),
+                    'body' => $response->body(),
                 ]);
             }
 
             return $response->successful();
         } catch (\Throwable $e) {
-            Log::error('WhatsApp service error: ' . $e->getMessage());
+            Log::error('WhatsApp service error: '.$e->getMessage());
 
             return false;
         }
@@ -68,11 +68,11 @@ class WhatsAppService
         $phone = preg_replace('/\D/', '', $phone);
 
         if (str_starts_with($phone, '0')) {
-            $phone = '62' . substr($phone, 1);
+            $phone = '62'.substr($phone, 1);
         }
 
         if (! str_starts_with($phone, '62')) {
-            $phone = '62' . $phone;
+            $phone = '62'.$phone;
         }
 
         return $phone;

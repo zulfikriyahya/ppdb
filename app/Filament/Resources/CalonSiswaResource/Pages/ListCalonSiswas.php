@@ -31,10 +31,7 @@ class ListCalonSiswas extends ListRecords
         ];
     }
 
-    // ========================================================================
     // HELPER METHODS
-    // ========================================================================
-
     private function getCalonSiswaRecord(): ?CalonSiswa
     {
         if (! Auth::check()) {
@@ -69,14 +66,11 @@ class ListCalonSiswas extends ListRecords
         };
     }
 
-    // ========================================================================
     // ACTION BUILDERS
-    // ========================================================================
-
     private function getDaftarSekarangAction(?CalonSiswa $calonSiswa): Action
     {
         return Action::make('buat_formulir_pendaftaran')
-            ->label('Daftar Sekarang 🚀')
+            ->label('Daftar Sekarang')
             ->icon('heroicon-o-clipboard-document-list')
             ->outlined()
             ->color('primary')

@@ -29,5 +29,6 @@ Dokumen ini digunakan sebagai konteks bagi AI assistant saat membantu pengembang
 | Styling | Tailwind CSS + Nord Theme |
 | WhatsApp Notification | WhatsApp Gateway (sistem terpisah) |
 
-# Notifikasi Whatsapp Dilakukan oleh Job Queue (Latar Belakang dengan dengan selisih waktu random) menghindari banned
-# Lakukan Notifikasi Otomatis untuk OTP, ResetPasswordOtp, CreateFormulir, UpdateFormulir, dan status formulir, serta berikan tombol action manual untuk status pendaftaran (Via Role super_admin, admin, verifikator dan panitia)
+## Aturan
+- Jangan gunakan komentar berlebihan
+- jangan gunakan emoticon

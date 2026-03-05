@@ -4,6 +4,279 @@
 > Dikecualikan: node_modules, vendor, tests, .yarn, public/vendor,
 >               public/build, storage, bootstrap/cache, dan file biner.
 
+## 🗂️ File Tree
+
+```
+app/Models/Anggota.php
+app/Models/Bendahara.php
+app/Models/CalonSiswa.php
+app/Models/Ekstrakurikuler.php
+app/Models/FormulirPrestasi.php
+app/Models/Informasi.php
+app/Models/JalurPendaftaran.php
+app/Models/Jurusan.php
+app/Models/Kabupaten.php
+app/Models/Kecamatan.php
+app/Models/Kelas.php
+app/Models/Kelurahan.php
+app/Models/Ketua.php
+app/Models/MataPelajaran.php
+app/Models/Negara.php
+app/Models/Pimpinan.php
+app/Models/Prestasi.php
+app/Models/Provinsi.php
+app/Models/SekolahAsal.php
+app/Models/Sekolah.php
+app/Models/Sekretaris.php
+app/Models/TahunPendaftaran.php
+app/Models/User.php
+app/Policies/AnggotaPolicy.php
+app/Policies/BendaharaPolicy.php
+app/Policies/CalonSiswaPolicy.php
+app/Policies/EkstrakurikulerPolicy.php
+app/Policies/InformasiPolicy.php
+app/Policies/JalurPendaftaranPolicy.php
+app/Policies/JurusanPolicy.php
+app/Policies/KabupatenPolicy.php
+app/Policies/KecamatanPolicy.php
+app/Policies/KelasPolicy.php
+app/Policies/KelurahanPolicy.php
+app/Policies/KetuaPolicy.php
+app/Policies/MataPelajaranPolicy.php
+app/Policies/NegaraPolicy.php
+app/Policies/PimpinanPolicy.php
+app/Policies/PrestasiPolicy.php
+app/Policies/ProvinsiPolicy.php
+app/Policies/RolePolicy.php
+app/Policies/SekolahAsalPolicy.php
+app/Policies/SekolahPolicy.php
+app/Policies/SekretarisPolicy.php
+app/Policies/TahunPendaftaranPolicy.php
+app/Policies/UserPolicy.php
+app/Services/WhatsAppService.php
+app/Helpers/PdfDataHelper.php
+app/Constants/FormOptions.php
+app/Http/Controllers/Controller.php
+app/Filament/Resources/AnggotaResource/Pages/CreateAnggota.php
+app/Filament/Resources/AnggotaResource/Pages/EditAnggota.php
+app/Filament/Resources/AnggotaResource/Pages/ListAnggotas.php
+app/Filament/Resources/AnggotaResource/Pages/ViewAnggota.php
+app/Filament/Resources/AnggotaResource.php
+app/Filament/Resources/BendaharaResource/Pages/CreateBendahara.php
+app/Filament/Resources/BendaharaResource/Pages/EditBendahara.php
+app/Filament/Resources/BendaharaResource/Pages/ListBendaharas.php
+app/Filament/Resources/BendaharaResource/Pages/ViewBendahara.php
+app/Filament/Resources/BendaharaResource.php
+app/Filament/Resources/CalonSiswaResource/Pages/CreateCalonSiswa.php
+app/Filament/Resources/CalonSiswaResource/Pages/EditCalonSiswa.php
+app/Filament/Resources/CalonSiswaResource/Pages/ListCalonSiswas.php
+app/Filament/Resources/CalonSiswaResource/Pages/ViewCalonSiswa.php
+app/Filament/Resources/CalonSiswaResource.php
+app/Filament/Resources/CalonSiswaResource/Widgets/FormulirOverview.php
+app/Filament/Resources/EkstrakurikulerResource/Pages/CreateEkstrakurikuler.php
+app/Filament/Resources/EkstrakurikulerResource/Pages/EditEkstrakurikuler.php
+app/Filament/Resources/EkstrakurikulerResource/Pages/ListEkstrakurikulers.php
+app/Filament/Resources/EkstrakurikulerResource/Pages/ViewEkstrakurikuler.php
+app/Filament/Resources/EkstrakurikulerResource.php
+app/Filament/Resources/FormulirPrestasiResource/Pages/CreateFormulirPrestasi.php
+app/Filament/Resources/FormulirPrestasiResource/Pages/EditFormulirPrestasi.php
+app/Filament/Resources/FormulirPrestasiResource/Pages/ListFormulirPrestasis.php
+app/Filament/Resources/FormulirPrestasiResource/Pages/ViewFormulirPrestasi.php
+app/Filament/Resources/FormulirPrestasiResource.php
+app/Filament/Resources/InformasiResource/Pages/CreateInformasi.php
+app/Filament/Resources/InformasiResource/Pages/EditInformasi.php
+app/Filament/Resources/InformasiResource/Pages/ListInformasis.php
+app/Filament/Resources/InformasiResource/Pages/ViewInformasi.php
+app/Filament/Resources/InformasiResource.php
+app/Filament/Resources/InformasiResource/Widgets/InformasiPublished.php
+app/Filament/Resources/JalurPendaftaranResource/Pages/CreateJalurPendaftaran.php
+app/Filament/Resources/JalurPendaftaranResource/Pages/EditJalurPendaftaran.php
+app/Filament/Resources/JalurPendaftaranResource/Pages/ListJalurPendaftarans.php
+app/Filament/Resources/JalurPendaftaranResource/Pages/ViewJalurPendaftaran.php
+app/Filament/Resources/JalurPendaftaranResource.php
+app/Filament/Resources/JurusanResource/Pages/CreateJurusan.php
+app/Filament/Resources/JurusanResource/Pages/EditJurusan.php
+app/Filament/Resources/JurusanResource/Pages/ListJurusans.php
+app/Filament/Resources/JurusanResource/Pages/ViewJurusan.php
+app/Filament/Resources/JurusanResource.php
+app/Filament/Resources/KabupatenResource/Pages/CreateKabupaten.php
+app/Filament/Resources/KabupatenResource/Pages/EditKabupaten.php
+app/Filament/Resources/KabupatenResource/Pages/ListKabupatens.php
+app/Filament/Resources/KabupatenResource/Pages/ViewKabupaten.php
+app/Filament/Resources/KabupatenResource.php
+app/Filament/Resources/KecamatanResource/Pages/CreateKecamatan.php
+app/Filament/Resources/KecamatanResource/Pages/EditKecamatan.php
+app/Filament/Resources/KecamatanResource/Pages/ListKecamatans.php
+app/Filament/Resources/KecamatanResource/Pages/ViewKecamatan.php
+app/Filament/Resources/KecamatanResource.php
+app/Filament/Resources/KelasResource/Pages/CreateKelas.php
+app/Filament/Resources/KelasResource/Pages/EditKelas.php
+app/Filament/Resources/KelasResource/Pages/ListKelas.php
+app/Filament/Resources/KelasResource/Pages/ViewKelas.php
+app/Filament/Resources/KelasResource.php
+app/Filament/Resources/KelurahanResource/Pages/CreateKelurahan.php
+app/Filament/Resources/KelurahanResource/Pages/EditKelurahan.php
+app/Filament/Resources/KelurahanResource/Pages/ListKelurahans.php
+app/Filament/Resources/KelurahanResource/Pages/ViewKelurahan.php
+app/Filament/Resources/KelurahanResource.php
+app/Filament/Resources/KetuaResource/Pages/CreateKetua.php
+app/Filament/Resources/KetuaResource/Pages/EditKetua.php
+app/Filament/Resources/KetuaResource/Pages/ListKetuas.php
+app/Filament/Resources/KetuaResource/Pages/ViewKetua.php
+app/Filament/Resources/KetuaResource.php
+app/Filament/Resources/MataPelajaranResource/Pages/CreateMataPelajaran.php
+app/Filament/Resources/MataPelajaranResource/Pages/EditMataPelajaran.php
+app/Filament/Resources/MataPelajaranResource/Pages/ListMataPelajarans.php
+app/Filament/Resources/MataPelajaranResource/Pages/ViewMataPelajaran.php
+app/Filament/Resources/MataPelajaranResource.php
+app/Filament/Resources/NegaraResource/Pages/CreateNegara.php
+app/Filament/Resources/NegaraResource/Pages/EditNegara.php
+app/Filament/Resources/NegaraResource/Pages/ListNegaras.php
+app/Filament/Resources/NegaraResource/Pages/ViewNegara.php
+app/Filament/Resources/NegaraResource.php
+app/Filament/Resources/PimpinanResource/Pages/CreatePimpinan.php
+app/Filament/Resources/PimpinanResource/Pages/EditPimpinan.php
+app/Filament/Resources/PimpinanResource/Pages/ListPimpinans.php
+app/Filament/Resources/PimpinanResource/Pages/ViewPimpinan.php
+app/Filament/Resources/PimpinanResource.php
+app/Filament/Resources/PrestasiResource/Pages/CreatePrestasi.php
+app/Filament/Resources/PrestasiResource/Pages/EditPrestasi.php
+app/Filament/Resources/PrestasiResource/Pages/ListPrestasis.php
+app/Filament/Resources/PrestasiResource/Pages/ViewPrestasi.php
+app/Filament/Resources/PrestasiResource.php
+app/Filament/Resources/ProvinsiResource/Pages/CreateProvinsi.php
+app/Filament/Resources/ProvinsiResource/Pages/EditProvinsi.php
+app/Filament/Resources/ProvinsiResource/Pages/ListProvinsis.php
+app/Filament/Resources/ProvinsiResource/Pages/ViewProvinsi.php
+app/Filament/Resources/ProvinsiResource.php
+app/Filament/Resources/RoleResource/Pages/CreateRole.php
+app/Filament/Resources/RoleResource/Pages/EditRole.php
+app/Filament/Resources/RoleResource/Pages/ListRoles.php
+app/Filament/Resources/RoleResource/Pages/ViewRole.php
+app/Filament/Resources/RoleResource.php
+app/Filament/Resources/SekolahAsalResource/Concerns/HasSekolahAsalWizardSteps.php
+app/Filament/Resources/SekolahAsalResource/Pages/CreateSekolahAsal.php
+app/Filament/Resources/SekolahAsalResource/Pages/EditSekolahAsal.php
+app/Filament/Resources/SekolahAsalResource/Pages/ListSekolahAsals.php
+app/Filament/Resources/SekolahAsalResource/Pages/ViewSekolahAsal.php
+app/Filament/Resources/SekolahAsalResource.php
+app/Filament/Resources/SekolahResource/Concerns/HasSekolahWizardSteps.php
+app/Filament/Resources/SekolahResource/Pages/CreateSekolah.php
+app/Filament/Resources/SekolahResource/Pages/EditSekolah.php
+app/Filament/Resources/SekolahResource/Pages/ListSekolahs.php
+app/Filament/Resources/SekolahResource/Pages/ViewSekolah.php
+app/Filament/Resources/SekolahResource.php
+app/Filament/Resources/SekretarisResource/Pages/CreateSekretaris.php
+app/Filament/Resources/SekretarisResource/Pages/EditSekretaris.php
+app/Filament/Resources/SekretarisResource/Pages/ListSekretaris.php
+app/Filament/Resources/SekretarisResource/Pages/ViewSekretaris.php
+app/Filament/Resources/SekretarisResource.php
+app/Filament/Resources/TahunPendaftaranResource/Pages/CreateTahunPendaftaran.php
+app/Filament/Resources/TahunPendaftaranResource/Pages/EditTahunPendaftaran.php
+app/Filament/Resources/TahunPendaftaranResource/Pages/ListTahunPendaftarans.php
+app/Filament/Resources/TahunPendaftaranResource/Pages/ViewTahunPendaftaran.php
+app/Filament/Resources/TahunPendaftaranResource.php
+app/Filament/Resources/UserResource/Pages/CreateUser.php
+app/Filament/Resources/UserResource/Pages/EditUser.php
+app/Filament/Resources/UserResource/Pages/ListUsers.php
+app/Filament/Resources/UserResource/Pages/ViewUser.php
+app/Filament/Resources/UserResource.php
+app/Filament/Resources/UserResource/Widgets/UserRegisters.php
+app/Filament/Exports/CalonSiswaExporter.php
+app/Filament/Imports/CalonSiswaImporter.php
+app/Filament/Pages/Auth/EditProfileCustom.php
+app/Filament/Pages/Auth/ForgotPasswordCustom.php
+app/Filament/Pages/Auth/LoginCustom.php
+app/Filament/Pages/Auth/NewPassword.php
+app/Filament/Pages/Auth/RegisterCustom.php
+app/Filament/Pages/Auth/ResetPasswordOtp.php
+app/Filament/Pages/Auth/VerifikasiOtp.php
+app/Filament/Concerns/HasPanitiaWizardSteps.php
+app/Filament/Traits/CalonSiswaFormTrait.php
+app/Providers/AppServiceProvider.php
+app/Providers/Filament/AdminPanelProvider.php
+app/Jobs/SendWhatsAppJob.php
+app/Observers/CalonSiswaObserver.php
+database/migrations/0001_01_01_000000_create_users_table.php
+database/migrations/0001_01_01_000001_create_calon_siswas_table.php
+database/migrations/0001_01_01_000002_create_cache_table.php
+database/migrations/0001_01_01_000003_create_jobs_table.php
+database/migrations/2025_03_07_143839_create_tahun_pendaftarans_table.php
+database/migrations/2025_03_07_143840_create_pimpinans_table.php
+database/migrations/2025_03_07_143841_create_ketuas_table.php
+database/migrations/2025_03_07_143842_create_sekretaris_table.php
+database/migrations/2025_03_07_143843_create_bendaharas_table.php
+database/migrations/2025_03_07_143844_create_negaras_table.php
+database/migrations/2025_03_07_143845_create_provinsis_table.php
+database/migrations/2025_03_07_143846_create_kabupatens_table.php
+database/migrations/2025_03_07_143847_create_kecamatans_table.php
+database/migrations/2025_03_07_143848_create_kelurahans_table.php
+database/migrations/2025_03_07_143849_create_informasis_table.php
+database/migrations/2025_03_07_143850_create_sekolahs_table.php
+database/migrations/2025_03_07_143851_create_sekolah_asals_table.php
+database/migrations/2025_03_07_143853_create_prestasis_table.php
+database/migrations/2025_03_07_143854_create_jalur_pendaftarans_table.php
+database/migrations/2025_03_07_143855_create_kelas_table.php
+database/migrations/2025_03_07_143958_create_notifications_table.php
+database/migrations/2025_03_10_000722_create_anggotas_table.php
+database/migrations/2025_03_11_203459_create_jurusans_table.php
+database/migrations/2025_03_11_221601_create_ekstrakurikulers_table.php
+database/migrations/2025_03_16_043544_create_imports_table.php
+database/migrations/2025_03_16_043545_create_exports_table.php
+database/migrations/2025_03_16_043546_create_failed_import_rows_table.php
+database/migrations/2025_03_17_054959_create_mata_pelajarans_table.php
+database/migrations/2025_03_17_192122_create_permission_tables.php
+database/migrations/2026_03_05_060527_create_formulir_prestasis.php
+routes/api.php
+routes/console.php
+routes/web.php
+resources/views/filament/pages/auth/forgot-password-custom.blade.php
+resources/views/filament/pages/auth/new-password.blade.php
+resources/views/filament/pages/auth/reset-password-otp.blade.php
+resources/views/filament/pages/auth/verifikasi-otp.blade.php
+resources/views/formulir.blade.php
+resources/views/kartu-tes.blade.php
+resources/views/partials/pdf-header.blade.php
+resources/views/skl.blade.php
+resources/views/vendor/filament-easy-footer/easy-footer.blade.php
+resources/views/vendor/filament-easy-footer/github-version.blade.php
+resources/views/vendor/filament-easy-footer/.gitkeep
+resources/css/app.css
+resources/css/filament/admin/tailwind.config.js
+resources/css/filament/admin/theme.css
+resources/js/app.js
+resources/js/bootstrap.js
+config/app.php
+config/auth.php
+config/cache.php
+config/database.php
+config/filament-easy-footer.php
+config/filament.php
+config/filament-shield.php
+config/filesystems.php
+config/logging.php
+config/mail.php
+config/permission.php
+config/queue.php
+config/sanctum.php
+config/services.php
+config/session.php
+bootstrap/app.php
+bootstrap/providers.php
+public/.htaccess
+public/index.php
+public/js/devonab/filament-easy-footer/filament-easy-footer-scripts.js
+public/robots.txt
+composer.json
+.env.example
+package.json
+postcss.config.js
+tailwind.config.js
+vite.config.js
+```
+
+---
+
 ## 🗃️ Models
 
 ### 📄 `./app/Models/Anggota.php`
@@ -1599,6 +1872,238 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
 
 ## 🔐 Policies
 
+### 📄 `./app/Policies/AnggotaPolicy.php`
+
+```php
+<?php
+
+namespace App\Policies;
+
+use App\Models\Anggota;
+use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
+
+class AnggotaPolicy
+{
+    use HandlesAuthorization;
+
+    /**
+     * Determine whether the user can view any models.
+     */
+    public function viewAny(User $user): bool
+    {
+        return $user->can('view_any_anggota');
+    }
+
+    /**
+     * Determine whether the user can view the model.
+     */
+    public function view(User $user, Anggota $anggota): bool
+    {
+        return $user->can('view_anggota');
+    }
+
+    /**
+     * Determine whether the user can create models.
+     */
+    public function create(User $user): bool
+    {
+        return $user->can('create_anggota');
+    }
+
+    /**
+     * Determine whether the user can update the model.
+     */
+    public function update(User $user, Anggota $anggota): bool
+    {
+        return $user->can('update_anggota');
+    }
+
+    /**
+     * Determine whether the user can delete the model.
+     */
+    public function delete(User $user, Anggota $anggota): bool
+    {
+        return $user->can('delete_anggota');
+    }
+
+    /**
+     * Determine whether the user can bulk delete.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return $user->can('delete_any_anggota');
+    }
+
+    /**
+     * Determine whether the user can permanently delete.
+     */
+    public function forceDelete(User $user, Anggota $anggota): bool
+    {
+        return $user->can('force_delete_anggota');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_anggota');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, Anggota $anggota): bool
+    {
+        return $user->can('restore_anggota');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_anggota');
+    }
+
+    /**
+     * Determine whether the user can replicate.
+     */
+    public function replicate(User $user, Anggota $anggota): bool
+    {
+        return $user->can('replicate_anggota');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_anggota');
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Policies/BendaharaPolicy.php`
+
+```php
+<?php
+
+namespace App\Policies;
+
+use App\Models\Bendahara;
+use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
+
+class BendaharaPolicy
+{
+    use HandlesAuthorization;
+
+    /**
+     * Determine whether the user can view any models.
+     */
+    public function viewAny(User $user): bool
+    {
+        return $user->can('view_any_bendahara');
+    }
+
+    /**
+     * Determine whether the user can view the model.
+     */
+    public function view(User $user, Bendahara $bendahara): bool
+    {
+        return $user->can('view_bendahara');
+    }
+
+    /**
+     * Determine whether the user can create models.
+     */
+    public function create(User $user): bool
+    {
+        return $user->can('create_bendahara');
+    }
+
+    /**
+     * Determine whether the user can update the model.
+     */
+    public function update(User $user, Bendahara $bendahara): bool
+    {
+        return $user->can('update_bendahara');
+    }
+
+    /**
+     * Determine whether the user can delete the model.
+     */
+    public function delete(User $user, Bendahara $bendahara): bool
+    {
+        return $user->can('delete_bendahara');
+    }
+
+    /**
+     * Determine whether the user can bulk delete.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return $user->can('delete_any_bendahara');
+    }
+
+    /**
+     * Determine whether the user can permanently delete.
+     */
+    public function forceDelete(User $user, Bendahara $bendahara): bool
+    {
+        return $user->can('force_delete_bendahara');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_bendahara');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, Bendahara $bendahara): bool
+    {
+        return $user->can('restore_bendahara');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_bendahara');
+    }
+
+    /**
+     * Determine whether the user can replicate.
+     */
+    public function replicate(User $user, Bendahara $bendahara): bool
+    {
+        return $user->can('replicate_bendahara');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_bendahara');
+    }
+}
+
+```
+
+---
+
 ### 📄 `./app/Policies/CalonSiswaPolicy.php`
 
 ```php
@@ -1715,6 +2220,1630 @@ class CalonSiswaPolicy
 
 ---
 
+### 📄 `./app/Policies/EkstrakurikulerPolicy.php`
+
+```php
+<?php
+
+namespace App\Policies;
+
+use App\Models\Ekstrakurikuler;
+use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
+
+class EkstrakurikulerPolicy
+{
+    use HandlesAuthorization;
+
+    /**
+     * Determine whether the user can view any models.
+     */
+    public function viewAny(User $user): bool
+    {
+        return $user->can('view_any_ekstrakurikuler');
+    }
+
+    /**
+     * Determine whether the user can view the model.
+     */
+    public function view(User $user, Ekstrakurikuler $ekstrakurikuler): bool
+    {
+        return $user->can('view_ekstrakurikuler');
+    }
+
+    /**
+     * Determine whether the user can create models.
+     */
+    public function create(User $user): bool
+    {
+        return $user->can('create_ekstrakurikuler');
+    }
+
+    /**
+     * Determine whether the user can update the model.
+     */
+    public function update(User $user, Ekstrakurikuler $ekstrakurikuler): bool
+    {
+        return $user->can('update_ekstrakurikuler');
+    }
+
+    /**
+     * Determine whether the user can delete the model.
+     */
+    public function delete(User $user, Ekstrakurikuler $ekstrakurikuler): bool
+    {
+        return $user->can('delete_ekstrakurikuler');
+    }
+
+    /**
+     * Determine whether the user can bulk delete.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return $user->can('delete_any_ekstrakurikuler');
+    }
+
+    /**
+     * Determine whether the user can permanently delete.
+     */
+    public function forceDelete(User $user, Ekstrakurikuler $ekstrakurikuler): bool
+    {
+        return $user->can('force_delete_ekstrakurikuler');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_ekstrakurikuler');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, Ekstrakurikuler $ekstrakurikuler): bool
+    {
+        return $user->can('restore_ekstrakurikuler');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_ekstrakurikuler');
+    }
+
+    /**
+     * Determine whether the user can replicate.
+     */
+    public function replicate(User $user, Ekstrakurikuler $ekstrakurikuler): bool
+    {
+        return $user->can('replicate_ekstrakurikuler');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_ekstrakurikuler');
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Policies/InformasiPolicy.php`
+
+```php
+<?php
+
+namespace App\Policies;
+
+use App\Models\Informasi;
+use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
+
+class InformasiPolicy
+{
+    use HandlesAuthorization;
+
+    /**
+     * Determine whether the user can view any models.
+     */
+    public function viewAny(User $user): bool
+    {
+        return $user->can('view_any_informasi');
+    }
+
+    /**
+     * Determine whether the user can view the model.
+     */
+    public function view(User $user, Informasi $informasi): bool
+    {
+        return $user->can('view_informasi');
+    }
+
+    /**
+     * Determine whether the user can create models.
+     */
+    public function create(User $user): bool
+    {
+        return $user->can('create_informasi');
+    }
+
+    /**
+     * Determine whether the user can update the model.
+     */
+    public function update(User $user, Informasi $informasi): bool
+    {
+        return $user->can('update_informasi');
+    }
+
+    /**
+     * Determine whether the user can delete the model.
+     */
+    public function delete(User $user, Informasi $informasi): bool
+    {
+        return $user->can('delete_informasi');
+    }
+
+    /**
+     * Determine whether the user can bulk delete.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return $user->can('delete_any_informasi');
+    }
+
+    /**
+     * Determine whether the user can permanently delete.
+     */
+    public function forceDelete(User $user, Informasi $informasi): bool
+    {
+        return $user->can('force_delete_informasi');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_informasi');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, Informasi $informasi): bool
+    {
+        return $user->can('restore_informasi');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_informasi');
+    }
+
+    /**
+     * Determine whether the user can replicate.
+     */
+    public function replicate(User $user, Informasi $informasi): bool
+    {
+        return $user->can('replicate_informasi');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_informasi');
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Policies/JalurPendaftaranPolicy.php`
+
+```php
+<?php
+
+namespace App\Policies;
+
+use App\Models\JalurPendaftaran;
+use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
+
+class JalurPendaftaranPolicy
+{
+    use HandlesAuthorization;
+
+    /**
+     * Determine whether the user can view any models.
+     */
+    public function viewAny(User $user): bool
+    {
+        return $user->can('view_any_jalur::pendaftaran');
+    }
+
+    /**
+     * Determine whether the user can view the model.
+     */
+    public function view(User $user, JalurPendaftaran $jalurPendaftaran): bool
+    {
+        return $user->can('view_jalur::pendaftaran');
+    }
+
+    /**
+     * Determine whether the user can create models.
+     */
+    public function create(User $user): bool
+    {
+        return $user->can('create_jalur::pendaftaran');
+    }
+
+    /**
+     * Determine whether the user can update the model.
+     */
+    public function update(User $user, JalurPendaftaran $jalurPendaftaran): bool
+    {
+        return $user->can('update_jalur::pendaftaran');
+    }
+
+    /**
+     * Determine whether the user can delete the model.
+     */
+    public function delete(User $user, JalurPendaftaran $jalurPendaftaran): bool
+    {
+        return $user->can('delete_jalur::pendaftaran');
+    }
+
+    /**
+     * Determine whether the user can bulk delete.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return $user->can('delete_any_jalur::pendaftaran');
+    }
+
+    /**
+     * Determine whether the user can permanently delete.
+     */
+    public function forceDelete(User $user, JalurPendaftaran $jalurPendaftaran): bool
+    {
+        return $user->can('force_delete_jalur::pendaftaran');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_jalur::pendaftaran');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, JalurPendaftaran $jalurPendaftaran): bool
+    {
+        return $user->can('restore_jalur::pendaftaran');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_jalur::pendaftaran');
+    }
+
+    /**
+     * Determine whether the user can replicate.
+     */
+    public function replicate(User $user, JalurPendaftaran $jalurPendaftaran): bool
+    {
+        return $user->can('replicate_jalur::pendaftaran');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_jalur::pendaftaran');
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Policies/JurusanPolicy.php`
+
+```php
+<?php
+
+namespace App\Policies;
+
+use App\Models\Jurusan;
+use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
+
+class JurusanPolicy
+{
+    use HandlesAuthorization;
+
+    /**
+     * Determine whether the user can view any models.
+     */
+    public function viewAny(User $user): bool
+    {
+        return $user->can('view_any_jurusan');
+    }
+
+    /**
+     * Determine whether the user can view the model.
+     */
+    public function view(User $user, Jurusan $jurusan): bool
+    {
+        return $user->can('view_jurusan');
+    }
+
+    /**
+     * Determine whether the user can create models.
+     */
+    public function create(User $user): bool
+    {
+        return $user->can('create_jurusan');
+    }
+
+    /**
+     * Determine whether the user can update the model.
+     */
+    public function update(User $user, Jurusan $jurusan): bool
+    {
+        return $user->can('update_jurusan');
+    }
+
+    /**
+     * Determine whether the user can delete the model.
+     */
+    public function delete(User $user, Jurusan $jurusan): bool
+    {
+        return $user->can('delete_jurusan');
+    }
+
+    /**
+     * Determine whether the user can bulk delete.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return $user->can('delete_any_jurusan');
+    }
+
+    /**
+     * Determine whether the user can permanently delete.
+     */
+    public function forceDelete(User $user, Jurusan $jurusan): bool
+    {
+        return $user->can('force_delete_jurusan');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_jurusan');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, Jurusan $jurusan): bool
+    {
+        return $user->can('restore_jurusan');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_jurusan');
+    }
+
+    /**
+     * Determine whether the user can replicate.
+     */
+    public function replicate(User $user, Jurusan $jurusan): bool
+    {
+        return $user->can('replicate_jurusan');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_jurusan');
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Policies/KabupatenPolicy.php`
+
+```php
+<?php
+
+namespace App\Policies;
+
+use App\Models\Kabupaten;
+use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
+
+class KabupatenPolicy
+{
+    use HandlesAuthorization;
+
+    /**
+     * Determine whether the user can view any models.
+     */
+    public function viewAny(User $user): bool
+    {
+        return $user->can('view_any_kabupaten');
+    }
+
+    /**
+     * Determine whether the user can view the model.
+     */
+    public function view(User $user, Kabupaten $kabupaten): bool
+    {
+        return $user->can('view_kabupaten');
+    }
+
+    /**
+     * Determine whether the user can create models.
+     */
+    public function create(User $user): bool
+    {
+        return $user->can('create_kabupaten');
+    }
+
+    /**
+     * Determine whether the user can update the model.
+     */
+    public function update(User $user, Kabupaten $kabupaten): bool
+    {
+        return $user->can('update_kabupaten');
+    }
+
+    /**
+     * Determine whether the user can delete the model.
+     */
+    public function delete(User $user, Kabupaten $kabupaten): bool
+    {
+        return $user->can('delete_kabupaten');
+    }
+
+    /**
+     * Determine whether the user can bulk delete.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return $user->can('delete_any_kabupaten');
+    }
+
+    /**
+     * Determine whether the user can permanently delete.
+     */
+    public function forceDelete(User $user, Kabupaten $kabupaten): bool
+    {
+        return $user->can('force_delete_kabupaten');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_kabupaten');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, Kabupaten $kabupaten): bool
+    {
+        return $user->can('restore_kabupaten');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_kabupaten');
+    }
+
+    /**
+     * Determine whether the user can replicate.
+     */
+    public function replicate(User $user, Kabupaten $kabupaten): bool
+    {
+        return $user->can('replicate_kabupaten');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_kabupaten');
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Policies/KecamatanPolicy.php`
+
+```php
+<?php
+
+namespace App\Policies;
+
+use App\Models\Kecamatan;
+use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
+
+class KecamatanPolicy
+{
+    use HandlesAuthorization;
+
+    /**
+     * Determine whether the user can view any models.
+     */
+    public function viewAny(User $user): bool
+    {
+        return $user->can('view_any_kecamatan');
+    }
+
+    /**
+     * Determine whether the user can view the model.
+     */
+    public function view(User $user, Kecamatan $kecamatan): bool
+    {
+        return $user->can('view_kecamatan');
+    }
+
+    /**
+     * Determine whether the user can create models.
+     */
+    public function create(User $user): bool
+    {
+        return $user->can('create_kecamatan');
+    }
+
+    /**
+     * Determine whether the user can update the model.
+     */
+    public function update(User $user, Kecamatan $kecamatan): bool
+    {
+        return $user->can('update_kecamatan');
+    }
+
+    /**
+     * Determine whether the user can delete the model.
+     */
+    public function delete(User $user, Kecamatan $kecamatan): bool
+    {
+        return $user->can('delete_kecamatan');
+    }
+
+    /**
+     * Determine whether the user can bulk delete.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return $user->can('delete_any_kecamatan');
+    }
+
+    /**
+     * Determine whether the user can permanently delete.
+     */
+    public function forceDelete(User $user, Kecamatan $kecamatan): bool
+    {
+        return $user->can('force_delete_kecamatan');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_kecamatan');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, Kecamatan $kecamatan): bool
+    {
+        return $user->can('restore_kecamatan');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_kecamatan');
+    }
+
+    /**
+     * Determine whether the user can replicate.
+     */
+    public function replicate(User $user, Kecamatan $kecamatan): bool
+    {
+        return $user->can('replicate_kecamatan');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_kecamatan');
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Policies/KelasPolicy.php`
+
+```php
+<?php
+
+namespace App\Policies;
+
+use App\Models\Kelas;
+use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
+
+class KelasPolicy
+{
+    use HandlesAuthorization;
+
+    /**
+     * Determine whether the user can view any models.
+     */
+    public function viewAny(User $user): bool
+    {
+        return $user->can('view_any_kelas');
+    }
+
+    /**
+     * Determine whether the user can view the model.
+     */
+    public function view(User $user, Kelas $kelas): bool
+    {
+        return $user->can('view_kelas');
+    }
+
+    /**
+     * Determine whether the user can create models.
+     */
+    public function create(User $user): bool
+    {
+        return $user->can('create_kelas');
+    }
+
+    /**
+     * Determine whether the user can update the model.
+     */
+    public function update(User $user, Kelas $kelas): bool
+    {
+        return $user->can('update_kelas');
+    }
+
+    /**
+     * Determine whether the user can delete the model.
+     */
+    public function delete(User $user, Kelas $kelas): bool
+    {
+        return $user->can('delete_kelas');
+    }
+
+    /**
+     * Determine whether the user can bulk delete.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return $user->can('delete_any_kelas');
+    }
+
+    /**
+     * Determine whether the user can permanently delete.
+     */
+    public function forceDelete(User $user, Kelas $kelas): bool
+    {
+        return $user->can('force_delete_kelas');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_kelas');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, Kelas $kelas): bool
+    {
+        return $user->can('restore_kelas');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_kelas');
+    }
+
+    /**
+     * Determine whether the user can replicate.
+     */
+    public function replicate(User $user, Kelas $kelas): bool
+    {
+        return $user->can('replicate_kelas');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_kelas');
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Policies/KelurahanPolicy.php`
+
+```php
+<?php
+
+namespace App\Policies;
+
+use App\Models\Kelurahan;
+use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
+
+class KelurahanPolicy
+{
+    use HandlesAuthorization;
+
+    /**
+     * Determine whether the user can view any models.
+     */
+    public function viewAny(User $user): bool
+    {
+        return $user->can('view_any_kelurahan');
+    }
+
+    /**
+     * Determine whether the user can view the model.
+     */
+    public function view(User $user, Kelurahan $kelurahan): bool
+    {
+        return $user->can('view_kelurahan');
+    }
+
+    /**
+     * Determine whether the user can create models.
+     */
+    public function create(User $user): bool
+    {
+        return $user->can('create_kelurahan');
+    }
+
+    /**
+     * Determine whether the user can update the model.
+     */
+    public function update(User $user, Kelurahan $kelurahan): bool
+    {
+        return $user->can('update_kelurahan');
+    }
+
+    /**
+     * Determine whether the user can delete the model.
+     */
+    public function delete(User $user, Kelurahan $kelurahan): bool
+    {
+        return $user->can('delete_kelurahan');
+    }
+
+    /**
+     * Determine whether the user can bulk delete.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return $user->can('delete_any_kelurahan');
+    }
+
+    /**
+     * Determine whether the user can permanently delete.
+     */
+    public function forceDelete(User $user, Kelurahan $kelurahan): bool
+    {
+        return $user->can('force_delete_kelurahan');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_kelurahan');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, Kelurahan $kelurahan): bool
+    {
+        return $user->can('restore_kelurahan');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_kelurahan');
+    }
+
+    /**
+     * Determine whether the user can replicate.
+     */
+    public function replicate(User $user, Kelurahan $kelurahan): bool
+    {
+        return $user->can('replicate_kelurahan');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_kelurahan');
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Policies/KetuaPolicy.php`
+
+```php
+<?php
+
+namespace App\Policies;
+
+use App\Models\Ketua;
+use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
+
+class KetuaPolicy
+{
+    use HandlesAuthorization;
+
+    /**
+     * Determine whether the user can view any models.
+     */
+    public function viewAny(User $user): bool
+    {
+        return $user->can('view_any_ketua');
+    }
+
+    /**
+     * Determine whether the user can view the model.
+     */
+    public function view(User $user, Ketua $ketua): bool
+    {
+        return $user->can('view_ketua');
+    }
+
+    /**
+     * Determine whether the user can create models.
+     */
+    public function create(User $user): bool
+    {
+        return $user->can('create_ketua');
+    }
+
+    /**
+     * Determine whether the user can update the model.
+     */
+    public function update(User $user, Ketua $ketua): bool
+    {
+        return $user->can('update_ketua');
+    }
+
+    /**
+     * Determine whether the user can delete the model.
+     */
+    public function delete(User $user, Ketua $ketua): bool
+    {
+        return $user->can('delete_ketua');
+    }
+
+    /**
+     * Determine whether the user can bulk delete.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return $user->can('delete_any_ketua');
+    }
+
+    /**
+     * Determine whether the user can permanently delete.
+     */
+    public function forceDelete(User $user, Ketua $ketua): bool
+    {
+        return $user->can('force_delete_ketua');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_ketua');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, Ketua $ketua): bool
+    {
+        return $user->can('restore_ketua');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_ketua');
+    }
+
+    /**
+     * Determine whether the user can replicate.
+     */
+    public function replicate(User $user, Ketua $ketua): bool
+    {
+        return $user->can('replicate_ketua');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_ketua');
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Policies/MataPelajaranPolicy.php`
+
+```php
+<?php
+
+namespace App\Policies;
+
+use App\Models\MataPelajaran;
+use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
+
+class MataPelajaranPolicy
+{
+    use HandlesAuthorization;
+
+    /**
+     * Determine whether the user can view any models.
+     */
+    public function viewAny(User $user): bool
+    {
+        return $user->can('view_any_mata::pelajaran');
+    }
+
+    /**
+     * Determine whether the user can view the model.
+     */
+    public function view(User $user, MataPelajaran $mataPelajaran): bool
+    {
+        return $user->can('view_mata::pelajaran');
+    }
+
+    /**
+     * Determine whether the user can create models.
+     */
+    public function create(User $user): bool
+    {
+        return $user->can('create_mata::pelajaran');
+    }
+
+    /**
+     * Determine whether the user can update the model.
+     */
+    public function update(User $user, MataPelajaran $mataPelajaran): bool
+    {
+        return $user->can('update_mata::pelajaran');
+    }
+
+    /**
+     * Determine whether the user can delete the model.
+     */
+    public function delete(User $user, MataPelajaran $mataPelajaran): bool
+    {
+        return $user->can('delete_mata::pelajaran');
+    }
+
+    /**
+     * Determine whether the user can bulk delete.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return $user->can('delete_any_mata::pelajaran');
+    }
+
+    /**
+     * Determine whether the user can permanently delete.
+     */
+    public function forceDelete(User $user, MataPelajaran $mataPelajaran): bool
+    {
+        return $user->can('force_delete_mata::pelajaran');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_mata::pelajaran');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, MataPelajaran $mataPelajaran): bool
+    {
+        return $user->can('restore_mata::pelajaran');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_mata::pelajaran');
+    }
+
+    /**
+     * Determine whether the user can replicate.
+     */
+    public function replicate(User $user, MataPelajaran $mataPelajaran): bool
+    {
+        return $user->can('replicate_mata::pelajaran');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_mata::pelajaran');
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Policies/NegaraPolicy.php`
+
+```php
+<?php
+
+namespace App\Policies;
+
+use App\Models\Negara;
+use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
+
+class NegaraPolicy
+{
+    use HandlesAuthorization;
+
+    /**
+     * Determine whether the user can view any models.
+     */
+    public function viewAny(User $user): bool
+    {
+        return $user->can('view_any_negara');
+    }
+
+    /**
+     * Determine whether the user can view the model.
+     */
+    public function view(User $user, Negara $negara): bool
+    {
+        return $user->can('view_negara');
+    }
+
+    /**
+     * Determine whether the user can create models.
+     */
+    public function create(User $user): bool
+    {
+        return $user->can('create_negara');
+    }
+
+    /**
+     * Determine whether the user can update the model.
+     */
+    public function update(User $user, Negara $negara): bool
+    {
+        return $user->can('update_negara');
+    }
+
+    /**
+     * Determine whether the user can delete the model.
+     */
+    public function delete(User $user, Negara $negara): bool
+    {
+        return $user->can('delete_negara');
+    }
+
+    /**
+     * Determine whether the user can bulk delete.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return $user->can('delete_any_negara');
+    }
+
+    /**
+     * Determine whether the user can permanently delete.
+     */
+    public function forceDelete(User $user, Negara $negara): bool
+    {
+        return $user->can('force_delete_negara');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_negara');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, Negara $negara): bool
+    {
+        return $user->can('restore_negara');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_negara');
+    }
+
+    /**
+     * Determine whether the user can replicate.
+     */
+    public function replicate(User $user, Negara $negara): bool
+    {
+        return $user->can('replicate_negara');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_negara');
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Policies/PimpinanPolicy.php`
+
+```php
+<?php
+
+namespace App\Policies;
+
+use App\Models\Pimpinan;
+use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
+
+class PimpinanPolicy
+{
+    use HandlesAuthorization;
+
+    /**
+     * Determine whether the user can view any models.
+     */
+    public function viewAny(User $user): bool
+    {
+        return $user->can('view_any_pimpinan');
+    }
+
+    /**
+     * Determine whether the user can view the model.
+     */
+    public function view(User $user, Pimpinan $pimpinan): bool
+    {
+        return $user->can('view_pimpinan');
+    }
+
+    /**
+     * Determine whether the user can create models.
+     */
+    public function create(User $user): bool
+    {
+        return $user->can('create_pimpinan');
+    }
+
+    /**
+     * Determine whether the user can update the model.
+     */
+    public function update(User $user, Pimpinan $pimpinan): bool
+    {
+        return $user->can('update_pimpinan');
+    }
+
+    /**
+     * Determine whether the user can delete the model.
+     */
+    public function delete(User $user, Pimpinan $pimpinan): bool
+    {
+        return $user->can('delete_pimpinan');
+    }
+
+    /**
+     * Determine whether the user can bulk delete.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return $user->can('delete_any_pimpinan');
+    }
+
+    /**
+     * Determine whether the user can permanently delete.
+     */
+    public function forceDelete(User $user, Pimpinan $pimpinan): bool
+    {
+        return $user->can('force_delete_pimpinan');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_pimpinan');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, Pimpinan $pimpinan): bool
+    {
+        return $user->can('restore_pimpinan');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_pimpinan');
+    }
+
+    /**
+     * Determine whether the user can replicate.
+     */
+    public function replicate(User $user, Pimpinan $pimpinan): bool
+    {
+        return $user->can('replicate_pimpinan');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_pimpinan');
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Policies/PrestasiPolicy.php`
+
+```php
+<?php
+
+namespace App\Policies;
+
+use App\Models\Prestasi;
+use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
+
+class PrestasiPolicy
+{
+    use HandlesAuthorization;
+
+    /**
+     * Determine whether the user can view any models.
+     */
+    public function viewAny(User $user): bool
+    {
+        return $user->can('view_any_prestasi');
+    }
+
+    /**
+     * Determine whether the user can view the model.
+     */
+    public function view(User $user, Prestasi $prestasi): bool
+    {
+        return $user->can('view_prestasi');
+    }
+
+    /**
+     * Determine whether the user can create models.
+     */
+    public function create(User $user): bool
+    {
+        return $user->can('create_prestasi');
+    }
+
+    /**
+     * Determine whether the user can update the model.
+     */
+    public function update(User $user, Prestasi $prestasi): bool
+    {
+        return $user->can('update_prestasi');
+    }
+
+    /**
+     * Determine whether the user can delete the model.
+     */
+    public function delete(User $user, Prestasi $prestasi): bool
+    {
+        return $user->can('delete_prestasi');
+    }
+
+    /**
+     * Determine whether the user can bulk delete.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return $user->can('delete_any_prestasi');
+    }
+
+    /**
+     * Determine whether the user can permanently delete.
+     */
+    public function forceDelete(User $user, Prestasi $prestasi): bool
+    {
+        return $user->can('force_delete_prestasi');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_prestasi');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, Prestasi $prestasi): bool
+    {
+        return $user->can('restore_prestasi');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_prestasi');
+    }
+
+    /**
+     * Determine whether the user can replicate.
+     */
+    public function replicate(User $user, Prestasi $prestasi): bool
+    {
+        return $user->can('replicate_prestasi');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_prestasi');
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Policies/ProvinsiPolicy.php`
+
+```php
+<?php
+
+namespace App\Policies;
+
+use App\Models\Provinsi;
+use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
+
+class ProvinsiPolicy
+{
+    use HandlesAuthorization;
+
+    /**
+     * Determine whether the user can view any models.
+     */
+    public function viewAny(User $user): bool
+    {
+        return $user->can('view_any_provinsi');
+    }
+
+    /**
+     * Determine whether the user can view the model.
+     */
+    public function view(User $user, Provinsi $provinsi): bool
+    {
+        return $user->can('view_provinsi');
+    }
+
+    /**
+     * Determine whether the user can create models.
+     */
+    public function create(User $user): bool
+    {
+        return $user->can('create_provinsi');
+    }
+
+    /**
+     * Determine whether the user can update the model.
+     */
+    public function update(User $user, Provinsi $provinsi): bool
+    {
+        return $user->can('update_provinsi');
+    }
+
+    /**
+     * Determine whether the user can delete the model.
+     */
+    public function delete(User $user, Provinsi $provinsi): bool
+    {
+        return $user->can('delete_provinsi');
+    }
+
+    /**
+     * Determine whether the user can bulk delete.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return $user->can('delete_any_provinsi');
+    }
+
+    /**
+     * Determine whether the user can permanently delete.
+     */
+    public function forceDelete(User $user, Provinsi $provinsi): bool
+    {
+        return $user->can('force_delete_provinsi');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_provinsi');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, Provinsi $provinsi): bool
+    {
+        return $user->can('restore_provinsi');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_provinsi');
+    }
+
+    /**
+     * Determine whether the user can replicate.
+     */
+    public function replicate(User $user, Provinsi $provinsi): bool
+    {
+        return $user->can('replicate_provinsi');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_provinsi');
+    }
+}
+
+```
+
+---
+
 ### 📄 `./app/Policies/RolePolicy.php`
 
 ```php
@@ -1788,6 +3917,470 @@ class RolePolicy
     public function reorder(User $user): bool
     {
         return $user->can('reorder_role');
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Policies/SekolahAsalPolicy.php`
+
+```php
+<?php
+
+namespace App\Policies;
+
+use App\Models\SekolahAsal;
+use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
+
+class SekolahAsalPolicy
+{
+    use HandlesAuthorization;
+
+    /**
+     * Determine whether the user can view any models.
+     */
+    public function viewAny(User $user): bool
+    {
+        return $user->can('view_any_sekolah::asal');
+    }
+
+    /**
+     * Determine whether the user can view the model.
+     */
+    public function view(User $user, SekolahAsal $sekolahAsal): bool
+    {
+        return $user->can('view_sekolah::asal');
+    }
+
+    /**
+     * Determine whether the user can create models.
+     */
+    public function create(User $user): bool
+    {
+        return $user->can('create_sekolah::asal');
+    }
+
+    /**
+     * Determine whether the user can update the model.
+     */
+    public function update(User $user, SekolahAsal $sekolahAsal): bool
+    {
+        return $user->can('update_sekolah::asal');
+    }
+
+    /**
+     * Determine whether the user can delete the model.
+     */
+    public function delete(User $user, SekolahAsal $sekolahAsal): bool
+    {
+        return $user->can('delete_sekolah::asal');
+    }
+
+    /**
+     * Determine whether the user can bulk delete.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return $user->can('delete_any_sekolah::asal');
+    }
+
+    /**
+     * Determine whether the user can permanently delete.
+     */
+    public function forceDelete(User $user, SekolahAsal $sekolahAsal): bool
+    {
+        return $user->can('force_delete_sekolah::asal');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_sekolah::asal');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, SekolahAsal $sekolahAsal): bool
+    {
+        return $user->can('restore_sekolah::asal');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_sekolah::asal');
+    }
+
+    /**
+     * Determine whether the user can replicate.
+     */
+    public function replicate(User $user, SekolahAsal $sekolahAsal): bool
+    {
+        return $user->can('replicate_sekolah::asal');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_sekolah::asal');
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Policies/SekolahPolicy.php`
+
+```php
+<?php
+
+namespace App\Policies;
+
+use App\Models\Sekolah;
+use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
+
+class SekolahPolicy
+{
+    use HandlesAuthorization;
+
+    /**
+     * Determine whether the user can view any models.
+     */
+    public function viewAny(User $user): bool
+    {
+        return $user->can('view_any_sekolah');
+    }
+
+    /**
+     * Determine whether the user can view the model.
+     */
+    public function view(User $user, Sekolah $sekolah): bool
+    {
+        return $user->can('view_sekolah');
+    }
+
+    /**
+     * Determine whether the user can create models.
+     */
+    public function create(User $user): bool
+    {
+        return $user->can('create_sekolah');
+    }
+
+    /**
+     * Determine whether the user can update the model.
+     */
+    public function update(User $user, Sekolah $sekolah): bool
+    {
+        return $user->can('update_sekolah');
+    }
+
+    /**
+     * Determine whether the user can delete the model.
+     */
+    public function delete(User $user, Sekolah $sekolah): bool
+    {
+        return $user->can('delete_sekolah');
+    }
+
+    /**
+     * Determine whether the user can bulk delete.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return $user->can('delete_any_sekolah');
+    }
+
+    /**
+     * Determine whether the user can permanently delete.
+     */
+    public function forceDelete(User $user, Sekolah $sekolah): bool
+    {
+        return $user->can('force_delete_sekolah');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_sekolah');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, Sekolah $sekolah): bool
+    {
+        return $user->can('restore_sekolah');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_sekolah');
+    }
+
+    /**
+     * Determine whether the user can replicate.
+     */
+    public function replicate(User $user, Sekolah $sekolah): bool
+    {
+        return $user->can('replicate_sekolah');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_sekolah');
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Policies/SekretarisPolicy.php`
+
+```php
+<?php
+
+namespace App\Policies;
+
+use App\Models\Sekretaris;
+use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
+
+class SekretarisPolicy
+{
+    use HandlesAuthorization;
+
+    /**
+     * Determine whether the user can view any models.
+     */
+    public function viewAny(User $user): bool
+    {
+        return $user->can('view_any_sekretaris');
+    }
+
+    /**
+     * Determine whether the user can view the model.
+     */
+    public function view(User $user, Sekretaris $sekretaris): bool
+    {
+        return $user->can('view_sekretaris');
+    }
+
+    /**
+     * Determine whether the user can create models.
+     */
+    public function create(User $user): bool
+    {
+        return $user->can('create_sekretaris');
+    }
+
+    /**
+     * Determine whether the user can update the model.
+     */
+    public function update(User $user, Sekretaris $sekretaris): bool
+    {
+        return $user->can('update_sekretaris');
+    }
+
+    /**
+     * Determine whether the user can delete the model.
+     */
+    public function delete(User $user, Sekretaris $sekretaris): bool
+    {
+        return $user->can('delete_sekretaris');
+    }
+
+    /**
+     * Determine whether the user can bulk delete.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return $user->can('delete_any_sekretaris');
+    }
+
+    /**
+     * Determine whether the user can permanently delete.
+     */
+    public function forceDelete(User $user, Sekretaris $sekretaris): bool
+    {
+        return $user->can('force_delete_sekretaris');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_sekretaris');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, Sekretaris $sekretaris): bool
+    {
+        return $user->can('restore_sekretaris');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_sekretaris');
+    }
+
+    /**
+     * Determine whether the user can replicate.
+     */
+    public function replicate(User $user, Sekretaris $sekretaris): bool
+    {
+        return $user->can('replicate_sekretaris');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_sekretaris');
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Policies/TahunPendaftaranPolicy.php`
+
+```php
+<?php
+
+namespace App\Policies;
+
+use App\Models\TahunPendaftaran;
+use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
+
+class TahunPendaftaranPolicy
+{
+    use HandlesAuthorization;
+
+    /**
+     * Determine whether the user can view any models.
+     */
+    public function viewAny(User $user): bool
+    {
+        return $user->can('view_any_tahun::pendaftaran');
+    }
+
+    /**
+     * Determine whether the user can view the model.
+     */
+    public function view(User $user, TahunPendaftaran $tahunPendaftaran): bool
+    {
+        return $user->can('view_tahun::pendaftaran');
+    }
+
+    /**
+     * Determine whether the user can create models.
+     */
+    public function create(User $user): bool
+    {
+        return $user->can('create_tahun::pendaftaran');
+    }
+
+    /**
+     * Determine whether the user can update the model.
+     */
+    public function update(User $user, TahunPendaftaran $tahunPendaftaran): bool
+    {
+        return $user->can('update_tahun::pendaftaran');
+    }
+
+    /**
+     * Determine whether the user can delete the model.
+     */
+    public function delete(User $user, TahunPendaftaran $tahunPendaftaran): bool
+    {
+        return $user->can('delete_tahun::pendaftaran');
+    }
+
+    /**
+     * Determine whether the user can bulk delete.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return $user->can('delete_any_tahun::pendaftaran');
+    }
+
+    /**
+     * Determine whether the user can permanently delete.
+     */
+    public function forceDelete(User $user, TahunPendaftaran $tahunPendaftaran): bool
+    {
+        return $user->can('force_delete_tahun::pendaftaran');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_tahun::pendaftaran');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, TahunPendaftaran $tahunPendaftaran): bool
+    {
+        return $user->can('restore_tahun::pendaftaran');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_tahun::pendaftaran');
+    }
+
+    /**
+     * Determine whether the user can replicate.
+     */
+    public function replicate(User $user, TahunPendaftaran $tahunPendaftaran): bool
+    {
+        return $user->can('replicate_tahun::pendaftaran');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_tahun::pendaftaran');
     }
 }
 
@@ -1919,12 +4512,33 @@ class UserPolicy
 
 namespace App\Services;
 
+use App\Jobs\SendWhatsAppJob;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class WhatsAppService
 {
-    public function send(string $phone, string $message): bool
+    /**
+     * Dispatch ke queue dengan random delay (mencegah banned).
+     * Default range: 5–30 detik. Bisa di-override per call.
+     */
+    public function send(
+        string $phone,
+        string $message,
+        int $minDelay = 5,
+        int $maxDelay = 30,
+    ): void {
+        $delay = rand($minDelay, $maxDelay);
+
+        SendWhatsAppJob::dispatch($phone, $message)
+            ->delay(now()->addSeconds($delay));
+    }
+
+    /**
+     * Kirim langsung (tanpa queue) — dipakai oleh Job itu sendiri.
+     * Jangan panggil ini dari luar Job kecuali ada alasan khusus.
+     */
+    public function sendDirect(string $phone, string $message): bool
     {
         try {
             $normalized = $this->normalizePhone($phone);
@@ -1959,9 +4573,6 @@ class WhatsAppService
         }
     }
 
-    /**
-     * Normalisasi nomor: 08xx → 628xx
-     */
     protected function normalizePhone(string $phone): string
     {
         $phone = preg_replace('/\D/', '', $phone);
@@ -1975,6 +4586,78 @@ class WhatsAppService
         }
 
         return $phone;
+    }
+}
+
+```
+
+---
+
+## 🔧 Helpers
+
+### 📄 `./app/Helpers/PdfDataHelper.php`
+
+```php
+<?php
+
+namespace App\Helpers;
+
+use App\Models\Ketua;
+use App\Models\Pimpinan;
+use App\Models\Sekolah;
+use App\Models\Sekretaris;
+use App\Models\TahunPendaftaran;
+
+/**
+ * Menyimpan data PDF yang sering diquery ke dalam container binding
+ * sehingga per-request hanya query 1x, tidak peduli berapa kali view di-render.
+ *
+ * Dipakai di formulir.blade.php, kartu-tes.blade.php, skl.blade.php,
+ * dan partial pdf-header.blade.php.
+ */
+class PdfDataHelper
+{
+    public static function instansi(): ?Sekolah
+    {
+        return once(fn () => Sekolah::first());
+    }
+
+    public static function tahunAktif(): ?TahunPendaftaran
+    {
+        return once(fn () => TahunPendaftaran::where('status', 'Aktif')->first());
+    }
+
+    public static function sekretarisAktif(): ?Sekretaris
+    {
+        return once(function () {
+            $tahun = static::tahunAktif();
+
+            return Sekretaris::where('tahun_pendaftaran_id', optional($tahun)->id)
+                ->where('status', 'Aktif')
+                ->first();
+        });
+    }
+
+    public static function ketuaAktif(): ?Ketua
+    {
+        return once(function () {
+            $tahun = static::tahunAktif();
+
+            return Ketua::where('tahun_pendaftaran_id', optional($tahun)->id)
+                ->where('status', 'Aktif')
+                ->first();
+        });
+    }
+
+    public static function pimpinanAktif(): ?Pimpinan
+    {
+        return once(function () {
+            $tahun = static::tahunAktif();
+
+            return Pimpinan::where('tahun_pendaftaran_id', optional($tahun)->id)
+                ->where('status', 'Aktif')
+                ->first();
+        });
     }
 }
 
@@ -2107,8 +4790,6 @@ class FormOptions
 
     public const STATUS_PENDAFTARAN_SUPER_ADMIN = [
         'Diproses' => 'Diproses',
-        'Berkas Tidak Lengkap' => 'Berkas Tidak Lengkap',
-        'Diverifikasi' => 'Diverifikasi',
         'Tidak Diterima' => 'Tidak Diterima',
         'Diterima' => 'Diterima',
         'Diterima Di Kelas Reguler' => 'Diterima Di Kelas Reguler',
@@ -2117,12 +4798,11 @@ class FormOptions
 
     public const STATUS_PENDAFTARAN_REGULAR = [
         'Diproses' => 'Diproses',
-        'Berkas Tidak Lengkap' => 'Berkas Tidak Lengkap',
-        'Diverifikasi' => 'Diverifikasi',
     ];
 
     public const STATUS_FORMULIR = [
         'Diproses' => 'Diproses',
+        'Berkas Tidak Lengkap' => 'Berkas Tidak Lengkap',
         'Disetujui' => 'Disetujui',
         'Ditolak' => 'Ditolak',
     ];
@@ -2162,7 +4842,513 @@ class FormOptions
 
 ---
 
+## 🎮 Http (Controllers, Middleware, Requests)
+
+### 📄 `./app/Http/Controllers/Controller.php`
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+abstract class Controller
+{
+    //
+}
+
+```
+
+---
+
 ## 🧩 Filament Resources
+
+### 📄 `./app/Filament/Resources/AnggotaResource/Pages/CreateAnggota.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\AnggotaResource\Pages;
+
+use App\Filament\Concerns\HasPanitiaWizardSteps;
+use App\Filament\Resources\AnggotaResource;
+use Filament\Resources\Pages\CreateRecord;
+use Filament\Resources\Pages\CreateRecord\Concerns\HasWizard;
+
+class CreateAnggota extends CreateRecord
+{
+    use HasPanitiaWizardSteps;
+    use HasWizard;
+
+    protected static string $resource = AnggotaResource::class;
+
+    protected string $panitiaLabel = 'Anggota';
+
+    protected string $panitiaDirectory = 'assets/anggota';
+
+    protected function getSteps(): array
+    {
+        return $this->panitiaSteps();
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/AnggotaResource/Pages/EditAnggota.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\AnggotaResource\Pages;
+
+use App\Filament\Concerns\HasPanitiaWizardSteps;
+use App\Filament\Resources\AnggotaResource;
+use Filament\Resources\Pages\EditRecord;
+use Filament\Resources\Pages\EditRecord\Concerns\HasWizard;
+use Illuminate\Database\Eloquent\Model;
+
+class EditAnggota extends EditRecord
+{
+    use HasPanitiaWizardSteps;
+    use HasWizard;
+
+    protected static string $resource = AnggotaResource::class;
+
+    protected string $panitiaLabel = 'Anggota';
+
+    protected string $panitiaDirectory = 'assets/anggota';
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        $updatedRecord = parent::handleRecordUpdate($record, $data);
+        $this->redirect($this->getResource()::getUrl('index'));
+
+        return $updatedRecord;
+    }
+
+    protected function getSteps(): array
+    {
+        return $this->panitiaSteps();
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/AnggotaResource/Pages/ListAnggotas.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\AnggotaResource\Pages;
+
+use App\Filament\Resources\AnggotaResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ListRecords;
+
+class ListAnggotas extends ListRecords
+{
+    protected static string $resource = AnggotaResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\CreateAction::make()
+                ->outlined()
+                ->hiddenLabel()
+                ->icon('heroicon-o-plus'),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/AnggotaResource/Pages/ViewAnggota.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\AnggotaResource\Pages;
+
+use App\Filament\Resources\AnggotaResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ViewRecord;
+
+class ViewAnggota extends ViewRecord
+{
+    protected static string $resource = AnggotaResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\EditAction::make(),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/AnggotaResource.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\AnggotaResource\Pages;
+use App\Models\Anggota;
+use Filament\Resources\Resource;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Table;
+
+class AnggotaResource extends Resource
+{
+    protected static ?string $model = Anggota::class;
+
+    protected static ?string $recordTitleAttribute = 'nama';
+
+    protected static ?string $navigationLabel = 'Anggota';
+
+    protected static ?string $label = 'Anggota';
+
+    protected static ?string $navigationGroup = 'Administrasi';
+
+    protected static ?int $navigationSort = 5;
+
+    protected static bool $shouldRegisterNavigation = true;
+
+    protected static ?string $navigationIcon = 'heroicon-o-user-circle';
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                ImageColumn::make('berkas_foto')
+                    ->label('Foto')
+                    ->circular()
+                    ->defaultImageUrl('img/avatar.png'),
+
+                TextColumn::make('nama')
+                    ->label('Nama Lengkap')
+                    ->searchable(Anggota::count() > 10),
+
+                TextColumn::make('nip')
+                    ->label('NIP'),
+
+                TextColumn::make('tahunPendaftaran.nama')
+                    ->label('Tahun Pendaftaran')
+                    ->sortable(Anggota::count() > 10),
+
+                ImageColumn::make('berkas_tte')
+                    ->label('TTE')
+                    ->defaultImageUrl('img/tte.png'),
+
+                TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'Aktif' => 'success',
+                        'Nonaktif' => 'gray',
+                    }),
+
+                TextColumn::make('created_at')
+                    ->label('Dibuat')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+
+                TextColumn::make('updated_at')
+                    ->label('Diubah')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+            ])
+            ->filters([])
+            ->actions([
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
+            ], ActionsPosition::BeforeColumns)
+            ->bulkActions([
+                DeleteBulkAction::make()
+                    ->outlined()
+                    ->hiddenLabel()
+                    ->icon('heroicon-o-trash'),
+            ])
+            ->striped()
+            ->filtersLayout(FiltersLayout::AboveContentCollapsible)
+            ->paginationPageOptions([10, 25, 50]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListAnggotas::route('/'),
+            'create' => Pages\CreateAnggota::route('/create'),
+            'edit' => Pages\EditAnggota::route('/{record}/edit'),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/BendaharaResource/Pages/CreateBendahara.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\BendaharaResource\Pages;
+
+use App\Filament\Concerns\HasPanitiaWizardSteps;
+use App\Filament\Resources\BendaharaResource;
+use Filament\Resources\Pages\CreateRecord;
+use Filament\Resources\Pages\CreateRecord\Concerns\HasWizard;
+
+class CreateBendahara extends CreateRecord
+{
+    use HasPanitiaWizardSteps;
+    use HasWizard;
+
+    protected static string $resource = BendaharaResource::class;
+
+    protected string $panitiaLabel = 'Bendahara';
+
+    protected string $panitiaDirectory = 'assets/bendahara';
+
+    protected function getSteps(): array
+    {
+        return $this->panitiaSteps();
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/BendaharaResource/Pages/EditBendahara.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\BendaharaResource\Pages;
+
+use App\Filament\Concerns\HasPanitiaWizardSteps;
+use App\Filament\Resources\BendaharaResource;
+use Filament\Resources\Pages\EditRecord;
+use Filament\Resources\Pages\EditRecord\Concerns\HasWizard;
+use Illuminate\Database\Eloquent\Model;
+
+class EditBendahara extends EditRecord
+{
+    use HasPanitiaWizardSteps;
+    use HasWizard;
+
+    protected static string $resource = BendaharaResource::class;
+
+    protected string $panitiaLabel = 'Bendahara';
+
+    protected string $panitiaDirectory = 'assets/bendahara';
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        $updatedRecord = parent::handleRecordUpdate($record, $data);
+        $this->redirect($this->getResource()::getUrl('index'));
+
+        return $updatedRecord;
+    }
+
+    protected function getSteps(): array
+    {
+        return $this->panitiaSteps();
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/BendaharaResource/Pages/ListBendaharas.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\BendaharaResource\Pages;
+
+use App\Filament\Resources\BendaharaResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ListRecords;
+
+class ListBendaharas extends ListRecords
+{
+    protected static string $resource = BendaharaResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\CreateAction::make()
+                ->outlined()
+                ->hiddenLabel()
+                ->icon('heroicon-o-plus'),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/BendaharaResource/Pages/ViewBendahara.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\BendaharaResource\Pages;
+
+use App\Filament\Resources\BendaharaResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ViewRecord;
+
+class ViewBendahara extends ViewRecord
+{
+    protected static string $resource = BendaharaResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\EditAction::make(),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/BendaharaResource.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\BendaharaResource\Pages;
+use App\Models\Bendahara;
+use Filament\Resources\Resource;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Table;
+
+class BendaharaResource extends Resource
+{
+    protected static ?string $model = Bendahara::class;
+
+    protected static ?string $recordTitleAttribute = 'nama';
+
+    protected static ?string $navigationLabel = 'Bendahara';
+
+    protected static ?string $label = 'Bendahara';
+
+    protected static ?string $navigationGroup = 'Administrasi';
+
+    protected static ?int $navigationSort = 4;
+
+    protected static bool $shouldRegisterNavigation = true;
+
+    protected static ?string $navigationIcon = 'heroicon-o-user-circle';
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                ImageColumn::make('berkas_foto')
+                    ->label('Foto')
+                    ->circular()
+                    ->defaultImageUrl('img/avatar.png'),
+
+                TextColumn::make('nama')
+                    ->label('Nama Lengkap')
+                    ->searchable(Bendahara::count() > 10),
+
+                TextColumn::make('nip')
+                    ->label('NIP'),
+
+                TextColumn::make('tahunPendaftaran.nama')
+                    ->label('Tahun Pendaftaran')
+                    ->sortable(Bendahara::count() > 10),
+
+                ImageColumn::make('berkas_tte')
+                    ->label('TTE')
+                    ->defaultImageUrl('img/tte.png'),
+
+                TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'Aktif' => 'success',
+                        'Nonaktif' => 'gray',
+                    }),
+
+                TextColumn::make('created_at')
+                    ->label('Dibuat')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+
+                TextColumn::make('updated_at')
+                    ->label('Diubah')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+            ])
+            ->filters([])
+            ->actions([
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
+            ], ActionsPosition::BeforeColumns)
+            ->bulkActions([
+                DeleteBulkAction::make()
+                    ->outlined()
+                    ->hiddenLabel()
+                    ->icon('heroicon-o-trash'),
+            ])
+            ->striped()
+            ->filtersLayout(FiltersLayout::AboveContentCollapsible)
+            ->paginationPageOptions([10, 25, 50]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListBendaharas::route('/'),
+            'create' => Pages\CreateBendahara::route('/create'),
+            'edit' => Pages\EditBendahara::route('/{record}/edit'),
+        ];
+    }
+}
+
+```
+
+---
 
 ### 📄 `./app/Filament/Resources/CalonSiswaResource/Pages/CreateCalonSiswa.php`
 
@@ -2327,10 +5513,7 @@ class ListCalonSiswas extends ListRecords
         ];
     }
 
-    // ========================================================================
     // HELPER METHODS
-    // ========================================================================
-
     private function getCalonSiswaRecord(): ?CalonSiswa
     {
         if (! Auth::check()) {
@@ -2365,14 +5548,11 @@ class ListCalonSiswas extends ListRecords
         };
     }
 
-    // ========================================================================
     // ACTION BUILDERS
-    // ========================================================================
-
     private function getDaftarSekarangAction(?CalonSiswa $calonSiswa): Action
     {
         return Action::make('buat_formulir_pendaftaran')
-            ->label('Daftar Sekarang 🚀')
+            ->label('Daftar Sekarang')
             ->icon('heroicon-o-clipboard-document-list')
             ->outlined()
             ->color('primary')
@@ -2403,7 +5583,6 @@ class ListCalonSiswas extends ListRecords
             'Diterima',
             'Diterima Di Kelas Unggulan',
             'Diterima Di Kelas Reguler',
-            'Diverifikasi',
             'Tidak Diterima',
         ];
 
@@ -2603,11 +5782,8 @@ class ViewCalonSiswa extends ViewRecord
             return false;
         }
 
-        return ! in_array($cs->status_pendaftaran, [
-            'Diproses',
-            'Tidak Diterima',
-            'Berkas Tidak Lengkap',
-        ]);
+        // Boleh cetak jika formulir sudah Disetujui
+        return $cs->status_formulir === 'Disetujui';
     }
 
     private function canPrintKartuTes(): bool
@@ -2617,10 +5793,13 @@ class ViewCalonSiswa extends ViewRecord
             return false;
         }
 
+        // Blokir jika belum disetujui atau sudah final
+        if (! in_array($cs->status_formulir, ['Disetujui'])) {
+            return false;
+        }
+
         if (in_array($cs->status_pendaftaran, [
-            'Diproses',
             'Tidak Diterima',
-            'Berkas Tidak Lengkap',
             'Diterima Di Kelas Reguler',
             'Diterima Di Kelas Unggulan',
         ])) {
@@ -2637,10 +5816,12 @@ class ViewCalonSiswa extends ViewRecord
             return false;
         }
 
-        if (in_array($cs->status_pendaftaran, [
-            'Diproses',
-            'Diverifikasi',
-            'Berkas Tidak Lengkap',
+        // Hanya yang sudah punya keputusan final
+        if (! in_array($cs->status_pendaftaran, [
+            'Diterima',
+            'Diterima Di Kelas Reguler',
+            'Diterima Di Kelas Unggulan',
+            'Tidak Diterima',
         ])) {
             return false;
         }
@@ -2858,8 +6039,6 @@ class CalonSiswaResource extends Resource
     {
         $base = [
             'Diproses' => 'Diproses',
-            'Berkas Tidak Lengkap' => 'Berkas Tidak Lengkap',
-            'Diverifikasi' => 'Diverifikasi',
         ];
 
         $admin = [
@@ -3440,27 +6619,28 @@ class CalonSiswaResource extends Resource
                     ->visible(! $isCalonSiswa)
                     ->limit(30)
                     ->tooltip(fn (TextColumn $col): ?string => strlen($col->getState()) > 30 ? $col->getState() : null),
-
                 TextColumn::make('status_formulir')
                     ->label('Status Formulir')
                     ->badge()
-                    ->colors([
-                        'warning' => 'Diproses',
-                        'success' => 'Disetujui',
-                        'danger' => 'Ditolak',
-                    ]),
-
+                    ->color(fn ($state) => match ($state) {
+                        'Diproses' => 'warning',
+                        'Berkas Tidak Lengkap' => 'danger',
+                        'Disetujui' => 'success',
+                        'Ditolak' => 'danger',
+                        default => 'gray',
+                    }),
                 TextColumn::make('status_pendaftaran')
                     ->label('Status Pendaftaran')
                     ->badge()
-                    ->colors([
-                        'gray' => 'Diproses',
-                        'warning' => 'Berkas Tidak Lengkap',
-                        'success' => fn ($state) => in_array($state, ['Diverifikasi', 'Diterima', 'Diterima Di Kelas Reguler', 'Diterima Di Kelas Unggulan']),
-                        'danger' => 'Tidak Diterima',
-                    ])
-                    ->visible(! $isCalonSiswa || $isSuperAdmin),
-
+                    ->color(fn ($state) => match ($state) {
+                        'Diproses' => 'gray',
+                        'Diterima',
+                        'Diterima Di Kelas Reguler',
+                        'Diterima Di Kelas Unggulan' => 'success',
+                        'Tidak Diterima' => 'danger',
+                        default => 'gray',
+                    })
+                    ->visible(fn () => ! $isCalonSiswa || $isSuperAdmin),
                 TextColumn::make('kelas.nama')
                     ->label('Kelas')
                     ->badge()
@@ -3494,7 +6674,6 @@ class CalonSiswaResource extends Resource
                     ->label('Status Pendaftaran')
                     ->options(FormOptions::STATUS_PENDAFTARAN_SUPER_ADMIN)
                     ->visible(! $isCalonSiswa),
-
                 SelectFilter::make('kelas_id')
                     ->label('Kelas')
                     ->options(
@@ -3505,14 +6684,62 @@ class CalonSiswaResource extends Resource
             ->actions([
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
+
                     Tables\Actions\EditAction::make()
                         ->visible(fn () => ! $isCalonSiswa),
+
                     Tables\Actions\DeleteAction::make()
-                        ->visible(fn () => $isSuperAdmin),
+                        ->visible(fn ($record) => $isSuperAdmin && ! $record->trashed()),
+
                     Tables\Actions\RestoreAction::make()
-                        ->visible(fn () => $isSuperAdmin),
+                        ->visible(fn ($record) => $isSuperAdmin && $record->trashed()),
+
                     Tables\Actions\ForceDeleteAction::make()
-                        ->visible(fn () => $isSuperAdmin),
+                        ->visible(fn ($record) => $isSuperAdmin && $record->trashed()),
+                    Tables\Actions\Action::make('kirim_notifikasi')
+                        ->label('Kirim Notifikasi')
+                        ->icon('heroicon-o-chat-bubble-left-ellipsis')
+                        ->color('info')
+                        ->requiresConfirmation()
+                        ->modalHeading('Kirim Notifikasi WhatsApp')
+                        ->modalDescription(fn ($record) => "Kirim ulang notifikasi status pendaftaran ke {$record->nama}?")
+                        ->modalSubmitActionLabel('Kirim Sekarang')
+                        ->visible(fn () => auth()->user()->hasAnyRole(['super_admin', 'admin', 'verifikator', 'panitia']))
+                        ->action(function ($record) {
+                            $telepon = $record->user?->telepon;
+
+                            if (! $telepon) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Gagal')
+                                    ->body('Calon siswa ini tidak memiliki nomor WhatsApp.')
+                                    ->danger()
+                                    ->send();
+
+                                return;
+                            }
+
+                            $pesan = "📢 *Informasi Status Pendaftaran*\n\n"
+                                ."Halo, *{$record->nama}*!\n"
+                                ."Berikut status pendaftaran kamu saat ini:\n\n"
+                                ."📋 No. Pendaftaran : *{$record->nomor_pendaftaran}*\n"
+                                ."📄 Status Formulir : *{$record->status_formulir}*\n"
+                                ."📌 Status Pendaftaran : *{$record->status_pendaftaran}*\n\n"
+                                ."Silakan login ke sistem PPDB untuk informasi lebih lanjut.\n"
+                                .'_MTsN 1 Pandeglang_';
+
+                            app(\App\Services\WhatsAppService::class)->send(
+                                phone: $telepon,
+                                message: $pesan,
+                                minDelay: 1,
+                                maxDelay: 10,
+                            );
+
+                            \Filament\Notifications\Notification::make()
+                                ->title('Notifikasi dijadwalkan')
+                                ->body("Pesan akan dikirim ke {$record->nama} dalam beberapa detik.")
+                                ->success()
+                                ->send();
+                        }),
                 ]),
             ], ActionsPosition::BeforeColumns)
             ->bulkActions([
@@ -3539,11 +6766,13 @@ class CalonSiswaResource extends Resource
                         ->form([
                             Select::make('jalur_pendaftaran_id')
                                 ->label('Jalur Pendaftaran')
-                                ->relationship(
-                                    'jalurPendaftaran',
-                                    'nama',
-                                    fn (Builder $q) => $q->where('status', 'Aktif')
+                                // Ganti relationship() → options() karena tidak ada model context di BulkAction
+                                ->options(
+                                    \App\Models\JalurPendaftaran::where('status', 'Aktif')
+                                        ->pluck('nama', 'id')
+                                        ->toArray()
                                 )
+                                ->native(false)
                                 ->required(),
                         ])
                         ->action(
@@ -3563,14 +6792,88 @@ class CalonSiswaResource extends Resource
                             Select::make('status_pendaftaran')
                                 ->label('Status')
                                 ->options(fn () => self::opsiStatusPendaftaran())
+                                ->native(false)
                                 ->required(),
+
+                            // Kelas muncul kondisional — pakai live() + visible()
+                            Select::make('kelas_id')
+                                ->label('Kelas')
+                                ->options(
+                                    \App\Models\Kelas::pluck('nama', 'id')->toArray()
+                                )
+                                ->native(false)
+                                ->live()
+                                ->visible(fn (Get $get) => in_array($get('status_pendaftaran'), [
+                                    'Diterima Di Kelas Reguler',
+                                    'Diterima Di Kelas Unggulan',
+                                ]))
+                                ->required(fn (Get $get) => in_array($get('status_pendaftaran'), [
+                                    'Diterima Di Kelas Reguler',
+                                    'Diterima Di Kelas Unggulan',
+                                ])),
                         ])
                         ->action(
-                            fn (Collection $records, array $data) => $records->each(
-                                fn ($r) => CalonSiswa::where('id', $r->id)
-                                    ->update(['status_pendaftaran' => $data['status_pendaftaran']])
-                            )
+                            fn (Collection $records, array $data) => $records->each(function ($r) use ($data) {
+                                $update = ['status_pendaftaran' => $data['status_pendaftaran']];
+
+                                if (! empty($data['kelas_id'])) {
+                                    $update['kelas_id'] = $data['kelas_id'];
+                                }
+
+                                CalonSiswa::where('id', $r->id)->update($update);
+                            })
                         ),
+                    Tables\Actions\BulkAction::make('kirim_notifikasi_massal')
+                        ->label('Kirim Notifikasi')
+                        ->icon('heroicon-o-chat-bubble-left-ellipsis')
+                        ->color('info')
+                        ->requiresConfirmation()
+                        ->modalHeading('Kirim Notifikasi Massal')
+                        ->modalDescription('Notifikasi status pendaftaran akan dikirim ke semua peserta yang dipilih.')
+                        ->modalSubmitActionLabel('Kirim Sekarang')
+                        ->deselectRecordsAfterCompletion()
+                        ->visible(fn () => auth()->user()->hasAnyRole(['super_admin', 'admin', 'verifikator', 'panitia']))
+                        ->action(function (\Illuminate\Support\Collection $records) {
+                            $wa = app(\App\Services\WhatsAppService::class);
+
+                            $berhasil = 0;
+                            $gagal = 0;
+
+                            foreach ($records as $record) {
+                                $telepon = $record->user?->telepon;
+
+                                if (! $telepon) {
+                                    $gagal++;
+
+                                    continue;
+                                }
+
+                                $pesan = "📢 *Informasi Status Pendaftaran*\n\n"
+                                    ."Halo, *{$record->nama}*!\n"
+                                    ."Berikut status pendaftaran kamu saat ini:\n\n"
+                                    ."📋 No. Pendaftaran : *{$record->nomor_pendaftaran}*\n"
+                                    ."📄 Status Formulir : *{$record->status_formulir}*\n"
+                                    ."📌 Status Pendaftaran : *{$record->status_pendaftaran}*\n\n"
+                                    ."Silakan login ke sistem PPDB untuk informasi lebih lanjut.\n"
+                                    .'_MTsN 1 Pandeglang_';
+
+                                // Delay lebih besar untuk bulk — spread pengiriman
+                                $wa->send(
+                                    phone: $telepon,
+                                    message: $pesan,
+                                    minDelay: 10,
+                                    maxDelay: 120,
+                                );
+
+                                $berhasil++;
+                            }
+
+                            \Filament\Notifications\Notification::make()
+                                ->title("Notifikasi dijadwalkan: {$berhasil} berhasil, {$gagal} dilewati")
+                                ->body($gagal > 0 ? "{$gagal} peserta tidak memiliki nomor WhatsApp." : null)
+                                ->success()
+                                ->send();
+                        }),
                 ]),
             ])
             ->striped()
@@ -3623,186 +6926,418 @@ class FormulirOverview extends BaseWidget
 {
     protected static bool $isLazy = false;
 
-    protected ?string $heading = '♾️ Statistik Pendaftaran';
+    protected ?string $heading = 'Statistik Pendaftaran';
 
     protected static ?int $sort = 0;
 
-    // Refresh tiap 60 detik agar data tetap live
     protected static ?string $pollingInterval = '60s';
+
+    private function chartBy(string $col, ?string $val = null): array
+    {
+        return CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
+            ->when($val, fn($q) => $q->where($col, $val))
+            ->groupBy('hari')
+            ->orderBy('hari')
+            ->pluck('total')
+            ->toArray();
+    }
+
+    private function makeStat(
+        string $value,
+        string $label,
+        string $icon,
+        string $color,
+        array $chart,
+        string $href
+    ): Stat {
+        return Stat::make('', $value)
+            ->description($label)
+            ->descriptionIcon($icon, IconPosition::Before)
+            ->color($color)
+            ->chart($chart)
+            ->extraAttributes([
+                'class' => 'cursor-pointer transition hover:opacity-80',
+                'onclick' => "window.location.href='{$href}'",
+            ]);
+    }
+
+    private function url(string $filter = ''): string
+    {
+        return "/formulir{$filter}";
+    }
 
     protected function getStats(): array
     {
-        $isCalonSiswa = Auth::user()->hasRole('calon_siswa');
-        $isAdmin = ! $isCalonSiswa;
+        $user = Auth::user();
+        $isCalonSiswa = $user->hasRole('calon_siswa');
 
-        // ----------------------------------------------------------------
-        // 1 query — hitung semua status_pendaftaran sekaligus
-        // ----------------------------------------------------------------
         $statusCount = CalonSiswa::selectRaw('status_pendaftaran, COUNT(*) as total')
             ->groupBy('status_pendaftaran')
             ->pluck('total', 'status_pendaftaran')
             ->toArray();
 
-        // ----------------------------------------------------------------
-        // 1 query — hitung semua status_formulir sekaligus
-        // ----------------------------------------------------------------
         $formulirCount = CalonSiswa::selectRaw('status_formulir, COUNT(*) as total')
             ->groupBy('status_formulir')
             ->pluck('total', 'status_formulir')
             ->toArray();
 
-        $totalPendaftar = array_sum($statusCount);
-        $diproses = $statusCount['Diproses'] ?? 0;
-        $berkasTidakLengkap = $statusCount['Berkas Tidak Lengkap'] ?? 0;
-        $diverifikasi = $statusCount['Diverifikasi'] ?? 0;
-        $diterimaPrestasi = $statusCount['Diterima'] ?? 0;
-        $diterimaReguler = $statusCount['Diterima Di Kelas Reguler'] ?? 0;
+        $totalPendaftar   = array_sum($statusCount);
+        $diproses         = $statusCount['Diproses'] ?? 0;
+        $diterima         = $statusCount['Diterima'] ?? 0;
+        $diterimaReguler  = $statusCount['Diterima Di Kelas Reguler'] ?? 0;
         $diterimaUnggulan = $statusCount['Diterima Di Kelas Unggulan'] ?? 0;
-        $tidakDiterima = $statusCount['Tidak Diterima'] ?? 0;
-        $formulirDisetujui = $formulirCount['Disetujui'] ?? 0;
-        $formulirDitolak = $formulirCount['Ditolak'] ?? 0;
+        $tidakDiterima    = $statusCount['Tidak Diterima'] ?? 0;
 
-        // ----------------------------------------------------------------
-        // Chart helper — 1 query per stat, dijalankan lazy
-        // ----------------------------------------------------------------
-        $chart = function (?string $status = null) {
-            return CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-                ->when(
-                    $status,
-                    fn ($q) => $q->where('status_pendaftaran', $status)
-                )
-                ->groupBy('hari')
-                ->orderBy('hari')
-                ->pluck('total')
-                ->toArray();
-        };
+        $fDiproses  = $formulirCount['Diproses'] ?? 0;
+        $fBerkas    = $formulirCount['Berkas Tidak Lengkap'] ?? 0;
+        $fDisetujui = $formulirCount['Disetujui'] ?? 0;
+        $fDitolak   = $formulirCount['Ditolak'] ?? 0;
 
-        $url = fn (string $path) => "/formulir{$path}";
+        if ($isCalonSiswa) {
+            $cs = CalonSiswa::withoutGlobalScope('tahun_aktif')
+                ->where('user_id', $user->id)
+                ->latest()
+                ->first();
 
-        // ----------------------------------------------------------------
-        // Stat builder helper
-        // ----------------------------------------------------------------
-        $makeStat = fn (
-            string $value,
-            string $description,
-            string $icon,
-            string $color,
-            array $chartData,
-            string $href
-        ) => Stat::make('', $value)
-            ->description($description)
-            ->descriptionIcon($icon, IconPosition::Before)
-            ->color($color)
-            ->chart($chartData)
-            ->extraAttributes([
-                'class' => 'cursor-pointer transition hover:opacity-80',
-                'onclick' => "window.location.href='{$href}'",
-            ]);
+            $statusLabel  = $cs?->status_pendaftaran ?? 'Belum Mendaftar';
+            $formulirLabel = $cs?->status_formulir ?? '-';
 
-        // ----------------------------------------------------------------
-        // Stats dasar (tampil untuk semua role)
-        // ----------------------------------------------------------------
-        $stats = [
-            $makeStat(
+            [$statusColor, $statusIcon] = match ($cs?->status_pendaftaran) {
+                'Diterima',
+                'Diterima Di Kelas Reguler',
+                'Diterima Di Kelas Unggulan' => ['success', 'heroicon-o-check-circle'],
+                'Tidak Diterima'             => ['danger',  'heroicon-o-no-symbol'],
+                default                      => ['warning', 'heroicon-o-arrow-path'],
+            };
+
+            [$formulirColor, $formulirIcon] = match ($cs?->status_formulir) {
+                'Disetujui'          => ['success', 'heroicon-o-document-check'],
+                'Berkas Tidak Lengkap',
+                'Ditolak'            => ['danger',  match ($cs?->status_formulir) {
+                    'Berkas Tidak Lengkap' => 'heroicon-o-document-minus',
+                    default                => 'heroicon-o-x-circle',
+                }],
+                default              => ['warning', 'heroicon-o-arrow-path'],
+            };
+
+            return [
+                $this->makeStat(
+                    "{$totalPendaftar} Peserta",
+                    'Total Pendaftar',
+                    'heroicon-o-users',
+                    'gray',
+                    $this->chartBy('status_pendaftaran'),
+                    $this->url()
+                ),
+                $this->makeStat(
+                    $statusLabel,
+                    'Status Pendaftaran Kamu',
+                    $statusIcon,
+                    $statusColor,
+                    $this->chartBy('status_pendaftaran', $cs?->status_pendaftaran),
+                    $this->url()
+                ),
+                $this->makeStat(
+                    $formulirLabel,
+                    'Status Formulir Kamu',
+                    $formulirIcon,
+                    $formulirColor,
+                    $this->chartBy('status_formulir', $cs?->status_formulir),
+                    $this->url()
+                ),
+            ];
+        }
+
+        return [
+            $this->makeStat(
                 "{$totalPendaftar} Peserta",
                 'Total Pendaftar',
-                'heroicon-o-user-circle',
+                'heroicon-o-users',
                 'gray',
-                $chart(),
-                $url('')
+                $this->chartBy('status_pendaftaran'),
+                $this->url()
             ),
-            $makeStat(
-                "{$diproses} Peserta",
+            $this->makeStat(
+                "{$fDiproses} Formulir",
                 'Formulir Diproses',
                 'heroicon-o-arrow-path',
                 'warning',
-                $chart('Diproses'),
-                $url('?tableFilters[status_pendaftaran][value]=Diproses')
+                $this->chartBy('status_formulir', 'Diproses'),
+                $this->url('?tableFilters[status_formulir][value]=Diproses')
             ),
-            $makeStat(
-                "{$berkasTidakLengkap} Peserta",
+            $this->makeStat(
+                "{$fBerkas} Formulir",
                 'Berkas Tidak Lengkap',
                 'heroicon-o-document-minus',
-                'warning',
-                $chart('Berkas Tidak Lengkap'),
-                $url('?tableFilters[status_pendaftaran][value]=Berkas+Tidak+Lengkap')
+                'danger',
+                $this->chartBy('status_formulir', 'Berkas Tidak Lengkap'),
+                $this->url('?tableFilters[status_formulir][value]=Berkas+Tidak+Lengkap')
             ),
-            $makeStat(
-                "{$diverifikasi} Peserta",
-                'Diverifikasi',
-                'heroicon-o-clipboard-document-check',
+            $this->makeStat(
+                "{$fDisetujui} Formulir",
+                'Formulir Disetujui',
+                'heroicon-o-document-check',
                 'success',
-                $chart('Diverifikasi'),
-                $url('?tableFilters[status_pendaftaran][value]=Diverifikasi')
+                $this->chartBy('status_formulir', 'Disetujui'),
+                $this->url('?tableFilters[status_formulir][value]=Disetujui')
+            ),
+            $this->makeStat(
+                "{$fDitolak} Formulir",
+                'Formulir Ditolak',
+                'heroicon-o-x-circle',
+                'danger',
+                $this->chartBy('status_formulir', 'Ditolak'),
+                $this->url('?tableFilters[status_formulir][value]=Ditolak')
+            ),
+            $this->makeStat(
+                "{$diproses} Peserta",
+                'Pendaftaran Diproses',
+                'heroicon-o-clock',
+                'gray',
+                $this->chartBy('status_pendaftaran', 'Diproses'),
+                $this->url('?tableFilters[status_pendaftaran][value]=Diproses')
+            ),
+            $this->makeStat(
+                "{$diterima} Peserta",
+                'Diterima — Jalur Prestasi',
+                'heroicon-o-star',
+                'success',
+                $this->chartBy('status_pendaftaran', 'Diterima'),
+                $this->url('?tableFilters[status_pendaftaran][value]=Diterima')
+            ),
+            $this->makeStat(
+                "{$diterimaReguler} Peserta",
+                'Diterima — Kelas Reguler',
+                'heroicon-o-shield-check',
+                'success',
+                $this->chartBy('status_pendaftaran', 'Diterima Di Kelas Reguler'),
+                $this->url('?tableFilters[status_pendaftaran][value]=Diterima+Di+Kelas+Reguler')
+            ),
+            $this->makeStat(
+                "{$diterimaUnggulan} Peserta",
+                'Diterima — Kelas Unggulan',
+                'heroicon-o-shield-check',
+                'info',
+                $this->chartBy('status_pendaftaran', 'Diterima Di Kelas Unggulan'),
+                $this->url('?tableFilters[status_pendaftaran][value]=Diterima+Di+Kelas+Unggulan')
+            ),
+            $this->makeStat(
+                "{$tidakDiterima} Peserta",
+                'Tidak Diterima',
+                'heroicon-o-no-symbol',
+                'danger',
+                $this->chartBy('status_pendaftaran', 'Tidak Diterima'),
+                $this->url('?tableFilters[status_pendaftaran][value]=Tidak+Diterima')
             ),
         ];
+    }
+}
 
-        // ----------------------------------------------------------------
-        // Stats admin-only
-        // ----------------------------------------------------------------
-        if ($isAdmin) {
-            $stats = array_merge($stats, [
-                $makeStat(
-                    "{$formulirDisetujui} Formulir",
-                    'Formulir Disetujui',
-                    'heroicon-o-document-check',
-                    'success',
-                    CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-                        ->where('status_formulir', 'Disetujui')
-                        ->groupBy('hari')->orderBy('hari')->pluck('total')->toArray(),
-                    $url('?tableFilters[status_formulir][value]=Disetujui')
-                ),
+```
 
-                $makeStat(
-                    "{$formulirDitolak} Formulir",
-                    'Formulir Ditolak',
-                    'heroicon-o-document-minus',
-                    'danger',
-                    CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-                        ->where('status_formulir', 'Ditolak')
-                        ->groupBy('hari')->orderBy('hari')->pluck('total')->toArray(),
-                    $url('?tableFilters[status_formulir][value]=Ditolak')
-                ),
+---
 
-                $makeStat(
-                    "{$diterimaPrestasi} Peserta",
-                    'Diterima Jalur Prestasi',
-                    'heroicon-o-check-circle',
-                    'success',
-                    $chart('Diterima'),
-                    $url('?tableFilters[status_pendaftaran][value]=Diterima')
-                ),
+### 📄 `./app/Filament/Resources/EkstrakurikulerResource/Pages/CreateEkstrakurikuler.php`
 
-                $makeStat(
-                    "{$diterimaReguler} Peserta",
-                    'Diterima Kelas Reguler',
-                    'heroicon-o-shield-check',
-                    'success',
-                    $chart('Diterima Di Kelas Reguler'),
-                    $url('?tableFilters[status_pendaftaran][value]=Diterima+Di+Kelas+Reguler')
-                ),
+```php
+<?php
 
-                $makeStat(
-                    "{$diterimaUnggulan} Peserta",
-                    'Diterima Kelas Unggulan',
-                    'heroicon-o-shield-check',
-                    'info',
-                    $chart('Diterima Di Kelas Unggulan'),
-                    $url('?tableFilters[status_pendaftaran][value]=Diterima+Di+Kelas+Unggulan')
-                ),
+namespace App\Filament\Resources\EkstrakurikulerResource\Pages;
 
-                $makeStat(
-                    "{$tidakDiterima} Peserta",
-                    'Tidak Diterima',
-                    'heroicon-o-no-symbol',
-                    'danger',
-                    $chart('Tidak Diterima'),
-                    $url('?tableFilters[status_pendaftaran][value]=Tidak+Diterima')
-                ),
+use App\Filament\Resources\EkstrakurikulerResource;
+use Filament\Resources\Pages\CreateRecord;
+
+class CreateEkstrakurikuler extends CreateRecord
+{
+    protected static string $resource = EkstrakurikulerResource::class;
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/EkstrakurikulerResource/Pages/EditEkstrakurikuler.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\EkstrakurikulerResource\Pages;
+
+use App\Filament\Resources\EkstrakurikulerResource;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
+
+class EditEkstrakurikuler extends EditRecord
+{
+    protected static string $resource = EkstrakurikulerResource::class;
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        $updatedRecord = parent::handleRecordUpdate($record, $data);
+        $this->redirect($this->getResource()::getUrl('index'));
+
+        return $updatedRecord;
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/EkstrakurikulerResource/Pages/ListEkstrakurikulers.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\EkstrakurikulerResource\Pages;
+
+use App\Filament\Resources\EkstrakurikulerResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ListRecords;
+
+class ListEkstrakurikulers extends ListRecords
+{
+    protected static string $resource = EkstrakurikulerResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\CreateAction::make()
+                ->outlined()
+                ->hiddenLabel()
+                ->icon('heroicon-o-plus'),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/EkstrakurikulerResource/Pages/ViewEkstrakurikuler.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\EkstrakurikulerResource\Pages;
+
+use App\Filament\Resources\EkstrakurikulerResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ViewRecord;
+
+class ViewEkstrakurikuler extends ViewRecord
+{
+    protected static string $resource = EkstrakurikulerResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\EditAction::make(),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/EkstrakurikulerResource.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\EkstrakurikulerResource\Pages;
+use App\Models\Ekstrakurikuler;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Table;
+
+class EkstrakurikulerResource extends Resource
+{
+    protected static ?string $model = Ekstrakurikuler::class;
+
+    protected static ?string $recordTitleAttribute = 'nama';
+
+    protected static ?string $navigationLabel = 'Ekstrakurikuler';
+
+    protected static ?string $label = 'Ekstrakurikuler';
+
+    protected static ?string $navigationGroup = 'Referensi';
+
+    protected static ?int $navigationSort = 11;
+
+    protected static bool $shouldRegisterNavigation = true;
+
+    protected static ?string $navigationIcon = 'heroicon-o-sparkles';
+
+    public static function form(Form $form): Form
+    {
+        return $form
+            ->schema([
+                Section::make('Informasi Ekstrakurikuler')
+                    ->schema([
+                        TextInput::make('nama')
+                            ->label('Ekstrakurikuler')
+                            ->required()
+                            ->maxLength(255),
+                    ]),
             ]);
-        }
+    }
 
-        return $stats;
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                TextColumn::make('nama')
+                    ->label('Ekstrakurikuler')
+                    ->searchable(),
+
+                TextColumn::make('created_at')
+                    ->label('Dibuat')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+
+                TextColumn::make('updated_at')
+                    ->label('Diubah')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+            ])
+            ->filters([])
+            ->actions([
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
+            ], ActionsPosition::BeforeColumns)
+            ->bulkActions([
+                DeleteBulkAction::make()
+                    ->outlined()
+                    ->hiddenLabel()
+                    ->icon('heroicon-o-trash'),
+            ])
+            ->striped()
+            ->filtersLayout(FiltersLayout::AboveContentCollapsible)
+            ->paginationPageOptions([10, 25, 50]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListEkstrakurikulers::route('/'),
+            'create' => Pages\CreateEkstrakurikuler::route('/create'),
+            'edit' => Pages\EditEkstrakurikuler::route('/{record}/edit'),
+        ];
     }
 }
 
@@ -4409,7 +7944,11 @@ class ViewInformasi extends ViewRecord
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\InformasiResource\Pages;
+use App\Models\CalonSiswa;
 use App\Models\Informasi;
+use App\Services\WhatsAppService;
+use Carbon\Carbon;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
@@ -4418,8 +7957,11 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
@@ -4430,6 +7972,7 @@ use Filament\Tables\Enums\ActionsPosition;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
@@ -4455,6 +7998,10 @@ class InformasiResource extends Resource
     {
         return Informasi::count();
     }
+
+    // =========================================================================
+    // Form
+    // =========================================================================
 
     public static function form(Form $form): Form
     {
@@ -4533,11 +8080,16 @@ class InformasiResource extends Resource
             ]);
     }
 
+    // =========================================================================
+    // Table
+    // =========================================================================
+
     public static function table(Table $table): Table
     {
-        $isSuperAdmin = Auth::user()->username === 'super_admin';
+        // Konsisten dengan resource lain — pakai hasRole(), bukan cek username
+        $isAdmin = Auth::user()->hasAnyRole(['super_admin', 'admin', 'verifikator', 'panitia']);
 
-        if ($isSuperAdmin) {
+        if ($isAdmin) {
             return $table
                 ->columns([
                     TextColumn::make('tahunPendaftaran.nama')
@@ -4548,7 +8100,7 @@ class InformasiResource extends Resource
 
                     TextColumn::make('judul')
                         ->label('Informasi')
-                        ->description(fn (Informasi $record): string => Str::limit($record->isi, 50))
+                        ->description(fn (Informasi $r) => Str::limit($r->isi, 50))
                         ->icon('heroicon-o-information-circle')
                         ->iconColor('info'),
 
@@ -4564,7 +8116,7 @@ class InformasiResource extends Resource
                     TextColumn::make('status')
                         ->label('Status')
                         ->badge()
-                        ->color(fn (string $state): string => match ($state) {
+                        ->color(fn (string $state) => match ($state) {
                             'Publish' => 'success',
                             'Draft' => 'gray',
                         }),
@@ -4583,6 +8135,7 @@ class InformasiResource extends Resource
                         ViewAction::make(),
                         EditAction::make(),
                         DeleteAction::make(),
+                        self::notifikasiRowAction(),
                     ]),
                 ], ActionsPosition::BeforeColumns)
                 ->bulkActions([
@@ -4590,18 +8143,22 @@ class InformasiResource extends Resource
                         ->outlined()
                         ->hiddenLabel()
                         ->icon('heroicon-o-trash'),
+                    self::notifikasiBulkAction(),
                 ])
                 ->striped()
                 ->filtersLayout(FiltersLayout::AboveContentCollapsible)
                 ->paginationPageOptions([10, 25, 50]);
         }
 
+        // ------------------------------------------------------------------
+        // View calon_siswa — read-only, tanpa action kirim notifikasi
+        // ------------------------------------------------------------------
         return $table
             ->query(Informasi::where('status', 'Publish')->latest('updated_at'))
             ->columns([
                 TextColumn::make('judul')
                     ->label('Informasi')
-                    ->description(fn (Informasi $record): string => Str::limit($record->isi, 50))
+                    ->description(fn (Informasi $r) => Str::limit($r->isi, 50))
                     ->icon('heroicon-o-information-circle')
                     ->iconColor('info'),
 
@@ -4614,10 +8171,19 @@ class InformasiResource extends Resource
                     ->sinceTooltip()
                     ->sortable(),
             ])
+            ->actions([
+                ActionGroup::make([
+                    ViewAction::make(),
+                ]),
+            ], ActionsPosition::BeforeColumns)
             ->striped()
             ->filtersLayout(FiltersLayout::AboveContentCollapsible)
             ->paginationPageOptions([10]);
     }
+
+    // =========================================================================
+    // Pages
+    // =========================================================================
 
     public static function getPages(): array
     {
@@ -4627,6 +8193,204 @@ class InformasiResource extends Resource
             'view' => Pages\ViewInformasi::route('/{record}'),
             'edit' => Pages\EditInformasi::route('/{record}/edit'),
         ];
+    }
+
+    // =========================================================================
+    // Actions
+    // =========================================================================
+
+    private static function notifikasiRowAction(): Action
+    {
+        return Action::make('kirim_notifikasi')
+            ->label('Kirim Notifikasi WA')
+            ->icon('heroicon-o-chat-bubble-left-ellipsis')
+            ->color('info')
+            ->disabled(fn ($record) => $record->status !== 'Publish')
+            ->tooltip(fn ($record) => $record->status !== 'Publish' ? 'Hanya informasi berstatus Publish yang dapat dikirim' : null)
+            ->form(self::targetForm())
+            ->modalHeading('Kirim Notifikasi Informasi via WhatsApp')
+            ->modalDescription(fn ($record) => "Informasi: \"{$record->judul}\" akan dikirim ke calon siswa yang dipilih.")
+            ->modalSubmitActionLabel('Kirim Sekarang')
+            ->action(function ($record, array $data) {
+                // Guard — tolak jika somehow Draft lolos (misal via direct call)
+                if ($record->status !== 'Publish') {
+                    Notification::make()
+                        ->title('Tidak dapat dikirim')
+                        ->body('Hanya informasi berstatus Publish yang dapat dikirim.')
+                        ->danger()
+                        ->send();
+
+                    return;
+                }
+                $phones = self::resolvePhones($data['targets'] ?? []);
+
+                if ($phones->isEmpty()) {
+                    Notification::make()
+                        ->title('Tidak ada penerima')
+                        ->body('Tidak ditemukan calon siswa dengan kriteria yang dipilih, atau belum ada nomor WhatsApp terdaftar.')
+                        ->warning()
+                        ->send();
+
+                    return;
+                }
+
+                $jumlah = self::dispatchPesan($phones, self::buildPesan($record));
+
+                Notification::make()
+                    ->title("Notifikasi dijadwalkan untuk {$jumlah} penerima")
+                    ->body('Pesan akan dikirim secara bertahap dalam beberapa menit.')
+                    ->success()
+                    ->send();
+            });
+    }
+
+    private static function notifikasiBulkAction(): BulkAction
+    {
+        return BulkAction::make('kirim_notifikasi_massal')
+            ->label('Kirim Notifikasi WA')
+            ->icon('heroicon-o-chat-bubble-left-ellipsis')
+            ->color('info')
+            ->deselectRecordsAfterCompletion()
+            ->form(self::targetForm())
+            ->modalHeading('Kirim Notifikasi Massal via WhatsApp')
+            ->modalDescription('Semua informasi yang dipilih akan dikirim ke penerima yang dipilih secara bertahap.')
+            ->modalSubmitActionLabel('Kirim Sekarang')
+            ->action(function (Collection $records, array $data) {
+                $phones = self::resolvePhones($data['targets'] ?? []);
+
+                if ($phones->isEmpty()) {
+                    Notification::make()
+                        ->title('Tidak ada penerima')
+                        ->body('Tidak ditemukan calon siswa dengan kriteria yang dipilih.')
+                        ->warning()
+                        ->send();
+
+                    return;
+                }
+
+                $wa = app(WhatsAppService::class);
+                $totalJob = 0;
+                $skipped = 0;
+
+                // Filter — hanya kirim yang Publish
+                $published = $records->filter(fn ($r) => $r->status === 'Publish');
+                $skipped = $records->count() - $published->count();
+
+                foreach ($published as $record) {
+                    $pesan = self::buildPesan($record);
+
+                    foreach ($phones as $phone) {
+                        $wa->send(phone: $phone, message: $pesan, minDelay: 15, maxDelay: 300);
+                        $totalJob++;
+                    }
+                }
+
+                if ($published->isEmpty()) {
+                    Notification::make()
+                        ->title('Tidak ada yang dikirim')
+                        ->body('Semua informasi yang dipilih berstatus Draft.')
+                        ->warning()
+                        ->send();
+
+                    return;
+                }
+
+                $skippedInfo = $skipped > 0 ? " ({$skipped} Draft dilewati)" : '';
+
+                Notification::make()
+                    ->title("{$totalJob} notifikasi dijadwalkan")
+                    ->body("{$published->count()} informasi × {$phones->count()} penerima. Pesan akan terkirim secara bertahap.{$skippedInfo}")
+                    ->success()
+                    ->send();
+            });
+    }
+
+    // =========================================================================
+    // Helpers
+    // =========================================================================
+
+    private static function targetForm(): array
+    {
+        return [
+            CheckboxList::make('targets')
+                ->label('Kirim ke')
+                ->options([
+                    'semua' => '📋 Semua Calon Siswa',
+                    'diverifikasi' => '🔍 Hanya yang Diverifikasi',
+                    'diterima' => '🎉 Hanya yang Diterima',
+                ])
+                ->descriptions([
+                    'semua' => 'Seluruh calon siswa yang terdaftar (semua status)',
+                    'diverifikasi' => 'Calon siswa dengan status Diverifikasi',
+                    'diterima' => 'Status Diterima, Diterima Di Kelas Reguler, atau Diterima Di Kelas Unggulan',
+                ])
+                ->required()
+                ->validationMessages(['required' => 'Pilih minimal satu target penerima.']),
+        ];
+    }
+
+    private static function resolvePhones(array $targets): Collection
+    {
+        $query = CalonSiswa::withoutGlobalScopes()
+            ->with('user:id,telepon')
+            ->whereHas('user', fn ($q) => $q->whereNotNull('telepon'));
+
+        // Jika 'semua' dipilih → abaikan filter status lain
+        if (in_array('semua', $targets)) {
+            return $query
+                ->get()
+                ->map(fn ($cs) => $cs->user?->telepon)
+                ->filter()
+                ->unique()
+                ->values();
+        }
+
+        $statusMap = [
+            'diverifikasi' => ['Diverifikasi'],
+            'diterima' => ['Diterima', 'Diterima Di Kelas Reguler', 'Diterima Di Kelas Unggulan'],
+        ];
+
+        $statuses = collect($targets)
+            ->flatMap(fn ($t) => $statusMap[$t] ?? [])
+            ->unique()
+            ->values()
+            ->all();
+
+        if (! empty($statuses)) {
+            $query->whereIn('status_pendaftaran', $statuses);
+        }
+
+        return $query
+            ->get()
+            ->map(fn ($cs) => $cs->user?->telepon)
+            ->filter()
+            ->unique()
+            ->values();
+    }
+
+    private static function dispatchPesan(Collection $phones, string $pesan): int
+    {
+        $wa = app(WhatsAppService::class);
+
+        foreach ($phones as $phone) {
+            $wa->send(phone: $phone, message: $pesan, minDelay: 10, maxDelay: 180);
+        }
+
+        return $phones->count();
+    }
+
+    private static function buildPesan(Informasi $record): string
+    {
+        $tanggal = $record->tanggal
+            ? Carbon::parse($record->tanggal)->translatedFormat('d F Y')
+            : now()->translatedFormat('d F Y');
+
+        return "📢 *Informasi PPDB MTsN 1 Pandeglang*\n\n"
+            ."📌 *{$record->judul}*\n"
+            ."🗓️ {$tanggal}\n\n"
+            .strip_tags($record->isi)."\n\n"
+            ."Silakan login ke sistem PPDB untuk informasi lebih lanjut.\n"
+            .'_MTsN 1 Pandeglang_';
     }
 }
 
@@ -4662,62 +8426,58 @@ class InformasiPublished extends TableWidget
 
     protected function getTableHeading(): string
     {
-        return 'ℹ️ Informasi';
+        return 'Informasi';
     }
-
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
 
     private function getCalonSiswa(): ?CalonSiswa
     {
-        return CalonSiswa::where('nisn', Auth::user()->username)->first();
+        return CalonSiswa::withoutGlobalScope('milik_sendiri')
+            ->where('user_id', Auth::id())
+            ->first();
     }
 
     private function statusColor(string $status): string
     {
         return match ($status) {
-            'Diverifikasi' => 'success',
             'Diterima',
             'Diterima Di Kelas Reguler' => 'success',
             'Diterima Di Kelas Unggulan' => 'info',
-            'Tidak Diterima' => 'danger',
-            default => 'warning',
+            'Tidak Diterima'             => 'danger',
+            default                      => 'warning',
         };
     }
 
     private function statusIcon(string $status): string
     {
         return match ($status) {
-            'Diverifikasi' => 'heroicon-o-clipboard-document-check',
-            'Berkas Tidak Lengkap' => 'heroicon-o-document-minus',
-            'Tidak Diterima' => 'heroicon-o-no-symbol',
-            'Diterima' => 'heroicon-o-check-circle',
+            'Berkas Tidak Lengkap'       => 'heroicon-o-document-minus',
+            'Tidak Diterima'             => 'heroicon-o-no-symbol',
+            'Diterima'                   => 'heroicon-o-check-circle',
             'Diterima Di Kelas Reguler',
             'Diterima Di Kelas Unggulan' => 'heroicon-o-shield-check',
-            default => 'heroicon-o-arrow-path',
+            default                      => 'heroicon-o-arrow-path',
         };
     }
 
     private function isInPengumumanPeriod(): bool
     {
         $tahun = DB::table('tahun_pendaftarans')->where('status', 'Aktif')->first();
-        $sekarang = Carbon::now();
 
-        $jalurs = ['prestasi', 'reguler', 'afirmasi', 'zonasi', 'mutasi'];
+        if (! $tahun) {
+            return false;
+        }
 
-        foreach ($jalurs as $jalur) {
-            $mulaiRaw = $tahun->{"tanggal_pengumuman_jalur_{$jalur}_mulai"} ?? null;
+        $now = Carbon::now();
+
+        foreach (['prestasi', 'reguler', 'afirmasi', 'zonasi', 'mutasi'] as $jalur) {
+            $mulaiRaw   = $tahun->{"tanggal_pengumuman_jalur_{$jalur}_mulai"} ?? null;
             $selesaiRaw = $tahun->{"tanggal_pengumuman_jalur_{$jalur}_selesai"} ?? null;
 
             if (empty($mulaiRaw) || empty($selesaiRaw)) {
                 continue;
             }
 
-            $mulai = Carbon::createFromFormat('Y-m-d H:i:s', trim($mulaiRaw));
-            $selesai = Carbon::createFromFormat('Y-m-d H:i:s', trim($selesaiRaw));
-
-            if ($sekarang->between($mulai, $selesai)) {
+            if ($now->between(Carbon::parse($mulaiRaw), Carbon::parse($selesaiRaw))) {
                 return true;
             }
         }
@@ -4727,75 +8487,38 @@ class InformasiPublished extends TableWidget
 
     private function isCalonSiswa(): bool
     {
-        return Auth::user()->roles->first()->name === 'calon_siswa';
+        return Auth::user()->hasRole('calon_siswa');
     }
-
-    // -------------------------------------------------------------------------
-    // Table
-    // -------------------------------------------------------------------------
 
     public function table(Table $table): Table
     {
-        $calonSiswa = $this->getCalonSiswa();
-        $label = $calonSiswa?->status_pendaftaran ?? '';
+        $calonSiswa = $this->isCalonSiswa() ? $this->getCalonSiswa() : null;
 
-        $urlFormulir = $calonSiswa ? '/formulir' : '';
-        $urlViewFormulir = $calonSiswa ? '/formulir/'.$calonSiswa->id : '';
-        $urlInformasi = $calonSiswa ? '/informasi' : '';
+        $statusPendaftaran = $calonSiswa?->status_pendaftaran ?? '';
+        $inPengumuman      = $this->isInPengumumanPeriod();
 
-        $isCalonSiswa = $this->isCalonSiswa();
-        $hasTerminalStatus = $calonSiswa && in_array($calonSiswa->status_pendaftaran, [
+        $terminalStatuses = [
             'Diterima',
             'Diterima Di Kelas Unggulan',
             'Diterima Di Kelas Reguler',
             'Tidak Diterima',
-        ]);
-        $hidePendaftaranBadge = ! $isCalonSiswa || $calonSiswa === null || $hasTerminalStatus;
-        $inPengumuman = $this->isInPengumumanPeriod();
+        ];
+
+        $hasTerminalStatus      = $calonSiswa && in_array($statusPendaftaran, $terminalStatuses);
+        $showPendaftaranBadge   = $this->isCalonSiswa() && $calonSiswa !== null && ! $hasTerminalStatus;
+
+        $urlFormulir     = $calonSiswa ? '/formulir' : '';
+        $urlViewFormulir = $calonSiswa ? "/formulir/{$calonSiswa->id}" : '';
+        $urlInformasi    = $calonSiswa ? '/informasi' : '';
 
         return $table
-            ->headerActions([
-                Action::make('label_status_pendaftaran')
-                    ->label('Status Pendaftaran :')
-                    ->outlined()
-                    ->color('gray')
-                    ->disabled()
-                    ->size('sm')
-                    ->hidden($hidePendaftaranBadge),
-
-                Action::make('status_pendaftaran')
-                    ->label($label)
-                    ->color(fn () => $calonSiswa ? $this->statusColor($calonSiswa->status_pendaftaran) : 'warning')
-                    ->icon(fn () => $calonSiswa ? $this->statusIcon($calonSiswa->status_pendaftaran) : 'heroicon-o-arrow-path')
-                    ->outlined()
-                    ->size('sm')
-                    ->url($urlFormulir)
-                    ->hidden($hidePendaftaranBadge),
-
-                Action::make('label_status_kelulusan')
-                    ->label('Status Pendaftaran :')
-                    ->outlined()
-                    ->color('gray')
-                    ->disabled()
-                    ->size('sm')
-                    ->hidden(! $inPengumuman),
-
-                Action::make('status_kelulusan')
-                    ->label($label)
-                    ->color(fn () => $calonSiswa ? $this->statusColor($calonSiswa->status_pendaftaran) : '')
-                    ->icon(fn () => $calonSiswa ? $this->statusIcon($calonSiswa->status_pendaftaran) : '')
-                    ->outlined()
-                    ->size('sm')
-                    ->url($urlViewFormulir)
-                    ->hidden(! $inPengumuman),
-            ])
             ->query(
                 Informasi::where('status', 'Publish')->latest('updated_at')
             )
             ->columns([
                 TextColumn::make('judul')
                     ->label('Informasi')
-                    ->description(fn (Informasi $record): string => Str::limit($record->isi, 50))
+                    ->description(fn(Informasi $record): string => Str::limit($record->isi, 50))
                     ->icon('heroicon-o-information-circle')
                     ->iconColor('info'),
 
@@ -4819,6 +8542,5882 @@ class InformasiPublished extends TableWidget
             ], ActionsPosition::BeforeColumns)
             ->striped()
             ->paginationPageOptions([5]);
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/JalurPendaftaranResource/Pages/CreateJalurPendaftaran.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\JalurPendaftaranResource\Pages;
+
+use App\Filament\Resources\JalurPendaftaranResource;
+use Filament\Resources\Pages\CreateRecord;
+
+class CreateJalurPendaftaran extends CreateRecord
+{
+    protected static string $resource = JalurPendaftaranResource::class;
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/JalurPendaftaranResource/Pages/EditJalurPendaftaran.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\JalurPendaftaranResource\Pages;
+
+use App\Filament\Resources\JalurPendaftaranResource;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
+
+class EditJalurPendaftaran extends EditRecord
+{
+    protected static string $resource = JalurPendaftaranResource::class;
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        $updatedRecord = parent::handleRecordUpdate($record, $data);
+        $this->redirect($this->getResource()::getUrl('index'));
+
+        return $updatedRecord;
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/JalurPendaftaranResource/Pages/ListJalurPendaftarans.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\JalurPendaftaranResource\Pages;
+
+use App\Filament\Resources\JalurPendaftaranResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ListRecords;
+
+class ListJalurPendaftarans extends ListRecords
+{
+    protected static string $resource = JalurPendaftaranResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\CreateAction::make()
+                ->outlined()
+                ->hiddenLabel()
+                ->icon('heroicon-o-plus'),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/JalurPendaftaranResource/Pages/ViewJalurPendaftaran.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\JalurPendaftaranResource\Pages;
+
+use App\Filament\Resources\JalurPendaftaranResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ViewRecord;
+
+class ViewJalurPendaftaran extends ViewRecord
+{
+    protected static string $resource = JalurPendaftaranResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\EditAction::make(),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/JalurPendaftaranResource.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\JalurPendaftaranResource\Pages;
+use App\Models\JalurPendaftaran;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Table;
+
+class JalurPendaftaranResource extends Resource
+{
+    protected static ?string $model = JalurPendaftaran::class;
+
+    protected static ?string $recordTitleAttribute = 'nama';
+
+    protected static ?string $navigationLabel = 'Jalur Pendaftaran';
+
+    protected static ?string $label = 'Jalur Pendaftaran';
+
+    protected static ?string $navigationGroup = 'Referensi';
+
+    protected static ?int $navigationSort = 4;
+
+    protected static bool $shouldRegisterNavigation = true;
+
+    protected static ?string $navigationIcon = 'heroicon-o-arrows-right-left';
+
+    public static function form(Form $form): Form
+    {
+        return $form
+            ->schema([
+                Section::make('Jalur Pendaftaran')
+                    ->collapsible()
+                    ->description('Data Jalur Pendaftaran.')
+                    ->schema([
+                        Select::make('nama')
+                            ->label('Jalur Pendaftaran')
+                            ->options([
+                                'Prestasi' => 'Prestasi',
+                                'Reguler' => 'Reguler',
+                                'Afirmasi' => 'Afirmasi',
+                                'Zonasi' => 'Zonasi',
+                                'Mutasi' => 'Mutasi',
+                            ])
+                            ->required()
+                            ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                        TextInput::make('kuantitas')
+                            ->label('Kuota Pendaftar')
+                            ->numeric()
+                            ->required()
+                            ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                        Select::make('status')
+                            ->label('Status')
+                            ->options(['Aktif' => 'Aktif', 'Nonaktif' => 'Nonaktif'])
+                            ->default('Aktif')
+                            ->native(false)
+                            ->required()
+                            ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                        Select::make('tahun_pendaftaran_id')
+                            ->label('Tahun Pendaftaran')
+                            ->relationship('tahunPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif'))
+                            ->required()
+                            ->validationMessages(['required' => 'Form ini wajib diisi.']),
+                    ])
+                    ->columns(['sm' => '100%', 'md' => 4, 'lg' => 4, 'xl' => 4, '2xl' => 4]),
+            ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                TextColumn::make('nama')
+                    ->label('Jalur Pendaftaran')
+                    ->searchable(),
+
+                TextColumn::make('kuantitas')
+                    ->label('Kuota Pendaftar')
+                    ->numeric()
+                    ->sortable(),
+
+                TextColumn::make('tahunPendaftaran.nama')
+                    ->label('Tahun Pendaftaran')
+                    ->sortable(),
+
+                TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'Aktif' => 'success',
+                        'Nonaktif' => 'gray',
+                    }),
+
+                TextColumn::make('created_at')
+                    ->label('Dibuat')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+
+                TextColumn::make('updated_at')
+                    ->label('Diubah')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+            ])
+            ->filters([])
+            ->actions([
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
+            ], ActionsPosition::BeforeColumns)
+            ->bulkActions([
+                DeleteBulkAction::make()
+                    ->outlined()
+                    ->hiddenLabel()
+                    ->icon('heroicon-o-trash'),
+            ])
+            ->striped()
+            ->filtersLayout(FiltersLayout::AboveContentCollapsible)
+            ->paginationPageOptions([10, 25, 50]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListJalurPendaftarans::route('/'),
+            'create' => Pages\CreateJalurPendaftaran::route('/create'),
+            'edit' => Pages\EditJalurPendaftaran::route('/{record}/edit'),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/JurusanResource/Pages/CreateJurusan.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\JurusanResource\Pages;
+
+use App\Filament\Resources\JurusanResource;
+use Filament\Resources\Pages\CreateRecord;
+
+class CreateJurusan extends CreateRecord
+{
+    protected static string $resource = JurusanResource::class;
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/JurusanResource/Pages/EditJurusan.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\JurusanResource\Pages;
+
+use App\Filament\Resources\JurusanResource;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
+
+class EditJurusan extends EditRecord
+{
+    protected static string $resource = JurusanResource::class;
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        $updatedRecord = parent::handleRecordUpdate($record, $data);
+        $this->redirect($this->getResource()::getUrl('index'));
+
+        return $updatedRecord;
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/JurusanResource/Pages/ListJurusans.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\JurusanResource\Pages;
+
+use App\Filament\Resources\JurusanResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ListRecords;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Table;
+
+class ListJurusans extends ListRecords
+{
+    protected static string $resource = JurusanResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\CreateAction::make()
+                ->outlined()
+                ->hiddenLabel()
+                ->icon('heroicon-o-plus'),
+        ];
+    }
+
+    public function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                TextColumn::make('nama')
+                    ->label('Jurusan')
+                    ->searchable(),
+                TextColumn::make('created_at')
+                    ->label('Dibuat')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+                TextColumn::make('updated_at')
+                    ->label('Diubah')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+            ])
+            ->filters([])
+            ->actions([
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
+            ], ActionsPosition::BeforeColumns)
+            ->bulkActions([
+                DeleteBulkAction::make()
+                    ->outlined()
+                    ->hiddenLabel()
+                    ->icon('heroicon-o-trash'),
+            ])
+            ->striped()
+            ->filtersLayout(FiltersLayout::AboveContentCollapsible)
+            ->paginationPageOptions([10, 25, 50]);
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/JurusanResource/Pages/ViewJurusan.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\JurusanResource\Pages;
+
+use App\Filament\Resources\JurusanResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ViewRecord;
+
+class ViewJurusan extends ViewRecord
+{
+    protected static string $resource = JurusanResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\EditAction::make(),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/JurusanResource.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\JurusanResource\Pages;
+use App\Models\Jurusan;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+
+class JurusanResource extends Resource
+{
+    protected static ?string $model = Jurusan::class;
+
+    protected static ?string $recordTitleAttribute = 'nama';
+
+    protected static ?string $navigationLabel = 'Jurusan';
+
+    protected static ?string $label = 'Jurusan';
+
+    protected static ?string $navigationGroup = 'Referensi';
+
+    protected static ?int $navigationSort = 6;
+
+    protected static bool $shouldRegisterNavigation = true;
+
+    protected static ?string $navigationIcon = 'heroicon-o-bookmark-square';
+
+    public static function form(Form $form): Form
+    {
+        return $form->schema([
+            Section::make('Jurusan')
+                ->collapsible()
+                ->schema([
+                    TextInput::make('nama')
+                        ->label('Nama Jurusan')
+                        ->required()
+                        ->validationMessages([
+                            'required' => 'Form ini wajib diisi.',
+                        ]),
+                ]),
+        ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListJurusans::route('/'),
+            'create' => Pages\CreateJurusan::route('/create'),
+            'edit' => Pages\EditJurusan::route('/{record}/edit'),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/KabupatenResource/Pages/CreateKabupaten.php`
+
+```php
+<?php
+
+// Pages/CreateKabupaten.php
+
+namespace App\Filament\Resources\KabupatenResource\Pages;
+
+use App\Filament\Resources\KabupatenResource;
+use Filament\Resources\Pages\CreateRecord;
+
+class CreateKabupaten extends CreateRecord
+{
+    protected static string $resource = KabupatenResource::class;
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/KabupatenResource/Pages/EditKabupaten.php`
+
+```php
+<?php
+
+// Pages/EditKabupaten.php
+
+namespace App\Filament\Resources\KabupatenResource\Pages;
+
+use App\Filament\Resources\KabupatenResource;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
+
+class EditKabupaten extends EditRecord
+{
+    protected static string $resource = KabupatenResource::class;
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        $updatedRecord = parent::handleRecordUpdate($record, $data);
+        $this->redirect($this->getResource()::getUrl('index'));
+
+        return $updatedRecord;
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/KabupatenResource/Pages/ListKabupatens.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\KabupatenResource\Pages;
+
+use App\Filament\Resources\KabupatenResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ListRecords;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Table;
+
+class ListKabupatens extends ListRecords
+{
+    protected static string $resource = KabupatenResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\CreateAction::make()
+                ->outlined()
+                ->hiddenLabel()
+                ->icon('heroicon-o-plus'),
+        ];
+    }
+
+    public function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                TextColumn::make('nama')
+                    ->label('Kabupaten/Kota')
+                    ->searchable(),
+                TextColumn::make('provinsi.nama')
+                    ->label('Provinsi')
+                    ->sortable(),
+                TextColumn::make('provinsi.negara.nama')
+                    ->label('Negara')
+                    ->sortable(),
+                ImageColumn::make('provinsi.negara.bendera')
+                    ->label('Bendera')
+                    ->defaultImageUrl('/img/bendera.png')
+                    ->sortable(),
+                TextColumn::make('created_at')
+                    ->label('Dibuat')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+                TextColumn::make('updated_at')
+                    ->label('Diubah')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+            ])
+            ->filters([])
+            ->actions([
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
+            ], ActionsPosition::BeforeColumns)
+            ->bulkActions([
+                DeleteBulkAction::make()
+                    ->outlined()
+                    ->hiddenLabel()
+                    ->icon('heroicon-o-trash'),
+            ])
+            ->striped()
+            ->filtersLayout(FiltersLayout::AboveContentCollapsible)
+            ->paginationPageOptions([10, 25, 50]);
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/KabupatenResource/Pages/ViewKabupaten.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\KabupatenResource\Pages;
+
+use App\Filament\Resources\KabupatenResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ViewRecord;
+
+class ViewKabupaten extends ViewRecord
+{
+    protected static string $resource = KabupatenResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\EditAction::make(),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/KabupatenResource.php`
+
+```php
+<?php
+
+// KabupatenResource.php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\KabupatenResource\Pages;
+use App\Models\Kabupaten;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+
+class KabupatenResource extends Resource
+{
+    protected static ?string $model = Kabupaten::class;
+
+    protected static ?string $recordTitleAttribute = 'nama';
+
+    protected static ?string $navigationLabel = 'Kabupaten/Kota';
+
+    protected static ?string $label = 'Kabupaten/Kota';
+
+    protected static ?string $navigationGroup = 'Wilayah';
+
+    protected static ?int $navigationSort = 3;
+
+    protected static bool $shouldRegisterNavigation = true;
+
+    protected static ?string $navigationIcon = 'heroicon-o-map';
+
+    public static function form(Form $form): Form
+    {
+        return $form->schema([
+            Section::make('Kabupaten/Kota')
+                ->collapsible()
+                ->schema([
+                    TextInput::make('nama')
+                        ->label('Kabupaten/Kota')
+                        ->required()
+                        ->validationMessages(['required' => 'Form ini wajib diisi.']),
+                    Select::make('provinsi_id')
+                        ->label('Provinsi')
+                        ->relationship('provinsi', 'nama')
+                        ->required()
+                        ->validationMessages(['required' => 'Form ini wajib diisi.']),
+                ])
+                ->columns(['sm' => '100%', 'md' => 2, 'lg' => 2]),
+        ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListKabupatens::route('/'),
+            'create' => Pages\CreateKabupaten::route('/create'),
+            'edit' => Pages\EditKabupaten::route('/{record}/edit'),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/KecamatanResource/Pages/CreateKecamatan.php`
+
+```php
+<?php
+
+// Pages/CreateKecamatan.php
+
+namespace App\Filament\Resources\KecamatanResource\Pages;
+
+use App\Filament\Resources\KecamatanResource;
+use Filament\Resources\Pages\CreateRecord;
+
+class CreateKecamatan extends CreateRecord
+{
+    protected static string $resource = KecamatanResource::class;
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/KecamatanResource/Pages/EditKecamatan.php`
+
+```php
+<?php
+
+// Pages/EditKecamatan.php
+
+namespace App\Filament\Resources\KecamatanResource\Pages;
+
+use App\Filament\Resources\KecamatanResource;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
+
+class EditKecamatan extends EditRecord
+{
+    protected static string $resource = KecamatanResource::class;
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        $updatedRecord = parent::handleRecordUpdate($record, $data);
+        $this->redirect($this->getResource()::getUrl('index'));
+
+        return $updatedRecord;
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/KecamatanResource/Pages/ListKecamatans.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\KecamatanResource\Pages;
+
+use App\Filament\Resources\KecamatanResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ListRecords;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Table;
+
+class ListKecamatans extends ListRecords
+{
+    protected static string $resource = KecamatanResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\CreateAction::make()
+                ->outlined()
+                ->hiddenLabel()
+                ->icon('heroicon-o-plus'),
+        ];
+    }
+
+    public function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                TextColumn::make('nama')
+                    ->label('Kecamatan')
+                    ->searchable(),
+                TextColumn::make('kabupaten.nama')
+                    ->label('Kabupaten/Kota')
+                    ->sortable(),
+                TextColumn::make('kabupaten.provinsi.nama')
+                    ->label('Provinsi')
+                    ->sortable(),
+                TextColumn::make('kabupaten.provinsi.negara.nama')
+                    ->label('Negara')
+                    ->sortable(),
+                ImageColumn::make('kabupaten.provinsi.negara.bendera')
+                    ->label('Bendera')
+                    ->defaultImageUrl('/img/bendera.png')
+                    ->sortable(),
+                TextColumn::make('created_at')
+                    ->label('Dibuat')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+                TextColumn::make('updated_at')
+                    ->label('Diubah')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+            ])
+            ->filters([])
+            ->actions([
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
+            ], ActionsPosition::BeforeColumns)
+            ->bulkActions([
+                DeleteBulkAction::make()
+                    ->outlined()
+                    ->hiddenLabel()
+                    ->icon('heroicon-o-trash'),
+            ])
+            ->striped()
+            ->filtersLayout(FiltersLayout::AboveContentCollapsible)
+            ->paginationPageOptions([10, 25, 50]);
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/KecamatanResource/Pages/ViewKecamatan.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\KecamatanResource\Pages;
+
+use App\Filament\Resources\KecamatanResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ViewRecord;
+
+class ViewKecamatan extends ViewRecord
+{
+    protected static string $resource = KecamatanResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\EditAction::make(),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/KecamatanResource.php`
+
+```php
+<?php
+
+// KecamatanResource.php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\KecamatanResource\Pages;
+use App\Models\Kecamatan;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+
+class KecamatanResource extends Resource
+{
+    protected static ?string $model = Kecamatan::class;
+
+    protected static ?string $recordTitleAttribute = 'nama';
+
+    protected static ?string $navigationLabel = 'Kecamatan';
+
+    protected static ?string $label = 'Kecamatan';
+
+    protected static ?string $navigationGroup = 'Wilayah';
+
+    protected static ?int $navigationSort = 4;
+
+    protected static bool $shouldRegisterNavigation = true;
+
+    protected static ?string $navigationIcon = 'heroicon-o-map';
+
+    public static function form(Form $form): Form
+    {
+        return $form->schema([
+            Section::make('Kecamatan')
+                ->collapsible()
+                ->schema([
+                    TextInput::make('nama')
+                        ->label('Kecamatan')
+                        ->required()
+                        ->validationMessages(['required' => 'Form ini wajib diisi.']),
+                    Select::make('kabupaten_id')
+                        ->label('Kabupaten')
+                        ->relationship('kabupaten', 'nama')
+                        ->required()
+                        ->validationMessages(['required' => 'Form ini wajib diisi.']),
+                ])
+                ->columns(['sm' => '100%', 'md' => 2, 'lg' => 2]),
+        ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListKecamatans::route('/'),
+            'create' => Pages\CreateKecamatan::route('/create'),
+            'edit' => Pages\EditKecamatan::route('/{record}/edit'),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/KelasResource/Pages/CreateKelas.php`
+
+```php
+<?php
+
+// Pages/CreateKelas.php
+
+namespace App\Filament\Resources\KelasResource\Pages;
+
+use App\Filament\Resources\KelasResource;
+use Filament\Resources\Pages\CreateRecord;
+
+class CreateKelas extends CreateRecord
+{
+    protected static string $resource = KelasResource::class;
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/KelasResource/Pages/EditKelas.php`
+
+```php
+<?php
+
+// Pages/EditKelas.php
+
+namespace App\Filament\Resources\KelasResource\Pages;
+
+use App\Filament\Resources\KelasResource;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
+
+class EditKelas extends EditRecord
+{
+    protected static string $resource = KelasResource::class;
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        $updatedRecord = parent::handleRecordUpdate($record, $data);
+        $this->redirect($this->getResource()::getUrl('index'));
+
+        return $updatedRecord;
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/KelasResource/Pages/ListKelas.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\KelasResource\Pages;
+
+use App\Filament\Resources\KelasResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ListRecords;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Table;
+
+class ListKelas extends ListRecords
+{
+    protected static string $resource = KelasResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\CreateAction::make()
+                ->outlined()
+                ->hiddenLabel()
+                ->icon('heroicon-o-plus'),
+        ];
+    }
+
+    public function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                TextColumn::make('nama')
+                    ->label('Kelas')
+                    ->searchable(),
+                TextColumn::make('jurusan.nama')
+                    ->label('Jurusan')
+                    ->sortable(),
+                TextColumn::make('created_at')
+                    ->label('Dibuat')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+                TextColumn::make('updated_at')
+                    ->label('Diubah')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+            ])
+            ->filters([])
+            ->actions([
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
+            ], ActionsPosition::BeforeColumns)
+            ->bulkActions([
+                DeleteBulkAction::make()
+                    ->outlined()
+                    ->hiddenLabel()
+                    ->icon('heroicon-o-trash'),
+            ])
+            ->striped()
+            ->filtersLayout(FiltersLayout::AboveContentCollapsible)
+            ->paginationPageOptions([10, 25, 50]);
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/KelasResource/Pages/ViewKelas.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\KelasResource\Pages;
+
+use App\Filament\Resources\KelasResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ViewRecord;
+
+class ViewKelas extends ViewRecord
+{
+    protected static string $resource = KelasResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\EditAction::make(),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/KelasResource.php`
+
+```php
+<?php
+
+// KelasResource.php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\KelasResource\Pages;
+use App\Models\Kelas;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+
+class KelasResource extends Resource
+{
+    protected static ?string $model = Kelas::class;
+
+    protected static ?string $recordTitleAttribute = 'nama';
+
+    protected static ?string $navigationLabel = 'Kelas';
+
+    protected static ?string $label = 'Kelas';
+
+    protected static ?string $navigationGroup = 'Referensi';
+
+    protected static ?int $navigationSort = 7;
+
+    protected static bool $shouldRegisterNavigation = true;
+
+    protected static ?string $navigationIcon = 'heroicon-o-building-storefront';
+
+    public static function form(Form $form): Form
+    {
+        return $form->schema([
+            Section::make('Kelas')
+                ->collapsible()
+                ->schema([
+                    TextInput::make('nama')
+                        ->label('Nama Kelas')
+                        ->required()
+                        ->validationMessages(['required' => 'Form ini wajib diisi.']),
+                    Select::make('jurusan_id')
+                        ->label('Jurusan')
+                        ->relationship('jurusan', 'nama')
+                        ->required()
+                        ->validationMessages(['required' => 'Form ini wajib diisi.'])
+                        ->createOptionForm([
+                            TextInput::make('nama')
+                                ->label('Nama Jurusan')
+                                ->required()
+                                ->validationMessages(['required' => 'Form ini wajib diisi.'])
+                                ->placeholder('Contoh: Unggulan'),
+                        ]),
+                ])
+                ->columns(['sm' => '100%', 'md' => 2, 'lg' => 2]),
+        ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListKelas::route('/'),
+            'create' => Pages\CreateKelas::route('/create'),
+            'edit' => Pages\EditKelas::route('/{record}/edit'),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/KelurahanResource/Pages/CreateKelurahan.php`
+
+```php
+<?php
+
+// Pages/CreateKelurahan.php
+
+namespace App\Filament\Resources\KelurahanResource\Pages;
+
+use App\Filament\Resources\KelurahanResource;
+use Filament\Resources\Pages\CreateRecord;
+
+class CreateKelurahan extends CreateRecord
+{
+    protected static string $resource = KelurahanResource::class;
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/KelurahanResource/Pages/EditKelurahan.php`
+
+```php
+<?php
+
+// Pages/EditKelurahan.php
+
+namespace App\Filament\Resources\KelurahanResource\Pages;
+
+use App\Filament\Resources\KelurahanResource;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
+
+class EditKelurahan extends EditRecord
+{
+    protected static string $resource = KelurahanResource::class;
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        $updatedRecord = parent::handleRecordUpdate($record, $data);
+        $this->redirect($this->getResource()::getUrl('index'));
+
+        return $updatedRecord;
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/KelurahanResource/Pages/ListKelurahans.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\KelurahanResource\Pages;
+
+use App\Filament\Resources\KelurahanResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ListRecords;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Table;
+
+class ListKelurahans extends ListRecords
+{
+    protected static string $resource = KelurahanResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\CreateAction::make()
+                ->outlined()
+                ->hiddenLabel()
+                ->icon('heroicon-o-plus'),
+        ];
+    }
+
+    public function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                TextColumn::make('nama')
+                    ->label('Kelurahan/Desa')
+                    ->searchable(),
+                TextColumn::make('kecamatan.nama')
+                    ->label('Kecamatan')
+                    ->sortable(),
+                TextColumn::make('kecamatan.kabupaten.nama')
+                    ->label('Kabupaten/Kota')
+                    ->sortable(),
+                TextColumn::make('kecamatan.kabupaten.provinsi.nama')
+                    ->label('Provinsi')
+                    ->sortable(),
+                TextColumn::make('kecamatan.kabupaten.provinsi.negara.nama')
+                    ->label('Negara')
+                    ->sortable(),
+                ImageColumn::make('kecamatan.kabupaten.provinsi.negara.bendera')
+                    ->label('Bendera')
+                    ->defaultImageUrl('/img/bendera.png')
+                    ->sortable(),
+                TextColumn::make('created_at')
+                    ->label('Dibuat')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+                TextColumn::make('updated_at')
+                    ->label('Diubah')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+            ])
+            ->filters([])
+            ->actions([
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
+            ], ActionsPosition::BeforeColumns)
+            ->bulkActions([
+                DeleteBulkAction::make()
+                    ->outlined()
+                    ->hiddenLabel()
+                    ->icon('heroicon-o-trash'),
+            ])
+            ->striped()
+            ->filtersLayout(FiltersLayout::AboveContentCollapsible)
+            ->paginationPageOptions([10, 25, 50]);
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/KelurahanResource/Pages/ViewKelurahan.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\KelurahanResource\Pages;
+
+use App\Filament\Resources\KelurahanResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ViewRecord;
+
+class ViewKelurahan extends ViewRecord
+{
+    protected static string $resource = KelurahanResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\EditAction::make(),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/KelurahanResource.php`
+
+```php
+<?php
+
+// KelurahanResource.php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\KelurahanResource\Pages;
+use App\Models\Kelurahan;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+
+class KelurahanResource extends Resource
+{
+    protected static ?string $model = Kelurahan::class;
+
+    protected static ?string $recordTitleAttribute = 'nama';
+
+    protected static ?string $navigationLabel = 'Kelurahan/Desa';
+
+    protected static ?string $label = 'Kelurahan/Desa';
+
+    protected static ?string $navigationGroup = 'Wilayah';
+
+    protected static ?int $navigationSort = 5;
+
+    protected static bool $shouldRegisterNavigation = true;
+
+    protected static ?string $navigationIcon = 'heroicon-o-map';
+
+    public static function form(Form $form): Form
+    {
+        return $form->schema([
+            Section::make('Kelurahan/Desa')
+                ->collapsible()
+                ->schema([
+                    TextInput::make('nama')
+                        ->label('Kelurahan/Desa')
+                        ->required()
+                        ->validationMessages(['required' => 'Form ini wajib diisi.']),
+                    Select::make('kecamatan_id')
+                        ->label('Kecamatan')
+                        ->relationship('kecamatan', 'nama')
+                        ->required()
+                        ->validationMessages(['required' => 'Form ini wajib diisi.']),
+                ])
+                ->columns(['sm' => '100%', 'md' => 2, 'lg' => 2]),
+        ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListKelurahans::route('/'),
+            'create' => Pages\CreateKelurahan::route('/create'),
+            'edit' => Pages\EditKelurahan::route('/{record}/edit'),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/KetuaResource/Pages/CreateKetua.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\KetuaResource\Pages;
+
+use App\Filament\Concerns\HasPanitiaWizardSteps;
+use App\Filament\Resources\KetuaResource;
+use Filament\Resources\Pages\CreateRecord;
+use Filament\Resources\Pages\CreateRecord\Concerns\HasWizard;
+
+class CreateKetua extends CreateRecord
+{
+    use HasPanitiaWizardSteps;
+    use HasWizard;
+
+    protected static string $resource = KetuaResource::class;
+
+    protected string $panitiaLabel = 'Ketua';
+
+    protected string $panitiaDirectory = 'assets/ketua';
+
+    protected function getSteps(): array
+    {
+        return $this->panitiaSteps();
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/KetuaResource/Pages/EditKetua.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\KetuaResource\Pages;
+
+use App\Filament\Concerns\HasPanitiaWizardSteps;
+use App\Filament\Resources\KetuaResource;
+use Filament\Resources\Pages\EditRecord;
+use Filament\Resources\Pages\EditRecord\Concerns\HasWizard;
+use Illuminate\Database\Eloquent\Model;
+
+class EditKetua extends EditRecord
+{
+    use HasPanitiaWizardSteps;
+    use HasWizard;
+
+    protected static string $resource = KetuaResource::class;
+
+    protected string $panitiaLabel = 'Ketua';
+
+    protected string $panitiaDirectory = 'assets/ketua';
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        $updatedRecord = parent::handleRecordUpdate($record, $data);
+        $this->redirect($this->getResource()::getUrl('index'));
+
+        return $updatedRecord;
+    }
+
+    protected function getSteps(): array
+    {
+        return $this->panitiaSteps();
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/KetuaResource/Pages/ListKetuas.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\KetuaResource\Pages;
+
+use App\Filament\Resources\KetuaResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ListRecords;
+
+class ListKetuas extends ListRecords
+{
+    protected static string $resource = KetuaResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\CreateAction::make()
+                ->outlined()
+                ->hiddenLabel()
+                ->icon('heroicon-o-plus'),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/KetuaResource/Pages/ViewKetua.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\KetuaResource\Pages;
+
+use App\Filament\Resources\KetuaResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ViewRecord;
+
+class ViewKetua extends ViewRecord
+{
+    protected static string $resource = KetuaResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\EditAction::make(),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/KetuaResource.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\KetuaResource\Pages;
+use App\Models\Ketua;
+use Filament\Resources\Resource;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Table;
+
+class KetuaResource extends Resource
+{
+    protected static ?string $model = Ketua::class;
+
+    protected static ?string $recordTitleAttribute = 'nama';
+
+    protected static ?string $navigationLabel = 'Ketua';
+
+    protected static ?string $label = 'Ketua';
+
+    protected static ?string $navigationGroup = 'Administrasi';
+
+    protected static ?int $navigationSort = 2;
+
+    protected static bool $shouldRegisterNavigation = true;
+
+    protected static ?string $navigationIcon = 'heroicon-o-user-circle';
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                ImageColumn::make('berkas_foto')
+                    ->label('Foto')
+                    ->circular()
+                    ->defaultImageUrl('img/avatar.png'),
+
+                TextColumn::make('nama')
+                    ->label('Nama Lengkap')
+                    ->searchable(Ketua::count() > 10),
+
+                TextColumn::make('nip')
+                    ->label('NIP'),
+
+                TextColumn::make('tahunPendaftaran.nama')
+                    ->label('Tahun Pendaftaran')
+                    ->sortable(Ketua::count() > 10),
+
+                ImageColumn::make('berkas_tte')
+                    ->label('TTE')
+                    ->defaultImageUrl('img/tte.png'),
+
+                TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'Aktif' => 'success',
+                        'Nonaktif' => 'gray',
+                    }),
+
+                TextColumn::make('created_at')
+                    ->label('Dibuat')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+
+                TextColumn::make('updated_at')
+                    ->label('Diubah')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+            ])
+            ->filters([])
+            ->actions([
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
+            ], ActionsPosition::BeforeColumns)
+            ->bulkActions([
+                DeleteBulkAction::make()
+                    ->outlined()
+                    ->hiddenLabel()
+                    ->icon('heroicon-o-trash'),
+            ])
+            ->striped()
+            ->filtersLayout(FiltersLayout::AboveContentCollapsible)
+            ->paginationPageOptions([10, 25, 50]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListKetuas::route('/'),
+            'create' => Pages\CreateKetua::route('/create'),
+            'edit' => Pages\EditKetua::route('/{record}/edit'),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/MataPelajaranResource/Pages/CreateMataPelajaran.php`
+
+```php
+<?php
+
+// Pages/CreateMataPelajaran.php
+
+namespace App\Filament\Resources\MataPelajaranResource\Pages;
+
+use App\Filament\Resources\MataPelajaranResource;
+use Filament\Resources\Pages\CreateRecord;
+
+class CreateMataPelajaran extends CreateRecord
+{
+    protected static string $resource = MataPelajaranResource::class;
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/MataPelajaranResource/Pages/EditMataPelajaran.php`
+
+```php
+<?php
+
+// Pages/EditMataPelajaran.php
+
+namespace App\Filament\Resources\MataPelajaranResource\Pages;
+
+use App\Filament\Resources\MataPelajaranResource;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
+
+class EditMataPelajaran extends EditRecord
+{
+    protected static string $resource = MataPelajaranResource::class;
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        $updatedRecord = parent::handleRecordUpdate($record, $data);
+        $this->redirect($this->getResource()::getUrl('index'));
+
+        return $updatedRecord;
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/MataPelajaranResource/Pages/ListMataPelajarans.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\MataPelajaranResource\Pages;
+
+use App\Filament\Resources\MataPelajaranResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ListRecords;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Table;
+
+class ListMataPelajarans extends ListRecords
+{
+    protected static string $resource = MataPelajaranResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\CreateAction::make()
+                ->outlined()
+                ->hiddenLabel()
+                ->icon('heroicon-o-plus'),
+        ];
+    }
+
+    public function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                TextColumn::make('nama')
+                    ->label('Mata Pelajaran')
+                    ->searchable(),
+                TextColumn::make('created_at')
+                    ->label('Dibuat')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+                TextColumn::make('updated_at')
+                    ->label('Diubah')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+            ])
+            ->filters([])
+            ->actions([
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
+            ], ActionsPosition::BeforeColumns)
+            ->bulkActions([
+                DeleteBulkAction::make()
+                    ->outlined()
+                    ->hiddenLabel()
+                    ->icon('heroicon-o-trash'),
+            ])
+            ->striped()
+            ->filtersLayout(FiltersLayout::AboveContentCollapsible)
+            ->paginationPageOptions([10, 25, 50]);
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/MataPelajaranResource/Pages/ViewMataPelajaran.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\MataPelajaranResource\Pages;
+
+use App\Filament\Resources\MataPelajaranResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ViewRecord;
+
+class ViewMataPelajaran extends ViewRecord
+{
+    protected static string $resource = MataPelajaranResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\EditAction::make(),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/MataPelajaranResource.php`
+
+```php
+<?php
+
+// MataPelajaranResource.php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\MataPelajaranResource\Pages;
+use App\Models\MataPelajaran;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+
+class MataPelajaranResource extends Resource
+{
+    protected static ?string $model = MataPelajaran::class;
+
+    protected static ?string $recordTitleAttribute = 'nama';
+
+    protected static ?string $navigationLabel = 'Mata Pelajaran';
+
+    protected static ?string $label = 'Mata Pelajaran';
+
+    protected static ?string $navigationGroup = 'Referensi';
+
+    protected static ?int $navigationSort = 10;
+
+    protected static bool $shouldRegisterNavigation = true;
+
+    protected static ?string $navigationIcon = 'heroicon-o-book-open';
+
+    public static function form(Form $form): Form
+    {
+        return $form->schema([
+            Section::make('Informasi Mata Pelajaran')
+                ->schema([
+                    TextInput::make('nama')
+                        ->label('Mata Pelajaran')
+                        ->required()
+                        ->maxLength(255),
+                ]),
+        ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListMataPelajarans::route('/'),
+            'create' => Pages\CreateMataPelajaran::route('/create'),
+            'edit' => Pages\EditMataPelajaran::route('/{record}/edit'),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/NegaraResource/Pages/CreateNegara.php`
+
+```php
+<?php
+
+// Pages/CreateNegara.php
+
+namespace App\Filament\Resources\NegaraResource\Pages;
+
+use App\Filament\Resources\NegaraResource;
+use Filament\Resources\Pages\CreateRecord;
+
+class CreateNegara extends CreateRecord
+{
+    protected static string $resource = NegaraResource::class;
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/NegaraResource/Pages/EditNegara.php`
+
+```php
+<?php
+
+// Pages/EditNegara.php
+
+namespace App\Filament\Resources\NegaraResource\Pages;
+
+use App\Filament\Resources\NegaraResource;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
+
+class EditNegara extends EditRecord
+{
+    protected static string $resource = NegaraResource::class;
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        $updatedRecord = parent::handleRecordUpdate($record, $data);
+        $this->redirect($this->getResource()::getUrl('index'));
+
+        return $updatedRecord;
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/NegaraResource/Pages/ListNegaras.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\NegaraResource\Pages;
+
+use App\Filament\Resources\NegaraResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ListRecords;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Table;
+
+class ListNegaras extends ListRecords
+{
+    protected static string $resource = NegaraResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\CreateAction::make()
+                ->outlined()
+                ->hiddenLabel()
+                ->icon('heroicon-o-plus'),
+        ];
+    }
+
+    public function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                TextColumn::make('nama')
+                    ->label('Negara')
+                    ->searchable(),
+                ImageColumn::make('bendera')
+                    ->label('Bendera')
+                    ->defaultImageUrl('/img/bendera.png'),
+                TextColumn::make('created_at')
+                    ->label('Dibuat')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+                TextColumn::make('updated_at')
+                    ->label('Diubah')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+            ])
+            ->filters([])
+            ->actions([
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
+            ], ActionsPosition::BeforeColumns)
+            ->bulkActions([
+                DeleteBulkAction::make()
+                    ->outlined()
+                    ->hiddenLabel()
+                    ->icon('heroicon-o-trash'),
+            ])
+            ->striped()
+            ->filtersLayout(FiltersLayout::AboveContentCollapsible)
+            ->paginationPageOptions([10, 25, 50]);
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/NegaraResource/Pages/ViewNegara.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\NegaraResource\Pages;
+
+use App\Filament\Resources\NegaraResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ViewRecord;
+
+class ViewNegara extends ViewRecord
+{
+    protected static string $resource = NegaraResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\EditAction::make(),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/NegaraResource.php`
+
+```php
+<?php
+
+// NegaraResource.php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\NegaraResource\Pages;
+use App\Models\Negara;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+
+class NegaraResource extends Resource
+{
+    protected static ?string $model = Negara::class;
+
+    protected static ?string $recordTitleAttribute = 'nama';
+
+    protected static ?string $navigationLabel = 'Negara';
+
+    protected static ?string $label = 'Negara';
+
+    protected static ?string $navigationGroup = 'Wilayah';
+
+    protected static ?int $navigationSort = 1;
+
+    protected static bool $shouldRegisterNavigation = true;
+
+    protected static ?string $navigationIcon = 'heroicon-o-globe-asia-australia';
+
+    public static function form(Form $form): Form
+    {
+        return $form->schema([
+            Section::make('Negara')
+                ->collapsible()
+                ->schema([
+                    TextInput::make('nama')
+                        ->label('Negara')
+                        ->required()
+                        ->validationMessages(['required' => 'Form ini wajib diisi.']),
+                    FileUpload::make('bendera')
+                        ->label('Bendera')
+                        ->image()
+                        ->imageEditor()
+                        ->imageEditorAspectRatios([null, '4:3' => '4:3'])
+                        ->fetchFileInformation(false)
+                        ->directory('assets/bendera')
+                        ->downloadable()
+                        ->maxSize(500),
+                ])
+                ->columns(['sm' => '100%', 'md' => 2, 'lg' => 2]),
+        ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListNegaras::route('/'),
+            'create' => Pages\CreateNegara::route('/create'),
+            'edit' => Pages\EditNegara::route('/{record}/edit'),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/PimpinanResource/Pages/CreatePimpinan.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\PimpinanResource\Pages;
+
+use App\Filament\Concerns\HasPanitiaWizardSteps;
+use App\Filament\Resources\PimpinanResource;
+use Filament\Resources\Pages\CreateRecord;
+use Filament\Resources\Pages\CreateRecord\Concerns\HasWizard;
+
+class CreatePimpinan extends CreateRecord
+{
+    use HasPanitiaWizardSteps;
+    use HasWizard;
+
+    protected static string $resource = PimpinanResource::class;
+
+    protected string $panitiaLabel = 'Pimpinan';
+
+    protected string $panitiaDirectory = 'assets/pimpinan';
+
+    protected function getSteps(): array
+    {
+        return $this->panitiaSteps();
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/PimpinanResource/Pages/EditPimpinan.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\PimpinanResource\Pages;
+
+use App\Filament\Concerns\HasPanitiaWizardSteps;
+use App\Filament\Resources\PimpinanResource;
+use Filament\Resources\Pages\EditRecord;
+use Filament\Resources\Pages\EditRecord\Concerns\HasWizard;
+use Illuminate\Database\Eloquent\Model;
+
+class EditPimpinan extends EditRecord
+{
+    use HasPanitiaWizardSteps;
+    use HasWizard;
+
+    protected static string $resource = PimpinanResource::class;
+
+    protected string $panitiaLabel = 'Pimpinan';
+
+    protected string $panitiaDirectory = 'assets/pimpinan';
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        $updatedRecord = parent::handleRecordUpdate($record, $data);
+        $this->redirect($this->getResource()::getUrl('index'));
+
+        return $updatedRecord;
+    }
+
+    protected function getSteps(): array
+    {
+        return $this->panitiaSteps();
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/PimpinanResource/Pages/ListPimpinans.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\PimpinanResource\Pages;
+
+use App\Filament\Resources\PimpinanResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ListRecords;
+
+class ListPimpinans extends ListRecords
+{
+    protected static string $resource = PimpinanResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\CreateAction::make()
+                ->outlined()
+                ->hiddenLabel()
+                ->icon('heroicon-o-plus'),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/PimpinanResource/Pages/ViewPimpinan.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\PimpinanResource\Pages;
+
+use App\Filament\Resources\PimpinanResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ViewRecord;
+
+class ViewPimpinan extends ViewRecord
+{
+    protected static string $resource = PimpinanResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\EditAction::make(),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/PimpinanResource.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\PimpinanResource\Pages;
+use App\Models\Pimpinan;
+use Filament\Resources\Resource;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Table;
+
+class PimpinanResource extends Resource
+{
+    protected static ?string $model = Pimpinan::class;
+
+    protected static ?string $recordTitleAttribute = 'nama';
+
+    protected static ?string $navigationLabel = 'Pimpinan';
+
+    protected static ?string $label = 'Pimpinan';
+
+    protected static ?string $navigationGroup = 'Administrasi';
+
+    protected static ?int $navigationSort = 1;
+
+    protected static bool $shouldRegisterNavigation = true;
+
+    protected static ?string $navigationIcon = 'heroicon-o-user-circle';
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                ImageColumn::make('berkas_foto')
+                    ->label('Foto')
+                    ->circular()
+                    ->defaultImageUrl('img/avatar.png'),
+
+                TextColumn::make('nama')
+                    ->label('Nama Lengkap')
+                    ->searchable(Pimpinan::count() > 10),
+
+                TextColumn::make('nip')
+                    ->label('NIP'),
+
+                TextColumn::make('tahunPendaftaran.nama')
+                    ->label('Tahun Pendaftaran')
+                    ->sortable(Pimpinan::count() > 10),
+
+                ImageColumn::make('berkas_tte')
+                    ->label('TTE')
+                    ->defaultImageUrl('img/tte.png'),
+
+                TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'Aktif' => 'success',
+                        'Nonaktif' => 'gray',
+                    }),
+
+                TextColumn::make('created_at')
+                    ->label('Dibuat')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+
+                TextColumn::make('updated_at')
+                    ->label('Diubah')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+            ])
+            ->filters([])
+            ->actions([
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
+            ], ActionsPosition::BeforeColumns)
+            ->bulkActions([
+                DeleteBulkAction::make()
+                    ->outlined()
+                    ->hiddenLabel()
+                    ->icon('heroicon-o-trash'),
+            ])
+            ->striped()
+            ->filtersLayout(FiltersLayout::AboveContentCollapsible)
+            ->paginationPageOptions([10, 25, 50]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListPimpinans::route('/'),
+            'create' => Pages\CreatePimpinan::route('/create'),
+            'edit' => Pages\EditPimpinan::route('/{record}/edit'),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/PrestasiResource/Pages/CreatePrestasi.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\PrestasiResource\Pages;
+
+use App\Filament\Resources\PrestasiResource;
+use Filament\Resources\Pages\CreateRecord;
+
+class CreatePrestasi extends CreateRecord
+{
+    protected static string $resource = PrestasiResource::class;
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/PrestasiResource/Pages/EditPrestasi.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\PrestasiResource\Pages;
+
+use App\Filament\Resources\PrestasiResource;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
+
+class EditPrestasi extends EditRecord
+{
+    protected static string $resource = PrestasiResource::class;
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        $updatedRecord = parent::handleRecordUpdate($record, $data);
+        $this->redirect($this->getResource()::getUrl('index'));
+
+        return $updatedRecord;
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/PrestasiResource/Pages/ListPrestasis.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\PrestasiResource\Pages;
+
+use App\Filament\Resources\PrestasiResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ListRecords;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Table;
+
+class ListPrestasis extends ListRecords
+{
+    protected static string $resource = PrestasiResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\CreateAction::make()
+                ->outlined()
+                ->hiddenLabel()
+                ->icon('heroicon-o-plus'),
+        ];
+    }
+
+    public function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                TextColumn::make('nama')
+                    ->label('Nama Prestasi')
+                    ->searchable(),
+                TextColumn::make('jenis')
+                    ->label('Jenis Prestasi')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'Hafalan Al-Quran' => 'success',
+                        'Olimpiade/Kejuaraan' => 'primary'
+                    }),
+                TextColumn::make('tingkat')
+                    ->label('Tingkat')
+                    ->searchable(),
+                TextColumn::make('kategori')
+                    ->label('Kategori')
+                    ->searchable(),
+                TextColumn::make('peringkat')
+                    ->label('Peringkat')
+                    ->searchable(),
+                TextColumn::make('created_at')
+                    ->label('Dibuat')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+                TextColumn::make('updated_at')
+                    ->label('Diubah')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+            ])
+            ->filters([])
+            ->actions([
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
+            ], ActionsPosition::BeforeColumns)
+            ->bulkActions([
+                DeleteBulkAction::make()
+                    ->outlined()
+                    ->hiddenLabel()
+                    ->icon('heroicon-o-trash'),
+            ])
+            ->striped()
+            ->filtersLayout(FiltersLayout::AboveContentCollapsible)
+            ->paginationPageOptions([10, 25, 50]);
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/PrestasiResource/Pages/ViewPrestasi.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\PrestasiResource\Pages;
+
+use App\Filament\Resources\PrestasiResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ViewRecord;
+
+class ViewPrestasi extends ViewRecord
+{
+    protected static string $resource = PrestasiResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\EditAction::make(),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/PrestasiResource.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\PrestasiResource\Pages;
+use App\Models\Prestasi;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+
+class PrestasiResource extends Resource
+{
+    protected static ?string $model = Prestasi::class;
+
+    protected static ?string $recordTitleAttribute = 'nama';
+
+    protected static ?string $navigationLabel = 'Prestasi';
+
+    protected static ?string $label = 'Prestasi';
+
+    protected static ?string $navigationGroup = 'Referensi';
+
+    protected static ?int $navigationSort = 5;
+
+    protected static bool $shouldRegisterNavigation = true;
+
+    protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
+
+    public static function form(Form $form): Form
+    {
+        return $form->schema([
+            Section::make('Prestasi')
+                ->collapsible()
+                ->schema([
+                    Section::make('')
+                        ->schema([
+                            TextInput::make('nama')
+                                ->label('Nama Prestasi')
+                                ->required()
+                                ->validationMessages([
+                                    'required' => 'Form ini wajib diisi.',
+                                ]),
+                            Select::make('jenis')
+                                ->label('Jenis Prestasi')
+                                ->options([
+                                    'Hafalan Al-Quran' => 'Hafalan Al-Quran (Minimal 3 Juz)',
+                                    'Olimpiade/Kejuaraan' => 'Olimpiade/Kejuaraan',
+                                ])
+                                ->required()
+                                ->validationMessages([
+                                    'required' => 'Form ini wajib diisi.',
+                                ])
+                                ->live(),
+                        ])
+                        ->columns(['sm' => '100%', 'md' => 2, 'lg' => 2]),
+
+                    Section::make('')
+                        ->schema([
+                            Select::make('tingkat')
+                                ->label('Tingkat')
+                                ->options([
+                                    'Nasional' => 'Nasional',
+                                    'Provinsi' => 'Provinsi',
+                                    'Kabupaten/Kota' => 'Kabupaten/Kota',
+                                ])
+                                ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                            Select::make('kategori')
+                                ->label('Kategori')
+                                ->options([
+                                    'Regu/Kelompok' => 'Regu/Kelompok',
+                                    'Individu' => 'Individu',
+                                ])
+                                ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                            Select::make('peringkat')
+                                ->label('Peringkat')
+                                ->options(['1' => '1', '2' => '2', '3' => '3'])
+                                ->required(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                        ])
+                        ->columns(['sm' => '100%', 'md' => 3, 'lg' => 3])
+                        ->visible(fn ($get) => $get('jenis') === 'Olimpiade/Kejuaraan'),
+                ])
+                ->columns(['sm' => '100%', 'md' => 3, 'lg' => 3]),
+        ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListPrestasis::route('/'),
+            'create' => Pages\CreatePrestasi::route('/create'),
+            'edit' => Pages\EditPrestasi::route('/{record}/edit'),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/ProvinsiResource/Pages/CreateProvinsi.php`
+
+```php
+<?php
+
+// Pages/CreateProvinsi.php
+
+namespace App\Filament\Resources\ProvinsiResource\Pages;
+
+use App\Filament\Resources\ProvinsiResource;
+use Filament\Resources\Pages\CreateRecord;
+
+class CreateProvinsi extends CreateRecord
+{
+    protected static string $resource = ProvinsiResource::class;
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/ProvinsiResource/Pages/EditProvinsi.php`
+
+```php
+<?php
+
+// Pages/EditProvinsi.php
+
+namespace App\Filament\Resources\ProvinsiResource\Pages;
+
+use App\Filament\Resources\ProvinsiResource;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
+
+class EditProvinsi extends EditRecord
+{
+    protected static string $resource = ProvinsiResource::class;
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        $updatedRecord = parent::handleRecordUpdate($record, $data);
+        $this->redirect($this->getResource()::getUrl('index'));
+
+        return $updatedRecord;
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/ProvinsiResource/Pages/ListProvinsis.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\ProvinsiResource\Pages;
+
+use App\Filament\Resources\ProvinsiResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ListRecords;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Table;
+
+class ListProvinsis extends ListRecords
+{
+    protected static string $resource = ProvinsiResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\CreateAction::make()
+                ->outlined()
+                ->hiddenLabel()
+                ->icon('heroicon-o-plus'),
+        ];
+    }
+
+    public function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                TextColumn::make('nama')
+                    ->label('Provinsi')
+                    ->searchable(),
+                TextColumn::make('negara.nama')
+                    ->label('Negara')
+                    ->sortable(),
+                ImageColumn::make('negara.bendera')
+                    ->label('Bendera')
+                    ->defaultImageUrl('/img/bendera.png')
+                    ->sortable(),
+                TextColumn::make('created_at')
+                    ->label('Dibuat')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+                TextColumn::make('updated_at')
+                    ->label('Diubah')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+            ])
+            ->filters([])
+            ->actions([
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
+            ], ActionsPosition::BeforeColumns)
+            ->bulkActions([
+                DeleteBulkAction::make()
+                    ->outlined()
+                    ->hiddenLabel()
+                    ->icon('heroicon-o-trash'),
+            ])
+            ->striped()
+            ->filtersLayout(FiltersLayout::AboveContentCollapsible)
+            ->paginationPageOptions([10, 25, 50]);
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/ProvinsiResource/Pages/ViewProvinsi.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\ProvinsiResource\Pages;
+
+use App\Filament\Resources\ProvinsiResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ViewRecord;
+
+class ViewProvinsi extends ViewRecord
+{
+    protected static string $resource = ProvinsiResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\EditAction::make(),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/ProvinsiResource.php`
+
+```php
+<?php
+
+// ProvinsiResource.php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\ProvinsiResource\Pages;
+use App\Models\Provinsi;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+
+class ProvinsiResource extends Resource
+{
+    protected static ?string $model = Provinsi::class;
+
+    protected static ?string $recordTitleAttribute = 'nama';
+
+    protected static ?string $navigationLabel = 'Provinsi';
+
+    protected static ?string $label = 'Provinsi';
+
+    protected static ?string $navigationGroup = 'Wilayah';
+
+    protected static ?int $navigationSort = 2;
+
+    protected static bool $shouldRegisterNavigation = true;
+
+    protected static ?string $navigationIcon = 'heroicon-o-map';
+
+    public static function form(Form $form): Form
+    {
+        return $form->schema([
+            Section::make('Provinsi')
+                ->collapsible()
+                ->schema([
+                    TextInput::make('nama')
+                        ->label('Provinsi')
+                        ->required()
+                        ->validationMessages(['required' => 'Form ini wajib diisi.']),
+                    Select::make('negara_id')
+                        ->label('Negara')
+                        ->relationship('negara', 'nama')
+                        ->required()
+                        ->validationMessages(['required' => 'Form ini wajib diisi.']),
+                ])
+                ->columns(['sm' => '100%', 'md' => 2, 'lg' => 2]),
+        ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListProvinsis::route('/'),
+            'create' => Pages\CreateProvinsi::route('/create'),
+            'edit' => Pages\EditProvinsi::route('/{record}/edit'),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/RoleResource/Pages/CreateRole.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\RoleResource\Pages;
+
+use App\Filament\Resources\RoleResource;
+use BezhanSalleh\FilamentShield\Support\Utils;
+use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
+
+class CreateRole extends CreateRecord
+{
+    protected static string $resource = RoleResource::class;
+
+    public Collection $permissions;
+
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        $this->permissions = collect($data)
+            ->filter(function ($permission, $key) {
+                return ! in_array($key, ['name', 'guard_name', 'select_all', Utils::getTenantModelForeignKey()]);
+            })
+            ->values()
+            ->flatten()
+            ->unique();
+
+        if (Arr::has($data, Utils::getTenantModelForeignKey())) {
+            return Arr::only($data, ['name', 'guard_name', Utils::getTenantModelForeignKey()]);
+        }
+
+        return Arr::only($data, ['name', 'guard_name']);
+    }
+
+    protected function afterCreate(): void
+    {
+        $permissionModels = collect();
+        $this->permissions->each(function ($permission) use ($permissionModels) {
+            $permissionModels->push(Utils::getPermissionModel()::firstOrCreate([
+                /** @phpstan-ignore-next-line */
+                'name' => $permission,
+                'guard_name' => $this->data['guard_name'],
+            ]));
+        });
+
+        $this->record->syncPermissions($permissionModels);
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/RoleResource/Pages/EditRole.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\RoleResource\Pages;
+
+use App\Filament\Resources\RoleResource;
+use BezhanSalleh\FilamentShield\Support\Utils;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
+
+class EditRole extends EditRecord
+{
+    protected static string $resource = RoleResource::class;
+
+    public Collection $permissions;
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        $this->permissions = collect($data)
+            ->filter(function ($permission, $key) {
+                return ! in_array($key, ['name', 'guard_name', 'select_all', Utils::getTenantModelForeignKey()]);
+            })
+            ->values()
+            ->flatten()
+            ->unique();
+
+        if (Arr::has($data, Utils::getTenantModelForeignKey())) {
+            return Arr::only($data, ['name', 'guard_name', Utils::getTenantModelForeignKey()]);
+        }
+
+        return Arr::only($data, ['name', 'guard_name']);
+    }
+
+    protected function afterSave(): void
+    {
+        $permissionModels = collect();
+        $this->permissions->each(function ($permission) use ($permissionModels) {
+            $permissionModels->push(Utils::getPermissionModel()::firstOrCreate([
+                'name' => $permission,
+                'guard_name' => $this->data['guard_name'],
+            ]));
+        });
+
+        $this->record->syncPermissions($permissionModels);
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/RoleResource/Pages/ListRoles.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\RoleResource\Pages;
+
+use App\Filament\Resources\RoleResource;
+use BezhanSalleh\FilamentShield\Support\Utils;
+use BezhanSalleh\FilamentShield\Traits\HasShieldFormComponents;
+use Filament\Actions;
+use Filament\Resources\Pages\ListRecords;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Table;
+use Illuminate\Support\Str;
+
+class ListRoles extends ListRecords
+{
+    use HasShieldFormComponents;
+
+    protected static string $resource = RoleResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\CreateAction::make()
+                ->outlined()
+                ->hiddenLabel()
+                ->icon('heroicon-o-plus'),
+        ];
+    }
+
+    public function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                TextColumn::make('name')
+                    ->label('Peran')
+                    ->formatStateUsing(fn ($state): string => Str::headline($state))
+                    ->searchable(),
+                TextColumn::make('team.name')
+                    ->default('Global')
+                    ->badge()
+                    ->color(fn (mixed $state): string => str($state)->contains('Global') ? 'gray' : 'primary')
+                    ->label(__('filament-shield::filament-shield.column.team'))
+                    ->searchable()
+                    ->visible(fn (): bool => static::shield()->isCentralApp() && Utils::isTenancyEnabled()),
+                TextColumn::make('permissions_count')
+                    ->badge()
+                    ->label('Perizinan')
+                    ->counts('permissions')
+                    ->colors(['success']),
+                TextColumn::make('updated_at')
+                    ->label('Diubah')
+                    ->sinceTooltip()
+                    ->dateTime('d F Y H:i:s'),
+            ])
+            ->filters([])
+            ->actions([
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
+            ], ActionsPosition::BeforeColumns)
+            ->bulkActions([
+                DeleteBulkAction::make()
+                    ->outlined()
+                    ->hiddenLabel()
+                    ->icon('heroicon-o-trash'),
+            ])
+            ->striped()
+            ->filtersLayout(FiltersLayout::AboveContentCollapsible)
+            ->paginationPageOptions([10, 25, 50]);
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/RoleResource/Pages/ViewRole.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\RoleResource\Pages;
+
+use App\Filament\Resources\RoleResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ViewRecord;
+
+class ViewRole extends ViewRecord
+{
+    protected static string $resource = RoleResource::class;
+
+    protected function getActions(): array
+    {
+        return [
+            Actions\EditAction::make(),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/RoleResource.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\RoleResource\Pages;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
+use BezhanSalleh\FilamentShield\Forms\ShieldSelectAllToggle;
+use BezhanSalleh\FilamentShield\Support\Utils;
+use BezhanSalleh\FilamentShield\Traits\HasShieldFormComponents;
+use Filament\Facades\Filament;
+use Filament\Forms;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\HtmlString;
+
+class RoleResource extends Resource implements HasShieldPermissions
+{
+    use HasShieldFormComponents;
+
+    protected static ?string $recordTitleAttribute = 'name';
+
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'delete_any',
+        ];
+    }
+
+    public static function form(Form $form): Form
+    {
+        return $form
+            ->schema([
+                Forms\Components\Grid::make()
+                    ->schema([
+                        Forms\Components\Section::make()
+                            ->schema([
+                                Forms\Components\TextInput::make('name')
+                                    ->label(__('filament-shield::filament-shield.field.name'))
+                                    ->unique(ignoreRecord: true)
+                                    ->required()
+                                    ->maxLength(255),
+
+                                Forms\Components\TextInput::make('guard_name')
+                                    ->label(__('filament-shield::filament-shield.field.guard_name'))
+                                    ->default(Utils::getFilamentAuthGuard())
+                                    ->disabledOn('create')
+                                    ->dehydrated()
+                                    ->nullable()
+                                    ->maxLength(255),
+
+                                Forms\Components\Select::make(config('permission.column_names.team_foreign_key'))
+                                    ->label(__('filament-shield::filament-shield.field.team'))
+                                    ->placeholder(__('filament-shield::filament-shield.field.team.placeholder'))
+                                    /** @phpstan-ignore-next-line */
+                                    ->default([Filament::getTenant()?->id])
+                                    ->options(fn (): Arrayable => Utils::getTenantModel() ? Utils::getTenantModel()::pluck('name', 'id') : collect())
+                                    ->hidden(fn (): bool => ! (static::shield()->isCentralApp() && Utils::isTenancyEnabled()))
+                                    ->dehydrated(fn (): bool => ! (static::shield()->isCentralApp() && Utils::isTenancyEnabled())),
+                                ShieldSelectAllToggle::make('select_all')
+                                    ->onIcon('heroicon-s-shield-check')
+                                    ->offIcon('heroicon-s-shield-exclamation')
+                                    ->label(__('filament-shield::filament-shield.field.select_all.name'))
+                                    ->helperText(fn (): HtmlString => new HtmlString(__('filament-shield::filament-shield.field.select_all.message')))
+                                    ->dehydrated(fn (bool $state): bool => $state),
+
+                            ])
+                            ->columns([
+                                'sm' => 2,
+                                'lg' => 3,
+                            ]),
+                    ]),
+                static::getShieldFormComponents(),
+            ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListRoles::route('/'),
+            'create' => Pages\CreateRole::route('/create'),
+            'edit' => Pages\EditRole::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getCluster(): ?string
+    {
+        return Utils::getResourceCluster() ?? static::$cluster;
+    }
+
+    public static function getModel(): string
+    {
+        return Utils::getRoleModel();
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('filament-shield::filament-shield.resource.label.role');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('filament-shield::filament-shield.resource.label.roles');
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return Utils::isResourceNavigationRegistered();
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return Utils::isResourceNavigationGroupEnabled()
+            ? __('filament-shield::filament-shield.nav.group')
+            : '';
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('filament-shield::filament-shield.nav.role.label');
+    }
+
+    public static function getNavigationIcon(): string
+    {
+        return __('filament-shield::filament-shield.nav.role.icon');
+    }
+
+    public static function getNavigationSort(): ?int
+    {
+        return Utils::getResourceNavigationSort();
+    }
+
+    public static function getSlug(): string
+    {
+        return Utils::getResourceSlug();
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return Utils::isResourceNavigationBadgeEnabled()
+            ? strval(static::getEloquentQuery()->count())
+            : null;
+    }
+
+    public static function isScopedToTenant(): bool
+    {
+        return Utils::isScopedToTenant();
+    }
+
+    public static function canGloballySearch(): bool
+    {
+        return Utils::isResourceGloballySearchable() && count(static::getGloballySearchableAttributes()) && static::canViewAny();
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/SekolahAsalResource/Concerns/HasSekolahAsalWizardSteps.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\SekolahAsalResource\Concerns;
+
+use App\Models\Kabupaten;
+use App\Models\Kecamatan;
+use App\Models\Kelurahan;
+use App\Models\Provinsi;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Wizard\Step;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
+use Illuminate\Support\Collection;
+
+trait HasSekolahAsalWizardSteps
+{
+    protected function sekolahAsalSteps(): array
+    {
+        return [
+            Step::make('Data Instansi')
+                ->schema([
+                    Section::make('Instansi')
+                        ->schema([
+                            TextInput::make('nama')
+                                ->label('Nama Instansi')
+                                ->prefixIcon('heroicon-o-building-library')
+                                ->required()
+                                ->columnSpanFull()
+                                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                            TextInput::make('npsn')
+                                ->label('NPSN')
+                                ->numeric()
+                                ->minLength(8)
+                                ->maxLength(8)
+                                ->validationMessages([
+                                    'min_digits' => 'NPSN harus terdiri dari minimal 8 digit.',
+                                    'max_digits' => 'NPSN tidak boleh lebih dari 8 digit.',
+                                ]),
+
+                            TextInput::make('nss')
+                                ->label('NSS/NSM')
+                                ->numeric()
+                                ->minLength(12)
+                                ->maxLength(12)
+                                ->validationMessages([
+                                    'min_digits' => 'Nomor NSS/NSM harus terdiri dari minimal 12 digit.',
+                                    'max_digits' => 'Nomor NSS/NSM tidak boleh lebih dari 12 digit.',
+                                ]),
+
+                            Select::make('akreditasi')
+                                ->label('Akreditasi')
+                                ->native(false)
+                                ->required()
+                                ->options(['A' => 'A (Sangat Baik)', 'B' => 'B (Baik)', 'C' => 'C (Cukup)', 'D' => 'D (Kurang)'])
+                                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                            Select::make('jenjang')
+                                ->label('Jenjang')
+                                ->native(false)
+                                ->required()
+                                ->options(['PAUD' => 'PAUD', 'TK' => 'TK', 'SD' => 'SD', 'MI' => 'MI', 'SMP' => 'SMP', 'MTS' => 'MTS', 'SMA' => 'SMA', 'SMK' => 'SMK', 'MA' => 'MA'])
+                                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                            Select::make('status')
+                                ->label('Status')
+                                ->native(false)
+                                ->required()
+                                ->options(['NEGERI' => 'NEGERI', 'SWASTA' => 'SWASTA'])
+                                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+                        ])
+                        ->columns(['sm' => '100%', 'md' => 3, 'lg' => 3]),
+
+                    Section::make('Logo')
+                        ->schema([
+                            FileUpload::make('logo_institusi')
+                                ->label('Logo Institusi')
+                                ->image()
+                                ->imageEditor()
+                                ->imageEditorAspectRatios([null, '1:1' => '1:1'])
+                                ->fetchFileInformation(false)
+                                ->directory('assets/institusi')
+                                ->downloadable()
+                                ->openable()
+                                ->maxSize(500)
+                                ->minSize(10)
+                                ->visibility('private'),
+
+                            FileUpload::make('logo')
+                                ->label('Logo Instansi')
+                                ->image()
+                                ->imageEditor()
+                                ->imageEditorAspectRatios([null, '1:1' => '1:1'])
+                                ->fetchFileInformation(false)
+                                ->directory('assets/instansi-lain')
+                                ->downloadable()
+                                ->openable()
+                                ->maxSize(500)
+                                ->minSize(10)
+                                ->visibility('private')
+                                ->required()
+                                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+                        ])
+                        ->columns(['sm' => '100%', 'md' => 2, 'lg' => 2]),
+                ]),
+
+            Step::make('Data Alamat')
+                ->schema([
+                    Section::make('Alamat')
+                        ->schema([
+                            Select::make('negara_id')
+                                ->label('Negara')
+                                ->relationship('negara', 'nama')
+                                ->native(false)
+                                ->preload()
+                                ->live()
+                                ->required()
+                                ->afterStateUpdated(function (Set $set) {
+                                    $set('provinsi_id', null);
+                                    $set('kabupaten_id', null);
+                                    $set('kecamatan_id', null);
+                                    $set('kelurahan_id', null);
+                                })
+                                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                            Select::make('provinsi_id')
+                                ->label('Provinsi')
+                                ->options(fn (Get $get): Collection => Provinsi::query()
+                                    ->where('negara_id', $get('negara_id'))
+                                    ->pluck('nama', 'id'))
+                                ->native(false)
+                                ->preload()
+                                ->live()
+                                ->required()
+                                ->afterStateUpdated(function (Set $set) {
+                                    $set('kabupaten_id', null);
+                                    $set('kecamatan_id', null);
+                                    $set('kelurahan_id', null);
+                                })
+                                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                            Select::make('kabupaten_id')
+                                ->label('Kabupaten/Kota')
+                                ->options(fn (Get $get): Collection => Kabupaten::query()
+                                    ->where('provinsi_id', $get('provinsi_id'))
+                                    ->pluck('nama', 'id'))
+                                ->native(false)
+                                ->preload()
+                                ->live()
+                                ->required()
+                                ->afterStateUpdated(function (Set $set) {
+                                    $set('kecamatan_id', null);
+                                    $set('kelurahan_id', null);
+                                })
+                                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                            Select::make('kecamatan_id')
+                                ->label('Kecamatan')
+                                ->options(fn (Get $get): Collection => Kecamatan::query()
+                                    ->where('kabupaten_id', $get('kabupaten_id'))
+                                    ->pluck('nama', 'id'))
+                                ->native(false)
+                                ->preload()
+                                ->live()
+                                ->required()
+                                ->afterStateUpdated(fn (Set $set) => $set('kelurahan_id', null))
+                                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                            Select::make('kelurahan_id')
+                                ->label('Kelurahan/Desa')
+                                ->options(fn (Get $get): Collection => Kelurahan::query()
+                                    ->where('kecamatan_id', $get('kecamatan_id'))
+                                    ->pluck('nama', 'id'))
+                                ->native(false)
+                                ->required()
+                                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                            TextInput::make('alamat')
+                                ->label('Jalan/Kampung/Dusun')
+                                ->placeholder('KP KEBON CAU RT 001 RW 005')
+                                ->required()
+                                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+                        ])
+                        ->columns(['sm' => '100%', 'md' => 3, 'lg' => 3]),
+                ]),
+
+            Step::make('Data Kontak')
+                ->schema([
+                    Section::make('Kontak')
+                        ->schema([
+                            TextInput::make('website')
+                                ->label('Website')
+                                ->url()
+                                ->prefixIcon('heroicon-m-globe-alt')
+                                ->placeholder('https://mtsn1pandeglang.sch.id')
+                                ->required()
+                                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                            TextInput::make('telepon')
+                                ->label('Telepon')
+                                ->tel()
+                                ->prefixIcon('heroicon-m-phone')
+                                ->placeholder('08**********')
+                                ->required()
+                                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                            TextInput::make('email')
+                                ->label('Email')
+                                ->email()
+                                ->prefixIcon('heroicon-m-envelope')
+                                ->placeholder('adm@mtsn1pandeglang.sch.id')
+                                ->required()
+                                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+                        ])
+                        ->columns(['sm' => '100%', 'md' => 3, 'lg' => 3]),
+                ]),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/SekolahAsalResource/Pages/CreateSekolahAsal.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\SekolahAsalResource\Pages;
+
+use App\Filament\Resources\SekolahAsalResource;
+use App\Filament\Resources\SekolahAsalResource\Concerns\HasSekolahAsalWizardSteps;
+use Filament\Resources\Pages\CreateRecord;
+use Filament\Resources\Pages\CreateRecord\Concerns\HasWizard;
+
+class CreateSekolahAsal extends CreateRecord
+{
+    use HasSekolahAsalWizardSteps;
+    use HasWizard;
+
+    protected static string $resource = SekolahAsalResource::class;
+
+    protected function getSteps(): array
+    {
+        return $this->sekolahAsalSteps();
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/SekolahAsalResource/Pages/EditSekolahAsal.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\SekolahAsalResource\Pages;
+
+use App\Filament\Resources\SekolahAsalResource;
+use App\Filament\Resources\SekolahAsalResource\Concerns\HasSekolahAsalWizardSteps;
+use Filament\Resources\Pages\EditRecord;
+use Filament\Resources\Pages\EditRecord\Concerns\HasWizard;
+use Illuminate\Database\Eloquent\Model;
+
+class EditSekolahAsal extends EditRecord
+{
+    use HasSekolahAsalWizardSteps;
+    use HasWizard;
+
+    protected static string $resource = SekolahAsalResource::class;
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        $updatedRecord = parent::handleRecordUpdate($record, $data);
+        $this->redirect($this->getResource()::getUrl('index'));
+
+        return $updatedRecord;
+    }
+
+    protected function getSteps(): array
+    {
+        return $this->sekolahAsalSteps();
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/SekolahAsalResource/Pages/ListSekolahAsals.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\SekolahAsalResource\Pages;
+
+use App\Filament\Resources\SekolahAsalResource;
+use App\Models\SekolahAsal;
+use Filament\Actions;
+use Filament\Resources\Pages\ListRecords;
+use Filament\Support\Enums\FontWeight;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Table;
+
+class ListSekolahAsals extends ListRecords
+{
+    protected static string $resource = SekolahAsalResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\CreateAction::make()
+                ->outlined()
+                ->hiddenLabel()
+                ->icon('heroicon-o-plus'),
+        ];
+    }
+
+    public function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                ImageColumn::make('logo')
+                    ->label('Logo'),
+                TextColumn::make('nama')
+                    ->description(
+                        fn (SekolahAsal $record) => implode(' | ', array_filter([
+                            'NPSN: '.$record->npsn ?? null,
+                            'NSS: '.$record->nss ?? null,
+                        ]))
+                    )
+                    ->wrap()
+                    ->weight(FontWeight::Bold)
+                    ->label('Nama Instansi'),
+                TextColumn::make('jenjang')
+                    ->label('Jenjang')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'PAUD' => 'gray',
+                        'TK' => 'gray',
+                        'SD' => 'danger',
+                        'MI' => 'danger',
+                        'SMP' => 'info',
+                        'MTS' => 'info',
+                        'SMA' => 'success',
+                        'SMK' => 'success',
+                        'MA' => 'success',
+                    }),
+                TextColumn::make('akreditasi')
+                    ->label('Akreditasi')
+                    ->suffix(fn (string $state): string => match ($state) {
+                        'A' => ' (Sangat Baik)',
+                        'B' => ' (Baik)',
+                        'C' => ' (Cukup)',
+                        'D' => ' (Kurang)'
+                    })
+                    ->color(fn (string $state): string => match ($state) {
+                        'A' => 'primary',
+                        'B' => 'success',
+                        'C' => 'warning',
+                        'D' => 'danger'
+                    })
+                    ->badge(),
+                TextColumn::make('alamat')
+                    ->label('Alamat Lengkap')
+                    ->description(
+                        fn (SekolahAsal $record) => implode(', ', array_filter([
+                            $record->kelurahan->nama ?? null,
+                            $record->kecamatan->nama ?? null,
+                            $record->kabupaten->nama ?? null,
+                            $record->provinsi->nama ?? null,
+                            $record->negara->nama ?? null,
+                        ]))
+                    )
+                    ->copyable()
+                    ->copyMessage('Alamat Disalin!')
+                    ->wrap(),
+                TextColumn::make('website')
+                    ->copyable()
+                    ->copyMessage('Website Disalin!')
+                    ->wrap()
+                    ->icon('heroicon-o-globe-alt')
+                    ->iconColor('success')
+                    ->label('Website'),
+                TextColumn::make('telepon')
+                    ->copyable()
+                    ->copyMessage('Telepon Disalin!')
+                    ->icon('heroicon-o-phone')
+                    ->iconColor('success')
+                    ->label('Telepon'),
+                TextColumn::make('email')
+                    ->copyable()
+                    ->copyMessage('Email Disalin!')
+                    ->icon('heroicon-o-envelope')
+                    ->iconColor('success')
+                    ->label('Email'),
+            ])
+            ->filters([])
+            ->actions([
+                ActionGroup::make([
+                    ViewAction::make(),
+                    DeleteAction::make(),
+                    EditAction::make(),
+                ]),
+            ], ActionsPosition::BeforeColumns)
+            ->paginationPageOptions([0]);
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/SekolahAsalResource/Pages/ViewSekolahAsal.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\SekolahAsalResource\Pages;
+
+use App\Filament\Resources\SekolahAsalResource;
+use Filament\Actions\EditAction;
+use Filament\Infolists\Components\Fieldset;
+use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Infolist;
+use Filament\Resources\Pages\ViewRecord;
+
+class ViewSekolahAsal extends ViewRecord
+{
+    protected static string $resource = SekolahAsalResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            EditAction::make()
+                ->icon('heroicon-o-pencil-square')
+                ->outlined(),
+        ];
+    }
+
+    public function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Fieldset::make('')
+                    ->columns(1)
+                    ->schema([
+                        ImageEntry::make('logo')
+                            ->alignCenter()
+                            ->hiddenLabel(),
+                        TextEntry::make('nama')
+                            ->alignCenter()
+                            ->extraAttributes(['class' => 'text-6xl font-bold'])
+                            ->hiddenLabel(),
+                    ]),
+                Fieldset::make('Instansi')
+                    ->columns([
+                        'sm' => 1,
+                        'md' => 3,
+                        'lg' => 3,
+                        'xl' => 3,
+                    ])
+                    ->schema([
+                        TextEntry::make('npsn')
+                            ->label('NPSN'),
+                        TextEntry::make('nss')
+                            ->label('NSS/NSM'),
+                        TextEntry::make('akreditasi')
+                            ->badge()
+                            ->suffix(fn (string $state): string => match ($state) {
+                                'A' => ' (Sangat Baik)',
+                                'B' => ' (Baik)',
+                                'C' => ' (Cukup)',
+                                'D' => ' (Kurang)'
+                            })
+                            ->color(fn (string $state): string => match ($state) {
+                                'A' => 'primary',
+                                'B' => 'success',
+                                'C' => 'warning',
+                                'D' => 'danger'
+                            })
+                            ->label('Akreditasi'),
+                    ]),
+
+                Fieldset::make('Kontak')
+                    ->columns([
+                        'sm' => 1,
+                        'md' => 3,
+                        'lg' => 3,
+                        'xl' => 3,
+                    ])
+                    ->schema([
+                        TextEntry::make('website')
+                            ->icon('heroicon-o-globe-alt')
+                            ->iconColor('success')
+                            ->label('Website'),
+                        TextEntry::make('telepon')
+                            ->icon('heroicon-o-phone')
+                            ->iconColor('success')
+                            ->label('Telepon'),
+                        TextEntry::make('email')
+                            ->icon('heroicon-o-envelope')
+                            ->iconColor('success')
+                            ->label('Email'),
+                    ]),
+                Fieldset::make('Alamat')
+                    ->columns([
+                        'sm' => 1,
+                        'md' => 3,
+                        'lg' => 3,
+                        'xl' => 3,
+                    ])
+                    ->schema([
+                        TextEntry::make('alamat')
+                            ->label('Jalan/Kampung/Dusun'),
+                        TextEntry::make('kelurahan.nama')
+                            ->label('Kelurahan'),
+                        TextEntry::make('kecamatan.nama')
+                            ->label('Kecamatan'),
+                        TextEntry::make('kabupaten.nama')
+                            ->label('Kabupaten'),
+                        TextEntry::make('provinsi.nama')
+                            ->label('Provinsi'),
+                        TextEntry::make('negara.nama')
+                            ->label('Negara'),
+                    ]),
+            ]);
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/SekolahAsalResource.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\SekolahAsalResource\Pages\CreateSekolahAsal;
+use App\Filament\Resources\SekolahAsalResource\Pages\EditSekolahAsal;
+use App\Filament\Resources\SekolahAsalResource\Pages\ListSekolahAsals;
+use App\Filament\Resources\SekolahAsalResource\Pages\ViewSekolahAsal;
+use App\Models\SekolahAsal;
+use Filament\Resources\Resource;
+
+class SekolahAsalResource extends Resource
+{
+    protected static ?string $model = SekolahAsal::class;
+
+    protected static ?string $recordTitleAttribute = 'nama';
+
+    protected static ?string $navigationLabel = 'Instansi Lain';
+
+    protected static ?string $label = 'Instansi Lain';
+
+    protected static ?string $navigationGroup = 'Referensi';
+
+    protected static ?int $navigationSort = 2;
+
+    protected static bool $shouldRegisterNavigation = true;
+
+    protected static ?string $navigationIcon = 'heroicon-o-building-library';
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => ListSekolahAsals::route('/'),
+            'create' => CreateSekolahAsal::route('/create'),
+            'view' => ViewSekolahAsal::route('/{record}'),
+            'edit' => EditSekolahAsal::route('/{record}/edit'),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/SekolahResource/Concerns/HasSekolahWizardSteps.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\SekolahResource\Concerns;
+
+use App\Models\Kabupaten;
+use App\Models\Kecamatan;
+use App\Models\Kelurahan;
+use App\Models\Provinsi;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Wizard\Step;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
+use Illuminate\Support\Collection;
+
+trait HasSekolahWizardSteps
+{
+    protected function sekolahSteps(): array
+    {
+        return [
+            Step::make('Data Instansi')
+                ->schema([
+                    Section::make('Instansi')
+                        ->schema([
+                            TextInput::make('nama')
+                                ->label('Nama Instansi')
+                                ->prefixIcon('heroicon-o-building-library')
+                                ->required()
+                                ->columnSpanFull()
+                                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                            TextInput::make('npsn')
+                                ->label('NPSN')
+                                ->numeric()
+                                ->minLength(8)
+                                ->maxLength(8)
+                                ->validationMessages([
+                                    'min_digits' => 'NPSN harus terdiri dari minimal 8 digit.',
+                                    'max_digits' => 'NPSN tidak boleh lebih dari 8 digit.',
+                                ]),
+
+                            TextInput::make('nss')
+                                ->label('NSS/NSM')
+                                ->numeric()
+                                ->minLength(12)
+                                ->maxLength(12)
+                                ->validationMessages([
+                                    'min_digits' => 'Nomor NSS/NSM harus terdiri dari minimal 12 digit.',
+                                    'max_digits' => 'Nomor NSS/NSM tidak boleh lebih dari 12 digit.',
+                                ]),
+
+                            Select::make('pimpinan_id')
+                                ->label('Kepala Instansi')
+                                ->relationship('pimpinan', 'nama')
+                                ->native(false)
+                                ->required()
+                                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                            Select::make('akreditasi')
+                                ->label('Akreditasi')
+                                ->native(false)
+                                ->required()
+                                ->options(['A' => 'A (Sangat Baik)', 'B' => 'B (Baik)', 'C' => 'C (Cukup)', 'D' => 'D (Kurang)'])
+                                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                            Select::make('jenjang')
+                                ->label('Jenjang')
+                                ->native(false)
+                                ->required()
+                                ->options(['PAUD' => 'PAUD', 'TK' => 'TK', 'SD' => 'SD', 'MI' => 'MI', 'SMP' => 'SMP', 'MTS' => 'MTS', 'SMA' => 'SMA', 'SMK' => 'SMK', 'MA' => 'MA'])
+                                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                            Select::make('status')
+                                ->label('Status')
+                                ->native(false)
+                                ->required()
+                                ->options(['NEGERI' => 'NEGERI', 'SWASTA' => 'SWASTA'])
+                                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+                        ])
+                        ->columns(['sm' => '100%', 'md' => 3, 'lg' => 3]),
+
+                    Section::make('Logo')
+                        ->schema([
+                            FileUpload::make('logo_institusi')
+                                ->label('Logo Institusi')
+                                ->image()
+                                ->imageEditor()
+                                ->imageEditorAspectRatios([null, '1:1' => '1:1'])
+                                ->fetchFileInformation(false)
+                                ->directory('assets/institusi')
+                                ->downloadable()
+                                ->openable()
+                                ->maxSize(500)
+                                ->minSize(10)
+                                ->visibility('private'),
+
+                            FileUpload::make('logo')
+                                ->label('Logo Instansi')
+                                ->image()
+                                ->imageEditor()
+                                ->imageEditorAspectRatios([null, '1:1' => '1:1'])
+                                ->fetchFileInformation(false)
+                                ->directory('assets/instansi')
+                                ->downloadable()
+                                ->openable()
+                                ->maxSize(500)
+                                ->minSize(10)
+                                ->visibility('private')
+                                ->required()
+                                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+                        ])
+                        ->columns(['sm' => '100%', 'md' => 2, 'lg' => 2]),
+                ]),
+
+            Step::make('Data Alamat')
+                ->schema([
+                    Section::make('Alamat')
+                        ->schema([
+                            Select::make('negara_id')
+                                ->label('Negara')
+                                ->relationship('negara', 'nama')
+                                ->native(false)
+                                ->preload()
+                                ->live()
+                                ->required()
+                                ->afterStateUpdated(function (Set $set) {
+                                    $set('provinsi_id', null);
+                                    $set('kabupaten_id', null);
+                                    $set('kecamatan_id', null);
+                                    $set('kelurahan_id', null);
+                                })
+                                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                            Select::make('provinsi_id')
+                                ->label('Provinsi')
+                                ->options(fn (Get $get): Collection => Provinsi::query()
+                                    ->where('negara_id', $get('negara_id'))
+                                    ->pluck('nama', 'id'))
+                                ->native(false)
+                                ->preload()
+                                ->live()
+                                ->required()
+                                ->afterStateUpdated(function (Set $set) {
+                                    $set('kabupaten_id', null);
+                                    $set('kecamatan_id', null);
+                                    $set('kelurahan_id', null);
+                                })
+                                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                            Select::make('kabupaten_id')
+                                ->label('Kabupaten/Kota')
+                                ->options(fn (Get $get): Collection => Kabupaten::query()
+                                    ->where('provinsi_id', $get('provinsi_id'))
+                                    ->pluck('nama', 'id'))
+                                ->native(false)
+                                ->preload()
+                                ->live()
+                                ->required()
+                                ->afterStateUpdated(function (Set $set) {
+                                    $set('kecamatan_id', null);
+                                    $set('kelurahan_id', null);
+                                })
+                                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                            Select::make('kecamatan_id')
+                                ->label('Kecamatan')
+                                ->options(fn (Get $get): Collection => Kecamatan::query()
+                                    ->where('kabupaten_id', $get('kabupaten_id'))
+                                    ->pluck('nama', 'id'))
+                                ->native(false)
+                                ->preload()
+                                ->live()
+                                ->required()
+                                ->afterStateUpdated(fn (Set $set) => $set('kelurahan_id', null))
+                                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                            Select::make('kelurahan_id')
+                                ->label('Kelurahan/Desa')
+                                ->options(fn (Get $get): Collection => Kelurahan::query()
+                                    ->where('kecamatan_id', $get('kecamatan_id'))
+                                    ->pluck('nama', 'id'))
+                                ->native(false)
+                                ->required()
+                                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                            TextInput::make('alamat')
+                                ->label('Jalan/Kampung/Dusun')
+                                ->placeholder('KP KEBON CAU RT 001 RW 005')
+                                ->required()
+                                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+                        ])
+                        ->columns(['sm' => '100%', 'md' => 3, 'lg' => 3]),
+                ]),
+
+            Step::make('Data Kontak')
+                ->schema([
+                    Section::make('Kontak')
+                        ->schema([
+                            TextInput::make('website')
+                                ->label('Website')
+                                ->url()
+                                ->prefixIcon('heroicon-m-globe-alt')
+                                ->placeholder('https://mtsn1pandeglang.sch.id')
+                                ->required()
+                                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                            TextInput::make('telepon')
+                                ->label('Telepon')
+                                ->tel()
+                                ->prefixIcon('heroicon-m-phone')
+                                ->placeholder('08**********')
+                                ->required()
+                                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                            TextInput::make('email')
+                                ->label('Email')
+                                ->email()
+                                ->prefixIcon('heroicon-m-envelope')
+                                ->placeholder('adm@mtsn1pandeglang.sch.id')
+                                ->required()
+                                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+                        ])
+                        ->columns(['sm' => '100%', 'md' => 3, 'lg' => 3]),
+
+                    Section::make('Surat')
+                        ->schema([
+                            TextInput::make('nomor_surat')
+                                ->label('Nomor SKL')
+                                ->minLength(5)
+                                ->maxLength(20)
+                                ->required()
+                                ->validationMessages([
+                                    'required' => 'Form ini wajib diisi.',
+                                    'min' => 'No. SKL: Nomor SKL terlalu pendek.',
+                                    'max' => 'No. SKL: Nomor WKL terlalu panjang.',
+                                ]),
+                        ]),
+                ]),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/SekolahResource/Pages/CreateSekolah.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\SekolahResource\Pages;
+
+use App\Filament\Resources\SekolahResource;
+use App\Filament\Resources\SekolahResource\Concerns\HasSekolahWizardSteps;
+use Filament\Resources\Pages\CreateRecord;
+use Filament\Resources\Pages\CreateRecord\Concerns\HasWizard;
+
+class CreateSekolah extends CreateRecord
+{
+    use HasSekolahWizardSteps;
+    use HasWizard;
+
+    protected static string $resource = SekolahResource::class;
+
+    protected function getSteps(): array
+    {
+        return $this->sekolahSteps();
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/SekolahResource/Pages/EditSekolah.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\SekolahResource\Pages;
+
+use App\Filament\Resources\SekolahResource;
+use App\Filament\Resources\SekolahResource\Concerns\HasSekolahWizardSteps;
+use Filament\Resources\Pages\EditRecord;
+use Filament\Resources\Pages\EditRecord\Concerns\HasWizard;
+use Illuminate\Database\Eloquent\Model;
+
+class EditSekolah extends EditRecord
+{
+    use HasSekolahWizardSteps;
+    use HasWizard;
+
+    protected static string $resource = SekolahResource::class;
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        $updatedRecord = parent::handleRecordUpdate($record, $data);
+        $this->redirect($this->getResource()::getUrl('index'));
+
+        return $updatedRecord;
+    }
+
+    protected function getSteps(): array
+    {
+        return $this->sekolahSteps();
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/SekolahResource/Pages/ListSekolahs.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\SekolahResource\Pages;
+
+use App\Filament\Resources\SekolahResource;
+use App\Models\Sekolah;
+use Filament\Actions\CreateAction;
+use Filament\Resources\Pages\ListRecords;
+use Filament\Support\Enums\FontWeight;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Table;
+
+class ListSekolahs extends ListRecords
+{
+    protected static string $resource = SekolahResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            CreateAction::make()
+                ->icon('heroicon-o-plus')
+                ->outlined()
+                ->hiddenLabel()
+                ->visible(fn () => Sekolah::count() === 0),
+        ];
+    }
+
+    public function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                ImageColumn::make('logo')
+                    ->label('Logo'),
+                TextColumn::make('nama')
+                    ->description(
+                        fn (Sekolah $record) => implode(' | ', array_filter([
+                            'NPSN: '.$record->npsn ?? null,
+                            'NSS: '.$record->nss ?? null,
+                        ]))
+                    )
+                    ->wrap()
+                    ->weight(FontWeight::Bold)
+                    ->label('Nama Instansi'),
+                TextColumn::make('akreditasi')
+                    ->label('Akreditasi')
+                    ->suffix(fn (string $state): string => match ($state) {
+                        'A' => ' (Sangat Baik)',
+                        'B' => ' (Baik)',
+                        'C' => ' (Cukup)',
+                        'D' => ' (Kurang)'
+                    })
+                    ->color(fn (string $state): string => match ($state) {
+                        'A' => 'primary',
+                        'B' => 'success',
+                        'C' => 'warning',
+                        'D' => 'danger'
+                    })
+                    ->badge(),
+                TextColumn::make('pimpinan.nama')
+                    ->icon('heroicon-o-user-circle')
+                    ->iconColor('success')
+                    ->label('Kepala Instansi'),
+                TextColumn::make('alamat')
+                    ->label('Alamat Lengkap')
+                    ->description(
+                        fn (Sekolah $record) => implode(', ', array_filter([
+                            $record->kelurahan->nama ?? null,
+                            $record->kecamatan->nama ?? null,
+                            $record->kabupaten->nama ?? null,
+                            $record->provinsi->nama ?? null,
+                            $record->negara->nama ?? null,
+                        ]))
+                    )
+                    ->copyable()
+                    ->copyMessage('Alamat Disalin!')
+                    ->wrap(),
+                TextColumn::make('website')
+                    ->copyable()
+                    ->copyMessage('Website Disalin!')
+                    ->wrap()
+                    ->icon('heroicon-o-globe-alt')
+                    ->iconColor('success')
+                    ->label('Website'),
+                TextColumn::make('telepon')
+                    ->copyable()
+                    ->copyMessage('Telepon Disalin!')
+                    ->icon('heroicon-o-phone')
+                    ->iconColor('success')
+                    ->label('Telepon'),
+                TextColumn::make('email')
+                    ->copyable()
+                    ->copyMessage('Email Disalin!')
+                    ->icon('heroicon-o-envelope')
+                    ->iconColor('success')
+                    ->label('Email'),
+                TextColumn::make('nomor_surat')
+                    ->copyable()
+                    ->copyMessage('Nomor SKL Disalin!')
+                    ->label('Nomor SKL'),
+            ])
+            ->filters([])
+            ->actions([
+                ActionGroup::make([
+                    ViewAction::make(),
+                    DeleteAction::make(),
+                    EditAction::make(),
+                ]),
+            ], ActionsPosition::BeforeColumns)
+            ->paginationPageOptions([0]);
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/SekolahResource/Pages/ViewSekolah.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\SekolahResource\Pages;
+
+use App\Filament\Resources\SekolahResource;
+use Filament\Actions\EditAction;
+use Filament\Infolists\Components\Fieldset;
+use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Infolist;
+use Filament\Resources\Pages\ViewRecord;
+
+class ViewSekolah extends ViewRecord
+{
+    protected static string $resource = SekolahResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            EditAction::make()
+                ->icon('heroicon-o-pencil-square')
+                ->outlined(),
+        ];
+    }
+
+    public function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Fieldset::make('')
+                    ->columns(1)
+                    ->schema([
+                        ImageEntry::make('logo')
+                            ->alignCenter()
+                            ->hiddenLabel(),
+                        TextEntry::make('nama')
+                            ->alignCenter()
+                            ->extraAttributes(['class' => 'text-6xl font-bold'])
+                            ->hiddenLabel(),
+                    ]),
+                Fieldset::make('Instansi')
+                    ->columns([
+                        'sm' => 1,
+                        'md' => 4,
+                        'lg' => 4,
+                        'xl' => 4,
+                    ])
+                    ->schema([
+                        TextEntry::make('npsn')
+                            ->label('NPSN'),
+                        TextEntry::make('nss')
+                            ->label('NSS/NSM'),
+                        TextEntry::make('akreditasi')
+                            ->badge()
+                            ->suffix(fn (string $state): string => match ($state) {
+                                'A' => ' (Sangat Baik)',
+                                'B' => ' (Baik)',
+                                'C' => ' (Cukup)',
+                                'D' => ' (Kurang)'
+                            })
+                            ->color(fn (string $state): string => match ($state) {
+                                'A' => 'primary',
+                                'B' => 'success',
+                                'C' => 'warning',
+                                'D' => 'danger'
+                            })
+                            ->label('Akreditasi'),
+                        TextEntry::make('pimpinan.nama')
+                            ->icon('heroicon-o-user-circle')
+                            ->iconColor('success')
+                            ->label('Kepala Instansi'),
+                    ]),
+
+                Fieldset::make('Kontak')
+                    ->columns([
+                        'sm' => 1,
+                        'md' => 3,
+                        'lg' => 3,
+                        'xl' => 3,
+                    ])
+                    ->schema([
+                        TextEntry::make('website')
+                            ->icon('heroicon-o-globe-alt')
+                            ->iconColor('success')
+                            ->label('Website'),
+                        TextEntry::make('telepon')
+                            ->icon('heroicon-o-phone')
+                            ->iconColor('success')
+                            ->label('Telepon'),
+                        TextEntry::make('email')
+                            ->icon('heroicon-o-envelope')
+                            ->iconColor('success')
+                            ->label('Email'),
+                    ]),
+                Fieldset::make('Alamat')
+                    ->columns([
+                        'sm' => 1,
+                        'md' => 3,
+                        'lg' => 3,
+                        'xl' => 3,
+                    ])
+                    ->schema([
+                        TextEntry::make('alamat')
+                            ->label('Jalan/Kampung/Dusun'),
+                        TextEntry::make('kelurahan.nama')
+                            ->label('Kelurahan'),
+                        TextEntry::make('kecamatan.nama')
+                            ->label('Kecamatan'),
+                        TextEntry::make('kabupaten.nama')
+                            ->label('Kabupaten'),
+                        TextEntry::make('provinsi.nama')
+                            ->label('Provinsi'),
+                        TextEntry::make('negara.nama')
+                            ->label('Negara'),
+                    ]),
+            ]);
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/SekolahResource.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\SekolahResource\Pages\CreateSekolah;
+use App\Filament\Resources\SekolahResource\Pages\EditSekolah;
+use App\Filament\Resources\SekolahResource\Pages\ListSekolahs;
+use App\Filament\Resources\SekolahResource\Pages\ViewSekolah;
+use App\Models\Sekolah;
+use Filament\Resources\Resource;
+
+class SekolahResource extends Resource
+{
+    protected static ?string $model = Sekolah::class;
+
+    protected static ?string $recordTitleAttribute = 'nama';
+
+    protected static ?string $navigationLabel = 'Instansi';
+
+    protected static ?string $label = 'Instansi';
+
+    protected static ?string $navigationGroup = 'Referensi';
+
+    protected static ?int $navigationSort = 1;
+
+    protected static bool $shouldRegisterNavigation = true;
+
+    protected static ?string $navigationIcon = 'heroicon-o-building-library';
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => ListSekolahs::route('/'),
+            'create' => CreateSekolah::route('/create'),
+            'view' => ViewSekolah::route('/{record}'),
+            'edit' => EditSekolah::route('/{record}/edit'),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/SekretarisResource/Pages/CreateSekretaris.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\SekretarisResource\Pages;
+
+use App\Filament\Concerns\HasPanitiaWizardSteps;
+use App\Filament\Resources\SekretarisResource;
+use Filament\Resources\Pages\CreateRecord;
+use Filament\Resources\Pages\CreateRecord\Concerns\HasWizard;
+
+class CreateSekretaris extends CreateRecord
+{
+    use HasPanitiaWizardSteps;
+    use HasWizard;
+
+    protected static string $resource = SekretarisResource::class;
+
+    protected string $panitiaLabel = 'Sekretaris';
+
+    protected string $panitiaDirectory = 'assets/sekretaris';
+
+    protected function getSteps(): array
+    {
+        return $this->panitiaSteps();
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/SekretarisResource/Pages/EditSekretaris.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\SekretarisResource\Pages;
+
+use App\Filament\Concerns\HasPanitiaWizardSteps;
+use App\Filament\Resources\SekretarisResource;
+use Filament\Resources\Pages\EditRecord;
+use Filament\Resources\Pages\EditRecord\Concerns\HasWizard;
+use Illuminate\Database\Eloquent\Model;
+
+class EditSekretaris extends EditRecord
+{
+    use HasPanitiaWizardSteps;
+    use HasWizard;
+
+    protected static string $resource = SekretarisResource::class;
+
+    protected string $panitiaLabel = 'Sekretaris';
+
+    protected string $panitiaDirectory = 'assets/sekretaris';
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        $updatedRecord = parent::handleRecordUpdate($record, $data);
+        $this->redirect($this->getResource()::getUrl('index'));
+
+        return $updatedRecord;
+    }
+
+    protected function getSteps(): array
+    {
+        return $this->panitiaSteps();
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/SekretarisResource/Pages/ListSekretaris.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\SekretarisResource\Pages;
+
+use App\Filament\Resources\SekretarisResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ListRecords;
+
+class ListSekretaris extends ListRecords
+{
+    protected static string $resource = SekretarisResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\CreateAction::make()
+                ->outlined()
+                ->hiddenLabel()
+                ->icon('heroicon-o-plus'),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/SekretarisResource/Pages/ViewSekretaris.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\SekretarisResource\Pages;
+
+use App\Filament\Resources\SekretarisResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ViewRecord;
+
+class ViewSekretaris extends ViewRecord
+{
+    protected static string $resource = SekretarisResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\EditAction::make(),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/SekretarisResource.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\SekretarisResource\Pages;
+use App\Models\Sekretaris;
+use Filament\Resources\Resource;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Table;
+
+class SekretarisResource extends Resource
+{
+    protected static ?string $model = Sekretaris::class;
+
+    protected static ?string $recordTitleAttribute = 'nama';
+
+    protected static ?string $navigationLabel = 'Sekretaris';
+
+    protected static ?string $label = 'Sekretaris';
+
+    protected static ?string $navigationGroup = 'Administrasi';
+
+    protected static ?int $navigationSort = 3;
+
+    protected static bool $shouldRegisterNavigation = true;
+
+    protected static ?string $navigationIcon = 'heroicon-o-user-circle';
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                ImageColumn::make('berkas_foto')
+                    ->label('Foto')
+                    ->circular()
+                    ->defaultImageUrl('img/avatar.png'),
+
+                TextColumn::make('nama')
+                    ->label('Nama Lengkap')
+                    ->searchable(Sekretaris::count() > 10),
+
+                TextColumn::make('nip')
+                    ->label('NIP'),
+
+                TextColumn::make('tahunPendaftaran.nama')
+                    ->label('Tahun Pendaftaran')
+                    ->sortable(Sekretaris::count() > 10),
+
+                ImageColumn::make('berkas_tte')
+                    ->label('TTE')
+                    ->defaultImageUrl('img/tte.png'),
+
+                TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'Aktif' => 'success',
+                        'Nonaktif' => 'gray',
+                    }),
+
+                TextColumn::make('created_at')
+                    ->label('Dibuat')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+
+                TextColumn::make('updated_at')
+                    ->label('Diubah')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+            ])
+            ->filters([])
+            ->actions([
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
+            ], ActionsPosition::BeforeColumns)
+            ->bulkActions([
+                DeleteBulkAction::make()
+                    ->outlined()
+                    ->hiddenLabel()
+                    ->icon('heroicon-o-trash'),
+            ])
+            ->striped()
+            ->filtersLayout(FiltersLayout::AboveContentCollapsible)
+            ->paginationPageOptions([10, 25, 50]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListSekretaris::route('/'),
+            'create' => Pages\CreateSekretaris::route('/create'),
+            'edit' => Pages\EditSekretaris::route('/{record}/edit'),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/TahunPendaftaranResource/Pages/CreateTahunPendaftaran.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\TahunPendaftaranResource\Pages;
+
+use App\Filament\Resources\TahunPendaftaranResource;
+use Filament\Resources\Pages\CreateRecord;
+
+class CreateTahunPendaftaran extends CreateRecord
+{
+    protected static string $resource = TahunPendaftaranResource::class;
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/TahunPendaftaranResource/Pages/EditTahunPendaftaran.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\TahunPendaftaranResource\Pages;
+
+use App\Filament\Resources\TahunPendaftaranResource;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
+
+class EditTahunPendaftaran extends EditRecord
+{
+    protected static string $resource = TahunPendaftaranResource::class;
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        $updatedRecord = parent::handleRecordUpdate($record, $data);
+        $this->redirect($this->getResource()::getUrl('index'));
+
+        return $updatedRecord;
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/TahunPendaftaranResource/Pages/ListTahunPendaftarans.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\TahunPendaftaranResource\Pages;
+
+use App\Filament\Resources\TahunPendaftaranResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ListRecords;
+
+class ListTahunPendaftarans extends ListRecords
+{
+    protected static string $resource = TahunPendaftaranResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\CreateAction::make()
+                ->outlined()
+                ->hiddenLabel()
+                ->icon('heroicon-o-plus'),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/TahunPendaftaranResource/Pages/ViewTahunPendaftaran.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\TahunPendaftaranResource\Pages;
+
+use App\Filament\Resources\TahunPendaftaranResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ViewRecord;
+
+class ViewTahunPendaftaran extends ViewRecord
+{
+    protected static string $resource = TahunPendaftaranResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\EditAction::make(),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/TahunPendaftaranResource.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\TahunPendaftaranResource\Pages\CreateTahunPendaftaran;
+use App\Filament\Resources\TahunPendaftaranResource\Pages\EditTahunPendaftaran;
+use App\Filament\Resources\TahunPendaftaranResource\Pages\ListTahunPendaftarans;
+use App\Models\JalurPendaftaran;
+use App\Models\TahunPendaftaran;
+use Carbon\Carbon;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Table;
+use Illuminate\Support\HtmlString;
+
+class TahunPendaftaranResource extends Resource
+{
+    protected static ?string $model = TahunPendaftaran::class;
+
+    protected static ?string $recordTitleAttribute = 'nama';
+
+    protected static ?string $navigationLabel = 'Tahun Pendaftaran';
+
+    protected static ?string $label = 'Tahun Pendaftaran';
+
+    protected static ?string $navigationGroup = 'Referensi';
+
+    protected static ?int $navigationSort = 3;
+
+    protected static bool $shouldRegisterNavigation = true;
+
+    protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
+
+    // -------------------------------------------------------------------------
+    // Form Helpers
+    // -------------------------------------------------------------------------
+
+    /**
+     * Section pendaftaran/pengumuman per jalur — visible hanya jika jalur aktif.
+     */
+    private static function jalurSection(string $nama, string $tipe): Section
+    {
+        $namaLower = strtolower($nama);
+        $fieldPrefix = "tanggal_{$tipe}_jalur_{$namaLower}";
+        $label = ucfirst($tipe) === 'Pendaftaran' ? 'pendaftaran' : 'pengumuman';
+
+        return Section::make(ucfirst($tipe)." Jalur {$nama}")
+            ->visible(fn () => JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', $nama)->exists())
+            ->description("Tanggal {$label} untuk jalur {$nama}.")
+            ->schema([
+                DateTimePicker::make("{$fieldPrefix}_mulai")
+                    ->label('Tanggal Mulai '.ucfirst($tipe)." Jalur {$nama}")
+                    ->required()
+                    ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                DateTimePicker::make("{$fieldPrefix}_selesai")
+                    ->label('Tanggal Selesai '.ucfirst($tipe)." Jalur {$nama}")
+                    ->required()
+                    ->validationMessages(['required' => 'Form ini wajib diisi.']),
+            ])
+            ->columns(['sm' => 1, 'md' => 2, 'lg' => 2, 'xl' => 2, '2xl' => 2]);
+    }
+
+    /**
+     * Section tes (Akademik / Praktik) — visible setelah kartu tes diisi.
+     */
+    private static function tesSection(string $nama): Section
+    {
+        $namaLower = strtolower($nama);
+
+        return Section::make("Tes {$nama}")
+            ->visible(fn ($get) => $get('tanggal_penerbitan_kartu_tes_mulai'))
+            ->description("Tanggal tes {$namaLower}.")
+            ->schema([
+                DateTimePicker::make("tanggal_tes_{$namaLower}_mulai")
+                    ->label("Tanggal Mulai Tes {$nama}")
+                    ->required()
+                    ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                DateTimePicker::make("tanggal_tes_{$namaLower}_selesai")
+                    ->label("Tanggal Selesai Tes {$nama}")
+                    ->required()
+                    ->validationMessages(['required' => 'Form ini wajib diisi.']),
+            ])
+            ->columns(['sm' => 1, 'md' => 2, 'lg' => 2, 'xl' => 2, '2xl' => 2]);
+    }
+
+    // -------------------------------------------------------------------------
+    // Table Helpers
+    // -------------------------------------------------------------------------
+
+    /**
+     * Kolom tanggal dengan description hingga-selesai yang berulang di table.
+     */
+    private static function tanggalColumn(
+        string $field,
+        string $label,
+        string $fieldSelesai,
+        string $format = 'd F Y H:i:s'
+    ): TextColumn {
+        return TextColumn::make($field)
+            ->label($label)
+            ->dateTime($format)
+            ->description(
+                fn (TahunPendaftaran $record): string => $record->{$fieldSelesai}
+                    ? 'Hingga: '.Carbon::parse($record->{$fieldSelesai})->translatedFormat($format)
+                    : 'Hingga: (Sekarang)'
+            );
+    }
+
+    // -------------------------------------------------------------------------
+    // Form & Table
+    // -------------------------------------------------------------------------
+
+    public static function form(Form $form): Form
+    {
+        $jalurs = ['Prestasi', 'Reguler', 'Afirmasi', 'Zonasi', 'Mutasi'];
+
+        $jalurSections = collect($jalurs)
+            ->flatMap(fn (string $jalur) => [
+                self::jalurSection($jalur, 'pendaftaran'),
+                self::jalurSection($jalur, 'pengumuman'),
+            ])
+            ->all();
+
+        return $form
+            ->schema([
+                Section::make('Tahun Pendaftaran')
+                    ->description('Data Tahun Pendaftaran.')
+                    ->schema([
+                        TextInput::make('nama')
+                            ->label('Tahun Pendaftaran')
+                            ->required()
+                            ->minLength(9)
+                            ->maxLength(9)
+                            ->placeholder('Contoh: 2025/2026')
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                                'min' => 'Tahun Pendaftaran: Minimal 9 Karakter.',
+                                'max' => 'Tahun Pendaftaran: Maksimal 9 Karakter.',
+                            ]),
+
+                        TextInput::make('kuantitas')
+                            ->label('Kuota Maksimal Registrasi Akun')
+                            ->numeric()
+                            ->postfix('Akun')
+                            ->required()
+                            ->helperText(new HtmlString('<small><i>Kuota maksimal pendaftar yang dapat membuat akun pendaftaran.<sup style="color:red">*</sup></i></small>'))
+                            ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                        Select::make('status')
+                            ->label('Status')
+                            ->options(['Aktif' => 'Aktif', 'Nonaktif' => 'Nonaktif'])
+                            ->default('Aktif')
+                            ->native(false)
+                            ->required()
+                            ->validationMessages(['required' => 'Form ini wajib diisi.']),
+                    ])
+                    ->columns(['sm' => 1, 'md' => 3, 'lg' => 3, 'xl' => 3, '2xl' => 3]),
+
+                Section::make('Daftar Akun')
+                    ->description('Tanggal Daftar Akun PPDB.')
+                    ->schema([
+                        DatePicker::make('tanggal_ppdb_mulai')
+                            ->label('Tanggal Mulai Daftar Akun PPDB')
+                            ->required()
+                            ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                        DatePicker::make('tanggal_ppdb_selesai')
+                            ->label('Tanggal Selesai Daftar Akun PPDB')
+                            ->required()
+                            ->validationMessages(['required' => 'Form ini wajib diisi.']),
+                    ])
+                    ->columns(['sm' => 1, 'md' => 2, 'lg' => 2, 'xl' => 2, '2xl' => 2]),
+
+                Section::make('Penerbitan Kartu Tes')
+                    ->description('Tanggal penerbitan kartu tes.')
+                    ->schema([
+                        DateTimePicker::make('tanggal_penerbitan_kartu_tes_mulai')
+                            ->label('Tanggal Mulai Penerbitan Kartu Tes')
+                            ->live()
+                            ->required()
+                            ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                        DateTimePicker::make('tanggal_penerbitan_kartu_tes_selesai')
+                            ->label('Tanggal Selesai Penerbitan Kartu Tes')
+                            ->required()
+                            ->validationMessages(['required' => 'Form ini wajib diisi.']),
+                    ])
+                    ->columns(['sm' => 1, 'md' => 2, 'lg' => 2, 'xl' => 2, '2xl' => 2]),
+
+                Section::make('Registrasi Berkas')
+                    ->description('Tanggal registrasi berkas.')
+                    ->schema([
+                        DateTimePicker::make('tanggal_registrasi_berkas_mulai')
+                            ->label('Tanggal Mulai Registrasi Berkas')
+                            ->required()
+                            ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                        DateTimePicker::make('tanggal_registrasi_berkas_selesai')
+                            ->label('Tanggal Selesai Registrasi Berkas')
+                            ->required()
+                            ->validationMessages(['required' => 'Form ini wajib diisi.']),
+                    ])
+                    ->columns(['sm' => 1, 'md' => 2, 'lg' => 2, 'xl' => 2, '2xl' => 2]),
+
+                ...$jalurSections,
+
+                self::tesSection('Akademik'),
+                self::tesSection('Praktik'),
+            ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        $jalurs = ['Prestasi', 'Reguler', 'Afirmasi', 'Zonasi', 'Mutasi'];
+
+        $jalurColumns = collect($jalurs)
+            ->flatMap(fn (string $jalur) => [
+                self::tanggalColumn(
+                    'tanggal_pendaftaran_jalur_'.strtolower($jalur).'_mulai',
+                    "Pendaftaran Jalur {$jalur}",
+                    'tanggal_pendaftaran_jalur_'.strtolower($jalur).'_selesai',
+                ),
+                self::tanggalColumn(
+                    'tanggal_pengumuman_jalur_'.strtolower($jalur).'_mulai',
+                    "Pengumuman Jalur {$jalur}",
+                    'tanggal_pengumuman_jalur_'.strtolower($jalur).'_selesai',
+                ),
+            ])
+            ->all();
+
+        return $table
+            ->columns([
+                TextColumn::make('nama')
+                    ->label('Tahun Pendaftaran')
+                    ->searchable(),
+
+                TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'Aktif' => 'success',
+                        'Nonaktif' => 'gray',
+                    }),
+
+                TextColumn::make('kuantitas')
+                    ->label('Kuota')
+                    ->numeric()
+                    ->suffix(' Pendaftar')
+                    ->badge(),
+
+                self::tanggalColumn('tanggal_ppdb_mulai', 'Pendaftaran Akun', 'tanggal_ppdb_selesai', 'd F Y'),
+                self::tanggalColumn('tanggal_penerbitan_kartu_tes_mulai', 'Penerbitan Kartu Tes', 'tanggal_penerbitan_kartu_tes_selesai'),
+                self::tanggalColumn('tanggal_tes_akademik_mulai', 'Tes Akademik', 'tanggal_tes_akademik_selesai'),
+                self::tanggalColumn('tanggal_tes_praktik_mulai', 'Tes Praktik', 'tanggal_tes_praktik_selesai'),
+                self::tanggalColumn('tanggal_registrasi_berkas_mulai', 'Registrasi Berkas', 'tanggal_registrasi_berkas_selesai'),
+
+                ...$jalurColumns,
+
+                TextColumn::make('created_at')
+                    ->label('Dibuat')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+
+                TextColumn::make('updated_at')
+                    ->label('Diubah')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+            ])
+            ->filters([])
+            ->actions([
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
+            ], ActionsPosition::BeforeColumns)
+            ->bulkActions([
+                DeleteBulkAction::make()
+                    ->outlined()
+                    ->hiddenLabel()
+                    ->icon('heroicon-o-trash'),
+            ])
+            ->striped()
+            ->filtersLayout(FiltersLayout::AboveContentCollapsible)
+            ->paginationPageOptions([10, 25, 50]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => ListTahunPendaftarans::route('/'),
+            'create' => CreateTahunPendaftaran::route('/create'),
+            'edit' => EditTahunPendaftaran::route('/{record}/edit'),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/UserResource/Pages/CreateUser.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\UserResource\Pages;
+
+use App\Filament\Resources\UserResource;
+use Filament\Resources\Pages\CreateRecord;
+
+class CreateUser extends CreateRecord
+{
+    protected static string $resource = UserResource::class;
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/UserResource/Pages/EditUser.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\UserResource\Pages;
+
+use App\Filament\Resources\UserResource;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
+
+class EditUser extends EditRecord
+{
+    protected static string $resource = UserResource::class;
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        $updatedRecord = parent::handleRecordUpdate($record, $data);
+        $this->redirect($this->getResource()::getUrl('index'));
+
+        return $updatedRecord;
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/UserResource/Pages/ListUsers.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\UserResource\Pages;
+
+use App\Filament\Resources\UserResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ListRecords;
+
+class ListUsers extends ListRecords
+{
+    protected static string $resource = UserResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\CreateAction::make()
+                ->outlined()
+                ->hiddenLabel()
+                ->icon('heroicon-o-plus'),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/UserResource/Pages/ViewUser.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\UserResource\Pages;
+
+use App\Filament\Resources\UserResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ViewRecord;
+
+class ViewUser extends ViewRecord
+{
+    protected static string $resource = UserResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\EditAction::make(),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/UserResource.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\UserResource\Pages\CreateUser;
+use App\Filament\Resources\UserResource\Pages\EditUser;
+use App\Filament\Resources\UserResource\Pages\ListUsers;
+use App\Models\User;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Fieldset;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
+
+class UserResource extends Resource
+{
+    protected static ?string $model = User::class;
+
+    protected static ?string $recordTitleAttribute = 'name';
+
+    protected static ?string $navigationLabel = 'Pengguna';
+
+    protected static ?string $label = 'Pengguna';
+
+    protected static ?string $navigationGroup = 'Referensi';
+
+    protected static ?int $navigationSort = 9;
+
+    protected static bool $shouldRegisterNavigation = false;
+
+    protected static ?string $navigationIcon = 'heroicon-o-users';
+
+    public static function form(Form $form): Form
+    {
+        $isCreate = $form->getRecord() === null;
+
+        return $form
+            ->schema([
+                Fieldset::make('Pengguna')
+                    ->schema([
+                        TextInput::make('name')
+                            ->label('Nama Lengkap')
+                            ->required()
+                            ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                        TextInput::make('username')
+                            ->label('Nomor Induk Siswa Nasional (NISN)')
+                            ->unique(ignoreRecord: true)
+                            ->rule(fn ($record) => $record === null
+                                ? 'unique:users,username'
+                                : 'unique:users,username,'.$record->id)
+                            ->dehydrateStateUsing(fn ($state) => $state ?: null)
+                            ->when(
+                                $isCreate,
+                                fn (TextInput $field) => $field
+                                    ->required()
+                                    ->numeric()
+                                    ->minLength(10)
+                                    ->maxLength(10)
+                            )
+                            ->validationMessages([
+                                'max_digits' => 'NISN: Masukkan maksimal 10 Angka.',
+                                'min_digits' => 'NISN: Masukkan minimal 10 Angka.',
+                                'unique' => 'NISN: Nomor ini sudah pernah di isi.',
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
+
+                        TextInput::make('email')
+                            ->label('Email')
+                            ->email()
+                            ->unique(ignoreRecord: true)
+                            ->rule(fn ($record) => $record === null
+                                ? 'unique:users,email'
+                                : 'unique:users,email,'.$record->id)
+                            ->dehydrateStateUsing(fn ($state) => $state ?: null)
+                            ->disabledOn('edit')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Form ini wajib diisi.',
+                                'unique' => 'Email: Email ini sudah pernah di isi.',
+                            ]),
+
+                        TextInput::make('password')
+                            ->label('Password')
+                            ->password()
+                            ->required(fn ($record) => $record === null)
+                            ->dehydrateStateUsing(fn ($state, $record) => $state ? bcrypt($state) : $record->password),
+
+                        DateTimePicker::make('email_verified_at')
+                            ->label('Diverifikasi')
+                            ->default(now()),
+
+                        Select::make('roles')
+                            ->label('Peran')
+                            ->relationship('roles', 'name')
+                            ->multiple()
+                            ->preload()
+                            ->searchable()
+                            ->when(
+                                $isCreate,
+                                fn (Select $field) => $field
+                                    ->required()
+                                    ->validationMessages(['required' => 'Form ini wajib diisi.'])
+                            ),
+
+                        Select::make('status')
+                            ->label('Status')
+                            ->options(['Aktif' => 'Aktif', 'Nonaktif' => 'Nonaktif'])
+                            ->default('Aktif')
+                            ->native(false)
+                            ->required()
+                            ->validationMessages(['required' => 'Form ini wajib diisi.']),
+
+                        FileUpload::make('avatar')
+                            ->label('Avatar')
+                            ->image()
+                            ->minSize(5)
+                            ->maxSize(100)
+                            ->visibility('private')
+                            ->directory('assets/avatar')
+                            ->columnSpan(2),
+                    ])
+                    ->columns(['sm' => 1, 'md' => 3, 'lg' => 3, 'xl' => 3, '2xl' => 3]),
+            ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                ImageColumn::make('avatar')
+                    ->label('Avatar')
+                    ->circular()
+                    ->defaultImageUrl('img/avatar.png'),
+
+                TextColumn::make('name')
+                    ->label('Nama Lengkap')
+                    ->searchable(),
+
+                TextColumn::make('email')
+                    ->label('Email')
+                    ->searchable(),
+
+                TextColumn::make('email_verified_at')
+                    ->label('Diverifikasi')
+                    ->dateTime('d F Y H:i:s')
+                    ->sortable(),
+
+                TextColumn::make('roles.name')
+                    ->label('Peran')
+                    ->formatStateUsing(fn (string $state): string => Str::headline($state))
+                    ->badge()
+                    ->sortable(),
+
+                TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'Aktif' => 'success',
+                        'Nonaktif' => 'gray',
+                    })
+                    ->icon(fn (string $state): string => match ($state) {
+                        'Aktif' => 'heroicon-o-check-circle',
+                        'Nonaktif' => 'heroicon-o-x-mark',
+                    })
+                    ->sortable(),
+
+                TextColumn::make('created_at')
+                    ->label('Dibuat')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+
+                TextColumn::make('updated_at')
+                    ->label('Diubah')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip(),
+            ])
+            ->filters([
+                TrashedFilter::make(),
+
+                SelectFilter::make('role')
+                    ->label('Peran')
+                    ->relationship('roles', 'name')
+                    ->visible(Auth::user()->username === 'super_admin'),
+            ])
+            ->actions([
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                    ForceDeleteAction::make(),
+                    RestoreAction::make(),
+                ])->hidden(fn ($record) => $record->username === 'super_admin'),
+            ], ActionsPosition::BeforeColumns)
+            ->striped()
+            ->filtersLayout(FiltersLayout::AboveContentCollapsible)
+            ->paginationPageOptions([10, 25, 50]);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([SoftDeletingScope::class]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => ListUsers::route('/'),
+            'create' => CreateUser::route('/create'),
+            'edit' => EditUser::route('/{record}/edit'),
+        ];
+    }
+}
+
+```
+
+---
+
+### 📄 `./app/Filament/Resources/UserResource/Widgets/UserRegisters.php`
+
+```php
+<?php
+
+namespace App\Filament\Resources\UserResource\Widgets;
+
+use App\Models\User;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
+use Filament\Widgets\TableWidget;
+use Illuminate\Support\Facades\Auth;
+
+class UserRegisters extends TableWidget
+{
+    protected static ?int $sort = 2;
+
+    protected static bool $isLazy = false;
+
+    protected function getTableHeading(): string
+    {
+        return 'Log Akun';
+    }
+
+    public static function canView(): bool
+    {
+        return ! Auth::user()->hasRole('calon_siswa');
+    }
+
+    public function table(Table $table): Table
+    {
+        return $table
+            ->query(
+                User::whereHas('roles', fn($q) => $q->where('name', 'calon_siswa'))
+                    ->latest('email_verified_at')
+            )
+            ->columns([
+                ImageColumn::make('avatar')
+                    ->label('Avatar')
+                    ->circular()
+                    ->defaultImageUrl('/img/avatar.png'),
+
+                TextColumn::make('name')
+                    ->label('Nama Lengkap')
+                    ->searchable(),
+
+                TextColumn::make('username')
+                    ->label('NISN')
+                    ->searchable(),
+
+                TextColumn::make('telepon')
+                    ->label('WhatsApp'),
+
+                TextColumn::make('email_verified_at')
+                    ->label('Diverifikasi')
+                    ->dateTime('d F Y H:i:s')
+                    ->sinceTooltip()
+                    ->sortable(),
+
+                TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'Aktif'    => 'success',
+                        'Nonaktif' => 'gray',
+                        default    => 'gray',
+                    })
+                    ->icon(fn(string $state): string => match ($state) {
+                        'Aktif'    => 'heroicon-o-check-circle',
+                        'Nonaktif' => 'heroicon-o-x-mark',
+                        default    => 'heroicon-o-x-mark',
+                    }),
+            ])
+            ->striped()
+            ->paginationPageOptions([5]);
+    }
+}
+
+```
+
+---
+
+## 📤 Filament Exports
+
+### 📄 `./app/Filament/Exports/CalonSiswaExporter.php`
+
+```php
+<?php
+
+namespace App\Filament\Exports;
+
+use App\Models\CalonSiswa;
+use Filament\Actions\Exports\ExportColumn;
+use Filament\Actions\Exports\Exporter;
+use Filament\Actions\Exports\Models\Export;
+
+class CalonSiswaExporter extends Exporter
+{
+    protected static ?string $model = CalonSiswa::class;
+
+    public static function getColumns(): array
+    {
+        return [
+            ExportColumn::make('nisn')
+                ->label('NISN'),
+            ExportColumn::make('nama')
+                ->label('Nama Lengkap'),
+            ExportColumn::make('sekolahAsal.nama')
+                ->label('Sekolah Asal'),
+            ExportColumn::make('sekolahAsal.npsn')
+                ->label('NPSN Sekolah Asal'),
+            ExportColumn::make('sekolahAsal.nss')
+                ->label('NSS/NSM Sekolah Asal'),
+            ExportColumn::make('jalurPendaftaran.nama')
+                ->label('Jalur Pendaftaran'),
+            ExportColumn::make('nik')
+                ->label('NIK'),
+            ExportColumn::make('kk')
+                ->label('KK'),
+            ExportColumn::make('tempat_lahir')
+                ->label('Tempat Lahir'),
+            ExportColumn::make('tanggal_lahir')
+                ->label('Tanggal Lahir'),
+            ExportColumn::make('tahun_lulus')
+                ->label('Tahun Lulus'),
+            ExportColumn::make('jenis_kelamin')
+                ->label('Jenis Kelamin'),
+            ExportColumn::make('golongan_darah')
+                ->label('Golongan Darah'),
+            ExportColumn::make('agama')
+                ->label('Agama'),
+            ExportColumn::make('anak_ke')
+                ->label('Anak Ke'),
+            ExportColumn::make('jumlah_saudara')
+                ->label('Jumlah Saudara'),
+            ExportColumn::make('tinggal_bersama')
+                ->label('Tinggal Bersama'),
+            ExportColumn::make('jarak_ke_sekolah')
+                ->label('Jarak Ke Sekolah'),
+            ExportColumn::make('disabilitas')
+                ->label('Disabilitas'),
+            ExportColumn::make('tinggi_badan')
+                ->label('Tinggi Badan'),
+            ExportColumn::make('berat_badan')
+                ->label('Berat Badan'),
+            ExportColumn::make('no_kip')
+                ->label('Nomor KIP'),
+            ExportColumn::make('no_kks')
+                ->label('Nomor KKS'),
+            ExportColumn::make('no_pkh')
+                ->label('Nomor PKH'),
+            ExportColumn::make('siswa_telepon')
+                ->label('Nomor Telepon'),
+
+            // // Alamat Peserta
+            ExportColumn::make('siswa_alamat')
+                ->label('Alamat Peserta'),
+            ExportColumn::make('siswaKelurahan.nama')
+                ->label('Kelurahan/Desa Peserta'),
+            ExportColumn::make('siswaKecamatan.nama')
+                ->label('Kecamatan Peserta'),
+            ExportColumn::make('siswaKabupaten.nama')
+                ->label('Kabupaten/Kota Peserta'),
+            ExportColumn::make('siswaProvinsi.nama')
+                ->label('Provinsi Peserta'),
+            ExportColumn::make('siswaNegara.nama')
+                ->label('Negara Peserta'),
+            ExportColumn::make('siswaKelurahan.kode_pos')
+                ->label('Kode Pos Peserta'),
+
+            // // Lainnya
+            ExportColumn::make('prestasi.jenis')
+                ->label('Jenis Prestasi'),
+            ExportColumn::make('prestasi.nama')
+                ->label('Nama Prestasi'),
+            ExportColumn::make('prestasi.tingkat')
+                ->label('Tingkat Prestasi'),
+            ExportColumn::make('prestasi.kategori')
+                ->label('Kategori Prestasi'),
+            ExportColumn::make('prestasi.peringkat')
+                ->label('Peringkat Prestasi'),
+            ExportColumn::make('ekstrakurikuler.nama')
+                ->label('Peminatan Ekstrakurikuler'),
+            ExportColumn::make('mataPelajaran.nama')
+                ->label('Peminatan Mata Pelajaran'),
+
+            // // Berkas
+            ExportColumn::make('berkas_foto')
+                ->label('Foto'),
+            ExportColumn::make('berkas_kk')
+                ->label('Berkas KK'),
+            ExportColumn::make('berkas_akta')
+                ->label('Berkas Akta'),
+            ExportColumn::make('berkas_kip')
+                ->label('Berkas KIP'),
+            ExportColumn::make('berkas_kks')
+                ->label('Berkas KKS'),
+            ExportColumn::make('berkas_pkh')
+                ->label('Berkas PKH'),
+            ExportColumn::make('berkas_nisn')
+                ->label('Berkas NISN'),
+            ExportColumn::make('berkas_skbb')
+                ->label('Berkas SKBB'),
+            ExportColumn::make('berkas_skab')
+                ->label('Berkas SKAB'),
+            ExportColumn::make('berkas_prestasi')
+                ->label('Berkas Prestasi'),
+
+            // // Data Ibu
+            ExportColumn::make('ibu_nama')
+                ->label('Nama Ibu'),
+            ExportColumn::make('ibu_nik')
+                ->label('NIK Ibu'),
+            ExportColumn::make('ibu_telepon')
+                ->label('Nomor Telepon Ibu'),
+            ExportColumn::make('ibu_pendidikan')
+                ->label('Pendidikan Ibu'),
+            ExportColumn::make('ibu_pekerjaan')
+                ->label('Pekerjaan Ibu'),
+            ExportColumn::make('ibu_penghasilan')
+                ->label('Penghasilan Bulanan Ibu'),
+            ExportColumn::make('ibu_status')
+                ->label('Status Ibu'),
+            ExportColumn::make('ibu_alamat')
+                ->label('Alamat Ibu'),
+            ExportColumn::make('ibuKelurahan.nama')
+                ->label('Kelurahan/Desa Ibu'),
+            ExportColumn::make('ibuKecamatan.nama')
+                ->label('Kecamatan Ibu'),
+            ExportColumn::make('ibuKabupaten.nama')
+                ->label('Kabupaten/Kota Ibu'),
+            ExportColumn::make('ibuProvinsi.nama')
+                ->label('Provinsi Ibu'),
+            ExportColumn::make('ibuNegara.nama')
+                ->label('Negara Ibu'),
+            ExportColumn::make('ibuKelurahan.kode_pos')
+                ->label('Kode Pos Ibu'),
+
+            // // Data Ayah
+            ExportColumn::make('ayah_nama')
+                ->label('Nama Ayah'),
+            ExportColumn::make('ayah_nik')
+                ->label('NIK Ayah'),
+            ExportColumn::make('ayah_telepon')
+                ->label('Nomor Telepon Ayah'),
+            ExportColumn::make('ayah_pendidikan')
+                ->label('Pendidikan Ayah'),
+            ExportColumn::make('ayah_pekerjaan')
+                ->label('Pekerjaan Ayah'),
+            ExportColumn::make('ayah_penghasilan')
+                ->label('Penghasilan Bulanan Ayah'),
+            ExportColumn::make('ayah_status')
+                ->label('Status Ayah'),
+            ExportColumn::make('ayah_alamat')
+                ->label('Alamat Ayah'),
+            ExportColumn::make('ayahKelurahan.nama')
+                ->label('Kelurahan/Desa Ayah'),
+            ExportColumn::make('ayahKecamatan.nama')
+                ->label('Kecamatan Ayah'),
+            ExportColumn::make('ayahKabupaten.nama')
+                ->label('Kabupaten/Kota Ayah'),
+            ExportColumn::make('ayahProvinsi.nama')
+                ->label('Provinsi Ayah'),
+            ExportColumn::make('ayahNegara.nama')
+                ->label('Negara Ayah'),
+            ExportColumn::make('ayahKelurahan.kode_pos')
+                ->label('Kode Pos Ayah'),
+
+            // // Data Wali
+            ExportColumn::make('wali_nama')
+                ->label('Nama Wali'),
+            ExportColumn::make('wali_nik')
+                ->label('NIK Wali'),
+            ExportColumn::make('wali_telepon')
+                ->label('Nomor Telepon Wali'),
+            ExportColumn::make('wali_pendidikan')
+                ->label('Pendidikan Wali'),
+            ExportColumn::make('wali_pekerjaan')
+                ->label('Pekerjaan Wali'),
+            ExportColumn::make('wali_penghasilan')
+                ->label('Penghasilan Wali'),
+            ExportColumn::make('wali_status')
+                ->label('Status Wali'),
+            ExportColumn::make('wali_alamat')
+                ->label('Alamat Wali'),
+            ExportColumn::make('waliKelurahan.nama')
+                ->label('Kelurahan/Desa Wali'),
+            ExportColumn::make('waliKecamatan.nama')
+                ->label('Kecamatan Wali'),
+            ExportColumn::make('waliKabupaten.nama')
+                ->label('Kabupaten/Kota Wali'),
+            ExportColumn::make('waliProvinsi.nama')
+                ->label('Provinsi Wali'),
+            ExportColumn::make('waliNegara.nama')
+                ->label('Negara Wali'),
+            ExportColumn::make('waliKelurahan.kode_pos')
+                ->label('Kode Pos Wali'),
+
+            // Jadwal Tes
+            ExportColumn::make('tes_sesi')
+                ->label('Sesi Tes'),
+            ExportColumn::make('tes_ruang')
+                ->label('Ruang Tes'),
+            ExportColumn::make('tes_akademik')
+                ->label('Tanggal Tes Akademik'),
+            ExportColumn::make('tes_praktik')
+                ->label('Tanggal Tes Praktik'),
+
+            // Nilai Tes
+            ExportColumn::make('bobot_nilai_akademik')
+                ->label('Bobot Nilai Tes Akademik'),
+            ExportColumn::make('bobot_nilai_praktik')
+                ->label('Bobot Nilai Tes Praktik'),
+            ExportColumn::make('nilai_akademik')
+                ->label('Nilai Tes Akademik'),
+            ExportColumn::make('nilai_praktik')
+                ->label('Nilai Tes Praktik'),
+            ExportColumn::make('status_pendaftaran')
+                ->label('Status Pendaftaran'),
+            ExportColumn::make('kelas_id')
+                ->label('Kelas'),
+            // Timestamp
+            // ExportColumn::make('created_at')
+            //     ->label('Dibuat'),
+            // ExportColumn::make('updated_at')
+            //     ->label('Diubah'),
+            // ExportColumn::make('deleted_at')
+            //     ->label('Dihapus'),
+        ];
+    }
+
+    public static function getCompletedNotificationBody(Export $export): string
+    {
+        $body = 'Your calon siswa export has completed and '.number_format($export->successful_rows).' '.str('row')->plural($export->successful_rows).' exported.';
+
+        if ($failedRowsCount = $export->getFailedRowsCount()) {
+            $body .= ' '.number_format($failedRowsCount).' '.str('row')->plural($failedRowsCount).' failed to export.';
+        }
+
+        return $body;
+    }
+}
+
+```
+
+---
+
+## 📥 Filament Imports
+
+### 📄 `./app/Filament/Imports/CalonSiswaImporter.php`
+
+```php
+<?php
+
+namespace App\Filament\Imports;
+
+use App\Models\CalonSiswa;
+use Filament\Actions\Imports\ImportColumn;
+use Filament\Actions\Imports\Importer;
+use Filament\Actions\Imports\Models\Import;
+
+class CalonSiswaImporter extends Importer
+{
+    protected static ?string $model = CalonSiswa::class;
+
+    public static function getColumns(): array
+    {
+        return [
+            ImportColumn::make('nisn')
+                ->label('NISN')
+                ->requiredMapping()
+                ->rules(['required', 'max:10']),
+
+            ImportColumn::make('nama')
+                ->label('Nama Lengkap')
+                ->requiredMapping()
+                ->rules(['required', 'max:50']),
+
+            ImportColumn::make('tes_sesi')
+                ->label('Sesi Tes')
+                ->rules(['nullable', 'max:50']),
+
+            ImportColumn::make('tes_ruang')
+                ->label('Ruang Tes')
+                ->rules(['nullable', 'max:50']),
+
+            ImportColumn::make('tes_akademik')
+                ->label('Tanggal Tes Akademik')
+                ->rules(['nullable', 'date']),
+
+            ImportColumn::make('tes_praktik')
+                ->label('Tanggal Tes Praktik')
+                ->rules(['nullable', 'date']),
+
+            ImportColumn::make('bobot_nilai_akademik')
+                ->label('Bobot Nilai Akademik')
+                ->numeric()
+                ->rules(['nullable', 'integer']),
+
+            ImportColumn::make('bobot_nilai_praktik')
+                ->label('Bobot Nilai Praktik')
+                ->numeric()
+                ->rules(['nullable', 'integer']),
+
+            ImportColumn::make('nilai_akademik')
+                ->label('Nilai Akademik')
+                ->numeric()
+                ->rules(['nullable', 'integer']),
+
+            ImportColumn::make('nilai_praktik')
+                ->label('Nilai Praktik')
+                ->numeric()
+                ->rules(['nullable', 'integer']),
+
+            ImportColumn::make('status_pendaftaran')
+                ->label('Status Pendaftaran')
+                ->rules(['nullable', 'in:Diproses,Berkas Tidak Lengkap,Diverifikasi,Ditolak,Diterima,Tidak Diterima,Diterima Di Kelas Reguler,Diterima Di Kelas Unggulan']),
+
+            ImportColumn::make('kelas')
+                ->label('Kelas')
+                ->relationship('kelas', 'nama')
+                ->rules(['nullable', 'exists:kelas,nama']),
+        ];
+    }
+
+    public function resolveRecord(): ?CalonSiswa
+    {
+        // Update existing record jika NISN sudah ada,
+        // buat baru jika belum — bypass global scope agar
+        // bisa update data lintas tahun pendaftaran
+        return CalonSiswa::withoutGlobalScopes()
+            ->firstOrNew(['nisn' => $this->data['nisn']]);
+    }
+
+    public static function getCompletedNotificationBody(Import $import): string
+    {
+        $body = 'Import calon siswa selesai. '
+            .number_format($import->successful_rows).' '
+            .str('baris')->plural($import->successful_rows)
+            .' berhasil diimport.';
+
+        if ($failedRowsCount = $import->getFailedRowsCount()) {
+            $body .= ' '.number_format($failedRowsCount).' '
+                .str('baris')->plural($failedRowsCount)
+                .' gagal diimport.';
+        }
+
+        return $body;
     }
 }
 
@@ -5094,7 +14693,12 @@ class ForgotPasswordCustom extends SimplePage implements HasForms
             ."*{$otp}*\n\n"
             .'Kode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.';
 
-        app(WhatsAppService::class)->send($user->telepon, $message);
+        app(WhatsAppService::class)->send(
+            phone: $user->telepon,
+            message: $message,
+            minDelay: 1,
+            maxDelay: 5,
+        );
 
         session(['reset_otp_user_id' => $user->id]);
 
@@ -5283,7 +14887,12 @@ class NewPassword extends SimplePage implements HasForms
             ."Password akun PPDB MTsN 1 Pandeglang Anda telah berhasil diubah.\n\n"
             .'Jika Anda tidak merasa melakukan perubahan ini, segera hubungi panitia PPDB.';
 
-        app(WhatsAppService::class)->send($user->telepon, $message);
+        app(WhatsAppService::class)->send(
+            phone: $user->telepon,
+            message: $message,
+            minDelay: 1,
+            maxDelay: 5,
+        );
 
         Notification::make()->title('Password berhasil diubah.')->body('Silakan login dengan password baru Anda.')->success()->send();
 
@@ -5508,7 +15117,12 @@ class RegisterCustom extends Register
             ."*{$otp}*\n\n"
             .'Kode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.';
 
-        app(WhatsAppService::class)->send($user->telepon, $message);
+        app(WhatsAppService::class)->send(
+            phone: $user->telepon,
+            message: $message,
+            minDelay: 1,   // OTP: kirim cepat
+            maxDelay: 5,
+        );
 
         session(['otp_user_id' => $user->id]);
 
@@ -5638,7 +15252,13 @@ class ResetPasswordOtp extends SimplePage implements HasForms
         Redis::setex($cooldownKey, 60, 1);
 
         $message = "Halo {$user->name},\n\nKode OTP baru reset password PPDB MTsN 1 Pandeglang Anda:\n\n*{$otp}*\n\nKode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.";
-        app(WhatsAppService::class)->send($user->telepon, $message);
+
+        app(WhatsAppService::class)->send(
+            phone: $user->telepon,
+            message: $message,
+            minDelay: 1,
+            maxDelay: 5,
+        );
 
         Notification::make()->title('Kode OTP baru telah dikirim ke WhatsApp Anda.')->success()->send();
     }
@@ -5786,7 +15406,12 @@ class VerifikasiOtp extends SimplePage implements HasForms
         Redis::setex($cooldownKey, 60, 1);
 
         $message = "Halo {$user->name},\n\nKode OTP baru verifikasi akun PPDB MTsN 1 Pandeglang Anda:\n\n*{$otp}*\n\nKode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.";
-        app(WhatsAppService::class)->send($user->telepon, $message);
+        app(WhatsAppService::class)->send(
+            phone: $user->telepon,
+            message: $message,
+            minDelay: 1,
+            maxDelay: 5,
+        );
 
         Notification::make()->title('Kode OTP baru telah dikirim ke WhatsApp Anda.')->success()->send();
     }
@@ -6896,6 +16521,48 @@ class AdminPanelProvider extends PanelProvider
 
 ## 🧱 App (Other)
 
+### 📄 `./app/Jobs/SendWhatsAppJob.php`
+
+```php
+<?php
+
+namespace App\Jobs;
+
+use App\Services\WhatsAppService;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
+
+class SendWhatsAppJob implements ShouldQueue
+{
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    public int $tries = 3;
+
+    public int $backoff = 60;
+
+    public function __construct(
+        public readonly string $phone,
+        public readonly string $message,
+    ) {}
+
+    public function handle(WhatsAppService $wa): void
+    {
+        $wa->sendDirect($this->phone, $this->message);
+    }
+
+    public function tags(): array
+    {
+        return ['whatsapp', 'phone:'.$this->phone];
+    }
+}
+
+```
+
+---
+
 ### 📄 `./app/Observers/CalonSiswaObserver.php`
 
 ```php
@@ -6944,28 +16611,8 @@ class CalonSiswaObserver
 
         $pesan = null;
 
-        // --- Prioritas: status_pendaftaran lebih spesifik, dihandle duluan ---
-
         if ($pendaftaranBerubah) {
             $pesan = match ($model->status_pendaftaran) {
-                'Berkas Tidak Lengkap' => "⚠️ *Berkas Tidak Lengkap*\n\n"
-                    ."Halo, *{$model->nama}*!\n"
-                    ."Berkas pendaftaran kamu dinyatakan *tidak lengkap*.\n"
-                    ."Segera lengkapi berkas melalui sistem PPDB.\n\n"
-                    ."📋 No. Pendaftaran : *{$model->nomor_pendaftaran}*\n"
-                    ."📄 Status Formulir : *{$model->status_formulir}*\n"
-                    ."📌 Status Pendaftaran : *{$model->status_pendaftaran}*\n"
-                    .'_MTsN 1 Pandeglang_',
-
-                'Diverifikasi' => "🔍 *Berkas Diverifikasi*\n\n"
-                    ."Halo, *{$model->nama}*!\n"
-                    ."Berkas pendaftaran kamu telah *diverifikasi*.\n"
-                    ."Tunggu pengumuman selanjutnya.\n\n"
-                    ."📋 No. Pendaftaran : *{$model->nomor_pendaftaran}*\n"
-                    ."📄 Status Formulir : *{$model->status_formulir}*\n"
-                    ."📌 Status Pendaftaran : *{$model->status_pendaftaran}*\n"
-                    .'_MTsN 1 Pandeglang_',
-
                 'Diterima', 'Diterima Di Kelas Reguler', 'Diterima Di Kelas Unggulan' => "🎉 *Selamat, Kamu Diterima!*\n\n"
                     ."Halo, *{$model->nama}*!\n"
                     ."Kamu dinyatakan *{$model->status_pendaftaran}* di MTsN 1 Pandeglang.\n\n"
@@ -6988,10 +16635,17 @@ class CalonSiswaObserver
             };
         }
 
-        // --- Fallback: hanya status_formulir yang berubah ---
-
         if (! $pesan && $formulirBerubah) {
             $pesan = match ($model->status_formulir) {
+                'Berkas Tidak Lengkap' => "⚠️ *Berkas Tidak Lengkap*\n\n"
+                    ."Halo, *{$model->nama}*!\n"
+                    ."Berkas pendaftaran kamu dinyatakan *tidak lengkap*.\n"
+                    ."Segera lengkapi berkas melalui sistem PPDB.\n\n"
+                    ."📋 No. Pendaftaran : *{$model->nomor_pendaftaran}*\n"
+                    ."📄 Status Formulir : *{$model->status_formulir}*\n"
+                    ."📌 Status Pendaftaran : *{$model->status_pendaftaran}*\n"
+                    .'_MTsN 1 Pandeglang_',
+
                 'Disetujui' => "✅ *Formulir Disetujui*\n\n"
                     ."Halo, *{$model->nama}*!\n"
                     ."Formulir pendaftaran kamu telah *disetujui* oleh panitia.\n\n"
@@ -7019,7 +16673,7 @@ class CalonSiswaObserver
     }
 
     // -------------------------------------------------------------------------
-    // Helper: ambil telepon dari user terkait lalu kirim
+    // Helper
     // -------------------------------------------------------------------------
 
     private function kirim(CalonSiswa $model, string $pesan): void
@@ -7031,7 +16685,8 @@ class CalonSiswaObserver
             return;
         }
 
-        $this->wa->send($telepon, $pesan);
+        // Delay lebih panjang untuk notifikasi massal (bulk update)
+        $this->wa->send($telepon, $pesan, minDelay: 5, maxDelay: 60);
     }
 }
 
@@ -7213,8 +16868,6 @@ return new class extends Migration
             $table->integer('nilai_praktik')->nullable();
             $table->enum('status_pendaftaran', [
                 'Diproses',
-                'Berkas Tidak Lengkap',
-                'Diverifikasi',
                 'Tidak Diterima',
                 'Diterima',
                 'Diterima Di Kelas Reguler',
@@ -7222,6 +16875,7 @@ return new class extends Migration
             ])->default('Diproses')->nullable();
             $table->enum('status_formulir', [
                 'Diproses',
+                'Berkas Tidak Lengkap',
                 'Disetujui',
                 'Ditolak',
             ])->default('Diproses');
@@ -8416,6 +18070,40 @@ return new class extends Migration
 
 ## 🛣️ Routes
 
+### 📄 `./routes/api.php`
+
+```php
+<?php
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+
+// Route::get('/user', function (Request $request) {
+//     return $request->user();
+// })->middleware('auth:sanctum');
+
+```
+
+---
+
+### 📄 `./routes/console.php`
+
+```php
+<?php
+
+use Illuminate\Foundation\Console\ClosureCommand;
+use Illuminate\Foundation\Inspiring;
+use Illuminate\Support\Facades\Artisan;
+
+Artisan::command('inspire', function () {
+    /** @var ClosureCommand $this */
+    $this->comment(Inspiring::quote());
+})->purpose('Display an inspiring quote');
+
+```
+
+---
+
 ### 📄 `./routes/web.php`
 
 ```php
@@ -8441,6 +18129,1215 @@ Route::middleware('web')->group(function () {
     Route::get('/new-password', NewPassword::class)
         ->name('otp.new-password');
 });
+
+```
+
+---
+
+## 🖼️ Views
+
+### 📄 `./resources/views/filament/pages/auth/forgot-password-custom.blade.php`
+
+```blade
+<x-filament-panels::page.simple>
+    <x-filament-panels::form wire:submit="kirim">
+        {{ $this->form }}
+
+        <x-filament::button type="submit" size="lg" class="w-full">
+            Kirim Kode OTP
+        </x-filament::button>
+    </x-filament-panels::form>
+
+    <div class="mt-6 text-sm text-center text-gray-600 dark:text-gray-400">
+        Sudah ingat password?
+        <a
+            href="{{ filament()->getLoginUrl() }}"
+            class="font-semibold transition duration-200 text-primary-600 hover:text-primary-500 hover:underline dark:text-primary-400 dark:hover:text-primary-300"
+        >
+            Kembali ke Login
+        </a>
+    </div>
+</x-filament-panels::page.simple>
+
+```
+
+---
+
+### 📄 `./resources/views/filament/pages/auth/new-password.blade.php`
+
+```blade
+<x-filament-panels::page.simple>
+    <x-filament-panels::form wire:submit="simpanPassword">
+        {{ $this->form }}
+
+        <x-filament::button type="submit" size="lg" class="w-full">
+            Simpan Password Baru
+        </x-filament::button>
+    </x-filament-panels::form>
+
+    <div class="mt-6 text-sm text-center">
+        <a
+            href="{{ route('otp.forgot-password') }}"
+            class="font-medium text-gray-500 transition duration-200 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+        >
+            &larr; Kembali
+        </a>
+    </div>
+</x-filament-panels::page.simple>
+
+```
+
+---
+
+### 📄 `./resources/views/filament/pages/auth/reset-password-otp.blade.php`
+
+```blade
+<x-filament-panels::page.simple>
+    <x-filament-panels::form wire:submit="verifikasiOtp">
+        {{ $this->form }}
+
+        <x-filament::button type="submit" size="lg" class="w-full">
+            Verifikasi OTP
+        </x-filament::button>
+    </x-filament-panels::form>
+
+    <div class="mt-6 space-y-4 text-sm text-center text-gray-600 dark:text-gray-400">
+        <div>
+            Belum menerima kode OTP?
+            <button
+                wire:click="resend"
+                wire:loading.attr="disabled"
+                wire:loading.class="opacity-50 cursor-not-allowed"
+                type="button"
+                class="font-semibold transition duration-200 text-primary-600 hover:text-primary-500 hover:underline dark:text-primary-400 dark:hover:text-primary-300"
+            >
+                Kirim ulang
+            </button>
+        </div>
+
+        <div>
+            <a
+                href="{{ route('otp.forgot-password') }}"
+                class="inline-block font-medium text-gray-500 transition duration-200 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+            >
+                &larr; Kembali
+            </a>
+        </div>
+    </div>
+</x-filament-panels::page.simple>
+
+```
+
+---
+
+### 📄 `./resources/views/filament/pages/auth/verifikasi-otp.blade.php`
+
+```blade
+<x-filament-panels::page.simple>
+    <x-filament-panels::form wire:submit="verifikasi">
+        {{ $this->form }}
+
+        <x-filament::button type="submit" size="lg" class="w-full">
+            Verifikasi
+        </x-filament::button>
+    </x-filament-panels::form>
+
+    <div class="mt-6 text-sm text-center text-gray-600 dark:text-gray-400">
+        Belum menerima kode OTP?
+        <button
+            wire:click="resend"
+            wire:loading.attr="disabled"
+            wire:loading.class="opacity-50 cursor-not-allowed"
+            type="button"
+            class="font-semibold transition duration-200 text-primary-600 hover:text-primary-500 hover:underline dark:text-primary-400 dark:hover:text-primary-300"
+        >
+            Kirim ulang
+        </button>
+    </div>
+</x-filament-panels::page.simple>
+
+```
+
+---
+
+### 📄 `./resources/views/formulir.blade.php`
+
+```blade
+@php
+    use Illuminate\Support\Facades\Storage;
+
+    $isJalurPrestasi = optional($record->jalurPendaftaran)->nama === 'Prestasi';
+    $jenisKelamin    = $record->jenis_kelamin === 'Pria' ? 'Laki-laki' : 'Perempuan';
+    $fotoUrl         = $record->berkas_foto ? Storage::url($record->berkas_foto) : null;
+    $qrPayload       = url('/admin/formulir/' . $record->id);
+    $isDraft         = $record->status_formulir !== 'Disetujui';
+    $kota            = ucwords(strtolower(optional($instansi?->kabupaten)->nama ?? 'Pandeglang'));
+
+    $alamatSiswa = collect([
+        $record->siswa_alamat, optional($record->siswaKelurahan)->nama,
+        optional($record->siswaKecamatan)->nama, optional($record->siswaKabupaten)->nama,
+        optional($record->siswaProvinsi)->nama,
+    ])->filter()->implode(', ');
+
+    $biodata = [
+        ['No. Pendaftaran', $record->nomor_pendaftaran ?? '-'],
+        ['Nama Lengkap', strtoupper($record->nama ?? '-')],
+        ['Jalur Pendaftaran', strtoupper(optional($record->jalurPendaftaran)->nama ?? '-')],
+        ['NISN / NIK', ($record->nisn ?? '-') . '  /  ' . ($record->nik ?? '-')],
+        ['Tempat, Tgl Lahir', ucwords(strtolower($record->tempat_lahir ?? '')) . ', ' . ($record->tanggal_lahir ? date('d F Y', strtotime($record->tanggal_lahir)) : '-')],
+        ['Jenis Kelamin', $jenisKelamin],
+        ['Agama', ucwords(strtolower($record->agama ?? '-'))],
+        ['Asal Sekolah', strtoupper(optional($record->sekolahAsal)->nama ?? '-')],
+        ['No. Telepon', $record->siswa_telepon ?? '-'],
+        ['Alamat Siswa', ucwords(strtolower($alamatSiswa))],
+    ];
+
+    if ($record->penerima_kip) {
+        $biodata[] = ['KIP / KKS / PKH', ($record->no_kip ?? '-') . ' / ' . ($record->no_kks ?? '-') . ' / ' . ($record->no_pkh ?? '-')];
+    }
+@endphp
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<style>
+    @page { size: A4 portrait; margin: 15mm; }
+    body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 9.5pt; color: #374151; line-height: 1.5; }
+    table { border-collapse: collapse; width: 100%; }
+    .title-doc { font-family: 'Georgia', serif; text-align: center; font-size: 14pt; font-weight: bold; color: #111827; letter-spacing: 1px; text-transform: uppercase; margin-top: 15px; }
+    .subtitle-doc { text-align: center; font-size: 10pt; color: #6b7280; margin-bottom: 20px; letter-spacing: 0.5px; }
+    .section-title { background-color: #f3f4f6; color: #111827; padding: 6px 10px; font-size: 9pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; border-left: 4px solid #059669; margin: 15px 0 8px 0; }
+    .data-table td { padding: 6px 4px; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table .lbl { width: 30%; color: #6b7280; font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.5px; }
+    .data-table .cln { width: 3%; text-align: center; color: #9ca3af; }
+    .data-table .val { font-weight: bold; color: #1f2937; }
+    .photo-wrapper { width: 3.5cm; padding-left: 15px; vertical-align: top; }
+    .photo-box { width: 3cm; height: 4cm; border: 2px solid #e5e7eb; border-radius: 4px; padding: 3px; text-align: center; background: #f9fafb; display: table-cell; vertical-align: middle; }
+    .photo-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 2px; }
+    .photo-text { font-size: 8pt; color: #9ca3af; letter-spacing: 1px; }
+    .watermark { position: absolute; top: 35%; left: 0; right: 0; text-align: center; font-size: 80pt; font-family: 'Georgia', serif; color: rgba(220, 38, 38, 0.05); transform: rotate(-30deg); z-index: -1000; letter-spacing: 5px; }
+    .signature-area { margin-top: 30px; page-break-inside: avoid; }
+    .sig-box { text-align: center; font-size: 9.5pt; color: #374151; vertical-align: bottom; }
+    .sig-name { font-weight: bold; color: #111827; text-decoration: underline; margin-bottom: 2px; display: inline-block; }
+</style>
+</head>
+<body>
+
+@if ($isDraft) <div class="watermark">DRAFT DOCUMENT</div> @endif
+
+@include('partials.pdf-header', ['instansi' => $instansi])
+
+<div class="title-doc">Formulir Pendaftaran Calon Peserta Didik</div>
+<div class="subtitle-doc">Tahun Pelajaran {{ $tahunPendaftaran?->nama ?? '' }}</div>
+
+<div class="section-title">A. Identitas Calon Peserta Didik</div>
+<table>
+    <tr>
+        <td style="vertical-align: top; padding: 0;">
+            <table class="data-table">
+                @foreach ($biodata as [$label, $value])
+                <tr>
+                    <td class="lbl">{{ $label }}</td><td class="cln">:</td><td class="val">{{ $value }}</td>
+                </tr>
+                @endforeach
+            </table>
+        </td>
+        <td class="photo-wrapper">
+            <div class="photo-box">
+                @if ($fotoUrl) <img src="{{ $fotoUrl }}" alt="Foto">
+                @else <span class="photo-text">FOTO<br>3x4</span> @endif
+            </div>
+        </td>
+    </tr>
+</table>
+
+<div class="section-title">B. Data Orang Tua / Wali</div>
+<table class="data-table">
+    <tr>
+        <td class="lbl" style="width: 25%;">Nama Ayah / Ibu</td><td class="cln">:</td>
+        <td class="val">{{ strtoupper($record->ayah_nama ?? '-') }} &nbsp;|&nbsp; {{ strtoupper($record->ibu_nama ?? '-') }}</td>
+    </tr>
+    <tr>
+        <td class="lbl">Pekerjaan</td><td class="cln">:</td>
+        <td class="val">{{ $record->ayah_pekerjaan ?? '-' }} &nbsp;|&nbsp; {{ $record->ibu_pekerjaan ?? '-' }}</td>
+    </tr>
+    <tr>
+        <td class="lbl">No. Telepon/WhatsApp</td><td class="cln">:</td>
+        <td class="val">{{ $record->ayah_telepon ?? $record->ibu_telepon ?? '-' }}</td>
+    </tr>
+</table>
+
+@if ($isJalurPrestasi)
+<div class="section-title">C. Rekam Prestasi</div>
+<table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
+    <thead>
+        <tr style="background-color: #f9fafb; border-bottom: 2px solid #e5e7eb;">
+            <th style="padding: 8px; text-align: left; font-size: 8.5pt; color: #6b7280; text-transform: uppercase;">No</th>
+            <th style="padding: 8px; text-align: left; font-size: 8.5pt; color: #6b7280; text-transform: uppercase;">Nama Prestasi / Perlombaan</th>
+            <th style="padding: 8px; text-align: center; font-size: 8.5pt; color: #6b7280; text-transform: uppercase;">Tingkat</th>
+            <th style="padding: 8px; text-align: center; font-size: 8.5pt; color: #6b7280; text-transform: uppercase;">Peringkat</th>
+        </tr>
+    </thead>
+    <tbody>
+        @forelse ($record->formulirPrestasis as $i => $fp)
+        <tr style="border-bottom: 1px solid #f3f4f6;">
+            <td style="padding: 8px; font-weight: bold;">{{ $i + 1 }}</td>
+            <td style="padding: 8px; color: #111827;">{{ $fp->nama_prestasi }}</td>
+            <td style="padding: 8px; text-align: center;">{{ optional($fp->prestasi)->tingkat ?? '-' }}</td>
+            <td style="padding: 8px; text-align: center; font-weight: bold;">{{ optional($fp->prestasi)->peringkat ?? '-' }}</td>
+        </tr>
+        @empty
+        <tr><td colspan="4" style="padding: 15px; text-align: center; font-style: italic; color: #9ca3af;">Tidak ada data prestasi yang dilampirkan.</td></tr>
+        @endforelse
+    </tbody>
+</table>
+@endif
+
+<div class="signature-area">
+    <table>
+        <tr>
+            <td style="width: 25%; vertical-align: bottom;">
+                {!! QrCode::size(70)->margin(0)->generate($qrPayload) !!}
+                <div style="font-size: 7.5pt; color: #9ca3af; margin-top: 5px; letter-spacing: 0.5px;">SCAN TO VERIFY</div>
+            </td>
+            <td class="sig-box" style="width: 37.5%;">
+                {{ $kota }}, {{ date('d F Y', strtotime($record->updated_at)) }}<br>
+                <span style="color: #6b7280; font-size: 9pt;">Ketua Panitia PPDB,</span>
+                <div style="height: 70px;">
+                    @if ($ketua?->berkas_tte) <img src="{{ Storage::url($ketua->berkas_tte) }}" style="height:60px; margin-top:5px;"> @endif
+                </div>
+                <div class="sig-name">{{ $ketua?->nama ?? str_repeat('.', 35) }}</div><br>
+                <span style="font-size: 8.5pt; color: #6b7280;">NIP. {{ $ketua?->nip ?? '-' }}</span>
+            </td>
+            <td class="sig-box" style="width: 37.5%;">
+                <br>
+                <span style="color: #6b7280; font-size: 9pt;">Sekretaris Panitia,</span>
+                <div style="height: 70px;">
+                    @if ($sekretaris?->berkas_tte) <img src="{{ Storage::url($sekretaris->berkas_tte) }}" style="height:60px; margin-top:5px;"> @endif
+                </div>
+                <div class="sig-name">{{ $sekretaris?->nama ?? str_repeat('.', 35) }}</div><br>
+                <span style="font-size: 8.5pt; color: #6b7280;">NIP. {{ $sekretaris?->nip ?? '-' }}</span>
+            </td>
+        </tr>
+    </table>
+</div>
+
+</body>
+</html>
+
+```
+
+---
+
+### 📄 `./resources/views/kartu-tes.blade.php`
+
+```blade
+@php
+    use Carbon\Carbon;
+    use Illuminate\Support\Facades\Storage;
+
+    $fotoUrl      = $record->berkas_foto ? Storage::url($record->berkas_foto) : null;
+    $qrPayload    = url('/admin/formulir/' . $record->id);
+    $tglAkademik  = $record->tes_akademik ? Carbon::parse($record->tes_akademik) : null;
+    $tglPraktik   = $record->tes_praktik  ? Carbon::parse($record->tes_praktik)  : null;
+    $kota         = ucwords(strtolower(optional($instansi?->kabupaten)->nama ?? 'Pandeglang'));
+    $tglTtd       = $tahunPendaftaran?->tanggal_penerbitan_kartu_tes_mulai ? date('d F Y', strtotime($tahunPendaftaran->tanggal_penerbitan_kartu_tes_mulai)) : date('d F Y');
+@endphp
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<style>
+    @page { size: A4 portrait; margin: 15mm; }
+    body { font-family: 'Helvetica', sans-serif; font-size: 10pt; color: #1f2937; line-height: 1.4; }
+    table { border-collapse: collapse; width: 100%; }
+    .card-container { border: 2px solid #111827; border-radius: 8px; padding: 20px; position: relative; }
+    .card-header { text-align: center; border-bottom: 2px dashed #d1d5db; padding-bottom: 15px; margin-bottom: 15px; }
+    .card-title { font-family: 'Georgia', serif; font-size: 16pt; font-weight: bold; color: #111827; text-transform: uppercase; letter-spacing: 2px; }
+    .card-subtitle { font-size: 10pt; color: #4b5563; margin-top: 5px; letter-spacing: 1px; }
+    .info-lbl { font-size: 9pt; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+    .info-val { font-size: 11pt; font-weight: bold; color: #111827; margin-bottom: 12px; }
+    .photo-box { width: 3.5cm; height: 4.5cm; border: 3px solid #e5e7eb; border-radius: 6px; padding: 3px; text-align: center; display: table-cell; vertical-align: middle; }
+    .photo-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 3px; }
+    .schedule-box { border: 1px solid #d1d5db; border-radius: 6px; overflow: hidden; margin-top: 10px; }
+    .schedule-header { background-color: #f3f4f6; padding: 8px; text-align: center; font-weight: bold; font-size: 9.5pt; letter-spacing: 1px; color: #374151; border-bottom: 1px solid #d1d5db; }
+    .schedule-cell { padding: 10px; text-align: center; }
+    .schedule-time { font-size: 12pt; font-weight: bold; color: #059669; }
+    .schedule-date { font-size: 9pt; color: #4b5563; margin-top: 4px; }
+    .cbt-alert { background-color: #eff6ff; border: 1px solid #bfdbfe; border-left: 4px solid #3b82f6; border-radius: 4px; padding: 12px 15px; margin-top: 20px; }
+    .cbt-title { font-size: 9pt; font-weight: bold; color: #1e3a8a; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .cbt-creds { font-family: 'Courier New', Courier, monospace; font-size: 14pt; font-weight: bold; color: #1e40af; letter-spacing: 2px; }
+    .card-footer { margin-top: 25px; border-top: 2px dashed #d1d5db; padding-top: 15px; }
+</style>
+</head>
+<body>
+
+@include('partials.pdf-header', ['instansi' => $instansi])
+
+<div class="card-container">
+    <div class="card-header">
+        <div class="card-title">Kartu Ujian Peserta</div>
+        <div class="card-subtitle">Penerimaan Peserta Didik Baru &mdash; {{ $tahunPendaftaran?->nama ?? '' }}</div>
+    </div>
+
+    <table>
+        <tr>
+            <td style="vertical-align: top; width: 70%;">
+                <div class="info-lbl">Nomor Registrasi</div>
+                <div class="info-val" style="font-size: 14pt; color: #059669;">{{ $record->nomor_pendaftaran ?? '-' }}</div>
+
+                <div class="info-lbl">Nama Lengkap Peserta</div>
+                <div class="info-val" style="font-size: 13pt;">{{ strtoupper($record->nama ?? '-') }}</div>
+
+                <div class="info-lbl">Asal Sekolah</div>
+                <div class="info-val">{{ strtoupper(optional($record->sekolahAsal)->nama ?? '-') }}</div>
+
+                <div class="info-lbl">Jalur Pendaftaran</div>
+                <div class="info-val">{{ strtoupper(optional($record->jalurPendaftaran)->nama ?? '-') }}</div>
+            </td>
+            <td style="vertical-align: top; text-align: right; width: 30%;">
+                <div class="photo-box" style="float: right;">
+                    @if ($fotoUrl) <img src="{{ $fotoUrl }}" alt="Foto">
+                    @else <span style="font-size: 9pt; color: #9ca3af;">PAS FOTO</span> @endif
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <table class="schedule-box">
+        <tr>
+            <td style="width: 50%; border-right: 1px solid #d1d5db; padding: 0;">
+                <div class="schedule-header">UJIAN AKADEMIK (CBT)</div>
+                <div class="schedule-cell">
+                    <div class="info-lbl">Ruang / Sesi</div>
+                    <div style="font-weight: bold; font-size: 11pt; color: #111827; margin-bottom: 8px;">{{ $record->tes_ruang ?? '-' }} / Sesi {{ $record->tes_sesi ?? '-' }}</div>
+                    <div class="schedule-time">{{ $tglAkademik ? $tglAkademik->format('H:i') . ' WIB' : '-' }}</div>
+                    <div class="schedule-date">{{ $tglAkademik ? $tglAkademik->translatedFormat('l, d F Y') : '-' }}</div>
+                </div>
+            </td>
+            <td style="width: 50%; padding: 0;">
+                <div class="schedule-header">UJIAN PRAKTIK IBADAH</div>
+                <div class="schedule-cell">
+                    <div class="info-lbl">Ruang / Sesi</div>
+                    <div style="font-weight: bold; font-size: 11pt; color: #111827; margin-bottom: 8px;">{{ $record->tes_ruang ?? '-' }} / Sesi {{ $record->tes_sesi ?? '-' }}</div>
+                    <div class="schedule-time">{{ $tglPraktik ? $tglPraktik->format('H:i') . ' WIB' : '-' }}</div>
+                    <div class="schedule-date">{{ $tglPraktik ? $tglPraktik->translatedFormat('l, d F Y') : '-' }}</div>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <div class="cbt-alert">
+        <div class="cbt-title">Kredensial Login Aplikasi Ujian (CBT)</div>
+        <table>
+            <tr>
+                <td style="width: 120px; color: #3b82f6; font-size: 10pt;">Username</td>
+                <td class="cbt-creds">{{ $record->nisn ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td style="color: #3b82f6; font-size: 10pt;">Password</td>
+                <td class="cbt-creds">{{ $record->nik ?? '-' }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="card-footer">
+        <table>
+            <tr>
+                <td style="width: 25%; vertical-align: middle;">
+                    {!! QrCode::size(70)->margin(0)->generate($qrPayload) !!}
+                </td>
+                <td style="width: 75%; text-align: right; vertical-align: bottom;">
+                    <span style="font-size: 9pt; color: #6b7280;">{{ $kota }}, {{ $tglTtd }}</span><br>
+                    <span style="font-size: 9.5pt; font-weight: bold; color: #111827;">Panitia Penerimaan Peserta Didik Baru</span>
+                    <div style="height: 60px; margin-top: 5px;">
+                        @if ($ketua?->berkas_tte) <img src="{{ Storage::url($ketua->berkas_tte) }}" style="height:55px;"> @endif
+                    </div>
+                    <span style="font-size: 9.5pt; font-weight: bold; text-decoration: underline;">{{ $ketua?->nama ?? '............................................' }}</span><br>
+                    <span style="font-size: 8.5pt; color: #6b7280;">Ketua Pelaksana</span>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>
+
+```
+
+---
+
+### 📄 `./resources/views/partials/pdf-header.blade.php`
+
+```blade
+@php
+    use Illuminate\Support\Facades\Storage;
+    $logoInstitusi = $instansi?->logo_institusi ? Storage::url($instansi->logo_institusi) : null;
+    $logoMadrasah  = $instansi?->logo ? Storage::url($instansi->logo) : null;
+
+    $alamat = collect([
+        $instansi?->alamat,
+        optional($instansi?->kelurahan)->nama,
+        optional($instansi?->kecamatan)->nama,
+        optional($instansi?->kabupaten)->nama,
+        optional($instansi?->provinsi)->nama,
+    ])->filter()->map(fn($item) => ucwords(strtolower($item)))->implode(', ');
+
+    $kontak = collect([
+        $instansi?->website ? 'Website: ' . $instansi->website : null,
+        $instansi?->email   ? 'Email: '   . $instansi->email   : null,
+        $instansi?->telepon ? 'Telp: '    . $instansi->telepon : null,
+    ])->filter()->implode('  |  ');
+@endphp
+
+<table width="100%" style="border-collapse: collapse; margin-bottom: 0; padding: 0;">
+    <tr>
+        <td width="85" align="left" valign="middle">
+            @if ($logoInstitusi)
+                <img src="{{ $logoInstitusi }}" alt="Logo Kemenag" style="width: 75px; height: auto;">
+            @else
+                <div style="width: 75px; height: 75px;"></div>
+            @endif
+        </td>
+
+        <td align="center" valign="middle" style="padding: 0 10px; line-height: 1.3;">
+            <div style="font-size: 11pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5pt;">
+                Kementerian Agama Republik Indonesia<br>
+                Kantor Kementerian Agama {{ ucwords(strtolower(optional($instansi?->kabupaten)->nama ?? 'Kabupaten Pandeglang')) }}
+            </div>
+            <div style="font-size: 14pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1pt; margin-top: 3px;">
+                {{ $instansi?->nama ?? 'MTs Negeri 1 Pandeglang' }}
+            </div>
+            @if ($alamat)
+                <div style="font-size: 9pt; margin-top: 4px; color: #111;">{{ $alamat }}</div>
+            @endif
+            @if ($kontak)
+                <div style="font-size: 8.5pt; margin-top: 1px; color: #333;">{{ $kontak }}</div>
+            @endif
+        </td>
+
+        <td width="85" align="right" valign="middle">
+            @if ($logoMadrasah)
+                <img src="{{ $logoMadrasah }}" alt="Logo Madrasah" style="width: 75px; height: auto;">
+            @else
+                <div style="width: 75px; height: 75px;"></div>
+            @endif
+        </td>
+    </tr>
+</table>
+
+<div style="border-top: 3px solid #000; margin-top: 6px;"></div>
+<div style="border-top: 1px solid #000; margin-top: 2px; margin-bottom: 15px;"></div>
+
+```
+
+---
+
+### 📄 `./resources/views/skl.blade.php`
+
+```blade
+@php
+    use Carbon\Carbon;
+    use Illuminate\Support\Facades\Storage;
+
+    $fotoUrl = $record->berkas_foto ? Storage::url($record->berkas_foto) : null;
+    $qrPayload = url('/admin/formulir/' . $record->id);
+
+    $now = Carbon::now();
+    $tanggalTtd = $now;
+    if ($tahunPendaftaran) {
+        $periodes = [
+            [
+                $tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_mulai,
+                $tahunPendaftaran->tanggal_pengumuman_jalur_prestasi_selesai,
+            ],
+            [
+                $tahunPendaftaran->tanggal_pengumuman_jalur_reguler_mulai,
+                $tahunPendaftaran->tanggal_pengumuman_jalur_reguler_selesai,
+            ],
+            [
+                $tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_mulai,
+                $tahunPendaftaran->tanggal_pengumuman_jalur_afirmasi_selesai,
+            ],
+            [
+                $tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_mulai,
+                $tahunPendaftaran->tanggal_pengumuman_jalur_zonasi_selesai,
+            ],
+            [
+                $tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_mulai,
+                $tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai,
+            ],
+        ];
+        foreach ($periodes as [$mulai, $selesai]) {
+            if ($mulai && $selesai && $now->between(Carbon::parse($mulai), Carbon::parse($selesai))) {
+                $tanggalTtd = Carbon::parse($mulai);
+                break;
+            }
+        }
+    }
+
+    $kota = ucwords(strtolower(optional($instansi?->kabupaten)->nama ?? 'Pandeglang'));
+    $namaMadrasah = $instansi?->nama ?? 'MTsN 1 Pandeglang';
+    $diterima = in_array($record->status_pendaftaran, [
+        'Diterima',
+        'Diterima Di Kelas Reguler',
+        'Diterima Di Kelas Unggulan',
+    ]);
+@endphp
+
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 15mm 20mm;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            font-size: 11pt;
+            color: #111827;
+            line-height: 1.6;
+            text-align: justify;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            text-align: left;
+        }
+
+        .sans {
+            font-family: 'Helvetica', sans-serif;
+        }
+
+        .doc-title {
+            text-align: center;
+            font-size: 14pt;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+            text-decoration: underline;
+            margin-top: 10px;
+        }
+
+        .doc-nomor {
+            text-align: center;
+            font-size: 10.5pt;
+            font-family: 'Helvetica', sans-serif;
+            color: #4b5563;
+            margin-bottom: 25px;
+        }
+
+        .data-box {
+            border: 1px solid #d1d5db;
+            padding: 15px;
+            margin: 20px 0;
+            background-color: #fcfcfc;
+        }
+
+        .data-box td {
+            padding: 4px;
+            vertical-align: top;
+            font-family: 'Helvetica', sans-serif;
+            font-size: 10pt;
+        }
+
+        .data-box .lbl {
+            color: #6b7280;
+            font-weight: bold;
+            width: 35%;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stamp-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .stamp {
+            display: inline-block;
+            padding: 10px 40px;
+            font-family: 'Helvetica', sans-serif;
+            font-size: 16pt;
+            font-weight: 900;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            border: 4px solid;
+            border-radius: 8px;
+            transform: rotate(-3deg);
+        }
+
+        .stamp-pass {
+            color: #047857;
+            border-color: #047857;
+            background-color: rgba(4, 120, 87, 0.05);
+        }
+
+        .stamp-fail {
+            color: #b91c1c;
+            border-color: #b91c1c;
+            background-color: rgba(185, 28, 28, 0.05);
+        }
+
+        .sig-area {
+            margin-top: 40px;
+            page-break-inside: avoid;
+        }
+
+        .sig-block {
+            text-align: center;
+            font-family: 'Helvetica', sans-serif;
+            font-size: 9.5pt;
+        }
+
+        .sig-title {
+            color: #4b5563;
+            margin-bottom: 60px;
+            display: block;
+        }
+
+        .sig-name {
+            font-weight: bold;
+            color: #111827;
+            text-decoration: underline;
+            font-size: 10pt;
+        }
+
+        .page-break {
+            page-break-before: always;
+        }
+
+        .clean-table {
+            border: 1px solid #e5e7eb;
+            font-family: 'Helvetica', sans-serif;
+            font-size: 9.5pt;
+        }
+
+        .clean-table th {
+            background-color: #f3f4f6;
+            padding: 10px;
+            text-align: left;
+            color: #374151;
+            font-weight: bold;
+            border-bottom: 2px solid #d1d5db;
+            text-transform: uppercase;
+            font-size: 8.5pt;
+            letter-spacing: 0.5px;
+        }
+
+        .clean-table td {
+            padding: 10px;
+            border-bottom: 1px solid #e5e7eb;
+            color: #1f2937;
+        }
+    </style>
+</head>
+
+<body>
+
+    {{-- ==================== LEMBAR 1: SKL ==================== --}}
+    @include('partials.pdf-header', ['instansi' => $instansi])
+
+    <div class="doc-title">SURAT KEPUTUSAN KELULUSAN</div>
+    <div class="doc-nomor">Nomor: {{ $instansi?->nomor_surat ?? '......./Mts.01/PPDB/' . date('Y') }}</div>
+
+    <p>
+        Berdasarkan hasil Keputusan Sidang Pleno Panitia Penerimaan Peserta Didik Baru (PPDB) <b>{{ $namaMadrasah }}</b>
+        Tahun Pelajaran {{ $tahunPendaftaran?->nama ?? '' }}, setelah melakukan evaluasi terhadap kelengkapan
+        administrasi dan hasil uji seleksi, maka Panitia menetapkan bahwa peserta didik di bawah ini:
+    </p>
+
+    <div class="data-box">
+        <table>
+            <tr>
+                <td class="lbl">Nomor Registrasi</td>
+                <td>:</td>
+                <td style="font-weight: bold; font-size: 11pt; color: #111827;">{{ $record->nomor_pendaftaran ?? '-' }}
+                </td>
+            </tr>
+            <tr>
+                <td class="lbl">Nama Lengkap</td>
+                <td>:</td>
+                <td style="font-weight: bold; font-size: 11pt; color: #111827;">{{ strtoupper($record->nama ?? '-') }}
+                </td>
+            </tr>
+            <tr>
+                <td class="lbl">Jalur Pendaftaran</td>
+                <td>:</td>
+                <td>{{ strtoupper(optional($record->jalurPendaftaran)->nama ?? '-') }}</td>
+            </tr>
+            <tr>
+                <td class="lbl">Asal Sekolah Dasar</td>
+                <td>:</td>
+                <td>{{ strtoupper(optional($record->sekolahAsal)->nama ?? '-') }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <p style="text-align: center; font-size: 12pt; margin-top: 30px;">Dinyatakan:</p>
+
+    <div class="stamp-container">
+        <div class="stamp {{ $diterima ? 'stamp-pass' : 'stamp-fail' }}">
+            {{ $diterima ? 'L U L U S' : 'TIDAK LULUS' }}
+        </div>
+    </div>
+
+    <p>
+        Demikian Surat Keputusan ini diterbitkan agar dapat dipergunakan sebagaimana mestinya. Keputusan Panitia
+        bersifat mutlak dan tidak dapat diganggu gugat. Bagi peserta didik yang dinyatakan <b>LULUS</b>, diwajibkan
+        untuk segera melakukan tahapan Daftar Ulang sesuai dengan jadwal yang telah ditentukan.
+    </p>
+
+    <div class="sig-area">
+        <table>
+            <tr>
+                <td style="width: 25%; vertical-align: bottom;">{!! QrCode::size(70)->margin(0)->generate($qrPayload) !!}</td>
+                <td class="sig-block" style="width: 37.5%; vertical-align: top;">
+                    <span class="sig-title">{{ $kota }}, {{ $tanggalTtd->translatedFormat('d F Y') }}<br>Ketua
+                        Panitia PPDB,</span>
+                    <div style="position: relative; top: -50px; height: 0;">
+                        @if ($ketua?->berkas_tte)
+                            <img src="{{ Storage::url($ketua->berkas_tte) }}" style="height:60px;">
+                        @endif
+                    </div>
+                    <span class="sig-name">{{ $ketua?->nama ?? '.....................................' }}</span><br>
+                    NIP. {{ $ketua?->nip ?? '-' }}
+                </td>
+                <td class="sig-block" style="width: 37.5%; vertical-align: top;">
+                    <span class="sig-title">Mengetahui,<br>Kepala {{ ucwords(strtolower($namaMadrasah)) }}</span>
+                    <div style="position: relative; top: -50px; height: 0;">
+                        @if ($pimpinan?->berkas_tte)
+                            <img src="{{ Storage::url($pimpinan->berkas_tte) }}" style="height:60px;">
+                        @endif
+                    </div>
+                    <span class="sig-name">{{ $pimpinan?->nama ?? '.....................................' }}</span><br>
+                    NIP. {{ $pimpinan?->nip ?? '-' }}
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    {{-- ==================== LEMBAR 2: PAKTA INTEGRITAS ==================== --}}
+    <div class="page-break"></div>
+    @include('partials.pdf-header', ['instansi' => $instansi])
+
+    <div class="doc-title" style="font-size: 13pt; margin-bottom: 25px;">PAKTA INTEGRITAS ORANG TUA / WALI</div>
+
+    <p>Saya yang bertanda tangan di bawah ini:</p>
+    <table class="sans" style="margin: 15px 0 20px 20px; width: 90%;">
+        <tr>
+            <td style="width: 30%; color: #4b5563;">Nama Lengkap</td>
+            <td style="width: 2%;">:</td>
+            <td style="font-weight: bold;">
+                {{ strtoupper($record->ayah_nama ?? ($record->wali_nama ?? '......................................')) }}
+            </td>
+        </tr>
+        <tr>
+            <td style="color: #4b5563;">Status Hubungan</td>
+            <td>:</td>
+            <td>Orang Tua / Wali Peserta Didik</td>
+        </tr>
+    </table>
+
+    <p>Adalah benar orang tua / wali dari Calon Peserta Didik Baru:</p>
+    <table class="sans" style="margin: 15px 0 20px 20px; width: 90%;">
+        <tr>
+            <td style="width: 30%; color: #4b5563;">Nama Lengkap Siswa</td>
+            <td style="width: 2%;">:</td>
+            <td style="font-weight: bold; font-size: 12pt;">{{ strtoupper($record->nama) }}</td>
+        </tr>
+        <tr>
+            <td style="color: #4b5563;">Nomor Registrasi</td>
+            <td>:</td>
+            <td>{{ $record->nomor_pendaftaran }}</td>
+        </tr>
+    </table>
+
+    <p>Menyatakan dengan sesungguhnya bahwa:</p>
+    <ol style="margin-top: 10px; padding-left: 25px; line-height: 1.8;">
+        <li>Seluruh data dan dokumen yang saya berikan kepada pihak panitia adalah <b>benar, absah, dan dapat
+                dipertanggungjawabkan secara hukum</b>.</li>
+        <li>Apabila dikemudian hari ditemukan indikasi pemalsuan data/dokumen, saya bersedia menerima sanksi berupa
+            <b>pembatalan kelulusan</b> putra/putri saya.</li>
+        <li>Saya sepenuhnya sanggup dan bersedia bekerja sama dengan pihak madrasah untuk membimbing putra/putri saya
+            agar senantiasa mematuhi <b>Tata Tertib dan Peraturan Madarasah</b>.</li>
+        <li>Saya berkomitmen untuk tidak melakukan tindakan penyuapan, pemaksaan, maupun gratifikasi kepada panitia
+            pelaksana, dewan guru, atau staf madrasah dalam bentuk apa pun.</li>
+    </ol>
+
+    <p style="margin-top: 20px;">Demikian Pakta Integritas ini saya buat dalam keadaan sadar, sehat jasmani dan rohani,
+        serta tanpa adanya tekanan dari pihak mana pun.</p>
+
+    <table class="sig-area sans">
+        <tr>
+            <td style="width: 55%;"></td>
+            <td class="sig-block" style="width: 45%;">
+                <span style="display: block; margin-bottom: 10px;">{{ $kota }},
+                    {{ $tanggalTtd->translatedFormat('d F Y') }}<br>Yang Membuat Pernyataan,</span>
+                <div
+                    style="border: 1px dashed #9ca3af; width: 80px; height: 40px; line-height: 40px; margin: 0 auto 10px; font-size: 8pt; color: #9ca3af;">
+                    Meterai 10rb</div>
+                <span class="sig-name"
+                    style="font-size: 11pt;">{{ strtoupper($record->ayah_nama ?? ($record->wali_nama ?? '......................................')) }}</span>
+            </td>
+        </tr>
+    </table>
+
+    {{-- ==================== LEMBAR 3: SURAT PERNYATAAN SISWA ==================== --}}
+    <div class="page-break"></div>
+    @include('partials.pdf-header', ['instansi' => $instansi])
+
+    <div class="doc-title" style="font-size: 13pt; margin-bottom: 25px;">SURAT PERNYATAAN PESERTA DIDIK</div>
+
+    <p>Saya yang bertanda tangan di bawah ini, Calon Peserta Didik Baru {{ $namaMadrasah }}:</p>
+    <table class="sans"
+        style="margin: 15px 0 20px 20px; width: 90%; background-color: #f9fafb; padding: 15px; border-left: 3px solid #059669;">
+        <tr>
+            <td style="width: 30%; color: #4b5563; padding: 4px;">Nama Lengkap</td>
+            <td style="width: 2%;">:</td>
+            <td style="font-weight: bold; font-size: 12pt;">{{ strtoupper($record->nama) }}</td>
+        </tr>
+        <tr>
+            <td style="color: #4b5563; padding: 4px;">NISN</td>
+            <td>:</td>
+            <td>{{ $record->nisn }}</td>
+        </tr>
+        <tr>
+            <td style="color: #4b5563; padding: 4px;">Asal Sekolah</td>
+            <td>:</td>
+            <td>{{ strtoupper(optional($record->sekolahAsal)->nama ?? '-') }}</td>
+        </tr>
+    </table>
+
+    <p>Dengan memohon ridha Allah SWT, saya berjanji dan menyatakan bahwa saya:</p>
+    <ol style="margin-top: 10px; padding-left: 25px; line-height: 1.8;">
+        <li>Akan senantiasa menjaga nama baik agama, keluarga, dan almamater {{ $namaMadrasah }} di mana pun saya
+            berada.</li>
+        <li>Sanggup mematuhi dan melaksanakan segala tata tertib, peraturan madrasah, serta menjunjung tinggi norma
+            kesopanan dan akhlakul karimah terhadap Guru dan sesama teman.</li>
+        <li>Bersedia mengikuti seluruh kegiatan intrakurikuler maupun ekstrakurikuler yang telah ditetapkan oleh pihak
+            madrasah dengan penuh tanggung jawab.</li>
+        <li><b>TIDAK AKAN</b> terlibat secara langsung maupun tidak langsung dalam tindakan kriminalitas,
+            perkelahian/tawuran pelajar, perundungan (<i>bullying</i>), mengkonsumsi rokok/miras/narkotika, serta
+            pergaulan bebas.</li>
+        <li>Apabila saya terbukti melanggar pernyataan di atas, saya <b>SIAP MENERIMA SANKSI TERBERAT</b> dari pihak
+            madrasah, yaitu dikembalikan pembinaannya kepada orang tua / wali (Dikeluarkan).</li>
+    </ol>
+
+    <table class="sig-area sans">
+        <tr>
+            <td class="sig-block" style="width: 45%;">
+                <span style="display: block; margin-bottom: 70px;">Mengetahui dan Menyetujui,<br>Orang Tua / Wali
+                    Siswa</span>
+                <span class="sig-name"
+                    style="font-size: 11pt;">{{ strtoupper($record->ayah_nama ?? ($record->wali_nama ?? '......................................')) }}</span>
+            </td>
+            <td style="width: 10%;"></td>
+            <td class="sig-block" style="width: 45%;">
+                <span style="display: block; margin-bottom: 70px;">{{ $kota }},
+                    {{ $tanggalTtd->translatedFormat('d F Y') }}<br>Calon Peserta Didik</span>
+                <span class="sig-name" style="font-size: 11pt;">{{ strtoupper($record->nama) }}</span>
+            </td>
+        </tr>
+    </table>
+
+    {{-- ==================== LEMBAR 4: CHECKLIST ==================== --}}
+    <div class="page-break"></div>
+    @include('partials.pdf-header', ['instansi' => $instansi])
+
+    <div class="doc-title" style="font-size: 13pt; margin-bottom: 25px; font-family: 'Helvetica', sans-serif;">PANDUAN &
+        CHECKLIST DAFTAR ULANG</div>
+
+    <p class="sans" style="font-size: 10.5pt; color: #374151; margin-bottom: 15px;">
+        Selamat, Anda telah dinyatakan Lulus! Sebagai syarat akhir penerimaan, harap membawa dokumen-dokumen di bawah
+        ini saat proses Daftar Ulang. Masukkan seluruh dokumen ke dalam <b>MAP SNELHECTER PLASTIK</b> (Warna Merah untuk
+        Laki-laki, Warna Kuning untuk Perempuan).
+    </p>
+
+    <table class="clean-table" style="width: 100%;">
+        <thead>
+            <tr>
+                <th style="width: 5%; text-align: center;">No</th>
+                <th style="width: 45%;">Nama Dokumen Pemberkasan</th>
+                <th style="width: 10%; text-align: center;">Jumlah</th>
+                <th style="width: 30%;">Keterangan</th>
+                <th style="width: 10%; text-align: center;">Cek (✓)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="text-align:center;">1</td>
+                <td>Formulir Pendaftaran (Lembar 1)</td>
+                <td style="text-align:center; font-weight:bold;">1 Lembar</td>
+                <td>Dicetak dari sistem PPDB</td>
+                <td style="font-size: 14pt; text-align:center;">☐</td>
+            </tr>
+            <tr>
+                <td style="text-align:center;">2</td>
+                <td>Pakta Integritas (Lembar 2)</td>
+                <td style="text-align:center; font-weight:bold;">1 Lembar</td>
+                <td>Bermeterai 10.000 & Ditandatangani</td>
+                <td style="font-size: 14pt; text-align:center;">☐</td>
+            </tr>
+            <tr>
+                <td style="text-align:center;">3</td>
+                <td>Surat Pernyataan (Lembar 3)</td>
+                <td style="text-align:center; font-weight:bold;">1 Lembar</td>
+                <td>Ditandatangani Siswa & Ortu</td>
+                <td style="font-size: 14pt; text-align:center;">☐</td>
+            </tr>
+            <tr>
+                <td style="text-align:center;">4</td>
+                <td>Fotokopi Kartu Keluarga (KK)</td>
+                <td style="text-align:center; font-weight:bold;">2 Lembar</td>
+                <td>Dilegalisir Desa/Kelurahan</td>
+                <td style="font-size: 14pt; text-align:center;">☐</td>
+            </tr>
+            <tr>
+                <td style="text-align:center;">5</td>
+                <td>Fotokopi Akta Kelahiran</td>
+                <td style="text-align:center; font-weight:bold;">2 Lembar</td>
+                <td>Jelas & Terbaca</td>
+                <td style="font-size: 14pt; text-align:center;">☐</td>
+            </tr>
+            <tr>
+                <td style="text-align:center;">6</td>
+                <td>Fotokopi Ijazah / SKL</td>
+                <td style="text-align:center; font-weight:bold;">2 Lembar</td>
+                <td>Dilegalisir Asal Sekolah</td>
+                <td style="font-size: 14pt; text-align:center;">☐</td>
+            </tr>
+            <tr>
+                <td style="text-align:center;">7</td>
+                <td>Pas Foto Resmi 3x4</td>
+                <td style="text-align:center; font-weight:bold;">4 Lembar</td>
+                <td>Berlatar Belakang Merah</td>
+                <td style="font-size: 14pt; text-align:center;">☐</td>
+            </tr>
+            <tr>
+                <td style="text-align:center;">8</td>
+                <td>Kartu KIP / PKH / KKS</td>
+                <td style="text-align:center; font-weight:bold;">1 Lembar</td>
+                <td><i style="color: #6b7280;">Hanya bagi yang memiliki</i></td>
+                <td style="font-size: 14pt; text-align:center;">☐</td>
+            </tr>
+        </tbody>
+    </table>
+
+</body>
+
+</html>
+
+```
+
+---
+
+### 📄 `./resources/views/vendor/filament-easy-footer/easy-footer.blade.php`
+
+```blade
+@php
+    use Filament\Support\Enums\MaxWidth;
+@endphp
+
+<footer
+    @class([
+        'fi-footer my-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-gray-500 dark:text-gray-400',
+        'border-t border-gray-200 dark:border-gray-700 py-4 text-center' => in_array($footerPosition, ['sidebar', 'sidebar.footer']) || $borderTopEnabled,
+        'fi-sidebar flex-col md:flex-row' => in_array($footerPosition, ['sidebar', 'sidebar.footer']),
+        'mx-auto w-full px-4 md:px-6 lg:px-8' => $footerPosition === 'footer',
+        match ($maxContentWidth ??= filament()->getMaxContentWidth() ?? MaxWidth::SevenExtraLarge) {
+            MaxWidth::ExtraSmall, 'xs' => 'max-w-xs',
+            MaxWidth::Small, 'sm' => 'max-w-sm',
+            MaxWidth::Medium, 'md' => 'max-w-md',
+            MaxWidth::Large, 'lg' => 'max-w-lg',
+            MaxWidth::ExtraLarge, 'xl' => 'max-w-xl',
+            MaxWidth::TwoExtraLarge, '2xl' => 'max-w-2xl',
+            MaxWidth::ThreeExtraLarge, '3xl' => 'max-w-3xl',
+            MaxWidth::FourExtraLarge, '4xl' => 'max-w-4xl',
+            MaxWidth::FiveExtraLarge, '5xl' => 'max-w-5xl',
+            MaxWidth::SixExtraLarge, '6xl' => 'max-w-6xl',
+            MaxWidth::SevenExtraLarge, '7xl' => 'max-w-7xl',
+            MaxWidth::Full, 'full' => 'max-w-full',
+            default => $maxContentWidth,
+        } => $footerPosition === 'footer',
+    ])
+>
+    <!-- Copyright & Title -->
+    <div class="flex items-center gap-2 font-medium text-gray-600 dark:text-gray-300">
+        <a href="https://mtsn1pandeglang.sch.id" target="_blank" class="transition hover:text-primary-600 dark:hover:text-primary-400">
+            &copy; 1970 &mdash; {{ now()->format('Y') }} MTs Negeri 1 Pandeglang
+        </a>
+
+        @if($sentence)
+            <span class="hidden md:inline">&bull;</span>
+            <span class="inline-flex items-center">
+                @if($isHtmlSentence)
+                    {!! $sentence !!}
+                @else
+                    {{ $sentence }}
+                @endif
+            </span>
+        @endif
+    </div>
+
+    <!-- Links -->
+    @if(count($links) > 0)
+        <ul class="flex items-center gap-4">
+            @foreach($links as $link)
+                <li>
+                    <a href="{{ $link['url'] }}" target="_blank" class="font-medium transition hover:text-primary-600 dark:hover:text-primary-400">
+                        {{ $link['title'] }}
+                    </a>
+                </li>
+            @endforeach
+        </ul>
+    @endif
+
+    <!-- Logo -->
+    @if($logoPath)
+        <div class="flex items-center gap-2">
+            @if($logoText)
+                <span class="font-medium">{{ $logoText }}</span>
+            @endif
+            @if($logoUrl)
+                <a href="{{ $logoUrl }}" target="_blank" class="transition hover:opacity-80">
+            @endif
+                <img src="{{ $logoPath }}" alt="Logo Footer" class="object-contain w-auto" style="height: {{ $logoHeight }}px;">
+            @if($logoUrl)
+                </a>
+            @endif
+        </div>
+    @endif
+
+    <!-- Github Info -->
+    @if($githubEnabled)
+        <div class="flex items-center pl-4 border-l border-gray-300 dark:border-gray-600">
+            <livewire:devonab.filament-easy-footer.github-version :show-logo="$showLogo" :show-url="$showUrl" />
+        </div>
+    @endif
+
+    <!-- Load Time -->
+    @if($loadTime)
+        <div class="font-mono text-xs text-gray-400 dark:text-gray-500">
+            {{ $loadTimePrefix ?? '' }} {{ $loadTime }}s 🚀
+        </div>
+    @endif
+</footer>
+
+```
+
+---
+
+### 📄 `./resources/views/vendor/filament-easy-footer/github-version.blade.php`
+
+```blade
+<div class="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+    @if($version)
+        <span>{{ str()->startsWith($version, 'v') ? $version : 'v' . $version }}</span>
+
+        @if($showUrl)
+            <a
+                href="{{ $this->getGithubUrl() }}"
+                target="_blank"
+                class="transition-transform hover:scale-110"
+                title="View on GitHub"
+            >
+                @if($showLogo)
+                    <svg viewBox="0 0 24 24" aria-hidden="true" class="transition size-5 fill-gray-500 hover:fill-gray-900 dark:fill-gray-400 dark:hover:fill-white">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.463 2 11.97c0 4.404 2.865 8.14 6.839 9.458.5.092.682-.216.682-.48 0-.236-.008-.864-.013-1.695-2.782.602-3.369-1.337-3.369-1.337-.454-1.151-1.11-1.458-1.11-1.458-.908-.618.069-.606.069-.606 1.003.07 1.531 1.027 1.531 1.027.892 1.524 2.341 1.084 2.91.828.092-.643.35-1.083.636-1.332-2.22-.251-4.555-1.107-4.555-4.927 0-1.088.39-1.979 1.029-2.675-.103-.252-.446-1.266.098-2.638 0 0 .84-.268 2.75 1.022A9.607 9.607 0 0 1 12 6.82c.85.004 1.705.114 2.504.336 1.909-1.29 2.747-1.022 2.747-1.022.546 1.372.202 2.386.1 2.638.64.696 1.028 1.587 1.028 2.675 0 3.83-2.339 4.673-4.566 4.92.359.307.678.915.678 1.846 0 1.332-.012 2.407-.012 2.734 0 .267.18.577.688.48 3.97-1.32 6.833-5.054 6.833-9.458C22 6.463 17.522 2 12 2Z"></path>
+                    </svg>
+                @endif
+            </a>
+        @endif
+    @endif
+</div>
+
+```
+
+---
+
+### 📄 `./resources/views/vendor/filament-easy-footer/.gitkeep`
+
+```
+
+```
+
+---
+
+## 🎨 Resources (Other)
+
+### 📄 `./resources/css/app.css`
+
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+[x-cloak] {
+    display: none;
+}
+```
+
+---
+
+### 📄 `./resources/css/filament/admin/tailwind.config.js`
+
+```javascript
+import preset from '../../../../vendor/filament/filament/tailwind.config.preset'
+
+export default {
+    presets: [preset],
+    content: [
+        './app/Filament/**/*.php',
+        './resources/views/filament/**/*.blade.php',
+        './vendor/filament/**/*.blade.php',
+        './vendor/diogogpinto/filament-auth-ui-enhancer/resources/**/*.blade.php',
+    ],
+}
+
+```
+
+---
+
+### 📄 `./resources/css/filament/admin/theme.css`
+
+```css
+@import '../../../../vendor/filament/filament/resources/css/base.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@tailwind variants;
+
+@config 'tailwind.config.js';
+
+```
+
+---
+
+### 📄 `./resources/js/app.js`
+
+```javascript
+import './bootstrap';
+
+```
+
+---
+
+### 📄 `./resources/js/bootstrap.js`
+
+```javascript
+import axios from 'axios';
+window.axios = axios;
+
+window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
 ```
 
@@ -8709,6 +19606,24 @@ return [
 
 ---
 
+### 📄 `./config/filament-easy-footer.php`
+
+```php
+<?php
+
+return [
+    'app_name' => env('APP_NAME', ''),
+    'github' => [
+        'repository' => env('GITHUB_REPOSITORY', ''),
+        'token' => env('GITHUB_TOKEN', ''),
+        'cache_ttl' => env('GITHUB_CACHE_TTL', 3600),
+    ],
+];
+
+```
+
+---
+
 ### 📄 `./config/filament.php`
 
 ```php
@@ -8941,6 +19856,163 @@ return [
         public_path('storage') => storage_path('app/public'),
     ],
 
+];
+
+```
+
+---
+
+### 📄 `./config/logging.php`
+
+```php
+<?php
+
+use Monolog\Handler\NullHandler;
+use Monolog\Handler\StreamHandler;
+use Monolog\Handler\SyslogUdpHandler;
+use Monolog\Processor\PsrLogMessageProcessor;
+
+return [
+    'default' => env('LOG_CHANNEL', 'stack'),
+    'deprecations' => [
+        'channel' => env('LOG_DEPRECATIONS_CHANNEL', 'null'),
+        'trace' => env('LOG_DEPRECATIONS_TRACE', false),
+    ],
+    'channels' => [
+        'stack' => [
+            'driver' => 'stack',
+            'channels' => explode(',', env('LOG_STACK', 'single')),
+            'ignore_exceptions' => false,
+        ],
+        'single' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/laravel.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'replace_placeholders' => true,
+        ],
+        'daily' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/laravel.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'days' => env('LOG_DAILY_DAYS', 14),
+            'replace_placeholders' => true,
+        ],
+        'slack' => [
+            'driver' => 'slack',
+            'url' => env('LOG_SLACK_WEBHOOK_URL'),
+            'username' => env('LOG_SLACK_USERNAME', 'Laravel Log'),
+            'emoji' => env('LOG_SLACK_EMOJI', ':boom:'),
+            'level' => env('LOG_LEVEL', 'critical'),
+            'replace_placeholders' => true,
+        ],
+        'papertrail' => [
+            'driver' => 'monolog',
+            'level' => env('LOG_LEVEL', 'debug'),
+            'handler' => env('LOG_PAPERTRAIL_HANDLER', SyslogUdpHandler::class),
+            'handler_with' => [
+                'host' => env('PAPERTRAIL_URL'),
+                'port' => env('PAPERTRAIL_PORT'),
+                'connectionString' => 'tls://'.env('PAPERTRAIL_URL').':'.env('PAPERTRAIL_PORT'),
+            ],
+            'processors' => [PsrLogMessageProcessor::class],
+        ],
+        'stderr' => [
+            'driver' => 'monolog',
+            'level' => env('LOG_LEVEL', 'debug'),
+            'handler' => StreamHandler::class,
+            'formatter' => env('LOG_STDERR_FORMATTER'),
+            'with' => [
+                'stream' => 'php://stderr',
+            ],
+            'processors' => [PsrLogMessageProcessor::class],
+        ],
+        'syslog' => [
+            'driver' => 'syslog',
+            'level' => env('LOG_LEVEL', 'debug'),
+            'facility' => env('LOG_SYSLOG_FACILITY', LOG_USER),
+            'replace_placeholders' => true,
+        ],
+        'errorlog' => [
+            'driver' => 'errorlog',
+            'level' => env('LOG_LEVEL', 'debug'),
+            'replace_placeholders' => true,
+        ],
+        'null' => [
+            'driver' => 'monolog',
+            'handler' => NullHandler::class,
+        ],
+        'emergency' => [
+            'path' => storage_path('logs/laravel.log'),
+        ],
+    ],
+];
+
+```
+
+---
+
+### 📄 `./config/mail.php`
+
+```php
+<?php
+
+return [
+    'default' => env('MAIL_MAILER', 'log'),
+    'mailers' => [
+        'smtp' => [
+            'transport' => 'smtp',
+            'scheme' => env('MAIL_SCHEME'),
+            'url' => env('MAIL_URL'),
+            'host' => env('MAIL_HOST', '127.0.0.1'),
+            'port' => env('MAIL_PORT', 2525),
+            'username' => env('MAIL_USERNAME'),
+            'password' => env('MAIL_PASSWORD'),
+            'timeout' => null,
+            'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url(env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
+        ],
+        'ses' => [
+            'transport' => 'ses',
+        ],
+        'postmark' => [
+            'transport' => 'postmark',
+            // 'message_stream_id' => env('POSTMARK_MESSAGE_STREAM_ID'),
+            // 'client' => [
+            //     'timeout' => 5,
+            // ],
+        ],
+        'resend' => [
+            'transport' => 'resend',
+        ],
+        'sendmail' => [
+            'transport' => 'sendmail',
+            'path' => env('MAIL_SENDMAIL_PATH', '/usr/sbin/sendmail -bs -i'),
+        ],
+        'log' => [
+            'transport' => 'log',
+            'channel' => env('MAIL_LOG_CHANNEL'),
+        ],
+        'array' => [
+            'transport' => 'array',
+        ],
+        'failover' => [
+            'transport' => 'failover',
+            'mailers' => [
+                'smtp',
+                'log',
+            ],
+        ],
+        'roundrobin' => [
+            'transport' => 'roundrobin',
+            'mailers' => [
+                'ses',
+                'postmark',
+            ],
+        ],
+    ],
+    'from' => [
+        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
+        'name' => env('MAIL_FROM_NAME', 'Example'),
+    ],
 ];
 
 ```
@@ -9218,6 +20290,33 @@ return [
 
 ---
 
+### 📄 `./config/sanctum.php`
+
+```php
+<?php
+
+use Laravel\Sanctum\Sanctum;
+
+return [
+    'stateful' => explode(',', env('SANCTUM_STATEFUL_DOMAINS', sprintf(
+        '%s%s',
+        'localhost,localhost:3000,127.0.0.1,127.0.0.1:8000,::1',
+        Sanctum::currentApplicationUrlWithPort()
+    ))),
+    'guard' => ['web'],
+    'expiration' => null,
+    'token_prefix' => env('SANCTUM_TOKEN_PREFIX', ''),
+    'middleware' => [
+        'authenticate_session' => Laravel\Sanctum\Http\Middleware\AuthenticateSession::class,
+        'encrypt_cookies' => Illuminate\Cookie\Middleware\EncryptCookies::class,
+        'validate_csrf_token' => Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
+    ],
+];
+
+```
+
+---
+
 ### 📄 `./config/services.php`
 
 ```php
@@ -9333,6 +20432,87 @@ return [
     App\Providers\AppServiceProvider::class,
     App\Providers\Filament\AdminPanelProvider::class,
 ];
+
+```
+
+---
+
+## 🌐 Public (Custom)
+
+### 📄 `./public/.htaccess`
+
+```
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
+    RewriteEngine On
+
+    # Handle Authorization Header
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Handle X-XSRF-Token Header
+    RewriteCond %{HTTP:x-xsrf-token} .
+    RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
+
+    # Redirect Trailing Slashes If Not A Folder...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    # Send Requests To Front Controller...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+```
+
+---
+
+### 📄 `./public/index.php`
+
+```php
+<?php
+
+use Illuminate\Foundation\Application;
+use Illuminate\Http\Request;
+
+define('LARAVEL_START', microtime(true));
+
+// Determine if the application is in maintenance mode...
+if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
+    require $maintenance;
+}
+
+// Register the Composer autoloader...
+require __DIR__.'/../vendor/autoload.php';
+
+// Bootstrap Laravel and handle the request...
+/** @var Application $app */
+$app = require_once __DIR__.'/../bootstrap/app.php';
+
+$app->handleRequest(Request::capture());
+
+```
+
+---
+
+### 📄 `./public/js/devonab/filament-easy-footer/filament-easy-footer-scripts.js`
+
+```javascript
+
+```
+
+---
+
+### 📄 `./public/robots.txt`
+
+```
+User-agent: *
+Disallow:
 
 ```
 
@@ -9503,3 +20683,102 @@ VITE_APP_NAME="${APP_NAME}"
 ```
 
 ---
+
+### 📄 `./package.json`
+
+```json
+{
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "vite build",
+        "dev": "vite"
+    },
+    "devDependencies": {
+        "@tailwindcss/forms": "^0.5.10",
+        "@tailwindcss/typography": "^0.5.16",
+        "@tailwindcss/vite": "^4.0.0",
+        "autoprefixer": "^10.4.21",
+        "axios": "^1.7.4",
+        "concurrently": "^9.0.1",
+        "laravel-vite-plugin": "^1.2.0",
+        "postcss": "^8.5.3",
+        "postcss-nesting": "^13.0.1",
+        "tailwindcss": "^3.4.17",
+        "vite": "^6.0.11"
+    }
+}
+
+```
+
+---
+
+### 📄 `./postcss.config.js`
+
+```javascript
+export default {
+    plugins: {
+        tailwindcss: {},
+        autoprefixer: {},
+    },
+};
+
+```
+
+---
+
+### 📄 `./tailwind.config.js`
+
+```javascript
+import defaultTheme from 'tailwindcss/defaultTheme';
+import forms from '@tailwindcss/forms';
+import typography from '@tailwindcss/typography';
+
+/** @type {import('tailwindcss').Config} */
+export default {
+    content: [
+        './vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php',
+        './vendor/laravel/jetstream/**/*.blade.php',
+        './storage/framework/views/*.php',
+        './resources/views/**/*.blade.php',
+    ],
+
+    theme: {
+        extend: {
+            fontFamily: {
+                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+            },
+        },
+    },
+
+    plugins: [forms, typography],
+};
+
+```
+
+---
+
+### 📄 `./vite.config.js`
+
+```javascript
+import { defineConfig } from 'vite';
+import laravel from 'laravel-vite-plugin';
+
+export default defineConfig({
+    plugins: [
+        laravel({
+            input: [
+                'resources/css/app.css',
+                'resources/js/app.js',
+                'resources/css/filament/admin/theme.css',
+                'vendor/andreia/filament-nord-theme/resources/css/theme.css',
+            ],
+            refresh: true,
+        }),
+    ],
+});
+
+```
+
+---
+

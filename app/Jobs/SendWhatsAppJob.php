@@ -14,6 +14,7 @@ class SendWhatsAppJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
+
     public int $backoff = 60;
 
     public function __construct(
@@ -28,6 +29,6 @@ class SendWhatsAppJob implements ShouldQueue
 
     public function tags(): array
     {
-        return ['whatsapp', 'phone:' . $this->phone];
+        return ['whatsapp', 'phone:'.$this->phone];
     }
 }
