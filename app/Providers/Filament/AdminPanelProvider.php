@@ -6,6 +6,7 @@ use App\Filament\Pages\Auth\EditProfileCustom;
 use App\Filament\Pages\Auth\ForgotPasswordCustom;
 use App\Filament\Pages\Auth\LoginCustom;
 use App\Filament\Pages\Auth\RegisterCustom;
+use App\Filament\Pages\Auth\VerifikasiOtp;
 use App\Filament\Resources\CalonSiswaResource\Widgets\FormulirOverview;
 use App\Filament\Resources\InformasiResource\Widgets\InformasiPublished;
 use App\Filament\Resources\UserResource;
@@ -41,30 +42,31 @@ class AdminPanelProvider extends PanelProvider
             ->path('')
             ->default()
             ->spa()
-            ->topNavigation()
+            // ->topNavigation()
             ->login(LoginCustom::class)
             ->registration(RegisterCustom::class)
             ->passwordReset(ForgotPasswordCustom::class)
-            ->emailVerification()
+            // ->emailVerification(VerifikasiOtp::class)
             ->profile(EditProfileCustom::class)
             ->globalSearch(false)
             ->maxContentWidth(MaxWidth::Full)
             ->unsavedChangesAlerts()
-            ->databaseNotifications()
+            // ->databaseNotifications()
             ->defaultThemeMode(ThemeMode::Dark)
+            ->font('Lexend')
             ->favicon(asset('/favicon.ico'))
             ->darkModeBrandLogo(asset('/img/brand-darkmode.png'))
             ->brandLogo(asset('/img/brand-lightmode.png'))
             ->brandLogoHeight('2.6rem')
             ->colors([
-                'primary' => Color::Green,
+                'primary' => Color::Emerald,
             ])
             ->userMenuItems([
                 MenuItem::make()
                     ->label('Manajemen Pengguna')
-                    ->url(fn (): string => UserResource::getUrl())
+                    ->url(fn(): string => UserResource::getUrl())
                     ->icon('heroicon-o-identification')
-                    ->visible(fn () => Auth::user()?->roles?->where('name', 'super_admin')->first() !== null),
+                    ->visible(fn() => Auth::user()?->roles?->where('name', 'super_admin')->first() !== null),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')

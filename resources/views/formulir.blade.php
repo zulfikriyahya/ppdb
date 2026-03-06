@@ -1,4 +1,4 @@
-@php
+{{-- @php
     use Illuminate\Support\Facades\Storage;
 
     $isJalurPrestasi = optional($record->jalurPendaftaran)->nama === 'Prestasi';
@@ -160,4 +160,4 @@
 </div>
 
 </body>
-</html>
+</html> --}}
