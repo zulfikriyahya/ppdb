@@ -25,18 +25,20 @@ class VerifikasiOtp extends SimplePage implements HasForms
 
     public function mount(): void
     {
-        if (! session('otp_user_id')) {
+        $user = Auth::user() ?? User::find(session('otp_user_id'));
+
+        if (! $user) {
             $this->redirect(filament()->getLoginUrl());
-
             return;
         }
 
-        $user = User::find(session('otp_user_id'));
-        if ($user?->hasVerifiedEmail()) {
+        if ($user->hasVerifiedEmail()) {
             $this->redirect(filament()->getUrl());
-
             return;
         }
+
+        // Simpan ke session agar resend & verifikasi bisa pakai
+        session(['otp_user_id' => $user->id]);
 
         $this->form->fill();
     }

@@ -44,9 +44,12 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         ];
     }
 
+    // public function canAccessPanel(Panel $panel): bool
+    // {
+    //     return $this->hasVerifiedEmail();
+    // }
     public function canAccessPanel(Panel $panel): bool
     {
-        // TODO: Tambahkan Validasi Email Harus Terverifikasi yang dihandle oleh VerifikasiOtp::class
         return true;
     }
 

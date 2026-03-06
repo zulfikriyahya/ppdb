@@ -46,7 +46,7 @@ class AdminPanelProvider extends PanelProvider
             ->login(LoginCustom::class)
             ->registration(RegisterCustom::class)
             ->passwordReset(ForgotPasswordCustom::class)
-            // ->emailVerification(VerifikasiOtp::class)
+            ->emailVerification(VerifikasiOtp::class)
             ->profile(EditProfileCustom::class)
             ->globalSearch(false)
             ->maxContentWidth(MaxWidth::Full)
