@@ -5,90 +5,37 @@
 
     $jadwals = [];
     if ($tahun) {
-        $jadwals = [
-            [
-                'icon' => '🏆',
-                'label' => 'Jalur Prestasi',
-                'mulai' => $tahun->tanggal_pendaftaran_jalur_prestasi_mulai,
-                'selesai' => $tahun->tanggal_pendaftaran_jalur_prestasi_selesai,
-            ],
-            [
-                'icon' => '📚',
-                'label' => 'Jalur Reguler',
-                'mulai' => $tahun->tanggal_pendaftaran_jalur_reguler_mulai,
-                'selesai' => $tahun->tanggal_pendaftaran_jalur_reguler_selesai,
-            ],
-            [
-                'icon' => '🤝',
-                'label' => 'Jalur Afirmasi',
-                'mulai' => $tahun->tanggal_pendaftaran_jalur_afirmasi_mulai,
-                'selesai' => $tahun->tanggal_pendaftaran_jalur_afirmasi_selesai,
-            ],
-            [
-                'icon' => '🏘️',
-                'label' => 'Jalur Zonasi',
-                'mulai' => $tahun->tanggal_pendaftaran_jalur_zonasi_mulai,
-                'selesai' => $tahun->tanggal_pendaftaran_jalur_zonasi_selesai,
-            ],
-            [
-                'icon' => '🔄',
-                'label' => 'Jalur Mutasi',
-                'mulai' => $tahun->tanggal_pendaftaran_jalur_mutasi_mulai,
-                'selesai' => $tahun->tanggal_pendaftaran_jalur_mutasi_selesai,
-            ],
-            [
-                'icon' => '📝',
-                'label' => 'Tes Seleksi (CBT)',
-                'mulai' => $tahun->tanggal_tes_akademik_mulai,
-                'selesai' => $tahun->tanggal_tes_akademik_selesai,
-            ],
-            [
-                'icon' => '📢',
-                'label' => 'Pengumuman Reguler',
-                'mulai' => $tahun->tanggal_pengumuman_jalur_reguler_mulai,
-                'selesai' => $tahun->tanggal_pengumuman_jalur_reguler_selesai,
-            ],
-            [
-                'icon' => '✅',
-                'label' => 'Registrasi Berkas',
-                'mulai' => $tahun->tanggal_registrasi_berkas_mulai,
-                'selesai' => $tahun->tanggal_registrasi_berkas_selesai,
-            ],
+        $map = [
+            ['🏆', 'Jalur Prestasi',       'tanggal_pendaftaran_jalur_prestasi_mulai',  'tanggal_pendaftaran_jalur_prestasi_selesai'],
+            ['📚', 'Jalur Reguler',         'tanggal_pendaftaran_jalur_reguler_mulai',   'tanggal_pendaftaran_jalur_reguler_selesai'],
+            ['🤝', 'Jalur Afirmasi',        'tanggal_pendaftaran_jalur_afirmasi_mulai',  'tanggal_pendaftaran_jalur_afirmasi_selesai'],
+            ['🏘️', 'Jalur Zonasi',          'tanggal_pendaftaran_jalur_zonasi_mulai',    'tanggal_pendaftaran_jalur_zonasi_selesai'],
+            ['🔄', 'Jalur Mutasi',          'tanggal_pendaftaran_jalur_mutasi_mulai',    'tanggal_pendaftaran_jalur_mutasi_selesai'],
+            ['📝', 'Tes Seleksi (CBT)',     'tanggal_tes_akademik_mulai',               'tanggal_tes_akademik_selesai'],
+            ['📢', 'Pengumuman Reguler',    'tanggal_pengumuman_jalur_reguler_mulai',    'tanggal_pengumuman_jalur_reguler_selesai'],
+            ['✅', 'Registrasi Berkas',     'tanggal_registrasi_berkas_mulai',           'tanggal_registrasi_berkas_selesai'],
         ];
-        $jadwals = array_filter($jadwals, fn($j) => $j['mulai'] !== null);
+        foreach ($map as [$icon, $label, $mk, $sk]) {
+            if ($tahun->$mk) {
+                $jadwals[] = ['icon' => $icon, 'label' => $label, 'mulai' => $tahun->$mk, 'selesai' => $tahun->$sk];
+            }
+        }
     }
 
-    $jalurIcons = [
-        'Prestasi' => [
-            'icon' => '🏆',
-            'color' => '#d4a843',
-            'bg' => 'rgba(212,168,67,0.12)',
-            'border' => 'rgba(212,168,67,0.25)',
-        ],
-        'Reguler' => [
-            'icon' => '📚',
-            'color' => '#10b981',
-            'bg' => 'rgba(5,150,105,0.12)',
-            'border' => 'rgba(5,150,105,0.25)',
-        ],
-        'Afirmasi' => [
-            'icon' => '🤝',
-            'color' => '#60a5fa',
-            'bg' => 'rgba(59,130,246,0.12)',
-            'border' => 'rgba(59,130,246,0.25)',
-        ],
-        'Zonasi' => [
-            'icon' => '🏘️',
-            'color' => '#a78bfa',
-            'bg' => 'rgba(139,92,246,0.12)',
-            'border' => 'rgba(139,92,246,0.25)',
-        ],
-        'Mutasi' => [
-            'icon' => '🔄',
-            'color' => '#fbbf24',
-            'bg' => 'rgba(245,158,11,0.12)',
-            'border' => 'rgba(245,158,11,0.25)',
-        ],
+    $jalurMeta = [
+        'Prestasi' => ['icon' => '🏆', 'color' => '#d4a843', 'bg' => 'rgba(212,168,67,.12)', 'border' => 'rgba(212,168,67,.3)'],
+        'Reguler'  => ['icon' => '📚', 'color' => '#10b981', 'bg' => 'rgba(16,185,129,.12)',  'border' => 'rgba(16,185,129,.3)'],
+        'Afirmasi' => ['icon' => '🤝', 'color' => '#60a5fa', 'bg' => 'rgba(96,165,250,.12)',  'border' => 'rgba(96,165,250,.3)'],
+        'Zonasi'   => ['icon' => '🏘️', 'color' => '#a78bfa', 'bg' => 'rgba(167,139,250,.12)', 'border' => 'rgba(167,139,250,.3)'],
+        'Mutasi'   => ['icon' => '🔄', 'color' => '#fb923c', 'bg' => 'rgba(251,146,60,.12)',  'border' => 'rgba(251,146,60,.3)'],
+    ];
+
+    $jalurDesc = [
+        'Prestasi' => 'Untuk siswa berprestasi akademik/non-akademik di tingkat kabupaten, provinsi, atau nasional.',
+        'Reguler'  => 'Seleksi berbasis tes CBT dan ujian praktik. Terbuka untuk semua calon peserta didik.',
+        'Afirmasi' => 'Untuk keluarga pemegang KIP, PKH, atau KKS. Bukti kartu bantuan wajib dilampirkan.',
+        'Zonasi'   => 'Diprioritaskan bagi yang berdomisili terdekat dengan madrasah berdasarkan Kartu Keluarga.',
+        'Mutasi'   => 'Untuk calon peserta yang pindah domisili karena orang tua dipindahtugaskan secara resmi.',
     ];
 
     $closestDeadline = null;
@@ -100,2038 +47,965 @@
     }
 @endphp
 <!DOCTYPE html>
-<html lang="id" class="dark">
-
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description"
-        content="PPDB MTsN 1 Pandeglang {{ $tahun?->nama ?? '' }} — Pendaftaran online peserta didik baru. Madrasah unggulan Kabupaten Pandeglang.">
-    <title>PPDB MTsN 1 Pandeglang {{ $tahun ? '— ' . $tahun->nama : '' }}</title>
+    <meta name="description" content="PPDB MTsN 1 Pandeglang {{ $tahun?->nama ?? '' }} — Pendaftaran online peserta didik baru.">
+    <title>PPDB MTsN 1 Pandeglang{{ $tahun ? ' — ' . $tahun->nama : '' }}</title>
     <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; font-size: 16px; }
+
         :root {
-            --gold: #d4a843;
-            --gold-light: #f0c96a;
-            --green: #059669;
-            --green-light: #10b981;
-            --bg-dark: #0a0a0f;
-            --card-dark: rgba(255, 255, 255, 0.04);
-            --border-dark: rgba(255, 255, 255, 0.08);
-            --text-dark: #f1f5f9;
-            --muted-dark: #94a3b8;
-            --bg-light: #f8fafc;
-            --card-light: rgba(255, 255, 255, 0.85);
-            --border-light: rgba(0, 0, 0, 0.08);
-            --text-light: #0f172a;
-            --muted-light: #64748b;
-        }
+            --green:   #059669;
+            --green-l: #10b981;
+            --gold:    #d4a843;
+            --gold-l:  #f0c96a;
 
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+            --bg:       #0b0f0e;
+            --surface:  #111a17;
+            --card:     rgba(255,255,255,.04);
+            --border:   rgba(255,255,255,.08);
+            --text:     #e8f1ee;
+            --muted:    #7a9e92;
+            --radius:   16px;
         }
-
-        html {
-            scroll-behavior: smooth;
+        html.light {
+            --bg:      #f4f7f5;
+            --surface: #ffffff;
+            --card:    rgba(255,255,255,.9);
+            --border:  rgba(0,0,0,.08);
+            --text:    #0d1f1a;
+            --muted:   #5a7a6e;
         }
 
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: var(--bg-dark);
-            color: var(--text-dark);
+            background: var(--bg);
+            color: var(--text);
             transition: background .3s, color .3s;
             overflow-x: hidden;
+            line-height: 1.6;
         }
 
-        html.light body {
-            background: var(--bg-light);
-            color: var(--text-light);
+        /* ─── nav brand mobile truncation fix ─── */
+        @media (max-width: 400px) {
+            .nav-name { font-size: .78rem; }
+            .nav-sub  { display: none; }
         }
 
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-            pointer-events: none;
-            z-index: 0;
-        }
+        /* ─── scrollbar ─── */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--green); border-radius: 4px; }
 
+        /* ─── ambient ─── */
         .orb {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(120px);
-            opacity: .15;
-            pointer-events: none;
-            z-index: 0;
-            animation: floatOrb 8s ease-in-out infinite;
+            position: fixed; border-radius: 50%; filter: blur(110px);
+            opacity: .12; pointer-events: none; z-index: 0;
+        }
+        html.light .orb { opacity: .06; }
+        .orb-1 { width: 600px; height: 600px; background: var(--green); top: -200px; left: -200px; }
+        .orb-2 { width: 400px; height: 400px; background: var(--gold);  bottom: 0;   right: -150px; }
+
+        /* ─── layout helpers ─── */
+        .wrap { max-width: 1180px; margin: 0 auto; padding: 0 1.5rem; }
+        section { padding: 5rem 1.5rem; position: relative; z-index: 1; }
+        .section-header { margin-bottom: 3rem; }
+        .section-header.center { text-align: center; }
+        .section-header.center .divider { margin: .5rem auto 0; }
+
+        /* ─── type ─── */
+        .eyebrow {
+            display: inline-flex; align-items: center; gap: .4rem;
+            padding: .28rem .85rem; border-radius: 999px;
+            font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+            background: rgba(16,185,129,.1); color: var(--green-l);
+            border: 1px solid rgba(16,185,129,.2); margin-bottom: .75rem;
+        }
+        .divider {
+            width: 40px; height: 3px;
+            background: linear-gradient(90deg, var(--green), var(--gold));
+            border-radius: 999px; margin: .5rem 0 0;
+        }
+        h1, h2 { font-weight: 800; letter-spacing: -.03em; line-height: 1.1; }
+        h1 { font-size: clamp(2.2rem, 5vw, 3.6rem); }
+        h2 { font-size: clamp(1.7rem, 3.5vw, 2.5rem); margin-bottom: .75rem; }
+        .grad {
+            background: linear-gradient(135deg, var(--green-l), var(--gold));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .lead { font-size: 1.05rem; color: var(--muted); max-width: 540px; line-height: 1.75; }
+
+        /* ─── glass card ─── */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            backdrop-filter: blur(10px);
+            transition: border-color .25s, transform .25s, box-shadow .25s;
+        }
+        html.light .card { box-shadow: 0 2px 16px rgba(0,0,0,.06); }
+        .card-hover:hover {
+            border-color: rgba(16,185,129,.3);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 32px rgba(5,150,105,.12);
         }
 
-        .orb-1 {
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, #059669, transparent);
-            top: -200px;
-            left: -200px;
-        }
-
-        .orb-2 {
-            width: 500px;
-            height: 500px;
-            background: radial-gradient(circle, #d4a843, transparent);
-            bottom: 0;
-            right: -150px;
-            animation-delay: -4s;
-        }
-
-        .orb-3 {
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, #7c3aed, transparent);
-            top: 50%;
-            left: 50%;
-            animation-delay: -2s;
-            opacity: .07;
-        }
-
-        html.light .orb {
-            opacity: .06;
-        }
-
-        @keyframes floatOrb {
-
-            0%,
-            100% {
-                transform: translateY(0) scale(1);
-            }
-
-            50% {
-                transform: translateY(-30px) scale(1.05);
-            }
-        }
-
-        /* ── NAV ── */
-        nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            height: 64px;
-            padding: 0 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            backdrop-filter: blur(20px) saturate(180%);
-            background: rgba(10, 10, 15, .75);
-            border-bottom: 1px solid var(--border-dark);
-            transition: background .3s, border-color .3s;
-        }
-
-        html.light nav {
-            background: rgba(248, 250, 252, .9);
-            border-bottom-color: var(--border-light);
-        }
-
-        .nav-brand {
-            display: flex;
-            align-items: center;
-            gap: .75rem;
-            font-weight: 700;
-            text-decoration: none;
-            color: inherit;
-        }
-
-        .nav-logo {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, var(--green), var(--gold));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-        }
-
-        .nav-name-main {
-            font-size: .9rem;
-            line-height: 1.2;
-        }
-
-        .nav-name-sub {
-            font-size: .7rem;
-            font-weight: 400;
-            opacity: .55;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: .25rem;
-            list-style: none;
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: var(--muted-dark);
-            font-size: .85rem;
-            padding: .375rem .7rem;
-            border-radius: 8px;
-            transition: all .2s;
-        }
-
-        html.light .nav-links a {
-            color: var(--muted-light);
-        }
-
-        .nav-links a:hover,
-        .nav-links a.active {
-            color: var(--green-light);
-            background: rgba(5, 150, 105, .1);
-        }
-
-        .nav-actions {
-            display: flex;
-            align-items: center;
-            gap: .75rem;
-        }
-
-        #themeToggle {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            border: 1px solid var(--border-dark);
-            background: var(--card-dark);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-            transition: all .2s;
-            color: inherit;
-        }
-
-        html.light #themeToggle {
-            border-color: var(--border-light);
-            background: var(--card-light);
-        }
-
-        #themeToggle:hover {
-            transform: scale(1.05);
-        }
-
+        /* ─── buttons ─── */
         .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: .45rem;
-            padding: .5rem 1.25rem;
-            border-radius: 10px;
-            font-size: .875rem;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            text-decoration: none;
-            transition: all .2s;
+            display: inline-flex; align-items: center; gap: .4rem;
+            padding: .6rem 1.4rem; border-radius: 10px;
+            font-size: .875rem; font-weight: 600; cursor: pointer;
+            border: none; text-decoration: none; transition: all .2s;
         }
-
         .btn-primary {
             background: linear-gradient(135deg, var(--green), #047857);
-            color: #fff;
-            box-shadow: 0 0 20px rgba(5, 150, 105, .3);
+            color: #fff; box-shadow: 0 0 20px rgba(5,150,105,.25);
         }
-
-        .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 0 30px rgba(5, 150, 105, .5);
-        }
-
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 28px rgba(5,150,105,.4); }
         .btn-ghost {
-            background: transparent;
-            color: var(--muted-dark);
-            border: 1px solid var(--border-dark);
+            background: transparent; color: var(--muted);
+            border: 1px solid var(--border);
+        }
+        .btn-ghost:hover { color: var(--green-l); border-color: rgba(16,185,129,.4); background: rgba(16,185,129,.06); }
+        .btn-lg { padding: .8rem 2rem; font-size: 1rem; border-radius: 12px; }
+
+        /* ─── badge ─── */
+        .badge {
+            display: inline-block; padding: .2rem .7rem; border-radius: 999px;
+            font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
         }
 
-        html.light .btn-ghost {
-            color: var(--muted-light);
-            border-color: var(--border-light);
+        /* ═══════════════════════════════════════
+           NAV
+        ═══════════════════════════════════════ */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+            height: 60px; padding: 0 1.5rem;
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(11,15,14,.85); border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(18px) saturate(160%);
+            transition: background .3s, border-color .3s;
         }
+        html.light nav { background: rgba(244,247,245,.92); }
 
-        .btn-ghost:hover {
-            background: rgba(5, 150, 105, .08);
-            color: var(--green-light);
-            border-color: rgba(5, 150, 105, .3);
+        .nav-brand {
+            display: flex; align-items: center; gap: .7rem;
+            text-decoration: none; color: inherit; font-weight: 700; flex-shrink: 0;
         }
-
-        .btn-lg {
-            padding: .875rem 2rem;
-            font-size: 1rem;
-            border-radius: 14px;
+        .nav-logo {
+            width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
+            background: linear-gradient(135deg, var(--green), var(--gold));
+            display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
         }
+        .nav-name { font-size: .88rem; line-height: 1.25; }
+        .nav-sub  { font-size: .68rem; font-weight: 400; color: var(--muted); }
 
-        /* ── LAYOUT ── */
-        main {
-            position: relative;
-            z-index: 1;
+        .nav-links { display: flex; gap: .1rem; list-style: none; }
+        .nav-links a {
+            text-decoration: none; color: var(--muted); font-size: .82rem;
+            padding: .35rem .65rem; border-radius: 8px; transition: all .2s;
         }
+        .nav-links a:hover, .nav-links a.active { color: var(--green-l); background: rgba(16,185,129,.08); }
 
-        section {
-            padding: 5rem 2rem;
+        .nav-right { display: flex; align-items: center; gap: .6rem; flex-shrink: 0; }
+
+        #themeBtn {
+            width: 34px; height: 34px; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--card);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 1rem; color: inherit; transition: all .2s;
         }
+        #themeBtn:hover { transform: scale(1.1); }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
+        /* hamburger */
+        #menuBtn {
+            display: none; width: 34px; height: 34px; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--card);
+            cursor: pointer; flex-direction: column; align-items: center; justify-content: center;
+            gap: 4px; color: inherit;
         }
-
-        /* ── TYPE ── */
-        .tag {
-            display: inline-flex;
-            align-items: center;
-            gap: .4rem;
-            padding: .35rem 1rem;
-            border-radius: 999px;
-            font-size: .72rem;
-            font-weight: 700;
-            letter-spacing: .08em;
-            text-transform: uppercase;
-            background: rgba(5, 150, 105, .12);
-            color: var(--green-light);
-            border: 1px solid rgba(5, 150, 105, .2);
-            margin-bottom: 1rem;
+        #menuBtn span {
+            display: block; width: 16px; height: 2px; background: currentColor;
+            border-radius: 2px; transition: all .3s;
         }
+        #menuBtn.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+        #menuBtn.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+        #menuBtn.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
-        .divider {
-            width: 60px;
-            height: 3px;
-            background: linear-gradient(90deg, var(--green), var(--gold));
-            border-radius: 999px;
-            margin: .6rem 0 1.5rem;
+        /* drawer */
+        .drawer {
+            position: fixed; top: 56px; left: 0; right: 0; z-index: 190;
+            flex-direction: column; padding: 0 1.25rem;
+            background: #0b0f0e;
+            border-bottom: 1px solid transparent;
+            max-height: 0; overflow: hidden;
+            transition: max-height .3s ease, padding .3s ease, border-color .3s;
+            display: flex;
         }
-
-        .title {
-            font-size: clamp(1.75rem, 4vw, 2.75rem);
-            font-weight: 800;
-            letter-spacing: -.03em;
-            line-height: 1.15;
-            margin-bottom: 1rem;
+        html.light .drawer { background: #f4f7f5; }
+        .drawer.open {
+            max-height: 420px;
+            padding: 1rem 1.25rem 1.5rem;
+            border-color: var(--border);
         }
-
-        .grad {
-            background: linear-gradient(135deg, var(--green-light), var(--gold));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        .drawer.open { opacity: 1; transform: translateY(0); }
+        .drawer a {
+            text-decoration: none; color: var(--muted); font-size: .9rem; font-weight: 500;
+            padding: .6rem .9rem; border-radius: 10px; transition: all .2s;
         }
+        .drawer a:hover { color: var(--green-l); background: rgba(16,185,129,.08); }
+        .drawer hr { border: none; border-top: 1px solid var(--border); margin: .6rem 0; }
 
-        .sub {
-            font-size: 1.05rem;
-            color: var(--muted-dark);
-            max-width: 560px;
-            line-height: 1.7;
-        }
-
-        html.light .sub {
-            color: var(--muted-light);
-        }
-
-        /* ── GLASS ── */
-        .glass {
-            background: var(--card-dark);
-            border: 1px solid var(--border-dark);
-            backdrop-filter: blur(12px);
-            border-radius: 20px;
-            transition: all .3s;
-        }
-
-        html.light .glass {
-            background: var(--card-light);
-            border-color: var(--border-light);
-            box-shadow: 0 4px 24px rgba(0, 0, 0, .06);
-        }
-
-        .glass-hover:hover {
-            border-color: rgba(5, 150, 105, .3);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 40px rgba(5, 150, 105, .1);
-        }
-
-        /* ── HERO ── */
+        /* ═══════════════════════════════════════
+           HERO
+        ═══════════════════════════════════════ */
         #hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            padding-top: 64px;
+            min-height: 100vh; padding-top: 60px;
+            display: flex; align-items: center;
         }
-
         .hero-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-            align-items: center;
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 4rem; align-items: center; max-width: 1180px; margin: 0 auto; width: 100%;
         }
-
         .hero-eyebrow {
-            display: inline-flex;
-            align-items: center;
-            gap: .5rem;
-            padding: .4rem 1rem;
-            border-radius: 999px;
-            font-size: .78rem;
-            font-weight: 600;
-            background: linear-gradient(135deg, rgba(212, 168, 67, .15), rgba(5, 150, 105, .12));
-            border: 1px solid rgba(212, 168, 67, .25);
-            color: var(--gold-light);
-            margin-bottom: 1.5rem;
+            display: inline-flex; align-items: center; gap: .45rem;
+            padding: .35rem 1rem; border-radius: 999px; font-size: .75rem; font-weight: 600;
+            background: rgba(212,168,67,.1); border: 1px solid rgba(212,168,67,.2);
+            color: var(--gold-l); margin-bottom: 1.25rem;
         }
-
-        .hero-title {
-            font-size: clamp(2.2rem, 5vw, 3.8rem);
-            font-weight: 900;
-            letter-spacing: -.04em;
-            line-height: 1.05;
-            margin-bottom: 1.5rem;
-        }
-
-        .hero-sub {
-            font-size: 1.05rem;
-            color: var(--muted-dark);
-            line-height: 1.7;
-            margin-bottom: 2.5rem;
-            max-width: 480px;
-        }
-
-        html.light .hero-sub {
-            color: var(--muted-light);
-        }
-
-        .hero-actions {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-
+        .hero-cta { display: flex; gap: .85rem; flex-wrap: wrap; margin-top: 2rem; }
         .hero-stats {
-            display: flex;
-            gap: 2.5rem;
-            margin-top: 3rem;
-            padding-top: 2rem;
-            border-top: 1px solid var(--border-dark);
+            display: flex; gap: 2rem; flex-wrap: wrap;
+            margin-top: 2.5rem; padding-top: 2rem; border-top: 1px solid var(--border);
         }
-
-        html.light .hero-stats {
-            border-top-color: var(--border-light);
-        }
-
         .stat-val {
-            font-size: 1.75rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--green-light), var(--gold));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-size: 1.6rem; font-weight: 800;
+            background: linear-gradient(135deg, var(--green-l), var(--gold));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
+        .stat-lbl { font-size: .74rem; color: var(--muted); margin-top: .15rem; }
 
-        .stat-lbl {
-            font-size: .78rem;
-            color: var(--muted-dark);
-            margin-top: .2rem;
-        }
-
-        html.light .stat-lbl {
-            color: var(--muted-light);
-        }
-
-        /* Hero card */
-        .hero-card {
-            padding: 2rem;
-            border-radius: 24px;
-            position: relative;
-            overflow: hidden;
-            max-width: 420px;
-            width: 100%;
-        }
-
-        .hero-card::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(5, 150, 105, .1), rgba(212, 168, 67, .07), transparent);
-            border-radius: 24px;
-            pointer-events: none;
-        }
-
-        .countdown-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: .75rem;
-            margin-top: 1.5rem;
-        }
-
+        /* hero card */
+        .hero-card { padding: 1.75rem; border-radius: 22px; max-width: 400px; width: 100%; }
+        .cd-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: .65rem; margin-top: 1.25rem; }
         .cd-box {
-            background: rgba(255, 255, 255, .05);
-            border: 1px solid rgba(255, 255, 255, .09);
-            border-radius: 14px;
-            padding: 1rem .5rem;
-            text-align: center;
+            background: rgba(255,255,255,.05); border: 1px solid var(--border);
+            border-radius: 12px; padding: .9rem .5rem; text-align: center;
         }
-
-        html.light .cd-box {
-            background: rgba(0, 0, 0, .04);
-            border-color: rgba(0, 0, 0, .08);
+        html.light .cd-box { background: rgba(0,0,0,.04); }
+        .cd-n {
+            font-size: 1.75rem; font-weight: 900; font-variant-numeric: tabular-nums;
+            background: linear-gradient(135deg, var(--green-l), var(--gold));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
+        .cd-l { font-size: .6rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-top: .15rem; }
 
-        .cd-num {
-            font-size: 2rem;
-            font-weight: 900;
-            font-variant-numeric: tabular-nums;
-            background: linear-gradient(135deg, #10b981, #d4a843);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        .quota-row { display: flex; align-items: center; justify-content: space-between; font-size: .8rem; }
+        .progress { width: 70px; height: 5px; background: rgba(255,255,255,.08); border-radius: 999px; overflow: hidden; }
+        html.light .progress { background: rgba(0,0,0,.08); }
+        .progress-fill { height: 100%; border-radius: 999px; }
+
+        /* ═══════════════════════════════════════
+           STATS ROW
+        ═══════════════════════════════════════ */
+        .stats-row {
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            gap: 1px; background: var(--border);
+            border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;
+            margin: 0 auto; max-width: 1180px;
         }
-
-        .cd-lbl {
-            font-size: .62rem;
-            color: var(--muted-dark);
-            text-transform: uppercase;
-            letter-spacing: .1em;
-            margin-top: .2rem;
+        .stat-box {
+            background: var(--surface); padding: 2rem 1.5rem; text-align: center;
         }
+        .stat-box .val { font-size: 2rem; font-weight: 800; }
+        .stat-box .lbl { font-size: .78rem; color: var(--muted); margin-top: .25rem; }
 
-        html.light .cd-lbl {
-            color: var(--muted-light);
-        }
-
-        .progress-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: .82rem;
-        }
-
-        .progress-bar {
-            width: 80px;
-            height: 6px;
-            background: rgba(255, 255, 255, .1);
-            border-radius: 999px;
-            overflow: hidden;
-        }
-
-        html.light .progress-bar {
-            background: rgba(0, 0, 0, .08);
-        }
-
-        .progress-fill {
-            height: 100%;
-            border-radius: 999px;
-        }
-
-        .badge-float {
-            position: absolute;
-            padding: .7rem 1.1rem;
-            border-radius: 14px;
-            font-size: .8rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: .45rem;
-            backdrop-filter: blur(8px);
-        }
-
-        .badge-float-1 {
-            top: -1rem;
-            right: -1rem;
-            background: rgba(5, 150, 105, .15);
-            border: 1px solid rgba(5, 150, 105, .3);
-            color: #34d399;
-            animation: floatB 3s ease-in-out infinite;
-        }
-
-        .badge-float-2 {
-            bottom: -1rem;
-            left: -1rem;
-            background: rgba(212, 168, 67, .15);
-            border: 1px solid rgba(212, 168, 67, .3);
-            color: var(--gold-light);
-            animation: floatB 3s ease-in-out infinite;
-            animation-delay: -1.5s;
-        }
-
-        @keyframes floatB {
-
-            0%,
-            100% {
-                transform: translateY(0);
-            }
-
-            50% {
-                transform: translateY(-8px);
-            }
-        }
-
-        /* ── BENTO ── */
-        .bento {
-            display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            grid-auto-rows: minmax(130px, auto);
-            gap: 1.25rem;
-        }
-
-        .b1 {
-            grid-column: span 8;
-            grid-row: span 2;
-        }
-
-        .b2 {
-            grid-column: span 4;
-        }
-
-        .b3 {
-            grid-column: span 4;
-        }
-
-        .b4 {
-            grid-column: span 4;
-            grid-row: span 2;
-        }
-
-        .b5 {
-            grid-column: span 4;
-            grid-row: span 2;
-        }
-
-        .b6 {
-            grid-column: span 4;
-            grid-row: span 2;
-        }
-
-        .bcard {
-            border-radius: 20px;
-            padding: 1.75rem;
-            position: relative;
-            overflow: hidden;
-            transition: all .3s;
-        }
-
-        .bcard:hover {
-            transform: translateY(-2px);
-        }
-
-        .borb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(60px);
-            opacity: .15;
-            pointer-events: none;
-        }
-
-        .bstat {
-            font-size: 2.8rem;
-            font-weight: 900;
-        }
-
-        .bstat-lbl {
-            font-size: .82rem;
-            opacity: .6;
-            margin-top: .2rem;
-        }
-
-        .bstat-ico {
-            font-size: 1.8rem;
-            margin-top: .5rem;
-        }
-
-        /* ── JALUR ── */
-        .jalur-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
-            gap: 1.25rem;
-            margin-top: 3rem;
-        }
-
-        .jalur-card {
-            padding: 1.75rem;
-            border-radius: 20px;
-            position: relative;
-            overflow: hidden;
-            cursor: default;
-        }
-
+        /* ═══════════════════════════════════════
+           JALUR
+        ═══════════════════════════════════════ */
+        .jalur-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px,1fr)); gap: 1rem; }
+        .jalur-card { padding: 1.5rem; border-radius: var(--radius); position: relative; overflow: hidden; }
         .jalur-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
+            width: 46px; height: 46px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; margin-bottom: 1rem;
         }
+        .jalur-name  { font-size: .95rem; font-weight: 700; margin-bottom: .4rem; }
+        .jalur-desc  { font-size: .78rem; color: var(--muted); line-height: 1.6; }
+        .jalur-quota { margin-top: 1rem; }
+        .quota-label { display: flex; justify-content: space-between; font-size: .72rem; color: var(--muted); margin-bottom: .35rem; }
 
-        .jalur-title {
-            font-size: 1rem;
-            font-weight: 700;
-            margin-bottom: .5rem;
-        }
+        /* ═══════════════════════════════════════
+           TIMELINE + JADWAL
+        ═══════════════════════════════════════ */
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; }
 
-        .jalur-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: .3rem;
-            font-size: .72rem;
-            font-weight: 700;
-            padding: .25rem .6rem;
-            border-radius: 999px;
-            margin-bottom: .75rem;
-        }
-
-        .jalur-desc {
-            font-size: .8rem;
-            color: var(--muted-dark);
-            line-height: 1.6;
-        }
-
-        html.light .jalur-desc {
-            color: var(--muted-light);
-        }
-
-        .jalur-quota-bar {
-            margin-top: 1rem;
-        }
-
-        .jalur-quota-track {
-            height: 5px;
-            background: rgba(255, 255, 255, .08);
-            border-radius: 999px;
-            overflow: hidden;
-            margin-top: .4rem;
-        }
-
-        html.light .jalur-quota-track {
-            background: rgba(0, 0, 0, .07);
-        }
-
-        .jalur-quota-label {
-            display: flex;
-            justify-content: space-between;
-            font-size: .72rem;
-            color: var(--muted-dark);
-        }
-
-        html.light .jalur-quota-label {
-            color: var(--muted-light);
-        }
-
-        /* ── TIMELINE ── */
-        .timeline {
-            position: relative;
-            padding-left: 2rem;
-        }
-
+        .timeline { padding-left: 1.75rem; position: relative; }
         .timeline::before {
-            content: '';
-            position: absolute;
-            left: .45rem;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: linear-gradient(to bottom, var(--green), var(--gold), transparent);
+            content: ''; position: absolute; left: .35rem; top: 0; bottom: 0;
+            width: 2px; background: linear-gradient(to bottom, var(--green), var(--gold), transparent);
         }
-
-        .tl-item {
-            position: relative;
-            padding: 1.2rem 0 1.2rem 1.5rem;
-            border-bottom: 1px solid var(--border-dark);
-        }
-
-        html.light .tl-item {
-            border-bottom-color: var(--border-light);
-        }
-
-        .tl-item:last-child {
-            border-bottom: none;
-        }
-
+        .tl-item { position: relative; padding: 1rem 0 1rem 1.25rem; border-bottom: 1px solid var(--border); }
+        .tl-item:last-child { border-bottom: none; }
         .tl-dot {
-            position: absolute;
-            left: -2rem;
-            top: 1.4rem;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: var(--green);
-            border: 3px solid var(--bg-dark);
-            transition: background .2s;
+            position: absolute; left: -1.75rem; top: 1.2rem;
+            width: 12px; height: 12px; border-radius: 50%;
+            background: var(--green); border: 3px solid var(--bg); transition: background .2s;
         }
+        html.light .tl-dot { border-color: var(--bg); }
+        .tl-item:hover .tl-dot { background: var(--gold); }
+        .tl-step  { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--green-l); margin-bottom: .25rem; }
+        .tl-title { font-size: .9rem; font-weight: 700; margin-bottom: .2rem; }
+        .tl-desc  { font-size: .78rem; color: var(--muted); line-height: 1.6; }
 
-        html.light .tl-dot {
-            border-color: var(--bg-light);
+        .sched-list { display: flex; flex-direction: column; }
+        .sched-item {
+            display: flex; align-items: center; gap: .85rem;
+            padding: .85rem 0; border-bottom: 1px solid var(--border);
         }
-
-        .tl-item:hover .tl-dot {
-            background: var(--gold);
-        }
-
-        .tl-step {
-            font-size: .7rem;
-            text-transform: uppercase;
-            letter-spacing: .08em;
-            color: var(--green-light);
-            font-weight: 700;
-            margin-bottom: .3rem;
-        }
-
-        .tl-title {
-            font-size: .95rem;
-            font-weight: 600;
-            margin-bottom: .25rem;
-        }
-
-        .tl-desc {
-            font-size: .8rem;
-            color: var(--muted-dark);
-            line-height: 1.6;
-        }
-
-        html.light .tl-desc {
-            color: var(--muted-light);
-        }
-
-        /* ── JADWAL ── */
-        .jadwal-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem 0;
-            border-bottom: 1px solid var(--border-dark);
-        }
-
-        html.light .jadwal-item {
-            border-bottom-color: var(--border-light);
-        }
-
-        .jadwal-item:last-child {
-            border-bottom: none;
-        }
-
-        .jadwal-icon {
-            min-width: 42px;
-            height: 42px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-        }
-
-        .jadwal-title {
-            font-size: .85rem;
-            font-weight: 700;
-        }
-
-        .jadwal-date {
-            font-size: .75rem;
-            color: var(--muted-dark);
-            margin-top: .15rem;
-        }
-
-        html.light .jadwal-date {
-            color: var(--muted-light);
-        }
-
-        .jadwal-status {
-            margin-left: auto;
-            padding: .2rem .6rem;
-            border-radius: 999px;
-            font-size: .68rem;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        /* ── PROGRAM ── */
-        .program-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-            gap: 1.1rem;
-            margin-top: 2.5rem;
-        }
-
-        .program-card {
-            padding: 1.5rem;
-            border-radius: 18px;
-            text-align: center;
-        }
-
-        .program-ico {
-            font-size: 2.5rem;
-            margin-bottom: .75rem;
-            display: block;
-        }
-
-        .program-title {
-            font-size: .9rem;
-            font-weight: 700;
-            margin-bottom: .35rem;
-        }
-
-        .program-desc {
-            font-size: .78rem;
-            color: var(--muted-dark);
-            line-height: 1.55;
-        }
-
-        html.light .program-desc {
-            color: var(--muted-light);
-        }
-
-        /* ── SYARAT ── */
-        .syarat-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
-            gap: 1rem;
-            margin-top: 2rem;
-        }
-
-        .syarat-item {
-            display: flex;
-            align-items: flex-start;
-            gap: .9rem;
-            padding: 1.2rem;
-            border-radius: 16px;
-        }
-
-        .syarat-num {
-            min-width: 30px;
-            height: 30px;
-            border-radius: 9px;
-            background: linear-gradient(135deg, var(--green), #047857);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: .78rem;
-            font-weight: 800;
-            color: #fff;
-        }
-
-        .syarat-text {
-            font-size: .86rem;
-            line-height: 1.6;
-        }
-
-        /* ── KURIKULUM ── */
-        .kurikulum-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.25rem;
-            margin-top: 2.5rem;
-        }
-
-        .kuri-card {
-            padding: 1.75rem;
-            border-radius: 20px;
-        }
-
-        .kuri-ico {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            display: block;
-        }
-
-        .kuri-title {
-            font-size: 1rem;
-            font-weight: 700;
-            margin-bottom: .6rem;
-        }
-
-        .kuri-list {
-            list-style: none;
-        }
-
-        .kuri-list li {
-            display: flex;
-            align-items: center;
-            gap: .5rem;
-            font-size: .82rem;
-            color: var(--muted-dark);
-            padding: .35rem 0;
-            border-bottom: 1px solid var(--border-dark);
-        }
-
-        html.light .kuri-list li {
-            color: var(--muted-light);
-            border-bottom-color: var(--border-light);
-        }
-
-        .kuri-list li:last-child {
-            border-bottom: none;
-        }
-
-        .kuri-list li::before {
-            content: '✓';
-            color: var(--green-light);
-            font-weight: 700;
-            font-size: .78rem;
-        }
-
-        /* ── PRESTASI ── */
-        .prestasi-scroll {
-            display: flex;
-            gap: 1.25rem;
-            overflow-x: auto;
-            padding-bottom: 1rem;
-            margin-top: 2.5rem;
-            scrollbar-width: thin;
-            scrollbar-color: var(--green) transparent;
-        }
-
-        .prestasi-card {
-            min-width: 210px;
-            padding: 1.5rem;
-            border-radius: 18px;
+        .sched-item:last-child { border-bottom: none; }
+        .sched-ico {
+            min-width: 38px; height: 38px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center; font-size: 1rem;
+            background: rgba(255,255,255,.04); border: 1px solid var(--border);
             flex-shrink: 0;
-            text-align: center;
         }
+        .sched-title { font-size: .82rem; font-weight: 700; }
+        .sched-date  { font-size: .72rem; color: var(--muted); margin-top: .1rem; }
+        .sched-badge { margin-left: auto; }
 
-        .prestasi-medal {
-            font-size: 3rem;
-            margin-bottom: .75rem;
-            display: block;
+        /* ═══════════════════════════════════════
+           PROGRAM
+        ═══════════════════════════════════════ */
+        .prog-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 1rem; }
+        .prog-card { padding: 1.5rem; border-radius: var(--radius); text-align: center; }
+        .prog-ico   { font-size: 2.2rem; display: block; margin-bottom: .6rem; }
+        .prog-title { font-size: .88rem; font-weight: 700; margin-bottom: .35rem; }
+        .prog-desc  { font-size: .76rem; color: var(--muted); line-height: 1.55; }
+
+        /* ═══════════════════════════════════════
+           SYARAT
+        ═══════════════════════════════════════ */
+        .req-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin-top: 1.5rem; }
+        .req-item { display: flex; align-items: flex-start; gap: .75rem; padding: 1rem; border-radius: 12px; }
+        .req-num {
+            min-width: 26px; height: 26px; border-radius: 7px; flex-shrink: 0;
+            background: linear-gradient(135deg, var(--green), #047857);
+            display: flex; align-items: center; justify-content: center;
+            font-size: .7rem; font-weight: 800; color: #fff;
         }
+        .req-text { font-size: .82rem; line-height: 1.6; }
+        .req-text strong { display: block; margin-bottom: .15rem; }
 
-        .prestasi-title {
-            font-size: .875rem;
-            font-weight: 700;
-            margin-bottom: .25rem;
-        }
+        /* ═══════════════════════════════════════
+           INFORMASI
+        ═══════════════════════════════════════ */
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px,1fr)); gap: 1rem; }
+        .info-card { padding: 1.5rem; border-radius: var(--radius); display: flex; flex-direction: column; }
+        .info-tag  { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--green-l); margin-bottom: .6rem; }
+        .info-title { font-size: .95rem; font-weight: 700; margin-bottom: .5rem; line-height: 1.4; flex: 1; }
+        .info-excerpt { font-size: .78rem; color: var(--muted); line-height: 1.65; }
+        .info-date  { font-size: .72rem; color: var(--muted); margin-top: .85rem; }
 
-        .prestasi-info {
-            font-size: .76rem;
-            color: var(--muted-dark);
-        }
-
-        html.light .prestasi-info {
-            color: var(--muted-light);
-        }
-
-        /* ── TESTIMONI ── */
-        .testi-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.25rem;
-            margin-top: 2.5rem;
-        }
-
-        .testi-card {
-            padding: 1.75rem;
-            border-radius: 20px;
-        }
-
-        .testi-stars {
-            color: var(--gold);
-            font-size: 1rem;
-            margin-bottom: 1rem;
-            letter-spacing: 2px;
-        }
-
-        .testi-text {
-            font-size: .88rem;
-            line-height: 1.7;
-            color: var(--muted-dark);
-            margin-bottom: 1.25rem;
-            font-style: italic;
-        }
-
-        html.light .testi-text {
-            color: var(--muted-light);
-        }
-
-        .testi-author {
-            display: flex;
-            align-items: center;
-            gap: .75rem;
-        }
-
-        .testi-avatar {
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #fff;
-        }
-
-        .testi-name {
-            font-size: .9rem;
-            font-weight: 700;
-        }
-
-        .testi-role {
-            font-size: .74rem;
-            color: var(--muted-dark);
-        }
-
-        html.light .testi-role {
-            color: var(--muted-light);
-        }
-
-        /* ── INFORMASI ── */
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
-            gap: 1.25rem;
-            margin-top: 2.5rem;
-        }
-
-        .info-card {
-            padding: 1.75rem;
-            border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .info-tag {
-            display: inline-block;
-            padding: .2rem .65rem;
-            border-radius: 999px;
-            font-size: .68rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .06em;
-            background: rgba(5, 150, 105, .12);
-            color: var(--green-light);
-            border: 1px solid rgba(5, 150, 105, .2);
-            margin-bottom: .75rem;
-            align-self: flex-start;
-        }
-
-        .info-title {
-            font-size: 1rem;
-            font-weight: 700;
-            margin-bottom: .5rem;
-            line-height: 1.4;
-            flex: 1;
-        }
-
-        .info-excerpt {
-            font-size: .8rem;
-            color: var(--muted-dark);
-            line-height: 1.65;
-        }
-
-        html.light .info-excerpt {
-            color: var(--muted-light);
-        }
-
-        .info-date {
-            font-size: .74rem;
-            color: var(--muted-dark);
-            margin-top: 1rem;
-            display: flex;
-            align-items: center;
-            gap: .3rem;
-        }
-
-        html.light .info-date {
-            color: var(--muted-light);
-        }
-
-        /* ── FAQ ── */
-        html.light .faq-body p {
-            color: var(--muted-light);
-            border-top-color: var(--border-light);
-        }
-
-        .faq-trigger:hover {
-            color: var(--green-light);
-        }
-
-        /* ── PRIVASI ── */
-        .privacy-box {
-            padding: 2.5rem;
-            border-radius: 24px;
-            max-width: 820px;
-            margin: 2.5rem auto 0;
-        }
-
-        .privacy-box h3 {
-            font-size: 1rem;
-            font-weight: 700;
-            margin: 1.5rem 0 .5rem;
-            color: var(--green-light);
-        }
-
-        .privacy-box h3:first-child {
-            margin-top: 0;
-        }
-
-        .privacy-box p {
-            font-size: .875rem;
-            line-height: 1.8;
-            color: var(--muted-dark);
-        }
-
-        html.light .privacy-box p {
-            color: var(--muted-light);
-        }
-
-        /* ── CTA ── */
-        .cta-wrap {
-            text-align: center;
-            padding: 6rem 2rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .cta-bg {
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(ellipse at center, rgba(5, 150, 105, .12) 0%, transparent 70%);
-            pointer-events: none;
-        }
-
-        .cta-title {
-            font-size: clamp(2rem, 5vw, 3.5rem);
-            font-weight: 900;
-            letter-spacing: -.04em;
-            margin-bottom: 1.25rem;
-        }
-
-        .cta-sub {
-            font-size: 1.05rem;
-            color: var(--muted-dark);
-            margin-bottom: 2.5rem;
-        }
-
-        html.light .cta-sub {
-            color: var(--muted-light);
-        }
-
-        .cta-actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        /* ── FOOTER ── */
-        footer {
-            border-top: 1px solid var(--border-dark);
-            padding: 3rem 2rem;
-            text-align: center;
-            position: relative;
-            z-index: 1;
-        }
-
-        html.light footer {
-            border-top-color: var(--border-light);
-        }
-
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
-            margin-top: 1.5rem;
-            flex-wrap: wrap;
-        }
-
-        .footer-links a {
-            font-size: .8rem;
-            color: var(--muted-dark);
-            text-decoration: none;
+        /* ═══════════════════════════════════════
+           FAQ
+        ═══════════════════════════════════════ */
+        .faq-wrap { max-width: 760px; margin: 2.5rem auto 0; }
+        .faq-item  { border-radius: 12px; overflow: hidden; margin-bottom: .6rem; }
+        .faq-btn {
+            width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+            padding: 1.1rem 1.25rem; background: transparent; border: none;
+            color: inherit; cursor: pointer; text-align: left; font-size: .88rem; font-weight: 600;
             transition: color .2s;
         }
-
-        html.light .footer-links a {
-            color: var(--muted-light);
+        .faq-btn:hover { color: var(--green-l); }
+        .faq-chevron {
+            min-width: 20px; height: 20px; border-radius: 50%;
+            background: rgba(16,185,129,.1); border: 1px solid rgba(16,185,129,.2);
+            display: flex; align-items: center; justify-content: center;
+            font-size: .65rem; color: var(--green-l); transition: transform .3s;
+        }
+        .faq-body { max-height: 0; overflow: hidden; transition: max-height .35s ease; }
+        .faq-body p {
+            padding: 0 1.25rem 1.1rem; font-size: .83rem; color: var(--muted);
+            line-height: 1.75; border-top: 1px solid var(--border);
         }
 
-        .footer-links a:hover {
-            color: var(--green-light);
+        /* ═══════════════════════════════════════
+           CTA
+        ═══════════════════════════════════════ */
+        .cta-section { text-align: center; padding: 6rem 1.5rem; }
+        .cta-inner { max-width: 600px; margin: 0 auto; }
+        .cta-inner h2 { font-size: clamp(2rem, 4.5vw, 3rem); margin-bottom: 1rem; }
+        .cta-inner .lead { margin: 0 auto 2rem; }
+        .cta-btns { display: flex; gap: .85rem; justify-content: center; flex-wrap: wrap; }
+
+        /* ═══════════════════════════════════════
+           FOOTER
+        ═══════════════════════════════════════ */
+        footer {
+            border-top: 1px solid var(--border); padding: 2.5rem 1.5rem;
+            text-align: center; position: relative; z-index: 1;
+        }
+        .footer-logo { font-size: .95rem; font-weight: 800; margin-bottom: .3rem; }
+        .footer-sub  { font-size: .78rem; color: var(--muted); }
+        .footer-links { display: flex; justify-content: center; gap: 1.25rem; flex-wrap: wrap; margin-top: 1.5rem; }
+        .footer-links a { font-size: .78rem; color: var(--muted); text-decoration: none; transition: color .2s; }
+        .footer-links a:hover { color: var(--green-l); }
+        .footer-copy { font-size: .73rem; color: var(--muted); margin-top: 1.5rem; }
+        .footer-copy a { color: var(--green-l); text-decoration: none; }
+
+        /* ═══════════════════════════════════════
+           RESPONSIVE
+        ═══════════════════════════════════════ */
+        @media (max-width: 960px) {
+            .hero-grid    { grid-template-columns: 1fr; gap: 3rem; }
+            .hero-visual  { display: none; }
+            .stats-row    { grid-template-columns: repeat(2,1fr); }
+            .two-col      { grid-template-columns: 1fr; gap: 3rem; }
         }
 
-        .footer-copy {
-            font-size: .76rem;
-            color: var(--muted-dark);
-            margin-top: 1.75rem;
+        @media (max-width: 768px) {
+            section { padding: 3.5rem 1.25rem; }
+            nav { padding: 0 1rem; height: 56px; }
+            #hero { padding-top: 56px; min-height: calc(100svh - 56px); padding-bottom: 3rem; align-items: flex-start; }
+            .nav-links { display: none; }
+            .req-grid  { grid-template-columns: 1fr; }
+            .prog-grid { grid-template-columns: repeat(2,1fr); }
+            #loginBtnNav, #registerBtnNav { display: none !important; }
+            .hero-grid { padding: 2.5rem 0 0; }
+            h1 { font-size: clamp(1.85rem, 7vw, 2.5rem); }
+            .lead { font-size: .92rem; }
+            .hero-cta { flex-direction: column; gap: .65rem; margin-top: 1.5rem; }
+            .hero-cta .btn { width: 100%; justify-content: center; padding: .85rem 1.5rem; font-size: .95rem; }
+            .hero-stats { gap: 0; margin-top: 2rem; padding-top: 1.5rem; display: grid; grid-template-columns: repeat(2,1fr); row-gap: 1.25rem; }
+            .stat-val { font-size: 1.4rem; }
         }
 
-        html.light .footer-copy {
-            color: var(--muted-light);
-        }
-
-        /* ── RESPONSIVE ── */
-        @media (max-width:768px) {
-            .hero-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .hero-visual {
-                display: none;
-            }
-
-            .b1,
-            .b2,
-            .b3,
-            .b4,
-            .b5,
-            .b6 {
-                grid-column: span 12;
-            }
-
-            .nav-links {
-                display: none;
-            }
-
-            section {
-                padding: 3.5rem 1.25rem;
-            }
+        @media (max-width: 480px) {
+            h2 { font-size: 1.5rem; }
+            .stats-row { grid-template-columns: repeat(2,1fr); }
+            .cta-btns { flex-direction: column; align-items: stretch; }
+            .cta-btns .btn { width: 100%; justify-content: center; }
+            .prog-grid { grid-template-columns: 1fr 1fr; }
+            .jalur-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
-
 <body>
 
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-    <div class="orb orb-3"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
 
-    {{-- ═══ NAVBAR ═══ --}}
-    <nav>
-        <a href="{{ route('landing') }}" class="nav-brand">
-            <div class="nav-logo">🕌</div>
+{{-- ═══ NAV ═══ --}}
+<nav>
+    <a href="{{ route('landing') }}" class="nav-brand">
+        <div class="nav-logo">🕌</div>
+        <div>
+            <div class="nav-name">MTsN 1 Pandeglang</div>
+            <div class="nav-sub">PPDB {{ $tahun?->nama ?? '' }}</div>
+        </div>
+    </a>
+
+    <ul class="nav-links">
+        <li><a href="#jalur">Jalur</a></li>
+        <li><a href="#alur">Alur</a></li>
+        <li><a href="#syarat">Syarat</a></li>
+        <li><a href="#program">Program</a></li>
+        <li><a href="#informasi">Informasi</a></li>
+        <li><a href="#faq">FAQ</a></li>
+    </ul>
+
+    <div class="nav-right">
+        <button id="themeBtn" title="Ganti tema">🌙</button>
+        <button id="menuBtn" aria-label="Menu">
+            <span></span><span></span><span></span>
+        </button>
+        <a href="{{ url('/login') }}"  class="btn btn-ghost"   style="display:none;" id="loginBtnNav">Masuk</a>
+        <a href="{{ url('/register') }}" class="btn btn-primary" id="registerBtnNav">📝 Daftar</a>
+    </div>
+</nav>
+
+<nav class="drawer" id="drawer">
+    <a href="#jalur"     class="d-link">🗂️ Jalur Pendaftaran</a>
+    <a href="#alur"      class="d-link">🗺️ Alur Daftar</a>
+    <a href="#syarat"    class="d-link">📄 Persyaratan</a>
+    <a href="#program"   class="d-link">🎓 Program Unggulan</a>
+    <a href="#informasi" class="d-link">📰 Informasi</a>
+    <a href="#faq"       class="d-link">❓ FAQ</a>
+    <hr>
+    <a href="{{ url('/login') }}"    class="d-link">🔐 Masuk Akun</a>
+    <a href="{{ url('/register') }}" class="d-link" style="color:var(--green-l);font-weight:700;">📝 Daftar Sekarang</a>
+</nav>
+
+<main>
+
+{{-- ═══ HERO ═══ --}}
+<section id="hero">
+    <div class="hero-grid wrap">
+        {{-- left --}}
+        <div>
+            <div class="hero-eyebrow">✨ Penerimaan Peserta Didik Baru {{ $tahun?->nama ?? '' }}</div>
+            <h1>Raih Masa Depan<br><span class="grad">Bersama Kami</span></h1>
+            <p class="lead" style="margin-top:1rem;">
+                MTsN 1 Pandeglang — Madrasah unggulan dengan kurikulum terpadu antara ilmu umum dan ilmu agama. Tempat terbaik untuk generasi penerus bangsa yang berakhlak mulia dan berprestasi.
+            </p>
+            <div class="hero-cta">
+                <a href="{{ url('/register') }}" class="btn btn-primary btn-lg">📝 Daftar Sekarang</a>
+                <a href="#alur"                  class="btn btn-ghost btn-lg">Lihat Alur →</a>
+            </div>
+            <div class="hero-stats">
+                <div><div class="stat-val">1.200+</div><div class="stat-lbl">Siswa Aktif</div></div>
+                <div><div class="stat-val">98%</div>   <div class="stat-lbl">Kelulusan</div></div>
+                <div><div class="stat-val">50+</div>   <div class="stat-lbl">Prestasi Nasional</div></div>
+                @if($tahun)
+                <div><div class="stat-val">{{ $tahun->kuantitas }}</div><div class="stat-lbl">Kuota Total</div></div>
+                @endif
+            </div>
+        </div>
+
+        {{-- right card --}}
+        <div class="hero-visual" style="display:flex;align-items:center;justify-content:center;">
+            <div class="card hero-card">
+                <div class="eyebrow" style="justify-content:center;display:flex;margin-bottom:.75rem;">
+                    @if($closestDeadline) ⏳ Pendaftaran Ditutup Dalam @else 📋 Status PPDB @endif
+                </div>
+
+                @if($closestDeadline)
+                <div class="cd-grid" id="countdown" data-deadline="{{ Carbon::parse($closestDeadline)->toIso8601String() }}">
+                    <div class="cd-box"><div class="cd-n" id="cd-d">--</div><div class="cd-l">Hari</div></div>
+                    <div class="cd-box"><div class="cd-n" id="cd-h">--</div><div class="cd-l">Jam</div></div>
+                    <div class="cd-box"><div class="cd-n" id="cd-m">--</div><div class="cd-l">Menit</div></div>
+                    <div class="cd-box"><div class="cd-n" id="cd-s">--</div><div class="cd-l">Detik</div></div>
+                </div>
+                @else
+                <p style="text-align:center;padding:1.5rem 0;font-size:.85rem;color:var(--muted);">Tidak ada sesi pendaftaran aktif saat ini.</p>
+                @endif
+
+                @if($jalurs->isNotEmpty())
+                <div style="margin-top:1.25rem;padding-top:1.1rem;border-top:1px solid var(--border);">
+                    <p style="font-size:.7rem;color:var(--muted);text-align:center;margin-bottom:.75rem;">Sisa Kuota Per Jalur</p>
+                    <div style="display:flex;flex-direction:column;gap:.6rem;">
+                        @foreach($jalurs as $j)
+                        @php
+                            $m    = $jalurMeta[$j->nama] ?? ['icon'=>'📋','color'=>'#10b981','bg'=>'rgba(16,185,129,.12)','border'=>'rgba(16,185,129,.3)'];
+                            $sisa = max(0, $j->kuantitas - ($j->terisi ?? 0));
+                            $pct  = $j->kuantitas > 0 ? round(($j->terisi / $j->kuantitas) * 100) : 0;
+                        @endphp
+                        <div class="quota-row">
+                            <span style="font-size:.78rem;">{{ $m['icon'] }} {{ $j->nama }}</span>
+                            <div style="display:flex;align-items:center;gap:.5rem;">
+                                <div class="progress">
+                                    <div class="progress-fill" style="width:{{ $pct }}%;background:{{ $m['color'] }};"></div>
+                                </div>
+                                <span style="font-size:.7rem;font-weight:700;color:{{ $m['color'] }};">{{ $sisa }} sisa</span>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+            </div>
+        </div>
+    </div>
+</section>
+
+{{-- ═══ STATS ROW ═══ --}}
+<div style="padding:0 1.5rem;position:relative;z-index:1;max-width:1180px;margin:0 auto;">
+    <div class="stats-row">
+        <div class="stat-box"><div class="val grad">54</div><div class="lbl">Tahun Berdiri</div></div>
+        <div class="stat-box"><div class="val" style="background:linear-gradient(135deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">70</div><div class="lbl">Tenaga Pendidik</div></div>
+        <div class="stat-box"><div class="val grad">A</div><div class="lbl">Akreditasi</div></div>
+        <div class="stat-box"><div class="val" style="background:linear-gradient(135deg,#fb923c,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">100+</div><div class="lbl">Prestasi Kejuaraan</div></div>
+    </div>
+</div>
+
+{{-- ═══ JALUR ═══ --}}
+<section id="jalur">
+    <div class="wrap">
+        <div class="section-header">
+            <div class="eyebrow">📋 Jalur Pendaftaran</div>
+            <h2>Pilih Jalur yang<br><span class="grad">Tepat Untukmu</span></h2>
+            <div class="divider"></div>
+        </div>
+
+        @if($jalurs->isNotEmpty())
+        <div class="jalur-grid">
+            @foreach($jalurs as $j)
+            @php
+                $m    = $jalurMeta[$j->nama] ?? ['icon'=>'📋','color'=>'#10b981','bg'=>'rgba(16,185,129,.12)','border'=>'rgba(16,185,129,.3)'];
+                $desc = $jalurDesc[$j->nama]  ?? 'Lihat informasi lengkap persyaratan jalur ini.';
+                $sisa = max(0, $j->kuantitas - ($j->terisi ?? 0));
+                $pct  = $j->kuantitas > 0 ? round(($j->terisi / $j->kuantitas) * 100) : 0;
+            @endphp
+            <div class="card card-hover jalur-card" style="background:linear-gradient(135deg,{{ $m['bg'] }},transparent);">
+                <div class="jalur-icon" style="background:{{ $m['bg'] }};border:1px solid {{ $m['border'] }};">{{ $m['icon'] }}</div>
+                <div class="badge" style="background:{{ $m['bg'] }};color:{{ $m['color'] }};border:1px solid {{ $m['border'] }};margin-bottom:.6rem;">{{ $j->kuantitas }} Kursi</div>
+                <div class="jalur-name">Jalur {{ $j->nama }}</div>
+                <p class="jalur-desc">{{ $desc }}</p>
+                <div class="jalur-quota">
+                    <div class="quota-label">
+                        <span>Terisi {{ $j->terisi ?? 0 }}</span>
+                        <span style="color:{{ $m['color'] }};font-weight:700;">{{ $sisa }} sisa</span>
+                    </div>
+                    <div class="progress" style="width:100%;">
+                        <div class="progress-fill" style="width:{{ $pct }}%;background:{{ $m['color'] }};"></div>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+        @else
+        <div class="card" style="padding:3rem;text-align:center;color:var(--muted);">
+            Informasi jalur pendaftaran belum tersedia. Pantau terus halaman ini.
+        </div>
+        @endif
+    </div>
+</section>
+
+{{-- ═══ ALUR + JADWAL ═══ --}}
+<section id="alur">
+    <div class="wrap">
+        <div class="two-col">
+            {{-- alur --}}
             <div>
-                <div class="nav-name-main">MTsN 1 Pandeglang</div>
-                <div class="nav-name-sub">PPDB {{ $tahun?->nama ?? '' }}</div>
+                <div class="section-header">
+                    <div class="eyebrow">🗺️ Alur Pendaftaran</div>
+                    <h2>Cara<br><span class="grad">Mendaftar</span></h2>
+                    <div class="divider"></div>
+                </div>
+                <div class="timeline">
+                    @foreach([
+                        ['Langkah 1','Buat Akun',              'Daftar menggunakan NISN, email, dan nomor WhatsApp aktif. Verifikasi akun melalui OTP yang dikirim ke WhatsApp.'],
+                        ['Langkah 2','Isi Formulir',           'Lengkapi data diri, data orang tua, pilih jalur pendaftaran, dan unggah seluruh dokumen yang dipersyaratkan.'],
+                        ['Langkah 3','Verifikasi Berkas',      'Panitia memeriksa dokumen. Notifikasi status dikirim otomatis ke WhatsApp pendaftar.'],
+                        ['Langkah 4','Ikuti Tes Seleksi',      'Cetak kartu tes dari sistem, lalu ikuti ujian akademik CBT dan ujian praktik ibadah sesuai jadwal.'],
+                        ['Langkah 5','Pengumuman & Daftar Ulang','Cek hasil seleksi melalui akun. Jika diterima, lakukan daftar ulang dengan membawa berkas asli.'],
+                    ] as [$step, $title, $desc])
+                    <div class="tl-item">
+                        <div class="tl-dot"></div>
+                        <div class="tl-step">{{ $step }}</div>
+                        <div class="tl-title">{{ $title }}</div>
+                        <div class="tl-desc">{{ $desc }}</div>
+                    </div>
+                    @endforeach
+                </div>
             </div>
-        </a>
-        <ul class="nav-links">
-            <li><a href="#jalur">Jalur</a></li>
-            <li><a href="#alur">Alur</a></li>
-            <li><a href="#program">Program</a></li>
-            <li><a href="#prestasi">Prestasi</a></li>
-            <li><a href="#informasi">Informasi</a></li>
-            <li><a href="#faq">FAQ</a></li>
-            <li><a href="#tentang">Tentang</a></li>
-        </ul>
-        <div class="nav-actions">
-            <button id="themeToggle" title="Ganti Mode">🌙</button>
-            <a href="{{ url('/register') }}" class="btn btn-primary">📝 Daftar</a>
+
+            {{-- jadwal --}}
+            <div>
+                <div class="section-header">
+                    <div class="eyebrow">📅 Jadwal PPDB</div>
+                    <h2>Timeline<br><span class="grad">Kegiatan</span></h2>
+                    <div class="divider"></div>
+                </div>
+                <div class="card" style="padding:1.5rem;">
+                    <div class="sched-list">
+                        @forelse($jadwals as $j)
+                        @php
+                            $m = Carbon::parse($j['mulai']);
+                            $s = Carbon::parse($j['selesai']);
+                            if ($now->lt($m))             { $st = 'Mendatang'; $sc = 'rgba(255,255,255,.06)'; $tc = 'var(--muted)'; }
+                            elseif ($now->between($m,$s)) { $st = 'Aktif';     $sc = 'rgba(212,168,67,.15)'; $tc = '#d4a843'; }
+                            else                          { $st = 'Selesai';   $sc = 'rgba(16,185,129,.12)'; $tc = '#10b981'; }
+                        @endphp
+                        <div class="sched-item">
+                            <div class="sched-ico">{{ $j['icon'] }}</div>
+                            <div>
+                                <div class="sched-title">{{ $j['label'] }}</div>
+                                <div class="sched-date">{{ $m->translatedFormat('d M') }} – {{ $s->translatedFormat('d M Y') }}</div>
+                            </div>
+                            <div class="sched-badge badge" style="background:{{ $sc }};color:{{ $tc }};border:1px solid {{ $tc }}44;">{{ $st }}</div>
+                        </div>
+                        @empty
+                        <p style="text-align:center;padding:2rem;font-size:.85rem;color:var(--muted);">Jadwal PPDB belum ditetapkan.</p>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
         </div>
-    </nav>
+    </div>
+</section>
 
-    <main>
-
-        {{-- ═══ HERO ═══ --}}
-        <section id="hero">
-            <div class="container">
-                <div class="hero-grid">
-                    <div>
-                        <div class="hero-eyebrow">✨ Penerimaan Peserta Didik Baru {{ $tahun?->nama ?? '' }}</div>
-                        <h1 class="hero-title">
-                            Raih Masa Depan<br>
-                            <span class="grad">Bersama Kami</span>
-                        </h1>
-                        <p class="hero-sub">
-                            MTsN 1 Pandeglang — Madrasah unggulan dengan kurikulum terpadu antara ilmu umum dan ilmu
-                            agama.
-                            Tempat terbaik untuk generasi penerus bangsa yang berakhlak mulia dan berprestasi.
-                        </p>
-                        <div class="hero-actions">
-                            <a href="{{ url('/register') }}" class="btn btn-primary btn-lg">📝 Daftar Sekarang</a>
-                            <a href="#alur" class="btn btn-ghost btn-lg">Lihat Alur →</a>
-                        </div>
-                        <div class="hero-stats">
-                            <div>
-                                <div class="stat-val">1.200+</div>
-                                <div class="stat-lbl">Siswa Aktif</div>
-                            </div>
-                            <div>
-                                <div class="stat-val">98%</div>
-                                <div class="stat-lbl">Tingkat Kelulusan</div>
-                            </div>
-                            <div>
-                                <div class="stat-val">50+</div>
-                                <div class="stat-lbl">Prestasi Nasional</div>
-                            </div>
-                            @if ($tahun)
-                                <div>
-                                    <div class="stat-val">{{ $tahun->kuantitas }}</div>
-                                    <div class="stat-lbl">Kuota Total</div>
-                                </div>
-                            @endif
-                        </div>
+{{-- ═══ PERSYARATAN ═══ --}}
+<section id="syarat">
+    <div class="wrap">
+        <div class="two-col">
+            {{-- dokumen --}}
+            <div>
+                <div class="section-header">
+                    <div class="eyebrow">📄 Dokumen</div>
+                    <h2>Berkas yang<br><span class="grad">Diperlukan</span></h2>
+                    <div class="divider"></div>
+                    <p class="lead" style="margin-top:.75rem;">Siapkan dokumen berikut sebelum memulai pendaftaran. Format JPG/PNG/PDF, maks 1 MB, min 10 KB.</p>
+                </div>
+                <div class="req-grid">
+                    @foreach([
+                        ['Kartu Keluarga',   'Scan/foto KK asli yang masih berlaku.'],
+                        ['Akta Kelahiran',   'Scan/foto akta kelahiran yang jelas.'],
+                        ['Pas Foto Formal',  'Berlatar merah, berpakaian formal.'],
+                        ['Screenshot NISN',  'Dari nisn.data.kemdikbud.go.id.'],
+                        ['SKBB & SKAB',      'Surat keterangan dari kepala sekolah asal.'],
+                        ['KIP / PKH / KKS',  'Jika berlaku — kartu bantuan sosial.'],
+                    ] as $i => [$dok, $ket])
+                    <div class="card req-item">
+                        <div class="req-num">{{ $i+1 }}</div>
+                        <div class="req-text"><strong>{{ $dok }}</strong>{{ $ket }}</div>
                     </div>
-
-                    <div class="hero-visual"
-                        style="position:relative;display:flex;align-items:center;justify-content:center;">
-                        <div class="glass hero-card">
-                            <div style="text-align:center;">
-                                <div class="tag" style="justify-content:center;">
-                                    @if ($closestDeadline)
-                                        ⏳ Pendaftaran Ditutup Dalam
-                                    @else
-                                        📋 Status Pendaftaran
-                                    @endif
-                                </div>
-                            </div>
-
-                            @if ($closestDeadline)
-                                <div class="countdown-grid" id="countdown"
-                                    data-deadline="{{ Carbon::parse($closestDeadline)->toIso8601String() }}">
-                                    <div class="cd-box">
-                                        <div class="cd-num" id="cd-d">--</div>
-                                        <div class="cd-lbl">Hari</div>
-                                    </div>
-                                    <div class="cd-box">
-                                        <div class="cd-num" id="cd-h">--</div>
-                                        <div class="cd-lbl">Jam</div>
-                                    </div>
-                                    <div class="cd-box">
-                                        <div class="cd-num" id="cd-m">--</div>
-                                        <div class="cd-lbl">Menit</div>
-                                    </div>
-                                    <div class="cd-box">
-                                        <div class="cd-num" id="cd-s">--</div>
-                                        <div class="cd-lbl">Detik</div>
-                                    </div>
-                                </div>
-                            @else
-                                <div style="text-align:center;padding:2rem 0;font-size:.9rem;color:var(--muted-dark);">
-                                    Tidak ada sesi aktif saat ini.
-                                </div>
-                            @endif
-
-                            @if ($jalurs->isNotEmpty())
-                                <div
-                                    style="margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid var(--border-dark);">
-                                    <div style="font-size:.75rem;opacity:.5;margin-bottom:.85rem;text-align:center;">
-                                        Sisa Kuota Per Jalur</div>
-                                    <div style="display:flex;flex-direction:column;gap:.7rem;">
-                                        @foreach ($jalurs as $j)
-                                            @php
-                                                $meta = $jalurIcons[$j->nama] ?? [
-                                                    'icon' => '📋',
-                                                    'color' => '#10b981',
-                                                    'bg' => 'rgba(5,150,105,.12)',
-                                                    'border' => 'rgba(5,150,105,.25)',
-                                                ];
-                                                $sisa = max(0, $j->kuantitas - ($j->terisi ?? 0));
-                                                $pct =
-                                                    $j->kuantitas > 0 ? round(($j->terisi / $j->kuantitas) * 100) : 0;
-                                            @endphp
-                                            <div class="progress-row">
-                                                <span>{{ $meta['icon'] }} {{ $j->nama }}</span>
-                                                <div style="display:flex;align-items:center;gap:.5rem;">
-                                                    <div class="progress-bar">
-                                                        <div class="progress-fill"
-                                                            style="width:{{ $pct }}%;background:linear-gradient(90deg,{{ $meta['color'] }},{{ $meta['color'] }}99);">
-                                                        </div>
-                                                    </div>
-                                                    <span
-                                                        style="font-size:.72rem;color:{{ $meta['color'] }};font-weight:700;">{{ $sisa }}
-                                                        sisa</span>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            @endif
-                        </div>
-                        <div class="glass badge-float badge-float-1">✅ Akreditasi A</div>
-                        <div class="glass badge-float badge-float-2">🏅 50+ Prestasi Nasional</div>
-                    </div>
+                    @endforeach
                 </div>
             </div>
-        </section>
 
-        {{-- ═══ TENTANG ═══ --}}
-        <section id="tentang">
-            <div class="container">
-                <div class="bento">
-                    <div class="glass bento-card bcard b1"
-                        style="background:linear-gradient(135deg,rgba(5,150,105,.08),rgba(212,168,67,.05),transparent);">
-                        <div class="borb"
-                            style="background:#059669;width:250px;height:250px;top:-80px;right:-60px;"></div>
-                        <div class="tag">🏫 Tentang Kami</div>
-                        <h2 class="title">Madrasah Unggulan<br><span class="grad">Kabupaten Pandeglang</span></h2>
-                        <p class="sub">Berdiri sejak 1970, MTsN 1 Pandeglang telah mencetak ribuan alumni
-                            berprestasi. Dengan visi "Terwujudnya peserta didik yang berakhlak mulia, berprestasi, dan
-                            berwawasan global."</p>
-                        <div style="display:flex;gap:1rem;margin-top:1.5rem;flex-wrap:wrap;">
-                            <span
-                                style="padding:.6rem 1.2rem;border-radius:10px;background:rgba(5,150,105,.12);border:1px solid rgba(5,150,105,.2);font-size:.8rem;color:#10b981;font-weight:600;">🏛️
-                                Negeri</span>
-                            <span
-                                style="padding:.6rem 1.2rem;border-radius:10px;background:rgba(212,168,67,.12);border:1px solid rgba(212,168,67,.2);font-size:.8rem;color:#d4a843;font-weight:600;">⭐
-                                Akreditasi A</span>
-                            <span
-                                style="padding:.6rem 1.2rem;border-radius:10px;background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.2);font-size:.8rem;color:#60a5fa;font-weight:600;">🌐
-                                Kemenag RI</span>
-                        </div>
-                    </div>
-                    <div class="glass bcard b2"
-                        style="background:linear-gradient(135deg,rgba(212,168,67,.1),transparent);text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.75rem;">
-                        <div class="bstat grad">54</div>
-                        <div class="bstat-lbl">Tahun Berdiri</div>
-                        <div class="bstat-ico">🏛️</div>
-                    </div>
-                    <div class="glass bcard b3"
-                        style="background:linear-gradient(135deg,rgba(59,130,246,.1),transparent);text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.75rem;">
-                        <div class="bstat"
-                            style="background:linear-gradient(135deg,#60a5fa,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
-                            70</div>
-                        <div class="bstat-lbl">Tenaga Pendidik</div>
-                        <div class="bstat-ico">👨‍🏫</div>
-                    </div>
-                    <div class="glass bcard b4"
-                        style="background:linear-gradient(135deg,rgba(124,58,237,.08),transparent);">
-                        <div style="font-size:2.5rem;margin-bottom:.75rem;">🕌</div>
-                        <div style="font-weight:700;font-size:1rem;margin-bottom:.5rem;">Berbasis Islam</div>
-                        <p style="font-size:.8rem;color:var(--muted-dark);line-height:1.6;">Kurikulum terintegrasi
-                            antara pendidikan umum nasional dan pendidikan agama Islam yang komprehensif dan holistik.
-                        </p>
-                    </div>
-                    <div class="glass bcard b5"
-                        style="background:linear-gradient(135deg,rgba(5,150,105,.08),transparent);">
-                        <div style="font-size:2.5rem;margin-bottom:.75rem;">🔬</div>
-                        <div style="font-weight:700;font-size:1rem;margin-bottom:.5rem;">Lab Modern</div>
-                        <p style="font-size:.8rem;color:var(--muted-dark);line-height:1.6;">Fasilitas laboratorium IPA,
-                            komputer, dan bahasa yang lengkap untuk mendukung pembelajaran abad ke-21.</p>
-                    </div>
-                    <div class="glass bcard b6"
-                        style="background:linear-gradient(135deg,rgba(212,168,67,.08),transparent);">
-                        <div style="font-size:2.5rem;margin-bottom:.75rem;">🏆</div>
-                        <div style="font-weight:700;font-size:1rem;margin-bottom:.5rem;">Berprestasi</div>
-                        <p style="font-size:.8rem;color:var(--muted-dark);line-height:1.6;">Ratusan prestasi dari
-                            tingkat kabupaten hingga nasional di bidang akademik dan non-akademik.</p>
-                    </div>
+            {{-- ketentuan --}}
+            <div>
+                <div class="section-header">
+                    <div class="eyebrow">✅ Ketentuan</div>
+                    <h2>Ketentuan<br><span class="grad">Umum</span></h2>
+                    <div class="divider"></div>
                 </div>
-            </div>
-        </section>
-
-        {{-- ═══ JALUR PENDAFTARAN ═══ --}}
-        <section id="jalur">
-            <div class="container">
-                <div class="tag">📋 Jalur Pendaftaran</div>
-                <div class="divider"></div>
-                <h2 class="title">{{ $jalurs->count() > 0 ? $jalurs->count() : '5' }} Jalur <span
-                        class="grad">Penerimaan</span></h2>
-                <p class="sub">Pilih jalur pendaftaran yang sesuai dengan kondisi dan potensi calon peserta didik.
-                </p>
-
-                @if ($jalurs->isNotEmpty())
-                    <div class="jalur-grid">
-                        @foreach ($jalurs as $j)
-                            @php
-                                $meta = $jalurIcons[$j->nama] ?? [
-                                    'icon' => '📋',
-                                    'color' => '#10b981',
-                                    'bg' => 'rgba(5,150,105,.12)',
-                                    'border' => 'rgba(5,150,105,.25)',
-                                ];
-                                $sisa = max(0, $j->kuantitas - ($j->terisi ?? 0));
-                                $pct = $j->kuantitas > 0 ? round(($j->terisi / $j->kuantitas) * 100) : 0;
-                                $deskripsi = match ($j->nama) {
-                                    'Prestasi'
-                                        => 'Bagi siswa berprestasi akademik/non-akademik di tingkat, kabupaten, provinsi, atau nasional.',
-                                    'Reguler'
-                                        => 'Seleksi berdasarkan nilai akademik dan tes masuk. Terbuka untuk semua calon peserta didik.',
-                                    'Afirmasi'
-                                        => 'Untuk keluarga kurang mampu pemegang KIP, PKH, atau KKS. Bukti kepemilikan wajib dilampirkan.',
-                                    'Zonasi'
-                                        => 'Diprioritaskan untuk yang berdomisili paling dekat dengan madrasah berdasarkan Kartu Keluarga.',
-                                    'Mutasi'
-                                        => 'Untuk yang pindah domisili karena orang tua/wali dipindahtugaskan secara resmi.',
-                                    default => 'Lihat informasi lengkap persyaratan jalur ini di sistem pendaftaran.',
-                                };
-                            @endphp
-                            <div class="glass glass-hover jalur-card">
-                                <div class="borb"
-                                    style="background:{{ $meta['color'] }};width:150px;height:150px;top:-40px;right:-40px;opacity:.12;filter:blur(50px);">
-                                </div>
-                                <div class="jalur-icon"
-                                    style="background:{{ $meta['bg'] }};border:1px solid {{ $meta['border'] }};">
-                                    {{ $meta['icon'] }}</div>
-                                <div class="jalur-title">Jalur {{ $j->nama }}</div>
-                                <div class="jalur-badge"
-                                    style="background:{{ $meta['bg'] }};border:1px solid {{ $meta['border'] }};color:{{ $meta['color'] }};">
-                                    📊 {{ $j->kuantitas }} Kursi
-                                </div>
-                                <p class="jalur-desc">{{ $deskripsi }}</p>
-                                <div class="jalur-quota-bar">
-                                    <div class="jalur-quota-label">
-                                        <span>Terisi {{ $j->terisi ?? 0 }}</span>
-                                        <span style="color:{{ $meta['color'] }};font-weight:700;">{{ $sisa }}
-                                            sisa</span>
-                                    </div>
-                                    <div class="jalur-quota-track">
-                                        <div class="progress-fill"
-                                            style="width:{{ $pct }}%;background:linear-gradient(90deg,{{ $meta['color'] }},{{ $meta['color'] }}99);">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                <div class="card" style="padding:1.75rem;">
+                    <ul style="list-style:none;display:flex;flex-direction:column;gap:.9rem;">
+                        @foreach([
+                            'Calon peserta didik telah <strong>lulus SD/MI</strong> atau sederajat.',
+                            'Berusia <strong>maksimal 15 tahun</strong> per 1 Juli tahun berjalan.',
+                            'Memiliki <strong>NISN yang valid</strong> sesuai data Kemendikbud.',
+                            'Pendaftaran dilakukan <strong>sepenuhnya online</strong> melalui sistem ini.',
+                            'Setiap pendaftar hanya dapat <strong>memilih satu jalur</strong>.',
+                            'Berkas asli diminta saat <strong>verifikasi dan daftar ulang</strong>.',
+                        ] as $ket)
+                        <li style="display:flex;gap:.65rem;font-size:.85rem;line-height:1.65;align-items:flex-start;">
+                            <span style="color:var(--green-l);font-size:1rem;flex-shrink:0;margin-top:.05rem;">✓</span>
+                            <span>{!! $ket !!}</span>
+                        </li>
                         @endforeach
-                    </div>
-                @else
-                    <div class="glass"
-                        style="padding:3rem;text-align:center;margin-top:2rem;color:var(--muted-dark);">
-                        Informasi jalur pendaftaran belum tersedia. Pantau terus halaman ini.
-                    </div>
-                @endif
-            </div>
-        </section>
-
-        {{-- ═══ PERSYARATAN ═══ --}}
-        <section id="syarat">
-            <div class="container">
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start;">
-                    <div>
-                        <div class="tag">📄 Persyaratan</div>
-                        <div class="divider"></div>
-                        <h2 class="title">Dokumen yang<br><span class="grad">Diperlukan</span></h2>
-                        <p class="sub">Siapkan dokumen berikut sebelum memulai proses pendaftaran online.</p>
-                        <div class="syarat-grid" style="grid-template-columns:1fr;margin-top:1.5rem;">
-                            @foreach ([['Kartu Keluarga (KK)', 'Scan/foto KK asli yang masih berlaku. Format JPG/PNG, maks 500KB.'], ['Akta Kelahiran', 'Scan/foto akta kelahiran asli yang jelas dan terbaca.'], ['Pas Foto 3×4', 'Berlatar merah, berpakaian formal. Format JPG/PNG, maks 500KB.'], ['Kartu NISN', 'Tangkapan layar dari nisn.data.kemdikbud.go.id yang valid.'], ['SKBB & SKAB', 'Surat Keterangan dari kepala sekolah asal. Format PDF, maks 500KB.'], ['KIP / PKH / KKS', 'Scan kartu bantuan sosial yang dimiliki.']] as $i => [$dok, $ket])
-                                <div class="glass syarat-item">
-                                    <div class="syarat-num">{{ $i + 1 }}</div>
-                                    <div class="syarat-text"><strong>{{ $dok }}</strong> —
-                                        {{ $ket }}</div>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                    <div>
-                        <div class="tag">✅ Ketentuan Umum</div>
-                        <div class="divider"></div>
-                        <div class="glass" style="padding:2rem;margin-top:0;">
-                            <ul style="list-style:none;display:flex;flex-direction:column;gap:1rem;">
-                                @foreach (['Calon peserta didik telah <strong>lulus SD/MI</strong> atau sederajat pada tahun yang berjalan atau maks 2 tahun sebelumnya.', 'Berusia <strong>maksimal 15 tahun</strong> per tanggal 1 Juli pada tahun yang berjalan.', 'Memiliki <strong>NISN yang valid</strong> sesuai data Kemendikbud.', 'Pendaftaran dilakukan <strong>online melalui sistem PPDB</strong> ini. Tidak melayani pendaftaran manual.', 'Setiap calon peserta didik <strong>hanya dapat mendaftar pada satu jalur</strong> yang dipilih.', 'Berkas asli akan diminta saat proses <strong>verifikasi dan daftar ulang</strong>.'] as $ket)
-                                    <li style="display:flex;gap:.75rem;font-size:.875rem;line-height:1.65;">
-                                        <span style="color:#10b981;font-size:1.1rem;margin-top:-1px;">✓</span>
-                                        <span>{!! $ket !!}</span>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        {{-- ═══ ALUR + JADWAL ═══ --}}
-        <section id="alur">
-            <div class="container">
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:4rem;">
-                    <div>
-                        <div class="tag">🗺️ Alur Pendaftaran</div>
-                        <div class="divider"></div>
-                        <h2 class="title">Cara<br><span class="grad">Mendaftar</span></h2>
-                        <div class="timeline" style="margin-top:2.5rem;">
-                            @foreach ([['Langkah 1', 'Buat Akun', 'Daftar menggunakan NISN, Email, dan Nomor WhatsApp aktif. Verifikasi akun melalui kode OTP yang dikirim ke WhatsApp Anda.'], ['Langkah 2', 'Isi Formulir', 'Lengkapi data diri, data orang tua, pilih jalur pendaftaran, dan unggah seluruh dokumen yang dipersyaratkan.'], ['Langkah 3', 'Verifikasi Berkas', 'Panitia memverifikasi dokumen yang diunggah. Notifikasi status dikirim otomatis ke WhatsApp.'], ['Langkah 4', 'Ikuti Tes Seleksi', 'Cetak kartu tes dari sistem dan ikuti ujian akademik CBT serta ujian praktik ibadah sesuai jadwal.'], ['Langkah 5', 'Pengumuman & Daftar Ulang', 'Cek hasil seleksi melalui akun Anda. Jika diterima, lakukan daftar ulang dengan membawa berkas asli.']] as [$step, $judul, $desc])
-                                <div class="tl-item">
-                                    <div class="tl-dot"></div>
-                                    <div class="tl-step">{{ $step }}</div>
-                                    <div class="tl-title">{{ $judul }}</div>
-                                    <div class="tl-desc">{{ $desc }}</div>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                    <div>
-                        <div class="tag">📅 Jadwal PPDB</div>
-                        <div class="divider"></div>
-                        <h2 class="title">Timeline<br><span class="grad">Kegiatan</span></h2>
-                        <div class="glass" style="padding:1.75rem;margin-top:1.5rem;">
-                            @forelse($jadwals as $j)
-                                @php
-                                    $mulai = Carbon::parse($j['mulai']);
-                                    $selesai = Carbon::parse($j['selesai']);
-                                    if ($now->lt($mulai)) {
-                                        $status = 'Mendatang';
-                                        $sc = 'rgba(255,255,255,.06)';
-                                        $tc = 'var(--muted-dark)';
-                                    } elseif ($now->between($mulai, $selesai)) {
-                                        $status = 'Aktif';
-                                        $sc = 'rgba(212,168,67,.15)';
-                                        $tc = '#d4a843';
-                                    } else {
-                                        $status = 'Selesai';
-                                        $sc = 'rgba(5,150,105,.12)';
-                                        $tc = '#10b981';
-                                    }
-                                @endphp
-                                <div class="jadwal-item">
-                                    <div class="jadwal-icon"
-                                        style="background:rgba(255,255,255,.05);border:1px solid var(--border-dark);">
-                                        {{ $j['icon'] }}</div>
-                                    <div>
-                                        <div class="jadwal-title">{{ $j['label'] }}</div>
-                                        <div class="jadwal-date">{{ $mulai->translatedFormat('d M') }} –
-                                            {{ $selesai->translatedFormat('d M Y') }}</div>
-                                    </div>
-                                    <div class="jadwal-status"
-                                        style="background:{{ $sc }};color:{{ $tc }};border:1px solid {{ $tc }}33;">
-                                        {{ $status }}</div>
-                                </div>
-                            @empty
-                                <div style="text-align:center;padding:2rem;font-size:.875rem;color:var(--muted-dark);">
-                                    Jadwal PPDB belum ditetapkan.
-                                </div>
-                            @endforelse
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        {{-- ═══ PROGRAM ═══ --}}
-        <section id="program">
-            <div class="container">
-                <div style="text-align:center;">
-                    <div class="tag" style="justify-content:center;">🎓 Program Unggulan</div>
-                    <div class="divider" style="margin:0.6rem auto 1.5rem;"></div>
-                    <h2 class="title">Program & <span class="grad">Ekstrakurikuler</span></h2>
-                    <p class="sub" style="margin:0 auto;">Dirancang untuk mengembangkan potensi siswa secara
-                        holistik — akademik, spiritual, dan sosial.</p>
-                </div>
-                <div class="program-grid">
-                    @foreach ([['📖', 'Tahfidz Al-Qur\'an', 'Program hafalan Al-Qur\'an dengan target minimal 3 juz selama 3 tahun.'], ['🔬', 'Olimpiade Sains', 'Persiapan kompetisi OSN tingkat kabupaten, provinsi, dan nasional.'], ['💻', 'Teknologi & IT', 'Literasi digital, coding dasar, dan robotika untuk era industri 4.0.'], ['⚽', 'Olahraga Prestasi', 'Sepak bola, bulu tangkis, karate, atletik dengan pelatih berpengalaman.'], ['🎭', 'Seni & Budaya', 'Paskibra, drumband, hadroh, dan seni rupa. Melestarikan budaya bangsa.'], ['🌍', 'Bahasa Asing', 'English Club dan Arabic Club untuk persiapan era global.']] as [$ico, $judul, $desc])
-                        <div class="glass glass-hover program-card">
-                            <span class="program-ico">{{ $ico }}</span>
-                            <div class="program-title">{{ $judul }}</div>
-                            <p class="program-desc">{{ $desc }}</p>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        </section>
-
-        {{-- ═══ KURIKULUM ═══ --}}
-        <section id="kurikulum">
-            <div class="container">
-                <div class="tag">📚 Kurikulum</div>
-                <div class="divider"></div>
-                <h2 class="title">Kurikulum <span class="grad">Terintegrasi</span></h2>
-                <p class="sub">Mengacu pada Kurikulum Merdeka dari Kemdikbud yang dipadukan dengan kurikulum
-                    madrasah dari Kemenag RI.</p>
-                <div class="kurikulum-grid">
-                    <div class="glass kuri-card">
-                        <span class="kuri-ico">📐</span>
-                        <div class="kuri-title">Mata Pelajaran Umum</div>
-                        <ul class="kuri-list">
-                            @foreach (['Matematika', 'IPA (Fisika, Kimia, Biologi)', 'IPS (Geografi, Sejarah, Ekonomi)', 'Bahasa Indonesia & Inggris', 'PPKN & Seni Budaya', 'PJOK & Informatika'] as $mp)
-                                <li>{{ $mp }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                    <div class="glass kuri-card">
-                        <span class="kuri-ico">🕌</span>
-                        <div class="kuri-title">Mata Pelajaran Agama</div>
-                        <ul class="kuri-list">
-                            @foreach (['Al-Qur\'an Hadits', 'Akidah Akhlak', 'Fiqih', 'Sejarah Kebudayaan Islam', 'Bahasa Arab', 'Tahfidz Al-Qur\'an'] as $mp)
-                                <li>{{ $mp }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                    <div class="glass kuri-card">
-                        <span class="kuri-ico">🎯</span>
-                        <div class="kuri-title">Program Keunggulan</div>
-                        <ul class="kuri-list">
-                            @foreach (['Kelas Unggulan (Seleksi)', 'Kelas Reguler', 'Program Akselerasi Hafalan', 'Bimbingan Olimpiade', 'English Immersion', 'Digital Literacy'] as $mp)
-                                <li>{{ $mp }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        {{-- ═══ PRESTASI ═══ --}}
-        <section id="prestasi">
-            <div class="container">
-                <div class="tag">🏅 Prestasi</div>
-                <div class="divider"></div>
-                <h2 class="title">Rekam <span class="grad">Kejuaraan</span></h2>
-                <p class="sub">Ratusan prestasi membanggakan dari berbagai bidang di tingkat lokal hingga nasional.
-                </p>
-                <div class="prestasi-scroll">
-                    @foreach ([['🥇', 'Juara 1 OSN Matematika', 'Tingkat Provinsi · 2024'], ['🥇', 'Juara 1 MTQ Tilawah', 'Tingkat Kabupaten · 2024'], ['🥈', 'Juara 2 KSM IPA', 'Tingkat Nasional · 2023'], ['🥇', 'Juara 1 Bulu Tangkis Putra', 'Tingkat Provinsi · 2024'], ['🥉', 'Juara 3 Olimpiade Fisika', 'Tingkat Nasional · 2023'], ['🥇', 'Juara 1 Hafalan 10 Juz', 'Tingkat Provinsi · 2024'], ['🥈', 'Juara 2 LCC Pelajar', 'Tingkat Kabupaten · 2024'], ['🥇', 'Juara 1 Karate Kata Beregu', 'Tingkat Provinsi · 2023']] as [$medal, $judul, $info])
-                        <div class="glass glass-hover prestasi-card">
-                            <span class="prestasi-medal">{{ $medal }}</span>
-                            <div class="prestasi-title">{{ $judul }}</div>
-                            <div class="prestasi-info">{{ $info }}</div>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        </section>
-
-        {{-- ═══ TESTIMONI ═══ --}}
-        <section id="testimoni">
-            <div class="container">
-                <div style="text-align:center;">
-                    <div class="tag" style="justify-content:center;">💬 Testimoni</div>
-                    <div class="divider" style="margin:.6rem auto 1.5rem;"></div>
-                    <h2 class="title">Kata Mereka yang<br><span class="grad">Telah Bergabung</span></h2>
-                </div>
-                <div class="testi-grid">
-                    @foreach ([['Hj. Siti Nurhalimah', 'Orang Tua Siswa · Angkatan 2022', 'H', 'linear-gradient(135deg,#059669,#047857)', '"Anak saya berkembang pesat sejak masuk MTsN 1 Pandeglang. Tidak hanya akademik, akhlak dan kedisiplinannya juga sangat terasa perubahan positifnya."'], ['Achmad Fauzi', 'Orang Tua Siswa · Angkatan 2024', 'A', 'linear-gradient(135deg,#d4a843,#b8860b)', '"Proses PPDB online sangat memudahkan. Semua bisa dilakukan dari rumah, notifikasi WhatsApp langsung masuk, dan statusnya bisa dipantau kapan saja."'], ['Rd. Dian Pertiwi', 'Orang Tua Siswa · Angkatan 2023', 'R', 'linear-gradient(135deg,#3b82f6,#1d4ed8)', '"Guru-gurunya sangat perhatian dan profesional. Program tahfidz-nya luar biasa, sekarang anak saya sudah hafal 5 juz di kelas 8. Alhamdulillah."']] as [$nama, $role, $inisial, $grad, $teks])
-                        <div class="glass glass-hover testi-card">
-                            <div class="testi-stars">★★★★★</div>
-                            <p class="testi-text">{{ $teks }}</p>
-                            <div class="testi-author">
-                                <div class="testi-avatar" style="background:{{ $grad }};">
-                                    {{ $inisial }}</div>
-                                <div>
-                                    <div class="testi-name">{{ $nama }}</div>
-                                    <div class="testi-role">{{ $role }}</div>
-                                </div>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        </section>
-
-        {{-- ═══ INFORMASI ═══ --}}
-        <section id="informasi">
-            <div class="container">
-                <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;">
-                    <div>
-                        <div class="tag">📰 Informasi PPDB</div>
-                        <div class="divider"></div>
-                        <h2 class="title">Berita &<br><span class="grad">Pengumuman</span></h2>
-                    </div>
-                    <a href="{{ url('/informasi') }}" class="btn btn-ghost">Lihat Semua →</a>
-                </div>
-                @if ($informasis->isNotEmpty())
-                    <div class="info-grid">
-                        @foreach ($informasis as $info)
-                            <div class="glass glass-hover info-card">
-                                <div class="info-tag">{{ $info->status === 'Publish' ? 'Pengumuman' : 'Informasi' }}
-                                </div>
-                                <div class="info-title">{{ $info->judul }}</div>
-                                <p class="info-excerpt">
-                                    {{ \Illuminate\Support\Str::limit(strip_tags($info->isi), 120) }}</p>
-                                <div class="info-date">
-                                    📅
-                                    {{ $info->tanggal ? $info->tanggal->translatedFormat('d F Y') : $info->updated_at->translatedFormat('d F Y') }}
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                @else
-                    <div class="glass"
-                        style="padding:3rem;text-align:center;margin-top:2rem;color:var(--muted-dark);">
-                        Belum ada informasi yang dipublikasikan.
-                    </div>
-                @endif
-            </div>
-        </section>
-
-        {{-- ═══ FAQ ═══ --}}
-        <section id="faq">
-            <div class="container">
-                <div style="text-align:center;">
-                    <div class="tag" style="justify-content:center;">❓ FAQ</div>
-                    <div class="divider" style="margin:.6rem auto 1.5rem;"></div>
-                    <h2 class="title">Pertanyaan yang<br><span class="grad">Sering Diajukan</span></h2>
-                    <p class="sub" style="margin:0 auto;">Temukan jawaban atas pertanyaan umum seputar proses PPDB
-                        MTsN 1 Pandeglang.</p>
-                </div>
-                <div style="max-width:780px;margin:2.5rem auto 0;">
-                    @foreach ([
-        ['Apakah pendaftaran bisa dilakukan secara offline?', 'Tidak. Seluruh proses pendaftaran dilakukan secara online melalui sistem PPDB ini. Panitia tidak melayani pendaftaran manual di kantor madrasah.'],
-        ['Berapa jalur yang bisa dipilih oleh satu calon peserta didik?', 'Setiap calon peserta didik hanya diperbolehkan memilih satu jalur pendaftaran. Pastikan jalur yang dipilih sesuai dengan kondisi dan dokumen yang dimiliki.'],
-        ['Apa yang terjadi jika dokumen yang diunggah tidak memenuhi syarat?', 'Panitia akan mengirimkan notifikasi melalui WhatsApp yang terdaftar. Pendaftar diberikan kesempatan untuk mengunggah ulang dokumen sebelum batas waktu verifikasi berakhir.'],
-        ['Apakah nilai rapor memengaruhi seleksi jalur Reguler?', 'Tidak. Jalur Reguler tidak mempertimbangkan nilai akademik sebagai salah satu komponen seleksi, disamping hasil tes CBT dan ujian praktik ibadah yang dilaksanakan sesuai jadwal.'],
-        ['Bagaimana cara mendapatkan NISN jika belum terdaftar?', 'NISN dapat dicek dan diajukan melalui nisn.data.kemdikbud.go.id. Jika belum terdaftar, hubungi operator sekolah asal untuk pengurusan lebih lanjut sebelum mendaftar.'],
-        ['Apakah ada biaya pendaftaran?', 'Tidak ada biaya pendaftaran. Seluruh proses PPDB MTsN 1 Pandeglang tidak dipungut biaya apapun.'],
-        ['Kapan pengumuman hasil seleksi disampaikan?', 'Pengumuman disampaikan sesuai jadwal yang tertera di bagian Timeline Kegiatan. Notifikasi otomatis juga dikirim ke nomor WhatsApp yang didaftarkan.'],
-        ['Apa yang harus dibawa saat daftar ulang?', 'Peserta yang dinyatakan diterima wajib membawa seluruh dokumen asli yang sebelumnya diunggah, termasuk KK, akta kelahiran, pas foto terbaru, dan surat keterangan dari sekolah asal.'],
-    ] as $idx => [$tanya, $jawab])
-                        <div class="glass faq-item" style="margin-bottom:.75rem;border-radius:16px;overflow:hidden;">
-                            <button class="faq-trigger" onclick="toggleFaq(this)"
-                                style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.25rem 1.5rem;background:transparent;border:none;color:inherit;cursor:pointer;text-align:left;font-size:.9rem;font-weight:600;line-height:1.5;">
-                                <span>{{ $tanya }}</span>
-                                <span class="faq-chevron"
-                                    style="min-width:22px;height:22px;border-radius:50%;background:rgba(5,150,105,.12);border:1px solid rgba(5,150,105,.2);display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#10b981;transition:transform .3s;">▼</span>
-                            </button>
-                            <div class="faq-body"
-                                style="max-height:0;overflow:hidden;transition:max-height .35s ease;">
-                                <p
-                                    style="padding:0 1.5rem 1.25rem;font-size:.855rem;color:var(--muted-dark);line-height:1.75;border-top:1px solid var(--border-dark);">
-                                    {{ $jawab }}</p>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        </section>
-
-        {{-- ═══ KEBIJAKAN PRIVASI ═══ --}}
-        <section id="privasi">
-            <div class="container">
-                <div style="text-align:center;">
-                    <div class="tag" style="justify-content:center;">🔒 Privasi</div>
-                    <div class="divider" style="margin:.6rem auto 1.5rem;"></div>
-                    <h2 class="title">Kebijakan <span class="grad">Privasi</span></h2>
-                    <p class="sub" style="margin:0 auto;">Kami berkomitmen melindungi data pribadi Anda sesuai
-                        peraturan perundang-undangan yang berlaku di Indonesia.</p>
-                </div>
-                <div class="glass privacy-box">
-                    <h3>1. Data yang Kami Kumpulkan</h3>
-                    <p>Kami mengumpulkan data yang diperlukan untuk proses pendaftaran, meliputi: nama lengkap, NIK,
-                        NISN, nomor Kartu Keluarga, nomor telepon WhatsApp, alamat email, data orang tua/wali, serta
-                        dokumen pendukung pendaftaran (foto, KK, akta kelahiran, dan lainnya).</p>
-                    <h3>2. Tujuan Penggunaan Data</h3>
-                    <p>Data yang dikumpulkan digunakan semata-mata untuk keperluan proses PPDB, verifikasi kelengkapan
-                        berkas, komunikasi melalui WhatsApp terkait status pendaftaran, dan keperluan administrasi
-                        madrasah.</p>
-                    <h3>3. Perlindungan Data</h3>
-                    <p>Seluruh data sensitif seperti NIK dan nomor telepon disimpan dalam bentuk terenkripsi. Akses data
-                        dibatasi hanya untuk panitia PPDB yang berwenang. Kami tidak menjual, menyewakan, atau
-                        membagikan data pribadi kepada pihak ketiga manapun untuk tujuan komersial.</p>
-                    <h3>4. Hak Pengguna</h3>
-                    <p>Anda memiliki hak untuk mengakses, memperbaiki, atau menghapus data pribadi Anda dengan
-                        menghubungi panitia PPDB secara langsung. Penghapusan data dapat dilakukan setelah proses
-                        penerimaan selesai.</p>
-                    <h3>5. Kontak</h3>
-                    <p>Pertanyaan terkait kebijakan privasi ini dapat disampaikan ke: <strong
-                            style="color:#10b981;">adm@mtsn1pandeglang.sch.id</strong> atau melalui WhatsApp panitia
-                        PPDB yang tertera pada pengumuman resmi.</p>
-                </div>
-            </div>
-        </section>
-
-        {{-- ═══ CTA ═══ --}}
-        <div class="cta-wrap">
-            <div class="cta-bg"></div>
-            <div class="container" style="position:relative;z-index:1;">
-                <div style="font-size:3.5rem;margin-bottom:1rem;">🎓</div>
-                <h2 class="cta-title">Bergabunglah Bersama<br><span class="grad">Generasi Terbaik</span></h2>
-                <p class="cta-sub">
-                    @if ($tahun && $tahun->kuantitas)
-                        Kuota {{ $tahun->kuantitas }} peserta, terbatas.
-                    @endif
-                    Daftarkan diri sekarang dan wujudkan masa depan yang lebih cerah.
-                </p>
-                <div class="cta-actions">
-                    <a href="{{ url('/register') }}" class="btn btn-primary btn-lg">📝 Daftar Sekarang</a>
-                    <a href="{{ url('/login') }}" class="btn btn-ghost btn-lg">🔐 Login Akun</a>
+                    </ul>
                 </div>
             </div>
         </div>
+    </div>
+</section>
 
-    </main>
-
-    {{-- ═══ FOOTER ═══ --}}
-    <footer>
-        <div class="container">
-            <div style="display:flex;justify-content:center;margin-bottom:1.25rem;">
-                <div class="nav-logo" style="width:48px;height:48px;font-size:1.6rem;">🕌</div>
-            </div>
-            <div style="font-size:1.05rem;font-weight:800;">MTs Negeri 1 Pandeglang</div>
-            <div style="font-size:.82rem;color:var(--muted-dark);margin-top:.3rem;">Kementerian Agama Kabupaten
-                Pandeglang · PPDB {{ $tahun?->nama ?? '' }}</div>
-            <div style="font-size:.8rem;color:var(--muted-dark);margin-top:.4rem;">Jl. Raya Labuan, Kabupaten
-                Pandeglang, Banten 42213</div>
-            <div class="footer-links">
-                <a href="#jalur">Jalur Pendaftaran</a>
-                <a href="#alur">Alur Daftar</a>
-                <a href="#program">Program</a>
-                <a href="#kurikulum">Kurikulum</a>
-                <a href="#prestasi">Prestasi</a>
-                <a href="#informasi">Informasi</a>
-                <a href="#privasi">Kebijakan Privasi</a>
-                <a href="https://mtsn1pandeglang.sch.id" target="_blank" rel="noopener">Website Resmi ↗</a>
-            </div>
-            <div class="footer-copy">
-                &copy; 1970 – {{ date('Y') }} MTs Negeri 1 Pandeglang.
-                Dikembangkan oleh <a href="https://github.com/zulfikriyahya" target="_blank" rel="noopener"
-                    style="color:#10b981;text-decoration:none;">Yahya Zulfikri</a>.
-            </div>
+{{-- ═══ PROGRAM ═══ --}}
+<section id="program">
+    <div class="wrap">
+        <div class="section-header center">
+            <div class="eyebrow">🎓 Unggulan</div>
+            <h2>Program & <span class="grad">Ekstrakurikuler</span></h2>
+            <div class="divider"></div>
         </div>
-    </footer>
+        <div class="prog-grid">
+            @foreach([
+                ['📖','Tahfidz Al-Qur\'an','Target minimal 3 juz selama 3 tahun belajar.'],
+                ['🔬','Olimpiade Sains',   'Persiapan OSN mulai dari tingkat kabupaten hingga nasional.'],
+                ['💻','Teknologi & IT',    'Literasi digital, coding dasar, dan robotika.'],
+                ['⚽','Olahraga Prestasi', 'Sepak bola, bulu tangkis, karate, dan atletik.'],
+                ['🎭','Seni & Budaya',     'Paskibra, drumband, hadroh, dan seni rupa.'],
+                ['🌍','Bahasa Asing',      'English Club dan Arabic Club untuk era global.'],
+            ] as [$ico,$judul,$desc])
+            <div class="card card-hover prog-card">
+                <span class="prog-ico">{{ $ico }}</span>
+                <div class="prog-title">{{ $judul }}</div>
+                <p class="prog-desc">{{ $desc }}</p>
+            </div>
+            @endforeach
+        </div>
+    </div>
+</section>
 
-    <script>
-        // ── THEME ──
-        const html = document.documentElement;
-        const btn = document.getElementById('themeToggle');
-        const saved = localStorage.getItem('theme');
-        if (saved === 'light') {
-            html.classList.add('light');
-            btn.textContent = '🌙';
-        } else {
-            btn.textContent = '☀️';
+{{-- ═══ INFORMASI ═══ --}}
+<section id="informasi">
+    <div class="wrap">
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;margin-bottom:2rem;">
+            <div>
+                <div class="eyebrow">📰 Informasi</div>
+                <h2>Berita & <span class="grad">Pengumuman</span></h2>
+                <div class="divider"></div>
+            </div>
+            <a href="{{ url('/informasi') }}" class="btn btn-ghost">Lihat Semua →</a>
+        </div>
+        @if($informasis->isNotEmpty())
+        <div class="info-grid">
+            @foreach($informasis as $info)
+            <div class="card card-hover info-card">
+                <div class="info-tag">{{ $info->status === 'Publish' ? '📢 Pengumuman' : '📋 Informasi' }}</div>
+                <div class="info-title">{{ $info->judul }}</div>
+                <p class="info-excerpt">{{ \Illuminate\Support\Str::limit(strip_tags($info->isi), 110) }}</p>
+                <div class="info-date">📅 {{ ($info->tanggal ?? $info->updated_at)->translatedFormat('d F Y') }}</div>
+            </div>
+            @endforeach
+        </div>
+        @else
+        <div class="card" style="padding:3rem;text-align:center;color:var(--muted);">Belum ada informasi yang dipublikasikan.</div>
+        @endif
+    </div>
+</section>
+
+{{-- ═══ FAQ ═══ --}}
+<section id="faq">
+    <div class="wrap">
+        <div class="section-header center">
+            <div class="eyebrow">❓ FAQ</div>
+            <h2>Pertanyaan yang<br><span class="grad">Sering Diajukan</span></h2>
+            <div class="divider"></div>
+        </div>
+        <div class="faq-wrap">
+            @foreach([
+                ['Apakah pendaftaran bisa dilakukan secara offline?',
+                 'Tidak. Seluruh proses pendaftaran dilakukan secara online melalui sistem PPDB ini. Panitia tidak melayani pendaftaran manual.'],
+                ['Berapa jalur yang bisa dipilih oleh satu calon peserta didik?',
+                 'Setiap calon peserta didik hanya boleh memilih satu jalur pendaftaran sesuai kondisi dan dokumen yang dimiliki.'],
+                ['Apa yang terjadi jika dokumen yang diunggah tidak memenuhi syarat?',
+                 'Panitia akan mengirim notifikasi melalui WhatsApp. Pendaftar diberikan kesempatan mengunggah ulang sebelum batas waktu verifikasi.'],
+                ['Apakah nilai rapor memengaruhi seleksi jalur Reguler?',
+                 'Tidak. Jalur Reguler menggunakan hasil tes CBT dan ujian praktik ibadah sebagai dasar seleksi, bukan nilai rapor.'],
+                ['Apakah ada biaya pendaftaran?',
+                 'Tidak ada. Seluruh proses PPDB MTsN 1 Pandeglang tidak dipungut biaya apapun.'],
+                ['Kapan pengumuman hasil seleksi disampaikan?',
+                 'Pengumuman disampaikan sesuai jadwal yang tertera di Timeline Kegiatan. Notifikasi otomatis juga dikirim ke WhatsApp pendaftar.'],
+                ['Apa yang harus dibawa saat daftar ulang?',
+                 'Peserta wajib membawa seluruh dokumen asli: KK, akta kelahiran, pas foto terbaru, dan surat keterangan dari sekolah asal.'],
+            ] as [$q, $a])
+            <div class="card faq-item">
+                <button class="faq-btn" onclick="toggleFaq(this)">
+                    <span>{{ $q }}</span>
+                    <span class="faq-chevron">▼</span>
+                </button>
+                <div class="faq-body">
+                    <p>{{ $a }}</p>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+
+{{-- ═══ CTA ═══ --}}
+<section class="cta-section" style="position:relative;z-index:1;">
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(5,150,105,.1) 0%,transparent 70%);pointer-events:none;"></div>
+    <div class="cta-inner" style="position:relative;">
+        <div style="font-size:3rem;margin-bottom:.75rem;">🎓</div>
+        <h2>Bergabunglah Bersama<br><span class="grad">Generasi Terbaik</span></h2>
+        <p class="lead">
+            @if($tahun && $tahun->kuantitas) Kuota {{ $tahun->kuantitas }} peserta, terbatas. @endif
+            Daftarkan diri sekarang dan wujudkan masa depan lebih cerah.
+        </p>
+        <div class="cta-btns">
+            <a href="{{ url('/register') }}" class="btn btn-primary btn-lg">📝 Daftar Sekarang</a>
+            <a href="{{ url('/login') }}"    class="btn btn-ghost btn-lg">🔐 Masuk Akun</a>
+        </div>
+    </div>
+</section>
+
+</main>
+
+{{-- ═══ FOOTER ═══ --}}
+<footer>
+    <div class="wrap">
+        <div style="font-size:2rem;margin-bottom:.5rem;">🕌</div>
+        <div class="footer-logo">MTs Negeri 1 Pandeglang</div>
+        <div class="footer-sub">Kementerian Agama Kabupaten Pandeglang · PPDB {{ $tahun?->nama ?? '' }}</div>
+        <div class="footer-sub" style="margin-top:.25rem;">Jl. Raya Labuan, Kabupaten Pandeglang, Banten 42213</div>
+        <div class="footer-links">
+            <a href="#jalur">Jalur</a>
+            <a href="#alur">Alur Daftar</a>
+            <a href="#syarat">Persyaratan</a>
+            <a href="#program">Program</a>
+            <a href="#informasi">Informasi</a>
+            <a href="#faq">FAQ</a>
+            <a href="https://mtsn1pandeglang.sch.id" target="_blank" rel="noopener">Website Resmi ↗</a>
+        </div>
+        <div class="footer-copy">
+            &copy; 1970–{{ date('Y') }} MTs Negeri 1 Pandeglang.
+            Dikembangkan oleh <a href="https://github.com/zulfikriyahya" target="_blank" rel="noopener">Yahya Zulfikri</a>.
+        </div>
+    </div>
+</footer>
+
+<script>
+// ── theme ──
+const html = document.documentElement;
+const themeBtn = document.getElementById('themeBtn');
+const saved = localStorage.getItem('theme');
+if (saved === 'light') { html.classList.add('light'); themeBtn.textContent = '🌙'; }
+else                   { themeBtn.textContent = '☀️'; }
+themeBtn.addEventListener('click', () => {
+    html.classList.toggle('light');
+    const light = html.classList.contains('light');
+    themeBtn.textContent = light ? '🌙' : '☀️';
+    localStorage.setItem('theme', light ? 'light' : 'dark');
+});
+
+// ── hamburger ──
+const menuBtn = document.getElementById('menuBtn');
+const drawer  = document.getElementById('drawer');
+menuBtn.addEventListener('click', () => {
+    const open = drawer.classList.toggle('open');
+    menuBtn.classList.toggle('open', open);
+});
+drawer.querySelectorAll('.d-link').forEach(a => a.addEventListener('click', () => {
+    drawer.classList.remove('open'); menuBtn.classList.remove('open');
+}));
+document.addEventListener('click', e => {
+    if (!drawer.contains(e.target) && !menuBtn.contains(e.target)) {
+        drawer.classList.remove('open'); menuBtn.classList.remove('open');
+    }
+});
+
+// ── countdown ──
+const cdEl = document.getElementById('countdown');
+if (cdEl) {
+    const dead = new Date(cdEl.dataset.deadline);
+    const pad  = n => String(n).padStart(2,'0');
+    function tick() {
+        const diff = dead - Date.now();
+        if (diff <= 0) {
+            cdEl.innerHTML = '<p style="grid-column:span 4;text-align:center;padding:1rem;opacity:.5;font-size:.8rem;">Pendaftaran telah ditutup.</p>';
+            return;
         }
-        btn.addEventListener('click', () => {
-            html.classList.toggle('light');
-            const isLight = html.classList.contains('light');
-            btn.textContent = isLight ? '🌙' : '☀️';
-            localStorage.setItem('theme', isLight ? 'light' : 'dark');
-        });
+        document.getElementById('cd-d').textContent = pad(Math.floor(diff/86400000));
+        document.getElementById('cd-h').textContent = pad(Math.floor((diff%86400000)/3600000));
+        document.getElementById('cd-m').textContent = pad(Math.floor((diff%3600000)/60000));
+        document.getElementById('cd-s').textContent = pad(Math.floor((diff%60000)/1000));
+    }
+    tick(); setInterval(tick, 1000);
+}
 
-        // ── COUNTDOWN ──
-        const cdEl = document.getElementById('countdown');
-        if (cdEl) {
-            const deadline = new Date(cdEl.dataset.deadline);
-            const pad = n => String(n).padStart(2, '0');
+// ── active nav ──
+const sections = document.querySelectorAll('section[id]');
+const navAs    = document.querySelectorAll('.nav-links a');
+new IntersectionObserver(entries => {
+    entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        navAs.forEach(a => a.classList.remove('active'));
+        const a = document.querySelector(`.nav-links a[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+    });
+}, { threshold: 0.35 }).observe;
+sections.forEach(s => new IntersectionObserver(entries => {
+    entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        navAs.forEach(a => a.classList.remove('active'));
+        const a = document.querySelector(`.nav-links a[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+    });
+}, { threshold: 0.35 }).observe(s));
 
-            function tick() {
-                const diff = deadline - Date.now();
-                if (diff <= 0) {
-                    cdEl.innerHTML =
-                        '<div style="text-align:center;grid-column:span 4;padding:1rem;opacity:.6;font-size:.85rem;">Pendaftaran telah ditutup.</div>';
-                    return;
-                }
-                const d = Math.floor(diff / 86400000);
-                const h = Math.floor((diff % 86400000) / 3600000);
-                const m = Math.floor((diff % 3600000) / 60000);
-                const s = Math.floor((diff % 60000) / 1000);
-                document.getElementById('cd-d').textContent = pad(d);
-                document.getElementById('cd-h').textContent = pad(h);
-                document.getElementById('cd-m').textContent = pad(m);
-                document.getElementById('cd-s').textContent = pad(s);
-            }
-            tick();
-            setInterval(tick, 1000);
-        }
-
-        // ── ACTIVE NAV ──
-        const sections = document.querySelectorAll('section[id], div.cta-wrap');
-        const links = document.querySelectorAll('.nav-links a');
-        const obs = new IntersectionObserver(entries => {
-            entries.forEach(e => {
-                if (!e.isIntersecting) return;
-                links.forEach(a => a.classList.remove('active'));
-                const a = document.querySelector(`.nav-links a[href="#${e.target.id}"]`);
-                if (a) a.classList.add('active');
-            });
-        }, {
-            threshold: 0.35
-        });
-        sections.forEach(s => obs.observe(s));
-
-        // ── FAQ ──
-        function toggleFaq(btn) {
-            const body = btn.nextElementSibling;
-            const chevron = btn.querySelector('.faq-chevron');
-            const isOpen = body.style.maxHeight && body.style.maxHeight !== '0px';
-            document.querySelectorAll('.faq-body').forEach(b => b.style.maxHeight = '0px');
-            document.querySelectorAll('.faq-chevron').forEach(c => c.style.transform = '');
-            if (!isOpen) {
-                body.style.maxHeight = body.scrollHeight + 'px';
-                chevron.style.transform = 'rotate(180deg)';
-            }
-        }
-    </script>
+// ── faq ──
+function toggleFaq(btn) {
+    const body    = btn.nextElementSibling;
+    const chevron = btn.querySelector('.faq-chevron');
+    const isOpen  = body.style.maxHeight && body.style.maxHeight !== '0px';
+    document.querySelectorAll('.faq-body').forEach(b => b.style.maxHeight = '0px');
+    document.querySelectorAll('.faq-chevron').forEach(c => c.style.transform = '');
+    if (!isOpen) {
+        body.style.maxHeight = body.scrollHeight + 'px';
+        chevron.style.transform = 'rotate(180deg)';
+    }
+}
+</script>
 </body>
-
 </html>

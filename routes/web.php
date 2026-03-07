@@ -7,7 +7,7 @@ use App\Filament\Pages\Auth\VerifikasiOtp;
 use App\Http\Controllers\LandingController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/selamat-datang', [LandingController::class, 'index'])->name('landing');
+Route::get('/', [LandingController::class, 'index'])->name('landing');
 
 Route::middleware('web')->group(function () {
     Route::get('/verifikasi-otp', VerifikasiOtp::class)->name('otp.verifikasi');
