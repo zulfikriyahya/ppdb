@@ -79,13 +79,13 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     {
         // Prioritas 1: avatar yang di-upload langsung di profil user
         if ($this->avatar) {
-            return asset('storage/' . $this->avatar);
+            return asset('storage/'.$this->avatar);
         }
 
         // Prioritas 2: foto formal dari formulir pendaftaran (khusus calon_siswa)
         $foto = $this->calonSiswa?->berkas_foto;
         if ($foto) {
-            return asset('storage/' . $foto);
+            return asset('storage/'.$foto);
         }
 
         return null;

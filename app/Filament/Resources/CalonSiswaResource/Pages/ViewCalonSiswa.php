@@ -6,7 +6,11 @@ use App\Filament\Resources\CalonSiswaResource;
 use App\Filament\Traits\CalonSiswaFormTrait;
 use App\Models\CalonSiswa;
 use Carbon\Carbon;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Wizard;
 use Filament\Forms\Form;
 use Filament\Resources\Pages\ViewRecord;
@@ -27,19 +31,19 @@ class ViewCalonSiswa extends ViewRecord
                 'cetak_formulir',
                 'Formulir',
                 'formulir',
-                fn() => $this->canPrintFormulir()
+                fn () => $this->canPrintFormulir()
             ),
             $this->buildPdfAction(
                 'cetak_kartu_tes',
                 'Kartu Tes',
                 'kartu-tes',
-                fn() => $this->canPrintKartuTes()
+                fn () => $this->canPrintKartuTes()
             ),
             $this->buildPdfAction(
                 'cetak_skl',
                 'Hasil',
                 'skl',
-                fn() => $this->canPrintHasil()
+                fn () => $this->canPrintHasil()
             ),
         ];
     }
@@ -59,33 +63,33 @@ class ViewCalonSiswa extends ViewRecord
                 ->icon('heroicon-o-trophy')
                 ->collapsible()
                 ->columnSpanFull()
-                ->visible(fn() => $this->record->formulirPrestasis()->exists())
+                ->visible(fn () => $this->record->formulirPrestasis()->exists())
                 ->schema([
-                    \Filament\Forms\Components\Repeater::make('formulirPrestasis')
+                    Repeater::make('formulirPrestasis')
                         ->relationship('formulirPrestasis')
                         ->addable(false)
                         ->deletable(false)
                         ->reorderable(false)
                         ->label('')
                         ->schema([
-                            \Filament\Forms\Components\TextInput::make('nama_prestasi')
+                            TextInput::make('nama_prestasi')
                                 ->label('Nama / Judul Prestasi')
                                 ->disabled(),
 
-                            \Filament\Forms\Components\Select::make('prestasi_id')
+                            Select::make('prestasi_id')
                                 ->label('Jenis Prestasi')
                                 ->relationship('prestasi', 'nama')
                                 ->disabled(),
 
-                            \Filament\Forms\Components\TextInput::make('tahun_prestasi')
+                            TextInput::make('tahun_prestasi')
                                 ->label('Tahun')
                                 ->disabled(),
 
-                            \Filament\Forms\Components\TextInput::make('penyelenggara_prestasi')
+                            TextInput::make('penyelenggara_prestasi')
                                 ->label('Penyelenggara')
                                 ->disabled(),
 
-                            \Filament\Forms\Components\FileUpload::make('berkas_prestasi')
+                            FileUpload::make('berkas_prestasi')
                                 ->label('Berkas Bukti')
                                 ->disabled()
                                 ->downloadable()
@@ -112,13 +116,13 @@ class ViewCalonSiswa extends ViewRecord
             ->label($label)
             ->outlined()
             ->icon('heroicon-o-printer')
-            ->filename(fn($record) => "{$label}_{$record->nama}_{$record->nisn}.pdf")
+            ->filename(fn ($record) => "{$label}_{$record->nama}_{$record->nisn}.pdf")
             ->savePdf()
             ->orientation('portrait')
             ->format('a4', 'mm')
             ->enableLinks()
             ->margin([10, 10, 10, 10])
-            ->content(fn($record) => view($view, ['record' => $record]))
+            ->content(fn ($record) => view($view, ['record' => $record]))
             ->visible($visibleCallback);
     }
 

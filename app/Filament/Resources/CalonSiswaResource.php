@@ -6,10 +6,13 @@ use App\Constants\FormOptions;
 use App\Filament\Exports\CalonSiswaExporter;
 use App\Filament\Resources\CalonSiswaResource\Pages;
 use App\Models\CalonSiswa;
+use App\Models\JalurPendaftaran;
 use App\Models\Kabupaten;
 use App\Models\Kecamatan;
+use App\Models\Kelas;
 use App\Models\Kelurahan;
 use App\Models\Provinsi;
+use App\Services\WhatsAppService;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
@@ -22,6 +25,7 @@ use Filament\Forms\Components\Wizard\Step;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\BulkAction;
@@ -768,7 +772,7 @@ class CalonSiswaResource extends Resource
                 SelectFilter::make('jalur_pendaftaran_id')
                     ->label('Jalur Pendaftaran')
                     ->options(
-                        fn () => \App\Models\JalurPendaftaran::where('status', 'Aktif')
+                        fn () => JalurPendaftaran::where('status', 'Aktif')
                             ->pluck('nama', 'id')
                             ->toArray()
                     )
@@ -786,7 +790,7 @@ class CalonSiswaResource extends Resource
                 SelectFilter::make('kelas_id')
                     ->label('Kelas')
                     ->options(
-                        fn () => \App\Models\Kelas::pluck('nama', 'id')->toArray()
+                        fn () => Kelas::pluck('nama', 'id')->toArray()
                     )
                     ->visible(! $isCalonSiswa),
             ])
@@ -818,7 +822,7 @@ class CalonSiswaResource extends Resource
                             $telepon = $record->user?->telepon;
 
                             if (! $telepon) {
-                                \Filament\Notifications\Notification::make()
+                                Notification::make()
                                     ->title('Gagal')
                                     ->body('Calon siswa ini tidak memiliki nomor WhatsApp.')
                                     ->danger()
@@ -836,14 +840,14 @@ class CalonSiswaResource extends Resource
                                 ."Silakan login ke sistem PPDB untuk informasi lebih lanjut.\n"
                                 .'_MTsN 1 Pandeglang_';
 
-                            app(\App\Services\WhatsAppService::class)->send(
+                            app(WhatsAppService::class)->send(
                                 phone: $telepon,
                                 message: $pesan,
                                 minDelay: 1,
                                 maxDelay: 10,
                             );
 
-                            \Filament\Notifications\Notification::make()
+                            Notification::make()
                                 ->title('Notifikasi dijadwalkan')
                                 ->body("Pesan akan dikirim ke {$record->nama} dalam beberapa detik.")
                                 ->success()
@@ -877,7 +881,7 @@ class CalonSiswaResource extends Resource
                                 ->label('Jalur Pendaftaran')
                                 // Ganti relationship() → options() karena tidak ada model context di BulkAction
                                 ->options(
-                                    \App\Models\JalurPendaftaran::where('status', 'Aktif')
+                                    JalurPendaftaran::where('status', 'Aktif')
                                         ->pluck('nama', 'id')
                                         ->toArray()
                                 )
@@ -908,7 +912,7 @@ class CalonSiswaResource extends Resource
                             Select::make('kelas_id')
                                 ->label('Kelas')
                                 ->options(
-                                    \App\Models\Kelas::pluck('nama', 'id')->toArray()
+                                    Kelas::pluck('nama', 'id')->toArray()
                                 )
                                 ->native(false)
                                 ->live()
@@ -932,7 +936,7 @@ class CalonSiswaResource extends Resource
                                 CalonSiswa::where('id', $r->id)->update($update);
                             })
                         ),
-                    Tables\Actions\BulkAction::make('kirim_notifikasi_massal')
+                    BulkAction::make('kirim_notifikasi_massal')
                         ->label('Kirim Notifikasi')
                         ->icon('heroicon-o-chat-bubble-left-ellipsis')
                         ->color('info')
@@ -942,8 +946,8 @@ class CalonSiswaResource extends Resource
                         ->modalSubmitActionLabel('Kirim Sekarang')
                         ->deselectRecordsAfterCompletion()
                         ->visible(fn () => auth()->user()->hasAnyRole(['super_admin', 'admin', 'verifikator', 'panitia']))
-                        ->action(function (\Illuminate\Support\Collection $records) {
-                            $wa = app(\App\Services\WhatsAppService::class);
+                        ->action(function (Collection $records) {
+                            $wa = app(WhatsAppService::class);
 
                             $berhasil = 0;
                             $gagal = 0;
@@ -977,7 +981,7 @@ class CalonSiswaResource extends Resource
                                 $berhasil++;
                             }
 
-                            \Filament\Notifications\Notification::make()
+                            Notification::make()
                                 ->title("Notifikasi dijadwalkan: {$berhasil} berhasil, {$gagal} dilewati")
                                 ->body($gagal > 0 ? "{$gagal} peserta tidak memiliki nomor WhatsApp." : null)
                                 ->success()

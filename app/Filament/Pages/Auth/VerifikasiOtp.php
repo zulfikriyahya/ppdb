@@ -29,11 +29,13 @@ class VerifikasiOtp extends SimplePage implements HasForms
 
         if (! $user) {
             $this->redirect(filament()->getLoginUrl());
+
             return;
         }
 
         if ($user->hasVerifiedEmail()) {
             $this->redirect(filament()->getUrl());
+
             return;
         }
 

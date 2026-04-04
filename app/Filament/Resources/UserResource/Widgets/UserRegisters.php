@@ -29,7 +29,7 @@ class UserRegisters extends TableWidget
     {
         return $table
             ->query(
-                User::whereHas('roles', fn($q) => $q->where('name', 'calon_siswa'))
+                User::whereHas('roles', fn ($q) => $q->where('name', 'calon_siswa'))
                     ->latest('email_verified_at')
             )
             ->columns([
@@ -58,15 +58,15 @@ class UserRegisters extends TableWidget
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
-                        'Aktif'    => 'success',
+                    ->color(fn (string $state): string => match ($state) {
+                        'Aktif' => 'success',
                         'Nonaktif' => 'gray',
-                        default    => 'gray',
+                        default => 'gray',
                     })
-                    ->icon(fn(string $state): string => match ($state) {
-                        'Aktif'    => 'heroicon-o-check-circle',
+                    ->icon(fn (string $state): string => match ($state) {
+                        'Aktif' => 'heroicon-o-check-circle',
                         'Nonaktif' => 'heroicon-o-x-mark',
-                        default    => 'heroicon-o-x-mark',
+                        default => 'heroicon-o-x-mark',
                     }),
             ])
             ->striped()

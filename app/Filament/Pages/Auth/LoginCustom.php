@@ -2,11 +2,12 @@
 
 namespace App\Filament\Pages\Auth;
 
-use App\Filament\Pages\Auth\VerifikasiOtp;
 use DiogoGPinto\AuthUIEnhancer\Pages\Auth\Concerns\HasCustomLayout;
 use Filament\Forms\Components\Component;
 use Filament\Forms\Components\TextInput;
+use Filament\Http\Responses\Auth\Contracts\LoginResponse;
 use Filament\Pages\Auth\Login;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
 class LoginCustom extends Login
@@ -56,18 +57,19 @@ class LoginCustom extends Login
         ]);
     }
 
-    public function authenticate(): ?\Filament\Http\Responses\Auth\Contracts\LoginResponse
+    public function authenticate(): ?LoginResponse
     {
         $response = parent::authenticate();
 
-        $user = \Illuminate\Support\Facades\Auth::user();
+        $user = Auth::user();
 
         if ($user && ! $user->hasVerifiedEmail()) {
             session(['otp_user_id' => $user->id]);
 
-            \Illuminate\Support\Facades\Auth::logout();
+            Auth::logout();
 
             $this->redirect('/verifikasi-otp');
+
             return null;
         }
 

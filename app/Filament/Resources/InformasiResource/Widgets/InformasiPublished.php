@@ -39,20 +39,20 @@ class InformasiPublished extends TableWidget
             'Diterima',
             'Diterima Di Kelas Reguler' => 'success',
             'Diterima Di Kelas Unggulan' => 'info',
-            'Tidak Diterima'             => 'danger',
-            default                      => 'warning',
+            'Tidak Diterima' => 'danger',
+            default => 'warning',
         };
     }
 
     private function statusIcon(string $status): string
     {
         return match ($status) {
-            'Berkas Tidak Lengkap'       => 'heroicon-o-document-minus',
-            'Tidak Diterima'             => 'heroicon-o-no-symbol',
-            'Diterima'                   => 'heroicon-o-check-circle',
+            'Berkas Tidak Lengkap' => 'heroicon-o-document-minus',
+            'Tidak Diterima' => 'heroicon-o-no-symbol',
+            'Diterima' => 'heroicon-o-check-circle',
             'Diterima Di Kelas Reguler',
             'Diterima Di Kelas Unggulan' => 'heroicon-o-shield-check',
-            default                      => 'heroicon-o-arrow-path',
+            default => 'heroicon-o-arrow-path',
         };
     }
 
@@ -67,7 +67,7 @@ class InformasiPublished extends TableWidget
         $now = Carbon::now();
 
         foreach (['prestasi', 'reguler', 'afirmasi', 'zonasi', 'mutasi'] as $jalur) {
-            $mulaiRaw   = $tahun->{"tanggal_pengumuman_jalur_{$jalur}_mulai"} ?? null;
+            $mulaiRaw = $tahun->{"tanggal_pengumuman_jalur_{$jalur}_mulai"} ?? null;
             $selesaiRaw = $tahun->{"tanggal_pengumuman_jalur_{$jalur}_selesai"} ?? null;
 
             if (empty($mulaiRaw) || empty($selesaiRaw)) {
@@ -92,7 +92,7 @@ class InformasiPublished extends TableWidget
         $calonSiswa = $this->isCalonSiswa() ? $this->getCalonSiswa() : null;
 
         $statusPendaftaran = $calonSiswa?->status_pendaftaran ?? '';
-        $inPengumuman      = $this->isInPengumumanPeriod();
+        $inPengumuman = $this->isInPengumumanPeriod();
 
         $terminalStatuses = [
             'Diterima',
@@ -101,12 +101,12 @@ class InformasiPublished extends TableWidget
             'Tidak Diterima',
         ];
 
-        $hasTerminalStatus      = $calonSiswa && in_array($statusPendaftaran, $terminalStatuses);
-        $showPendaftaranBadge   = $this->isCalonSiswa() && $calonSiswa !== null && ! $hasTerminalStatus;
+        $hasTerminalStatus = $calonSiswa && in_array($statusPendaftaran, $terminalStatuses);
+        $showPendaftaranBadge = $this->isCalonSiswa() && $calonSiswa !== null && ! $hasTerminalStatus;
 
-        $urlFormulir     = $calonSiswa ? '/formulir' : '';
+        $urlFormulir = $calonSiswa ? '/formulir' : '';
         $urlViewFormulir = $calonSiswa ? "/formulir/{$calonSiswa->id}" : '';
-        $urlInformasi    = $calonSiswa ? '/informasi' : '';
+        $urlInformasi = $calonSiswa ? '/informasi' : '';
 
         return $table
             ->query(
@@ -115,7 +115,7 @@ class InformasiPublished extends TableWidget
             ->columns([
                 TextColumn::make('judul')
                     ->label('Informasi')
-                    ->description(fn(Informasi $record): string => Str::limit($record->isi, 50))
+                    ->description(fn (Informasi $record): string => Str::limit($record->isi, 50))
                     ->icon('heroicon-o-information-circle')
                     ->iconColor('info'),
 
