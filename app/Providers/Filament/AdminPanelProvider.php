@@ -51,7 +51,7 @@ class AdminPanelProvider extends PanelProvider
             ->globalSearch(false)
             ->maxContentWidth(MaxWidth::Full)
             ->unsavedChangesAlerts()
-            // ->databaseNotifications()
+            ->databaseNotifications()
             ->defaultThemeMode(ThemeMode::Dark)
             ->font('Lexend')
             ->favicon(asset('/favicon.ico'))

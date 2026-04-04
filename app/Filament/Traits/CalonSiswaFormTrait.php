@@ -34,12 +34,12 @@ trait CalonSiswaFormTrait
     {
         return Select::make('jalur_pendaftaran_id')
             ->label('Jalur Pendaftaran')
-            ->relationship('jalurPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif'))
+            ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
             ->required()
             ->validationMessages(['required' => 'Form ini wajib diisi.'])
             ->native(false)
             ->live()
-            ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->nama} | {$record->tahunPendaftaran->nama}");
+            ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->nama} | {$record->tahunPendaftaran->nama}");
     }
 
     protected function getNamaField(): TextInput
@@ -49,7 +49,7 @@ trait CalonSiswaFormTrait
             ->required()
             ->disabledOn('create')
             ->dehydrated()
-            ->default(fn () => Auth::user()->name)
+            ->default(fn() => Auth::user()->name)
             ->validationMessages(['required' => 'Form ini wajib diisi.']);
     }
 
@@ -59,7 +59,7 @@ trait CalonSiswaFormTrait
             ->label('Nomor Induk Kependudukan (NIK)')
             ->required()
             ->unique(ignoreRecord: true)
-            ->dehydrateStateUsing(fn ($state) => $state ?: null)
+            ->dehydrateStateUsing(fn($state) => $state ?: null)
             ->numeric()
             ->maxLength(16)
             ->minLength(16)
@@ -93,9 +93,9 @@ trait CalonSiswaFormTrait
             ->required()
             ->disabled(true)
             ->dehydrated()
-            ->default(fn () => Auth::user()->username)
+            ->default(fn() => Auth::user()->username)
             ->unique(ignoreRecord: true)
-            ->dehydrateStateUsing(fn ($state) => $state ?: null)
+            ->dehydrateStateUsing(fn($state) => $state ?: null)
             ->numeric()
             ->maxLength(10)
             ->minLength(10)
@@ -148,7 +148,7 @@ trait CalonSiswaFormTrait
 
             Select::make("{$prefix}_provinsi_id")
                 ->label('Provinsi')
-                ->options(fn (Get $get): Collection => Provinsi::query()
+                ->options(fn(Get $get): Collection => Provinsi::query()
                     ->where('negara_id', $get("{$prefix}_negara_id"))
                     ->pluck('nama', 'id'))
                 ->required($required)
@@ -164,7 +164,7 @@ trait CalonSiswaFormTrait
 
             Select::make("{$prefix}_kabupaten_id")
                 ->label('Kabupaten')
-                ->options(fn (Get $get): Collection => Kabupaten::query()
+                ->options(fn(Get $get): Collection => Kabupaten::query()
                     ->where('provinsi_id', $get("{$prefix}_provinsi_id"))
                     ->pluck('nama', 'id'))
                 ->required($required)
@@ -179,7 +179,7 @@ trait CalonSiswaFormTrait
 
             Select::make("{$prefix}_kecamatan_id")
                 ->label('Kecamatan')
-                ->options(fn (Get $get): Collection => Kecamatan::query()
+                ->options(fn(Get $get): Collection => Kecamatan::query()
                     ->where('kabupaten_id', $get("{$prefix}_kabupaten_id"))
                     ->pluck('nama', 'id'))
                 ->required($required)
@@ -193,7 +193,7 @@ trait CalonSiswaFormTrait
 
             Select::make("{$prefix}_kelurahan_id")
                 ->label('Kelurahan')
-                ->options(fn (Get $get): Collection => Kelurahan::query()
+                ->options(fn(Get $get): Collection => Kelurahan::query()
                     ->where('kecamatan_id', $get("{$prefix}_kecamatan_id"))
                     ->pluck('nama', 'id'))
                 ->required($required)
@@ -230,39 +230,45 @@ trait CalonSiswaFormTrait
                     'min_digits' => 'NIK: Masukkan minimal 16 Angka.',
                 ]),
 
+            Select::make("{$type}_status")
+                ->label('Status')
+                ->options(FormOptions::STATUS_HIDUP)
+                ->required($required)
+                ->validationMessages(['required' => 'Form ini wajib diisi.'])
+                ->native(false)
+                ->live(),
+
             TextInput::make("{$type}_telepon")
                 ->label('Nomor Telepon')
                 ->tel()
-                ->required($required)
+                ->required(fn(Get $get) => $required && $get("{$type}_status") !== 'Meninggal')
+                ->hidden(fn(Get $get) => $get("{$type}_status") === 'Meninggal')
                 ->validationMessages(['required' => 'Form ini wajib diisi.']),
 
             Select::make("{$type}_pekerjaan")
                 ->label('Pekerjaan')
                 ->options(FormOptions::PEKERJAAN)
-                ->required($required)
+                ->required(fn(Get $get) => $required && $get("{$type}_status") !== 'Meninggal')
+                ->hidden(fn(Get $get) => $get("{$type}_status") === 'Meninggal')
                 ->validationMessages(['required' => 'Form ini wajib diisi.'])
                 ->native(false),
 
             Select::make("{$type}_penghasilan")
                 ->label('Penghasilan Bulanan')
                 ->options(FormOptions::PENGHASILAN)
-                ->required($required)
+                ->required(fn(Get $get) => $required && $get("{$type}_status") !== 'Meninggal')
+                ->hidden(fn(Get $get) => $get("{$type}_status") === 'Meninggal')
                 ->validationMessages(['required' => 'Form ini wajib diisi.'])
                 ->native(false),
 
             Select::make("{$type}_pendidikan")
                 ->label('Pendidikan')
                 ->options(FormOptions::PENDIDIKAN)
-                ->required($required)
+                ->required(fn(Get $get) => $required && $get("{$type}_status") !== 'Meninggal')
+                ->hidden(fn(Get $get) => $get("{$type}_status") === 'Meninggal')
                 ->validationMessages(['required' => 'Form ini wajib diisi.'])
                 ->native(false),
 
-            Select::make("{$type}_status")
-                ->label('Status')
-                ->options(FormOptions::STATUS_HIDUP)
-                ->required($required)
-                ->validationMessages(['required' => 'Form ini wajib diisi.'])
-                ->native(false),
         ];
     }
 
@@ -273,7 +279,7 @@ trait CalonSiswaFormTrait
             ->required($required)
             ->validationMessages(['required' => 'Form ini wajib diisi.'])
             ->fetchFileInformation(false)
-            ->directory(fn ($get) => "berkas/{$type}/".$get('nisn'))
+            ->directory(fn($get) => "berkas/{$type}/" . $get('nisn'))
             ->downloadable()
             ->openable()
             ->maxSize(500)
@@ -377,57 +383,93 @@ trait CalonSiswaFormTrait
                 TextInput::make('tinggi_badan')
                     ->label('Tinggi Badan')
                     ->suffix('cm')
+                    ->maxValue(300)
+                    ->minValue(30)
+                    ->validationMessages(['max' => 'Tinggi badan tidak boleh lebih dari 300 cm.', 'min' => 'Tinggi badan tidak boleh kurang dari 30 cm.'])
                     ->numeric(),
 
                 TextInput::make('berat_badan')
                     ->label('Berat Badan')
                     ->suffix('kg')
+                    ->maxValue(500)
+                    ->minValue(10)
+                    ->validationMessages(['max' => 'Berat badan tidak boleh lebih dari 500 kg.', 'min' => 'Berat badan tidak boleh kurang dari 10 kg.'])
                     ->numeric(),
 
                 TextInput::make('no_kip')
                     ->label('Nomor Kartu Indonesia Pintar')
-                    ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki KIP.<sup style="color:red">*</sup></i></small>'))
+                    ->helperText(new HtmlString('<small><i>Jangan diisi jika tidak memiliki bukti KIP.<sup style="color:red">*</sup></i></small>'))
                     ->unique(ignoreRecord: true)
-                    ->dehydrateStateUsing(fn ($state) => $state ?: null)
-                    ->maxLength(6)
-                    ->minLength(6)
+                    ->dehydrateStateUsing(fn($state) => $state ?: null)
+                    ->numeric()
+                    ->minLength(16)
+                    ->maxLength(19)
                     ->live()
                     ->validationMessages([
-                        'max' => 'KIP: Masukkan maksimal 6 Karakter.',
-                        'min' => 'KIP: Masukkan minimal 6 Karakter.',
-                        'unique' => 'KIP: Nomor ini sudah pernah di isi.',
+                        'min_digits'    => 'KIP: Nomor harus 16 digit.',
+                        'max_digits'    => 'KIP: Nomor harus 19 digit.',
+                        'unique' => 'KIP: Nomor ini sudah pernah diisi.',
                     ]),
 
                 TextInput::make('no_kks')
                     ->label('Nomor Kartu Keluarga Sejahtera')
-                    ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki KKS.<sup style="color:red">*</sup></i></small>'))
+                    ->helperText(new HtmlString('<small><i>Jangan diisi jika tidak memiliki bukti KKS.<sup style="color:red">*</sup></i></small>'))
                     ->unique(ignoreRecord: true)
-                    ->dehydrateStateUsing(fn ($state) => $state ?: null)
-                    ->maxLength(6)
-                    ->minLength(6)
+                    ->dehydrateStateUsing(fn($state) => $state ?: null)
+                    ->numeric()
+                    ->minLength(16)
+                    ->maxLength(16)
                     ->live()
                     ->validationMessages([
-                        'max' => 'KKS: Masukkan maksimal 6 Karakter.',
-                        'min' => 'KKS: Masukkan minimal 6 Karakter.',
-                        'unique' => 'KKS: Nomor ini sudah pernah di isi.',
+                        'min_digits'    => 'KKS: Nomor harus 16 digit.',
+                        'max_digits'    => 'KKS: Nomor harus 16 digit.',
+                        'unique' => 'KKS: Nomor ini sudah pernah diisi.',
                     ]),
 
                 TextInput::make('no_pkh')
                     ->label('Nomor Kartu Program Keluarga Harapan')
-                    ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki PKH.<sup style="color:red">*</sup></i></small>'))
+                    ->helperText(new HtmlString('<small><i>Jangan diisi jika tidak memiliki bukti PKH.<sup style="color:red">*</sup></i></small>'))
                     ->unique(ignoreRecord: true)
-                    ->dehydrateStateUsing(fn ($state) => $state ?: null)
-                    ->maxLength(6)
-                    ->minLength(6)
+                    ->dehydrateStateUsing(fn($state) => $state ?: null)
+                    ->numeric()
+                    ->minLength(16)
+                    ->maxLength(16)
                     ->live()
                     ->validationMessages([
-                        'max' => 'PKH: Masukkan maksimal 6 Karakter.',
-                        'min' => 'PKH: Masukkan minimal 6 Karakter.',
-                        'unique' => 'PKH: Nomor ini sudah pernah di isi.',
+                        'min_digits'    => 'PKH: Nomor harus 16 digit.',
+                        'max_digits'    => 'PKH: Nomor harus 16 digit.',
+                        'unique' => 'PKH: Nomor ini sudah pernah diisi.',
+                    ]),
+
+                TextInput::make('no_sktm')
+                    ->label('Nomor Surat Keterangan Tidak Mampu')
+                    ->helperText(new HtmlString('<small><i>Jangan diisi jika tidak memiliki bukti SKTM.<sup style="color:red">*</sup></i></small>'))
+                    ->unique(ignoreRecord: true)
+                    ->dehydrateStateUsing(fn($state) => $state ?: null)
+                    ->minLength(8)
+                    ->maxLength(50)
+                    ->live()
+                    ->validationMessages([
+                        'min'    => 'SKTM: Masukkan minimal 8 karakter.',
+                        'max'    => 'SKTM: Masukkan maksimal 50 karakter.',
+                        'unique' => 'SKTM: Nomor ini sudah pernah diisi.',
                     ]),
 
                 TextInput::make('siswa_telepon')
                     ->label('Nomor Telepon')
+                    ->required()
+                    ->disabled(true)
+                    ->dehydrated()
+                    ->default(fn() => Auth::user()->telepon)
+                    ->unique(ignoreRecord: true)
+                    ->dehydrateStateUsing(fn($state) => $state ?: null)
+                    ->numeric()
+                    ->maxLength(15)
+                    ->minLength(10)
+                    ->validationMessages([
+                        'max_digits' => 'Masukkan maksimal 15 Angka.',
+                        'min_digits' => 'Masukkan minimal 10 Angka.'
+                    ])
                     ->numeric()
                     ->tel(),
 
@@ -445,7 +487,7 @@ trait CalonSiswaFormTrait
             ->native(false)
             ->searchable()
             ->preload()
-            ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->nama} | NPSN: {$record->npsn}")
+            ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->nama} | NPSN: {$record->npsn}")
             ->createOptionForm($this->getSekolahAsalForm());
     }
 
@@ -468,7 +510,7 @@ trait CalonSiswaFormTrait
                             ->required()
                             ->live()
                             ->validationMessages(['required' => 'Form ini wajib diisi.'])
-                            ->options(fn () => FormOptions::jenjangSekolahAsal(Sekolah::first()?->jenjang)),
+                            ->options(fn() => FormOptions::jenjangSekolahAsal(Sekolah::first()?->jenjang)),
 
                         TextInput::make('npsn')
                             ->label('NPSN')
@@ -483,7 +525,7 @@ trait CalonSiswaFormTrait
                             ]),
 
                         TextInput::make('nss')
-                            ->visible(fn ($get) => in_array($get('jenjang'), ['MI', 'MTS', 'MA']))
+                            ->visible(fn($get) => in_array($get('jenjang'), ['MI', 'MTS', 'MA']))
                             ->label('NSS/NSM')
                             ->required()
                             ->numeric()
@@ -509,20 +551,20 @@ trait CalonSiswaFormTrait
                             ->validationMessages(['required' => 'Form ini wajib diisi.'])
                             ->options(FormOptions::STATUS_SEKOLAH),
 
-                        FileUpload::make('logo')
-                            ->label('Logo Instansi')
-                            ->image()
-                            ->imageEditor()
-                            ->imageEditorAspectRatios([null, '1:1' => '1:1'])
-                            ->fetchFileInformation(false)
-                            ->directory('assets/instansi-lain')
-                            ->downloadable()
-                            ->openable()
-                            ->maxSize(500)
-                            ->minSize(10)
-                            ->visibility('private')
-                            ->required()
-                            ->validationMessages(['required' => 'Form ini wajib diisi.']),
+                        // FileUpload::make('logo')
+                        //     ->label('Logo Instansi')
+                        //     ->image()
+                        //     ->imageEditor()
+                        //     ->imageEditorAspectRatios([null, '1:1' => '1:1'])
+                        //     ->fetchFileInformation(false)
+                        //     ->directory('assets/instansi-lain')
+                        //     ->downloadable()
+                        //     ->openable()
+                        //     ->maxSize(500)
+                        //     ->minSize(10)
+                        //     ->visibility('private')
+                        //     ->required()
+                        //     ->validationMessages(['required' => 'Form ini wajib diisi.']),
                     ])
                     ->columns(['sm' => '100%', 'md' => 3, 'lg' => 3]),
 
@@ -530,27 +572,27 @@ trait CalonSiswaFormTrait
                     ->schema($this->getWilayahFields(''))
                     ->columns(['sm' => '100%', 'md' => 3, 'lg' => 3]),
 
-                Wizard\Step::make('Data Kontak')
-                    ->schema([
-                        TextInput::make('website')
-                            ->label('Website')
-                            ->url()
-                            ->prefixIcon('heroicon-m-globe-alt')
-                            ->placeholder('https://mtsn1pandeglang.sch.id'),
+                // Wizard\Step::make('Data Kontak')
+                //     ->schema([
+                //         TextInput::make('website')
+                //             ->label('Website')
+                //             ->url()
+                //             ->prefixIcon('heroicon-m-globe-alt')
+                //             ->placeholder('https://mtsn1pandeglang.sch.id'),
 
-                        TextInput::make('telepon')
-                            ->label('Telepon')
-                            ->tel()
-                            ->placeholder('08**********')
-                            ->prefixIcon('heroicon-m-phone'),
+                //         TextInput::make('telepon')
+                //             ->label('Telepon')
+                //             ->tel()
+                //             ->placeholder('08**********')
+                //             ->prefixIcon('heroicon-m-phone'),
 
-                        TextInput::make('email')
-                            ->label('Email')
-                            ->placeholder('adm@mtsn1pandeglang.sch.id')
-                            ->email()
-                            ->prefixIcon('heroicon-m-envelope'),
-                    ])
-                    ->columns(['sm' => '100%', 'md' => 3, 'lg' => 3]),
+                //         TextInput::make('email')
+                //             ->label('Email')
+                //             ->placeholder('adm@mtsn1pandeglang.sch.id')
+                //             ->email()
+                //             ->prefixIcon('heroicon-m-envelope'),
+                //     ])
+                //     ->columns(['sm' => '100%', 'md' => 3, 'lg' => 3]),
             ]),
         ];
     }
@@ -571,7 +613,8 @@ trait CalonSiswaFormTrait
                     ->options(FormOptions::STATUS_FORMULIR)
                     ->native(false)
                     ->default('Diproses')
-                    ->required(),
+                    ->required()
+                    ->live(),
             ]);
     }
 
@@ -579,12 +622,21 @@ trait CalonSiswaFormTrait
     {
         return Section::make('Status Pendaftaran')
             ->icon('heroicon-m-clipboard-document-list')
-            ->visible(Auth::user()->roles->first()->name !== 'calon_siswa')
+            ->visible(function () {
+                if (Auth::user()->roles->first()->name === 'calon_siswa') {
+                    return false;
+                }
+
+                // Ambil nilai status_formulir dari state form
+                $statusFormulir = $this->data['status_formulir'] ?? 'Diproses';
+
+                return $statusFormulir !== 'Diproses';
+            })
             ->columns(['sm' => '100%', 'md' => 2, 'lg' => 2])
             ->schema([
                 Select::make('status_pendaftaran')
                     ->label('Status Pendaftaran')
-                    ->options(fn () => Auth::user()->hasRole('super_admin')
+                    ->options(fn() => Auth::user()->hasRole('super_admin')
                         ? FormOptions::STATUS_PENDAFTARAN_SUPER_ADMIN
                         : FormOptions::STATUS_PENDAFTARAN_REGULAR)
                     ->native(false)
@@ -594,11 +646,11 @@ trait CalonSiswaFormTrait
 
                 Select::make('kelas_id')
                     ->label('Kelas')
-                    ->visible(fn ($get) => in_array($get('status_pendaftaran'), [
+                    ->visible(fn(Get $get) => in_array($get('status_pendaftaran'), [
                         'Diterima Di Kelas Reguler',
                         'Diterima Di Kelas Unggulan',
                     ]))
-                    ->required(fn ($get) => in_array($get('status_pendaftaran'), [
+                    ->required(fn(Get $get) => in_array($get('status_pendaftaran'), [
                         'Diterima Di Kelas Reguler',
                         'Diterima Di Kelas Unggulan',
                     ]))
@@ -731,23 +783,58 @@ trait CalonSiswaFormTrait
                 $this->getBerkasField(
                     'kip',
                     'Kartu Indonesia Pintar',
-                    fn ($get) => $get('no_kip') !== null,
-                    '<small><i>Abaikan jika tidak memiliki KIP.<sup style="color:red">*</sup></i></small>'
-                )->visible(fn ($get) => $get('no_kip') !== null),
+                    fn($get) => $get('no_kip') !== null,
+                    '<small><i>Jangan diisi jika tidak memiliki bukti KIP.<sup style="color:red">*</sup></i></small>'
+                )->visible(fn($get) => $get('no_kip') !== null),
 
                 $this->getBerkasField(
                     'kks',
                     'Kartu Keluarga Sejahtera',
-                    fn ($get) => $get('no_kks') !== null,
-                    '<small><i>Abaikan jika tidak memiliki KKS.<sup style="color:red">*</sup></i></small>'
-                )->visible(fn ($get) => $get('no_kks') !== null),
+                    fn($get) => $get('no_kks') !== null,
+                    '<small><i>Jangan diisi jika tidak memiliki bukti KKS.<sup style="color:red">*</sup></i></small>'
+                )->visible(fn($get) => $get('no_kks') !== null),
 
                 $this->getBerkasField(
                     'pkh',
                     'Kartu Program Keluarga Harapan',
-                    fn ($get) => $get('no_pkh') !== null,
-                    '<small><i>Abaikan jika tidak memiliki PKH.<sup style="color:red">*</sup></i></small>'
-                )->visible(fn ($get) => $get('no_pkh') !== null),
+                    fn($get) => $get('no_pkh') !== null,
+                    '<small><i>Jangan diisi jika tidak memiliki bukti PKH.<sup style="color:red">*</sup></i></small>'
+                )->visible(fn($get) => $get('no_pkh') !== null),
+
+                $this->getBerkasField(
+                    'sktm',
+                    'Surat Keterangan Tidak Mampu',
+                    fn($get) => $get('no_sktm') !== null,
+                    '<small><i>Jangan diisi jika tidak memiliki bukti SKTM.<sup style="color:red">*</sup></i></small>'
+                )->visible(fn($get) => $get('no_sktm') !== null),
+
+                $this->getBerkasField(
+                    'faktur_listrik',
+                    'Faktur Listrik',
+                    fn($get) => $get('no_sktm') !== null,
+                    '<small><i>Unggah Faktur Pembayaran Listrik 3 Bulan Terakhir.<sup style="color:red">*</sup></i></small>'
+                )->visible(fn($get) => $get('no_sktm') !== null),
+
+                $this->getBerkasField(
+                    'rumah_depan',
+                    'Foto Rumah Depan',
+                    fn($get) => $get('no_sktm') !== null,
+                    '<small><i>Unggah foto depan rumah.<sup style="color:red">*</sup></i></small>'
+                )->visible(fn($get) => $get('no_sktm') !== null),
+
+                $this->getBerkasField(
+                    'rumah_dalam',
+                    'Foto Rumah Dalam',
+                    fn($get) => $get('no_sktm') !== null,
+                    '<small><i>Unggah foto dalam rumah.<sup style="color:red">*</sup></i></small>'
+                )->visible(fn($get) => $get('no_sktm') !== null),
+
+                $this->getBerkasField(
+                    'rumah_belakang',
+                    'Foto Rumah Belakang',
+                    fn($get) => $get('no_sktm') !== null,
+                    '<small><i>Unggah foto belakang rumah.<sup style="color:red">*</sup></i></small>'
+                )->visible(fn($get) => $get('no_sktm') !== null),
             ]);
     }
 

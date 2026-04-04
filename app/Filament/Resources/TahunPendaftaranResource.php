@@ -56,17 +56,17 @@ class TahunPendaftaranResource extends Resource
         $fieldPrefix = "tanggal_{$tipe}_jalur_{$namaLower}";
         $label = ucfirst($tipe) === 'Pendaftaran' ? 'pendaftaran' : 'pengumuman';
 
-        return Section::make(ucfirst($tipe) . " Jalur {$nama}")
-            ->visible(fn() => JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', $nama)->exists())
+        return Section::make(ucfirst($tipe)." Jalur {$nama}")
+            ->visible(fn () => JalurPendaftaran::query()->where('status', 'Aktif')->where('nama', $nama)->exists())
             ->description("Tanggal {$label} untuk jalur {$nama}.")
             ->schema([
                 DateTimePicker::make("{$fieldPrefix}_mulai")
-                    ->label('Tanggal Mulai ' . ucfirst($tipe) . " Jalur {$nama}")
+                    ->label('Tanggal Mulai '.ucfirst($tipe)." Jalur {$nama}")
                     ->required()
                     ->validationMessages(['required' => 'Form ini wajib diisi.']),
 
                 DateTimePicker::make("{$fieldPrefix}_selesai")
-                    ->label('Tanggal Selesai ' . ucfirst($tipe) . " Jalur {$nama}")
+                    ->label('Tanggal Selesai '.ucfirst($tipe)." Jalur {$nama}")
                     ->required()
                     ->validationMessages(['required' => 'Form ini wajib diisi.']),
             ])
@@ -81,7 +81,7 @@ class TahunPendaftaranResource extends Resource
         $namaLower = strtolower($nama);
 
         return Section::make("Tes {$nama}")
-            ->visible(fn($get) => $get('tanggal_penerbitan_kartu_tes_mulai'))
+            ->visible(fn ($get) => $get('tanggal_penerbitan_kartu_tes_mulai'))
             ->description("Tanggal tes {$namaLower}.")
             ->schema([
                 DateTimePicker::make("tanggal_tes_{$namaLower}_mulai")
@@ -114,8 +114,8 @@ class TahunPendaftaranResource extends Resource
             ->label($label)
             ->dateTime($format)
             ->description(
-                fn(TahunPendaftaran $record): string => $record->{$fieldSelesai}
-                    ? 'Hingga: ' . Carbon::parse($record->{$fieldSelesai})->translatedFormat($format)
+                fn (TahunPendaftaran $record): string => $record->{$fieldSelesai}
+                    ? 'Hingga: '.Carbon::parse($record->{$fieldSelesai})->translatedFormat($format)
                     : 'Hingga: (Sekarang)'
             );
     }
@@ -129,7 +129,7 @@ class TahunPendaftaranResource extends Resource
         $jalurs = ['Prestasi', 'Reguler', 'Afirmasi', 'Zonasi', 'Mutasi'];
 
         $jalurSections = collect($jalurs)
-            ->flatMap(fn(string $jalur) => [
+            ->flatMap(fn (string $jalur) => [
                 self::jalurSection($jalur, 'pendaftaran'),
                 self::jalurSection($jalur, 'pengumuman'),
             ])
@@ -228,16 +228,16 @@ class TahunPendaftaranResource extends Resource
         $jalurs = ['Prestasi', 'Reguler', 'Afirmasi', 'Zonasi', 'Mutasi'];
 
         $jalurColumns = collect($jalurs)
-            ->flatMap(fn(string $jalur) => [
+            ->flatMap(fn (string $jalur) => [
                 self::tanggalColumn(
-                    'tanggal_pendaftaran_jalur_' . strtolower($jalur) . '_mulai',
+                    'tanggal_pendaftaran_jalur_'.strtolower($jalur).'_mulai',
                     "Pendaftaran Jalur {$jalur}",
-                    'tanggal_pendaftaran_jalur_' . strtolower($jalur) . '_selesai',
+                    'tanggal_pendaftaran_jalur_'.strtolower($jalur).'_selesai',
                 ),
                 self::tanggalColumn(
-                    'tanggal_pengumuman_jalur_' . strtolower($jalur) . '_mulai',
+                    'tanggal_pengumuman_jalur_'.strtolower($jalur).'_mulai',
                     "Pengumuman Jalur {$jalur}",
-                    'tanggal_pengumuman_jalur_' . strtolower($jalur) . '_selesai',
+                    'tanggal_pengumuman_jalur_'.strtolower($jalur).'_selesai',
                 ),
             ])
             ->all();
@@ -251,7 +251,7 @@ class TahunPendaftaranResource extends Resource
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'Aktif' => 'success',
                         'Nonaktif' => 'gray',
                     }),

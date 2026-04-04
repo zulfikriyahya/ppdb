@@ -164,6 +164,22 @@ class CalonSiswaResource extends Resource
         return self::isSuperAdmin() ? array_merge($base, $admin) : $base;
     }
 
+    private static function opsiStatusFormulir(): array
+    {
+        $base = [
+            'Diproses' => 'Diproses',
+        ];
+
+        $admin = [
+            'Diproses' => 'Diproses',
+            'Berkas Tidak Lengkap' => 'Berkas Tidak Lengkap',
+            'Disetujui' => 'Disetujui',
+            'Ditolak' => 'Ditolak',
+        ];
+
+        return self::isSuperAdmin() ? array_merge($base, $admin) : $base;
+    }
+
     // -----------------------------------------------------------------------
     // Wilayah — reusable field group
     // -----------------------------------------------------------------------
@@ -702,8 +718,7 @@ class CalonSiswaResource extends Resource
                 TextColumn::make('nomor_pendaftaran')
                     ->label('No. Daftar')
                     ->searchable()
-                    ->copyable()
-                    ->visible(! $isCalonSiswa),
+                    ->copyable(),
 
                 TextColumn::make('jalurPendaftaran.nama')
                     ->label('Jalur')
@@ -752,8 +767,7 @@ class CalonSiswaResource extends Resource
                         'Diterima Di Kelas Unggulan' => 'success',
                         'Tidak Diterima' => 'danger',
                         default => 'gray',
-                    })
-                    ->visible(fn() => ! $isCalonSiswa || $isSuperAdmin),
+                    }),
                 TextColumn::make('kelas.nama')
                     ->label('Kelas')
                     ->badge()
@@ -795,11 +809,11 @@ class CalonSiswaResource extends Resource
                     ->visible(! $isCalonSiswa),
             ])
             ->actions([
+                Tables\Actions\EditAction::make()
+                    ->visible(fn() => ! $isCalonSiswa),
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
 
-                    Tables\Actions\EditAction::make()
-                        ->visible(fn() => ! $isCalonSiswa),
 
                     Tables\Actions\DeleteAction::make()
                         ->visible(fn($record) => $isSuperAdmin && ! $record->trashed()),
@@ -817,7 +831,7 @@ class CalonSiswaResource extends Resource
                         ->modalHeading('Kirim Notifikasi WhatsApp')
                         ->modalDescription(fn($record) => "Kirim ulang notifikasi status pendaftaran ke {$record->nama}?")
                         ->modalSubmitActionLabel('Kirim Sekarang')
-                        ->visible(fn() => auth()->user()->hasAnyRole(['super_admin', 'admin', 'verifikator', 'panitia']))
+                        ->visible(fn() => auth()->user()->hasAnyRole(['super_admin', 'admin', 'verifikator']))
                         ->action(function ($record) {
                             $telepon = $record->user?->telepon;
 
@@ -895,6 +909,27 @@ class CalonSiswaResource extends Resource
                             )
                         ),
 
+                    BulkAction::make('set_status_formulir')
+                        ->label('Set Status Formulir')
+                        ->icon('heroicon-o-check-badge')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->visible($isSuperAdmin)
+                        ->form([
+                            Select::make('status_formulir')
+                                ->label('Status')
+                                ->options(fn() => self::opsiStatusFormulir())
+                                ->native(false)
+                                ->required(),
+                        ])
+                        ->action(
+                            fn(Collection $records, array $data) => $records->each(function ($r) use ($data) {
+                                $update = ['status_formulir' => $data['status_formulir']];
+
+                                CalonSiswa::where('id', $r->id)->update($update);
+                            })
+                        ),
+
                     BulkAction::make('set_status_pendaftaran')
                         ->label('Set Status Pendaftaran')
                         ->icon('heroicon-o-arrow-path')
@@ -936,6 +971,7 @@ class CalonSiswaResource extends Resource
                                 CalonSiswa::where('id', $r->id)->update($update);
                             })
                         ),
+
                     BulkAction::make('kirim_notifikasi_massal')
                         ->label('Kirim Notifikasi')
                         ->icon('heroicon-o-chat-bubble-left-ellipsis')

@@ -109,6 +109,7 @@ class FormOptions
         'B' => 'B (Baik)',
         'C' => 'C (Cukup)',
         'D' => 'D (Kurang)',
+        'TT' => 'TT (Tidak Terakreditasi)',
     ];
 
     public const STATUS_SEKOLAH = [

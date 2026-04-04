@@ -37,6 +37,7 @@ return new class extends Migration
             $table->string('no_kip')->unique()->nullable();
             $table->string('no_kks')->unique()->nullable();
             $table->string('no_pkh')->unique()->nullable();
+            $table->string('no_sktm')->unique()->nullable();
             $table->string('siswa_telepon')->nullable();
             $table->string('siswa_alamat');
             $table->foreignId('siswa_negara_id')->constrained('negaras')->cascadeOnUpdate();
@@ -53,7 +54,12 @@ return new class extends Migration
             $table->string('berkas_nisn')->nullable();
             $table->string('berkas_skbb')->nullable();
             $table->string('berkas_skab')->nullable();
+            $table->string('berkas_sktm')->nullable();
             $table->string('berkas_prestasi')->nullable();
+            $table->string('berkas_faktur_listrik')->nullable();
+            $table->string('berkas_rumah_depan')->nullable();
+            $table->string('berkas_rumah_dalam')->nullable();
+            $table->string('berkas_rumah_belakang')->nullable();
 
             // Data Ibu
             $table->string('ibu_nama');

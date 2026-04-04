@@ -53,7 +53,7 @@ class ListCalonSiswas extends ListRecords
 
     private function getFormulirUrl(?CalonSiswa $calonSiswa, string $action = ''): string
     {
-        $baseUrl = '/formulir';
+        $baseUrl = '/dashboard/formulir';
 
         if (! $calonSiswa) {
             return $action === 'create' ? "{$baseUrl}/create" : '';
@@ -80,7 +80,7 @@ class ListCalonSiswas extends ListRecords
 
     private function getLihatFormulirAction(?CalonSiswa $calonSiswa): Action
     {
-        $allowedStatuses = ['Diproses', 'Berkas Tidak Lengkap'];
+        $visibleStatuses = ['Disetujui'];
 
         return Action::make('lihat_formulir_pendaftaran')
             ->label('Lihat')
@@ -91,17 +91,16 @@ class ListCalonSiswas extends ListRecords
             ->hidden(
                 ! $this->isCalonSiswa()
                     || $calonSiswa === null
-                    || in_array($calonSiswa->status_pendaftaran, $allowedStatuses)
+                    || ! in_array($calonSiswa->status_formulir, $visibleStatuses)
             );
     }
 
     private function getUbahFormulirAction(?CalonSiswa $calonSiswa): Action
     {
-        $blockedStatuses = [
-            'Diterima',
-            'Diterima Di Kelas Unggulan',
-            'Diterima Di Kelas Reguler',
-            'Tidak Diterima',
+        $visibleStatuses = [
+            'Diproses',
+            'Berkas Tidak Lengkap',
+            'Ditolak',
         ];
 
         return Action::make('ubah_formulir_pendaftaran')
@@ -113,7 +112,7 @@ class ListCalonSiswas extends ListRecords
             ->hidden(
                 ! $this->isCalonSiswa()
                     || $calonSiswa === null
-                    || in_array($calonSiswa->status_pendaftaran, $blockedStatuses)
+                    || ! in_array($calonSiswa->status_formulir, $visibleStatuses)
             )
             ->successRedirectUrl($this->getFormulirUrl($calonSiswa, 'view'));
     }
@@ -127,7 +126,7 @@ class ListCalonSiswas extends ListRecords
             ->color('success')
             ->exporter(CalonSiswaExporter::class)
             ->chunkSize(250)
-            ->visible(fn () => CalonSiswa::count() > 0 && ! $this->isCalonSiswa());
+            ->visible(fn() => CalonSiswa::count() > 0 && ! $this->isCalonSiswa());
     }
 
     private function getImportAction(): ImportAction

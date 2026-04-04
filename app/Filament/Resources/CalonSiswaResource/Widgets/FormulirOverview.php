@@ -21,7 +21,7 @@ class FormulirOverview extends BaseWidget
     private function chartBy(string $col, ?string $val = null): array
     {
         return CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-            ->when($val, fn ($q) => $q->where($col, $val))
+            ->when($val, fn($q) => $q->where($col, $val))
             ->groupBy('hari')
             ->orderBy('hari')
             ->pluck('total')
@@ -49,7 +49,7 @@ class FormulirOverview extends BaseWidget
 
     private function url(string $filter = ''): string
     {
-        return "/formulir{$filter}";
+        return "/dashboard/formulir{$filter}";
     }
 
     protected function getStats(): array
@@ -116,19 +116,19 @@ class FormulirOverview extends BaseWidget
                     $this->url()
                 ),
                 $this->makeStat(
-                    $statusLabel,
-                    'Status Pendaftaran Kamu',
-                    $statusIcon,
-                    $statusColor,
-                    $this->chartBy('status_pendaftaran', $cs?->status_pendaftaran),
-                    $this->url()
-                ),
-                $this->makeStat(
                     $formulirLabel,
                     'Status Formulir Kamu',
                     $formulirIcon,
                     $formulirColor,
                     $this->chartBy('status_formulir', $cs?->status_formulir),
+                    $this->url()
+                ),
+                $this->makeStat(
+                    $statusLabel,
+                    'Status Pendaftaran Kamu',
+                    $statusIcon,
+                    $statusColor,
+                    $this->chartBy('status_pendaftaran', $cs?->status_pendaftaran),
                     $this->url()
                 ),
             ];

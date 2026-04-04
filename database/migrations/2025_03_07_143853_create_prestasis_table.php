@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::disableForeignKeyConstraints();
         Schema::create('prestasis', function (Blueprint $table) {
             $table->id();
-            $table->enum('jenis', ['Hafalan Al-Quran', 'Olimpiade/Kejuaraan']);
+            $table->enum('jenis', ['Hafalan Al-Quran', 'Olimpiade/Kejuaraan', 'Lainnya'])->nullable();
             $table->string('nama');
             $table->enum('tingkat', ['Nasional', 'Provinsi', 'Kabupaten/Kota'])->nullable();
             $table->enum('kategori', ['Regu/Kelompok', 'Individu'])->nullable();
@@ -26,3 +26,7 @@ return new class extends Migration
         Schema::dropIfExists('prestasis');
     }
 };
+
+
+
+

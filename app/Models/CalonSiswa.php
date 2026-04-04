@@ -40,6 +40,7 @@ class CalonSiswa extends Model
         'no_kip',
         'no_kks',
         'no_pkh',
+        'no_sktm',
         'siswa_telepon',
         'siswa_alamat',
         'siswa_negara_id',
@@ -57,6 +58,11 @@ class CalonSiswa extends Model
         'berkas_skbb',
         'berkas_skab',
         'berkas_prestasi',
+        'berkas_sktm',
+        'berkas_faktur_listrik',
+        'berkas_rumah_depan',
+        'berkas_rumah_dalam',
+        'berkas_rumah_belakang',
         'ibu_nama',
         'ibu_nik',
         'ibu_telepon',
@@ -163,7 +169,7 @@ class CalonSiswa extends Model
     {
         // Scope 1: Isolasi per tahun pendaftaran aktif menggunakan Cache Forever
         static::addGlobalScope('tahun_aktif', function (Builder $builder) {
-            $tahun = Cache::rememberForever('tahun_pendaftaran_aktif', fn() => TahunPendaftaran::where('status', 'Aktif')->first());
+            $tahun = Cache::rememberForever('tahun_pendaftaran_aktif', fn () => TahunPendaftaran::where('status', 'Aktif')->first());
             if ($tahun) {
                 $builder->where('tahun_pendaftaran_id', $tahun->id);
             }
@@ -186,18 +192,18 @@ class CalonSiswa extends Model
 
     public static function generateNomorPendaftaran(): string
     {
-        $tahun = Cache::rememberForever('tahun_pendaftaran_aktif', fn() => TahunPendaftaran::where('status', 'Aktif')->first());
-        $prefix = 'PMBM-' . ($tahun ? substr($tahun->nama, 0, 4) : date('Y'));
+        $tahun = Cache::rememberForever('tahun_pendaftaran_aktif', fn () => TahunPendaftaran::where('status', 'Aktif')->first());
+        $prefix = 'PMBM-'.($tahun ? substr($tahun->nama, 0, 4) : date('Y'));
 
         $last = static::withoutGlobalScopes()
-            ->where('nomor_pendaftaran', 'like', $prefix . '-%')
+            ->where('nomor_pendaftaran', 'like', $prefix.'-%')
             ->orderByDesc('nomor_pendaftaran')
             ->lockForUpdate()
             ->value('nomor_pendaftaran');
 
         $seq = $last ? ((int) substr($last, -6)) + 1 : 1;
 
-        return $prefix . '-' . str_pad($seq, 6, '0', STR_PAD_LEFT);
+        return $prefix.'-'.str_pad($seq, 6, '0', STR_PAD_LEFT);
     }
 
     // -----------------------------------------------------------------------

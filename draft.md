@@ -239,6 +239,8 @@ resources/views/partials/pdf-header.blade.php
 resources/views/formulir.blade.php
 resources/views/kartu-tes.blade.php
 resources/views/landing.blade.php
+resources/views/landing.blade.php.bkp
+resources/views/landing.blade.php.bkp2
 resources/views/skl.blade.php
 resources/views/vendor/filament-easy-footer/easy-footer.blade.php
 resources/views/vendor/filament-easy-footer/github-version.blade.php
@@ -270,8 +272,15 @@ public/index.php
 public/robots.txt
 composer.json
 .env.example
+juknis-bersama.md
+juknis-mandiri.md
+lirik.md
 package.json
 postcss.config.js
+ringkasan.md
+SRS-Bersama.md
+SRS-Mandiri.md
+SRS-System.md
 tailwind.config.js
 vite.config.js
 ```
@@ -417,6 +426,7 @@ class CalonSiswa extends Model
         'no_kip',
         'no_kks',
         'no_pkh',
+        'no_sktm',
         'siswa_telepon',
         'siswa_alamat',
         'siswa_negara_id',
@@ -434,6 +444,11 @@ class CalonSiswa extends Model
         'berkas_skbb',
         'berkas_skab',
         'berkas_prestasi',
+        'berkas_sktm',
+        'berkas_faktur_listrik',
+        'berkas_rumah_depan',
+        'berkas_rumah_dalam',
+        'berkas_rumah_belakang',
         'ibu_nama',
         'ibu_nik',
         'ibu_telepon',
@@ -4963,6 +4978,7 @@ class FormOptions
         'B' => 'B (Baik)',
         'C' => 'C (Cukup)',
         'D' => 'D (Kurang)',
+        'TT' => 'TT (Tidak Terakreditasi)',
     ];
 
     public const STATUS_SEKOLAH = [
@@ -5548,7 +5564,7 @@ class ListCalonSiswas extends ListRecords
 
     private function getFormulirUrl(?CalonSiswa $calonSiswa, string $action = ''): string
     {
-        $baseUrl = '/formulir';
+        $baseUrl = '/dashboard/formulir';
 
         if (! $calonSiswa) {
             return $action === 'create' ? "{$baseUrl}/create" : '';
@@ -5622,7 +5638,7 @@ class ListCalonSiswas extends ListRecords
             ->color('success')
             ->exporter(CalonSiswaExporter::class)
             ->chunkSize(250)
-            ->visible(fn () => CalonSiswa::count() > 0 && ! $this->isCalonSiswa());
+            ->visible(fn() => CalonSiswa::count() > 0 && ! $this->isCalonSiswa());
     }
 
     private function getImportAction(): ImportAction
@@ -5957,7 +5973,7 @@ class FormulirOverview extends BaseWidget
 
     private function url(string $filter = ''): string
     {
-        return "/formulir{$filter}";
+        return "/dashboard/formulir{$filter}";
     }
 
     protected function getStats(): array
@@ -6659,8 +6675,8 @@ class InformasiPublished extends TableWidget
         $hasTerminalStatus = $calonSiswa && in_array($statusPendaftaran, $terminalStatuses);
         $showPendaftaranBadge = $this->isCalonSiswa() && $calonSiswa !== null && ! $hasTerminalStatus;
 
-        $urlFormulir = $calonSiswa ? '/formulir' : '';
-        $urlViewFormulir = $calonSiswa ? "/formulir/{$calonSiswa->id}" : '';
+        $urlFormulir = $calonSiswa ? '/dashboard/formulir' : '';
+        $urlViewFormulir = $calonSiswa ? "/dashboard/formulir/{$calonSiswa->id}" : '';
         $urlInformasi = $calonSiswa ? '/informasi' : '';
 
         return $table
@@ -11660,6 +11676,7 @@ use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\HtmlString;
 
 class FormulirPrestasiResource extends Resource
 {
@@ -11761,10 +11778,10 @@ class FormulirPrestasiResource extends Resource
                 ->relationship(
                     'calonSiswa',
                     'nama',
-                    fn (Builder $query) => $query->withoutGlobalScopes()
+                    fn(Builder $query) => $query->withoutGlobalScopes()
                 )
                 ->getOptionLabelFromRecordUsing(
-                    fn ($record) => "{$record->nama} — {$record->nisn}"
+                    fn($record) => "{$record->nama} — {$record->nisn}"
                 )
                 ->searchable()
                 ->preload()
@@ -11773,19 +11790,67 @@ class FormulirPrestasiResource extends Resource
                 ->hidden($isCalonSiswa)
                 ->dehydrated(true),
 
+            // Select::make('prestasi_id')
+            //     ->label('Jenis Prestasi')
+            //     ->options(
+            //         Prestasi::all()->mapWithKeys(
+            //             fn ($p) => [
+            //                 $p->id => "{$p->jenis} — {$p->nama}".($p->tingkat ? " ({$p->tingkat})" : ''),
+            //             ]
+            //         )
+            //     )
+            //     ->searchable()
+            //     ->required()
+            //     ->disabled(! $isCalonSiswa && ! $isEditor)
+            //     ->columnSpanFull(),
             Select::make('prestasi_id')
                 ->label('Jenis Prestasi')
                 ->options(
-                    Prestasi::all()->mapWithKeys(
-                        fn ($p) => [
-                            $p->id => "{$p->jenis} — {$p->nama}".($p->tingkat ? " ({$p->tingkat})" : ''),
-                        ]
-                    )
+                    Prestasi::all()
+                        ->groupBy('jenis')
+                        ->map(
+                            fn($group) =>
+                            $group->mapWithKeys(fn($p) => [
+                                $p->id => collect([
+                                    $p->nama,
+                                    $p->tingkat   ? "Tk. {$p->tingkat}"    : null,
+                                    $p->kategori  ? "Kat. {$p->kategori}"  : null,
+                                    $p->peringkat ? "Juara {$p->peringkat}" : null,
+                                ])->filter()->implode(' — ')
+                            ])
+                        )
+                        ->toArray()
                 )
                 ->searchable()
                 ->required()
                 ->disabled(! $isCalonSiswa && ! $isEditor)
-                ->columnSpanFull(),
+                ->columnSpanFull()
+                ->helperText(function (?string $state) {
+                    if (! $state) return new HtmlString(
+                        '<small style="color:var(--gray-400)">Pilih jenis prestasi yang sesuai dengan sertifikat yang dimiliki.</small>'
+                    );
+
+                    $p = Prestasi::find($state);
+                    if (! $p) return null;
+
+                    $rows = collect([
+                        'Jenis'     => $p->jenis,
+                        'Nama'      => $p->nama,
+                        'Tingkat'   => $p->tingkat,
+                        'Kategori'  => $p->kategori,
+                        'Peringkat' => $p->peringkat,
+                    ])->filter()->map(
+                        fn($v, $k) =>
+                        "<tr>
+                <td style='padding:2px 8px 2px 0;color:#9ca3af;font-size:.78rem;white-space:nowrap'>{$k}</td>
+                <td style='padding:2px 0;font-size:.78rem;font-weight:600'>: {$v}</td>
+            </tr>"
+                    )->implode('');
+
+                    return new HtmlString("
+            <table style='margin-top:.4rem;border-collapse:collapse'>{$rows}</table>
+        ");
+                }),
 
             TextInput::make('nama_prestasi')
                 ->label('Nama / Judul Prestasi')
@@ -11815,9 +11880,17 @@ class FormulirPrestasiResource extends Resource
                 ->helperText('Format: JPG, PNG, atau PDF. Ukuran: 10 KB – 1 MB.')
                 ->acceptedFileTypes(['image/jpeg', 'image/png', 'application/pdf'])
                 ->minSize(10)
+                ->required(fn($get) => $get('nama_prestasi') && $get('tahun_prestasi') && $get('penyelenggara_prestasi'))
+                ->acceptedFileTypes(['image/jpeg', 'image/png', 'application/pdf'])
+                ->validationMessages([
+                    'accepted_file_types' => 'Berkas harus berupa JPG, PNG, atau PDF.',
+                    'min_size' => 'Ukuran berkas minimal 10 KB.',
+                    'max_size' => 'Ukuran berkas maksimal 1 MB.',
+                    'required' => 'Berkas bukti prestasi wajib diunggah jika nama prestasi, tahun, dan penyelenggara sudah diisi.',
+                ])
                 ->maxSize(1024)
                 ->visibility('private')
-                ->directory(fn () => 'berkas/prestasi/'.($nisn ?? 'umum'))
+                ->directory(fn() => 'berkas/prestasi/' . ($nisn ?? 'umum'))
                 ->downloadable()
                 ->openable()
                 ->fetchFileInformation(false)
@@ -11854,7 +11927,7 @@ class FormulirPrestasiResource extends Resource
                 TextColumn::make('prestasi.tingkat')
                     ->label('Tingkat')
                     ->badge()
-                    ->color(fn ($state) => match ($state) {
+                    ->color(fn($state) => match ($state) {
                         'Nasional' => 'danger',
                         'Provinsi' => 'warning',
                         'Kabupaten/Kota' => 'info',
@@ -11872,9 +11945,9 @@ class FormulirPrestasiResource extends Resource
 
                 TextColumn::make('berkas_prestasi')
                     ->label('Berkas')
-                    ->formatStateUsing(fn ($state) => $state ? '✅ Ada' : '❌ Belum upload')
+                    ->formatStateUsing(fn($state) => $state ? '✅ Ada' : '❌ Belum upload')
                     ->badge()
-                    ->color(fn ($state) => $state ? 'success' : 'danger'),
+                    ->color(fn($state) => $state ? 'success' : 'danger'),
 
                 TextColumn::make('updated_at')
                     ->label('Diperbarui')
@@ -14171,13 +14244,13 @@ class UserResource extends Resource
                         TextInput::make('username')
                             ->label('Nomor Induk Siswa Nasional (NISN)')
                             ->unique(ignoreRecord: true)
-                            ->rule(fn ($record) => $record === null
+                            ->rule(fn($record) => $record === null
                                 ? 'unique:users,username'
-                                : 'unique:users,username,'.$record->id)
-                            ->dehydrateStateUsing(fn ($state) => $state ?: null)
+                                : 'unique:users,username,' . $record->id)
+                            ->dehydrateStateUsing(fn($state) => $state ?: null)
                             ->when(
                                 $isCreate,
-                                fn (TextInput $field) => $field
+                                fn(TextInput $field) => $field
                                     ->required()
                                     ->numeric()
                                     ->minLength(10)
@@ -14190,14 +14263,36 @@ class UserResource extends Resource
                                 'required' => 'Form ini wajib diisi.',
                             ]),
 
+                        TextInput::make('telepon')
+                            ->label('Nomor Telepon')
+                            ->unique(ignoreRecord: true)
+                            ->rule(fn($record) => $record === null
+                                ? 'unique:users,telepon'
+                                : 'unique:users,telepon,' . $record->id)
+                            ->dehydrateStateUsing(fn($state) => $state ?: null)
+                            ->when(
+                                $isCreate,
+                                fn(TextInput $field) => $field
+                                    ->required()
+                                    ->numeric()
+                                    ->minLength(10)
+                                    ->maxLength(15)
+                            )
+                            ->validationMessages([
+                                'max_digits' => 'Nomor Telepon: Masukkan maksimal 15 Angka.',
+                                'min_digits' => 'Nomor Telepon: Masukkan minimal 10 Angka.',
+                                'unique' => 'Nomor Telepon: Nomor ini sudah pernah di isi.',
+                                'required' => 'Form ini wajib diisi.',
+                            ]),
+
                         TextInput::make('email')
                             ->label('Email')
                             ->email()
                             ->unique(ignoreRecord: true)
-                            ->rule(fn ($record) => $record === null
+                            ->rule(fn($record) => $record === null
                                 ? 'unique:users,email'
-                                : 'unique:users,email,'.$record->id)
-                            ->dehydrateStateUsing(fn ($state) => $state ?: null)
+                                : 'unique:users,email,' . $record->id)
+                            ->dehydrateStateUsing(fn($state) => $state ?: null)
                             ->disabledOn('edit')
                             ->required()
                             ->validationMessages([
@@ -14208,8 +14303,8 @@ class UserResource extends Resource
                         TextInput::make('password')
                             ->label('Password')
                             ->password()
-                            ->required(fn ($record) => $record === null)
-                            ->dehydrateStateUsing(fn ($state, $record) => $state ? bcrypt($state) : $record->password),
+                            ->required(fn($record) => $record === null)
+                            ->dehydrateStateUsing(fn($state, $record) => $state ? bcrypt($state) : $record->password),
 
                         DateTimePicker::make('email_verified_at')
                             ->label('Diverifikasi')
@@ -14223,7 +14318,7 @@ class UserResource extends Resource
                             ->searchable()
                             ->when(
                                 $isCreate,
-                                fn (Select $field) => $field
+                                fn(Select $field) => $field
                                     ->required()
                                     ->validationMessages(['required' => 'Form ini wajib diisi.'])
                             ),
@@ -14273,18 +14368,18 @@ class UserResource extends Resource
 
                 TextColumn::make('roles.name')
                     ->label('Peran')
-                    ->formatStateUsing(fn (string $state): string => Str::headline($state))
+                    ->formatStateUsing(fn(string $state): string => Str::headline($state))
                     ->badge()
                     ->sortable(),
 
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'Aktif' => 'success',
                         'Nonaktif' => 'gray',
                     })
-                    ->icon(fn (string $state): string => match ($state) {
+                    ->icon(fn(string $state): string => match ($state) {
                         'Aktif' => 'heroicon-o-check-circle',
                         'Nonaktif' => 'heroicon-o-x-mark',
                     })
@@ -14314,7 +14409,7 @@ class UserResource extends Resource
                     DeleteAction::make(),
                     ForceDeleteAction::make(),
                     RestoreAction::make(),
-                ])->hidden(fn ($record) => $record->username === 'super_admin'),
+                ])->hidden(fn($record) => $record->username === 'super_admin'),
             ], ActionsPosition::BeforeColumns)
             ->striped()
             ->filtersLayout(FiltersLayout::AboveContentCollapsible)
@@ -15907,12 +16002,12 @@ trait CalonSiswaFormTrait
     {
         return Select::make('jalur_pendaftaran_id')
             ->label('Jalur Pendaftaran')
-            ->relationship('jalurPendaftaran', 'nama', fn ($query) => $query->where('status', 'Aktif'))
+            ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
             ->required()
             ->validationMessages(['required' => 'Form ini wajib diisi.'])
             ->native(false)
             ->live()
-            ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->nama} | {$record->tahunPendaftaran->nama}");
+            ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->nama} | {$record->tahunPendaftaran->nama}");
     }
 
     protected function getNamaField(): TextInput
@@ -15922,7 +16017,7 @@ trait CalonSiswaFormTrait
             ->required()
             ->disabledOn('create')
             ->dehydrated()
-            ->default(fn () => Auth::user()->name)
+            ->default(fn() => Auth::user()->name)
             ->validationMessages(['required' => 'Form ini wajib diisi.']);
     }
 
@@ -15932,7 +16027,7 @@ trait CalonSiswaFormTrait
             ->label('Nomor Induk Kependudukan (NIK)')
             ->required()
             ->unique(ignoreRecord: true)
-            ->dehydrateStateUsing(fn ($state) => $state ?: null)
+            ->dehydrateStateUsing(fn($state) => $state ?: null)
             ->numeric()
             ->maxLength(16)
             ->minLength(16)
@@ -15966,9 +16061,9 @@ trait CalonSiswaFormTrait
             ->required()
             ->disabled(true)
             ->dehydrated()
-            ->default(fn () => Auth::user()->username)
+            ->default(fn() => Auth::user()->username)
             ->unique(ignoreRecord: true)
-            ->dehydrateStateUsing(fn ($state) => $state ?: null)
+            ->dehydrateStateUsing(fn($state) => $state ?: null)
             ->numeric()
             ->maxLength(10)
             ->minLength(10)
@@ -16021,7 +16116,7 @@ trait CalonSiswaFormTrait
 
             Select::make("{$prefix}_provinsi_id")
                 ->label('Provinsi')
-                ->options(fn (Get $get): Collection => Provinsi::query()
+                ->options(fn(Get $get): Collection => Provinsi::query()
                     ->where('negara_id', $get("{$prefix}_negara_id"))
                     ->pluck('nama', 'id'))
                 ->required($required)
@@ -16037,7 +16132,7 @@ trait CalonSiswaFormTrait
 
             Select::make("{$prefix}_kabupaten_id")
                 ->label('Kabupaten')
-                ->options(fn (Get $get): Collection => Kabupaten::query()
+                ->options(fn(Get $get): Collection => Kabupaten::query()
                     ->where('provinsi_id', $get("{$prefix}_provinsi_id"))
                     ->pluck('nama', 'id'))
                 ->required($required)
@@ -16052,7 +16147,7 @@ trait CalonSiswaFormTrait
 
             Select::make("{$prefix}_kecamatan_id")
                 ->label('Kecamatan')
-                ->options(fn (Get $get): Collection => Kecamatan::query()
+                ->options(fn(Get $get): Collection => Kecamatan::query()
                     ->where('kabupaten_id', $get("{$prefix}_kabupaten_id"))
                     ->pluck('nama', 'id'))
                 ->required($required)
@@ -16066,7 +16161,7 @@ trait CalonSiswaFormTrait
 
             Select::make("{$prefix}_kelurahan_id")
                 ->label('Kelurahan')
-                ->options(fn (Get $get): Collection => Kelurahan::query()
+                ->options(fn(Get $get): Collection => Kelurahan::query()
                     ->where('kecamatan_id', $get("{$prefix}_kecamatan_id"))
                     ->pluck('nama', 'id'))
                 ->required($required)
@@ -16103,39 +16198,45 @@ trait CalonSiswaFormTrait
                     'min_digits' => 'NIK: Masukkan minimal 16 Angka.',
                 ]),
 
+            Select::make("{$type}_status")
+                ->label('Status')
+                ->options(FormOptions::STATUS_HIDUP)
+                ->required($required)
+                ->validationMessages(['required' => 'Form ini wajib diisi.'])
+                ->native(false)
+                ->live(),
+
             TextInput::make("{$type}_telepon")
                 ->label('Nomor Telepon')
                 ->tel()
-                ->required($required)
+                ->required(fn(Get $get) => $required && $get("{$type}_status") !== 'Meninggal')
+                ->hidden(fn(Get $get) => $get("{$type}_status") === 'Meninggal')
                 ->validationMessages(['required' => 'Form ini wajib diisi.']),
 
             Select::make("{$type}_pekerjaan")
                 ->label('Pekerjaan')
                 ->options(FormOptions::PEKERJAAN)
-                ->required($required)
+                ->required(fn(Get $get) => $required && $get("{$type}_status") !== 'Meninggal')
+                ->hidden(fn(Get $get) => $get("{$type}_status") === 'Meninggal')
                 ->validationMessages(['required' => 'Form ini wajib diisi.'])
                 ->native(false),
 
             Select::make("{$type}_penghasilan")
                 ->label('Penghasilan Bulanan')
                 ->options(FormOptions::PENGHASILAN)
-                ->required($required)
+                ->required(fn(Get $get) => $required && $get("{$type}_status") !== 'Meninggal')
+                ->hidden(fn(Get $get) => $get("{$type}_status") === 'Meninggal')
                 ->validationMessages(['required' => 'Form ini wajib diisi.'])
                 ->native(false),
 
             Select::make("{$type}_pendidikan")
                 ->label('Pendidikan')
                 ->options(FormOptions::PENDIDIKAN)
-                ->required($required)
+                ->required(fn(Get $get) => $required && $get("{$type}_status") !== 'Meninggal')
+                ->hidden(fn(Get $get) => $get("{$type}_status") === 'Meninggal')
                 ->validationMessages(['required' => 'Form ini wajib diisi.'])
                 ->native(false),
 
-            Select::make("{$type}_status")
-                ->label('Status')
-                ->options(FormOptions::STATUS_HIDUP)
-                ->required($required)
-                ->validationMessages(['required' => 'Form ini wajib diisi.'])
-                ->native(false),
         ];
     }
 
@@ -16146,7 +16247,7 @@ trait CalonSiswaFormTrait
             ->required($required)
             ->validationMessages(['required' => 'Form ini wajib diisi.'])
             ->fetchFileInformation(false)
-            ->directory(fn ($get) => "berkas/{$type}/".$get('nisn'))
+            ->directory(fn($get) => "berkas/{$type}/" . $get('nisn'))
             ->downloadable()
             ->openable()
             ->maxSize(500)
@@ -16250,57 +16351,93 @@ trait CalonSiswaFormTrait
                 TextInput::make('tinggi_badan')
                     ->label('Tinggi Badan')
                     ->suffix('cm')
+                    ->maxValue(300)
+                    ->minValue(30)
+                    ->validationMessages(['max' => 'Tinggi badan tidak boleh lebih dari 300 cm.', 'min' => 'Tinggi badan tidak boleh kurang dari 30 cm.'])
                     ->numeric(),
 
                 TextInput::make('berat_badan')
                     ->label('Berat Badan')
                     ->suffix('kg')
+                    ->maxValue(500)
+                    ->minValue(10)
+                    ->validationMessages(['max' => 'Berat badan tidak boleh lebih dari 500 kg.', 'min' => 'Berat badan tidak boleh kurang dari 10 kg.'])
                     ->numeric(),
 
                 TextInput::make('no_kip')
                     ->label('Nomor Kartu Indonesia Pintar')
-                    ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki KIP.<sup style="color:red">*</sup></i></small>'))
+                    ->helperText(new HtmlString('<small><i>Jangan diisi jika tidak memiliki bukti KIP.<sup style="color:red">*</sup></i></small>'))
                     ->unique(ignoreRecord: true)
-                    ->dehydrateStateUsing(fn ($state) => $state ?: null)
-                    ->maxLength(6)
-                    ->minLength(6)
+                    ->dehydrateStateUsing(fn($state) => $state ?: null)
+                    ->numeric()
+                    ->minLength(16)
+                    ->maxLength(19)
                     ->live()
                     ->validationMessages([
-                        'max' => 'KIP: Masukkan maksimal 6 Karakter.',
-                        'min' => 'KIP: Masukkan minimal 6 Karakter.',
-                        'unique' => 'KIP: Nomor ini sudah pernah di isi.',
+                        'min_digits'    => 'KIP: Nomor harus 16 digit.',
+                        'max_digits'    => 'KIP: Nomor harus 19 digit.',
+                        'unique' => 'KIP: Nomor ini sudah pernah diisi.',
                     ]),
 
                 TextInput::make('no_kks')
                     ->label('Nomor Kartu Keluarga Sejahtera')
-                    ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki KKS.<sup style="color:red">*</sup></i></small>'))
+                    ->helperText(new HtmlString('<small><i>Jangan diisi jika tidak memiliki bukti KKS.<sup style="color:red">*</sup></i></small>'))
                     ->unique(ignoreRecord: true)
-                    ->dehydrateStateUsing(fn ($state) => $state ?: null)
-                    ->maxLength(6)
-                    ->minLength(6)
+                    ->dehydrateStateUsing(fn($state) => $state ?: null)
+                    ->numeric()
+                    ->minLength(16)
+                    ->maxLength(16)
                     ->live()
                     ->validationMessages([
-                        'max' => 'KKS: Masukkan maksimal 6 Karakter.',
-                        'min' => 'KKS: Masukkan minimal 6 Karakter.',
-                        'unique' => 'KKS: Nomor ini sudah pernah di isi.',
+                        'min_digits'    => 'KKS: Nomor harus 16 digit.',
+                        'max_digits'    => 'KKS: Nomor harus 16 digit.',
+                        'unique' => 'KKS: Nomor ini sudah pernah diisi.',
                     ]),
 
                 TextInput::make('no_pkh')
                     ->label('Nomor Kartu Program Keluarga Harapan')
-                    ->helperText(new HtmlString('<small><i>Abaikan jika tidak memiliki PKH.<sup style="color:red">*</sup></i></small>'))
+                    ->helperText(new HtmlString('<small><i>Jangan diisi jika tidak memiliki bukti PKH.<sup style="color:red">*</sup></i></small>'))
                     ->unique(ignoreRecord: true)
-                    ->dehydrateStateUsing(fn ($state) => $state ?: null)
-                    ->maxLength(6)
-                    ->minLength(6)
+                    ->dehydrateStateUsing(fn($state) => $state ?: null)
+                    ->numeric()
+                    ->minLength(16)
+                    ->maxLength(16)
                     ->live()
                     ->validationMessages([
-                        'max' => 'PKH: Masukkan maksimal 6 Karakter.',
-                        'min' => 'PKH: Masukkan minimal 6 Karakter.',
-                        'unique' => 'PKH: Nomor ini sudah pernah di isi.',
+                        'min_digits'    => 'PKH: Nomor harus 16 digit.',
+                        'max_digits'    => 'PKH: Nomor harus 16 digit.',
+                        'unique' => 'PKH: Nomor ini sudah pernah diisi.',
+                    ]),
+
+                TextInput::make('no_sktm')
+                    ->label('Nomor Surat Keterangan Tidak Mampu')
+                    ->helperText(new HtmlString('<small><i>Jangan diisi jika tidak memiliki bukti SKTM.<sup style="color:red">*</sup></i></small>'))
+                    ->unique(ignoreRecord: true)
+                    ->dehydrateStateUsing(fn($state) => $state ?: null)
+                    ->minLength(8)
+                    ->maxLength(50)
+                    ->live()
+                    ->validationMessages([
+                        'min'    => 'SKTM: Masukkan minimal 8 karakter.',
+                        'max'    => 'SKTM: Masukkan maksimal 50 karakter.',
+                        'unique' => 'SKTM: Nomor ini sudah pernah diisi.',
                     ]),
 
                 TextInput::make('siswa_telepon')
                     ->label('Nomor Telepon')
+                    ->required()
+                    ->disabled(true)
+                    ->dehydrated()
+                    ->default(fn() => Auth::user()->telepon)
+                    ->unique(ignoreRecord: true)
+                    ->dehydrateStateUsing(fn($state) => $state ?: null)
+                    ->numeric()
+                    ->maxLength(15)
+                    ->minLength(10)
+                    ->validationMessages([
+                        'max_digits' => 'Masukkan maksimal 15 Angka.',
+                        'min_digits' => 'Masukkan minimal 10 Angka.'
+                    ])
                     ->numeric()
                     ->tel(),
 
@@ -16318,7 +16455,7 @@ trait CalonSiswaFormTrait
             ->native(false)
             ->searchable()
             ->preload()
-            ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->nama} | NPSN: {$record->npsn}")
+            ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->nama} | NPSN: {$record->npsn}")
             ->createOptionForm($this->getSekolahAsalForm());
     }
 
@@ -16341,7 +16478,7 @@ trait CalonSiswaFormTrait
                             ->required()
                             ->live()
                             ->validationMessages(['required' => 'Form ini wajib diisi.'])
-                            ->options(fn () => FormOptions::jenjangSekolahAsal(Sekolah::first()?->jenjang)),
+                            ->options(fn() => FormOptions::jenjangSekolahAsal(Sekolah::first()?->jenjang)),
 
                         TextInput::make('npsn')
                             ->label('NPSN')
@@ -16356,7 +16493,7 @@ trait CalonSiswaFormTrait
                             ]),
 
                         TextInput::make('nss')
-                            ->visible(fn ($get) => in_array($get('jenjang'), ['MI', 'MTS', 'MA']))
+                            ->visible(fn($get) => in_array($get('jenjang'), ['MI', 'MTS', 'MA']))
                             ->label('NSS/NSM')
                             ->required()
                             ->numeric()
@@ -16382,20 +16519,20 @@ trait CalonSiswaFormTrait
                             ->validationMessages(['required' => 'Form ini wajib diisi.'])
                             ->options(FormOptions::STATUS_SEKOLAH),
 
-                        FileUpload::make('logo')
-                            ->label('Logo Instansi')
-                            ->image()
-                            ->imageEditor()
-                            ->imageEditorAspectRatios([null, '1:1' => '1:1'])
-                            ->fetchFileInformation(false)
-                            ->directory('assets/instansi-lain')
-                            ->downloadable()
-                            ->openable()
-                            ->maxSize(500)
-                            ->minSize(10)
-                            ->visibility('private')
-                            ->required()
-                            ->validationMessages(['required' => 'Form ini wajib diisi.']),
+                        // FileUpload::make('logo')
+                        //     ->label('Logo Instansi')
+                        //     ->image()
+                        //     ->imageEditor()
+                        //     ->imageEditorAspectRatios([null, '1:1' => '1:1'])
+                        //     ->fetchFileInformation(false)
+                        //     ->directory('assets/instansi-lain')
+                        //     ->downloadable()
+                        //     ->openable()
+                        //     ->maxSize(500)
+                        //     ->minSize(10)
+                        //     ->visibility('private')
+                        //     ->required()
+                        //     ->validationMessages(['required' => 'Form ini wajib diisi.']),
                     ])
                     ->columns(['sm' => '100%', 'md' => 3, 'lg' => 3]),
 
@@ -16403,27 +16540,27 @@ trait CalonSiswaFormTrait
                     ->schema($this->getWilayahFields(''))
                     ->columns(['sm' => '100%', 'md' => 3, 'lg' => 3]),
 
-                Wizard\Step::make('Data Kontak')
-                    ->schema([
-                        TextInput::make('website')
-                            ->label('Website')
-                            ->url()
-                            ->prefixIcon('heroicon-m-globe-alt')
-                            ->placeholder('https://mtsn1pandeglang.sch.id'),
+                // Wizard\Step::make('Data Kontak')
+                //     ->schema([
+                //         TextInput::make('website')
+                //             ->label('Website')
+                //             ->url()
+                //             ->prefixIcon('heroicon-m-globe-alt')
+                //             ->placeholder('https://mtsn1pandeglang.sch.id'),
 
-                        TextInput::make('telepon')
-                            ->label('Telepon')
-                            ->tel()
-                            ->placeholder('08**********')
-                            ->prefixIcon('heroicon-m-phone'),
+                //         TextInput::make('telepon')
+                //             ->label('Telepon')
+                //             ->tel()
+                //             ->placeholder('08**********')
+                //             ->prefixIcon('heroicon-m-phone'),
 
-                        TextInput::make('email')
-                            ->label('Email')
-                            ->placeholder('adm@mtsn1pandeglang.sch.id')
-                            ->email()
-                            ->prefixIcon('heroicon-m-envelope'),
-                    ])
-                    ->columns(['sm' => '100%', 'md' => 3, 'lg' => 3]),
+                //         TextInput::make('email')
+                //             ->label('Email')
+                //             ->placeholder('adm@mtsn1pandeglang.sch.id')
+                //             ->email()
+                //             ->prefixIcon('heroicon-m-envelope'),
+                //     ])
+                //     ->columns(['sm' => '100%', 'md' => 3, 'lg' => 3]),
             ]),
         ];
     }
@@ -16457,7 +16594,7 @@ trait CalonSiswaFormTrait
             ->schema([
                 Select::make('status_pendaftaran')
                     ->label('Status Pendaftaran')
-                    ->options(fn () => Auth::user()->hasRole('super_admin')
+                    ->options(fn() => Auth::user()->hasRole('super_admin')
                         ? FormOptions::STATUS_PENDAFTARAN_SUPER_ADMIN
                         : FormOptions::STATUS_PENDAFTARAN_REGULAR)
                     ->native(false)
@@ -16467,11 +16604,11 @@ trait CalonSiswaFormTrait
 
                 Select::make('kelas_id')
                     ->label('Kelas')
-                    ->visible(fn ($get) => in_array($get('status_pendaftaran'), [
+                    ->visible(fn($get) => in_array($get('status_pendaftaran'), [
                         'Diterima Di Kelas Reguler',
                         'Diterima Di Kelas Unggulan',
                     ]))
-                    ->required(fn ($get) => in_array($get('status_pendaftaran'), [
+                    ->required(fn($get) => in_array($get('status_pendaftaran'), [
                         'Diterima Di Kelas Reguler',
                         'Diterima Di Kelas Unggulan',
                     ]))
@@ -16604,23 +16741,58 @@ trait CalonSiswaFormTrait
                 $this->getBerkasField(
                     'kip',
                     'Kartu Indonesia Pintar',
-                    fn ($get) => $get('no_kip') !== null,
-                    '<small><i>Abaikan jika tidak memiliki KIP.<sup style="color:red">*</sup></i></small>'
-                )->visible(fn ($get) => $get('no_kip') !== null),
+                    fn($get) => $get('no_kip') !== null,
+                    '<small><i>Jangan diisi jika tidak memiliki bukti KIP.<sup style="color:red">*</sup></i></small>'
+                )->visible(fn($get) => $get('no_kip') !== null),
 
                 $this->getBerkasField(
                     'kks',
                     'Kartu Keluarga Sejahtera',
-                    fn ($get) => $get('no_kks') !== null,
-                    '<small><i>Abaikan jika tidak memiliki KKS.<sup style="color:red">*</sup></i></small>'
-                )->visible(fn ($get) => $get('no_kks') !== null),
+                    fn($get) => $get('no_kks') !== null,
+                    '<small><i>Jangan diisi jika tidak memiliki bukti KKS.<sup style="color:red">*</sup></i></small>'
+                )->visible(fn($get) => $get('no_kks') !== null),
 
                 $this->getBerkasField(
                     'pkh',
                     'Kartu Program Keluarga Harapan',
-                    fn ($get) => $get('no_pkh') !== null,
-                    '<small><i>Abaikan jika tidak memiliki PKH.<sup style="color:red">*</sup></i></small>'
-                )->visible(fn ($get) => $get('no_pkh') !== null),
+                    fn($get) => $get('no_pkh') !== null,
+                    '<small><i>Jangan diisi jika tidak memiliki bukti PKH.<sup style="color:red">*</sup></i></small>'
+                )->visible(fn($get) => $get('no_pkh') !== null),
+
+                $this->getBerkasField(
+                    'sktm',
+                    'Surat Keterangan Tidak Mampu',
+                    fn($get) => $get('no_sktm') !== null,
+                    '<small><i>Jangan diisi jika tidak memiliki bukti SKTM.<sup style="color:red">*</sup></i></small>'
+                )->visible(fn($get) => $get('no_sktm') !== null),
+
+                $this->getBerkasField(
+                    'faktur_listrik',
+                    'Faktur Listrik',
+                    fn($get) => $get('no_sktm') !== null,
+                    '<small><i>Unggah Faktur Pembayaran Listrik 3 Bulan Terakhir.<sup style="color:red">*</sup></i></small>'
+                )->visible(fn($get) => $get('no_sktm') !== null),
+
+                $this->getBerkasField(
+                    'rumah_depan',
+                    'Foto Rumah Depan',
+                    fn($get) => $get('no_sktm') !== null,
+                    '<small><i>Unggah foto depan rumah.<sup style="color:red">*</sup></i></small>'
+                )->visible(fn($get) => $get('no_sktm') !== null),
+
+                $this->getBerkasField(
+                    'rumah_dalam',
+                    'Foto Rumah Dalam',
+                    fn($get) => $get('no_sktm') !== null,
+                    '<small><i>Unggah foto dalam rumah.<sup style="color:red">*</sup></i></small>'
+                )->visible(fn($get) => $get('no_sktm') !== null),
+
+                $this->getBerkasField(
+                    'rumah_belakang',
+                    'Foto Rumah Belakang',
+                    fn($get) => $get('no_sktm') !== null,
+                    '<small><i>Unggah foto belakang rumah.<sup style="color:red">*</sup></i></small>'
+                )->visible(fn($get) => $get('no_sktm') !== null),
             ]);
     }
 
@@ -16763,9 +16935,9 @@ class AdminPanelProvider extends PanelProvider
             ->userMenuItems([
                 MenuItem::make()
                     ->label('Manajemen Pengguna')
-                    ->url(fn(): string => UserResource::getUrl())
+                    ->url(fn (): string => UserResource::getUrl())
                     ->icon('heroicon-o-identification')
-                    ->visible(fn() => Auth::user()?->roles?->where('name', 'super_admin')->first() !== null),
+                    ->visible(fn () => Auth::user()?->roles?->where('name', 'super_admin')->first() !== null),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -16933,6 +17105,7 @@ return new class extends Migration
             $table->string('no_kip')->unique()->nullable();
             $table->string('no_kks')->unique()->nullable();
             $table->string('no_pkh')->unique()->nullable();
+            $table->string('no_sktm')->unique()->nullable();
             $table->string('siswa_telepon')->nullable();
             $table->string('siswa_alamat');
             $table->foreignId('siswa_negara_id')->constrained('negaras')->cascadeOnUpdate();
@@ -16949,7 +17122,12 @@ return new class extends Migration
             $table->string('berkas_nisn')->nullable();
             $table->string('berkas_skbb')->nullable();
             $table->string('berkas_skab')->nullable();
+            $table->string('berkas_sktm')->nullable();
             $table->string('berkas_prestasi')->nullable();
+            $table->string('berkas_faktur_listrik')->nullable();
+            $table->string('berkas_rumah_depan')->nullable();
+            $table->string('berkas_rumah_dalam')->nullable();
+            $table->string('berkas_rumah_belakang')->nullable();
 
             // Data Ibu
             $table->string('ibu_nama');
@@ -17617,7 +17795,7 @@ return new class extends Migration
             $table->string('logo_institusi')->nullable();
             $table->enum('jenjang', ['PAUD', 'TK', 'SD', 'MI', 'SMP', 'MTS', 'SMA', 'SMK', 'MA'])->nullable();
             $table->enum('status', ['NEGERI', 'SWASTA'])->nullable();
-            $table->enum('akreditasi', ['A', 'B', 'C', 'D'])->nullable();
+            $table->enum('akreditasi', ['A', 'B', 'C', 'D', 'TT'])->nullable();
             $table->string('alamat', 50)->nullable();
             $table->foreignId('negara_id')->nullable()->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('provinsi_id')->nullable()->constrained('provinsis')->cascadeOnDelete()->cascadeOnUpdate();
@@ -18924,6 +19102,3272 @@ Route::middleware('web')->group(function () {
 ### ./resources/views/landing.blade.php
 
 ```blade
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta name="description"
+        content="PMBM MTsN 1 Pandeglang TP 2026/2027 — Pendaftaran peserta didik baru Jalur Prestasi, Afirmasi, dan Reguler. Gratis, transparan, dan objektif.">
+    <meta property="og:title" content="PMBM MTsN 1 Pandeglang TP 2026/2027">
+    <meta property="og:description"
+        content="3 Jalur Pendaftaran: Prestasi, Afirmasi & Reguler. 224 Kuota Tersedia. Gratis.">
+    <title>PMBM MTsN 1 Pandeglang — TP 2026/2027</title>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px
+        }
+
+        :root {
+            --teal: #0d9488;
+            --teal-l: #14b8a6;
+            --teal-d: #0f766e;
+            --teal-xl: #5eead4;
+            --gold: #d4a843;
+            --gold-l: #f0c96a;
+            --red: #dc2626;
+            --red-l: #ef4444;
+            --blue: #2563eb;
+            --blue-l: #60a5fa;
+            --amber: #f59e0b;
+            --bg: #060d0c;
+            --bg2: #091210;
+            --surface: #0e1a18;
+            --card: rgba(20, 184, 166, .06);
+            --card2: rgba(255, 255, 255, .03);
+            --border: rgba(20, 184, 166, .12);
+            --border2: rgba(255, 255, 255, .06);
+            --text: #e2f4f1;
+            --muted: #6aada3;
+            --muted2: #4a8078;
+            --radius: 16px;
+            --nav-h: 62px;
+            --shadow-teal: 0 0 40px rgba(13, 148, 136, .18);
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--teal);
+            border-radius: 4px
+        }
+
+        /* ── NOISE TEXTURE OVERLAY ── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E");
+            opacity: .4;
+            pointer-events: none;
+            z-index: 0
+        }
+
+        /* ── ORB / GLOW ── */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(140px);
+            opacity: .07;
+            pointer-events: none;
+            z-index: 0;
+            animation: orb-drift 18s ease-in-out infinite alternate
+        }
+
+        .orb-1 {
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, var(--teal), transparent 70%);
+            top: -300px;
+            left: -300px
+        }
+
+        .orb-2 {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--gold), transparent 70%);
+            bottom: -200px;
+            right: -250px;
+            animation-delay: -9s
+        }
+
+        @keyframes orb-drift {
+            0% {
+                transform: translate(0, 0) scale(1)
+            }
+
+            100% {
+                transform: translate(30px, 20px) scale(1.08)
+            }
+        }
+
+        /* ── GRID LINES BG ── */
+        .grid-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background-image: linear-gradient(rgba(13, 148, 136, .04) 1px, transparent 1px), linear-gradient(90deg, rgba(13, 148, 136, .04) 1px, transparent 1px);
+            background-size: 60px 60px;
+            mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 100%)
+        }
+
+        /* ── NAV ── */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 200;
+            height: var(--nav-h);
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(6, 13, 12, .88);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(24px) saturate(180%);
+            transition: background .3s, box-shadow .3s
+        }
+
+        nav.scrolled {
+            background: rgba(6, 13, 12, .97);
+            box-shadow: 0 1px 0 var(--border), var(--shadow-teal)
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: .65rem;
+            text-decoration: none;
+            color: inherit;
+            font-weight: 700;
+            flex-shrink: 0
+        }
+
+        .nav-logo {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            overflow: hidden;
+            flex-shrink: 0;
+            border: 1px solid var(--border)
+        }
+
+        .nav-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover
+        }
+
+        .nav-name {
+            font-size: .86rem;
+            line-height: 1.2;
+            font-weight: 700;
+            letter-spacing: -.01em
+        }
+
+        .nav-sub {
+            font-size: .62rem;
+            font-weight: 500;
+            color: var(--teal-l)
+        }
+
+        .nav-links {
+            display: flex;
+            gap: .1rem;
+            list-style: none
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--muted);
+            font-size: .79rem;
+            font-weight: 500;
+            padding: .38rem .65rem;
+            border-radius: 8px;
+            transition: all .2s;
+            white-space: nowrap
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--teal-xl);
+            background: rgba(20, 184, 166, .1)
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            flex-shrink: 0
+        }
+
+        .n-btn {
+            height: 34px;
+            padding: 0 .65rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--card2);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .8rem;
+            color: inherit;
+            transition: all .2s;
+            white-space: nowrap;
+            font-weight: 600
+        }
+
+        .n-btn:hover {
+            border-color: var(--teal);
+            color: var(--teal-xl);
+            background: rgba(20, 184, 166, .1)
+        }
+
+        #menuBtn {
+            width: 36px;
+            flex-direction: column;
+            gap: 5px;
+            display: none
+        }
+
+        #menuBtn span {
+            display: block;
+            width: 18px;
+            height: 2px;
+            background: currentColor;
+            border-radius: 2px;
+            transition: all .3s;
+            margin: 0 auto
+        }
+
+        #menuBtn.open span:nth-child(1) {
+            transform: translateY(7px) rotate(45deg)
+        }
+
+        #menuBtn.open span:nth-child(2) {
+            opacity: 0;
+            transform: scaleX(0)
+        }
+
+        #menuBtn.open span:nth-child(3) {
+            transform: translateY(-7px) rotate(-45deg)
+        }
+
+        /* ── DRAWER ── */
+        .drawer {
+            position: fixed;
+            top: var(--nav-h);
+            left: 0;
+            right: 0;
+            z-index: 190;
+            flex-direction: column;
+            background: rgba(6, 13, 12, .98);
+            border-bottom: 1px solid transparent;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height .38s cubic-bezier(.4, 0, .2, 1), padding .3s, border-color .3s;
+            display: flex;
+            backdrop-filter: blur(20px)
+        }
+
+        .drawer.open {
+            max-height: 560px;
+            padding: 1rem 1.5rem 2rem;
+            border-color: var(--border)
+        }
+
+        .drawer a {
+            text-decoration: none;
+            color: var(--muted);
+            font-size: .88rem;
+            font-weight: 500;
+            padding: .6rem .9rem;
+            border-radius: 10px;
+            transition: all .2s
+        }
+
+        .drawer a:hover {
+            color: var(--teal-xl);
+            background: rgba(20, 184, 166, .08)
+        }
+
+        .drawer hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: .6rem 0
+        }
+
+        /* ── LAYOUT ── */
+        .wrap {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 0 1.5rem
+        }
+
+        section {
+            padding: 5.5rem 1.5rem;
+            position: relative;
+            z-index: 1
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-weight: 800;
+            letter-spacing: -.03em;
+            line-height: 1.1
+        }
+
+        h1 {
+            font-size: clamp(2.2rem, 5vw, 3.8rem)
+        }
+
+        h2 {
+            font-size: clamp(1.6rem, 3.5vw, 2.4rem)
+        }
+
+        .grad {
+            background: linear-gradient(135deg, var(--teal-xl), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .grad-teal {
+            background: linear-gradient(135deg, var(--teal-l), var(--teal-xl));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            padding: .3rem .9rem;
+            border-radius: 999px;
+            font-size: .68rem;
+            font-weight: 700;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            background: rgba(20, 184, 166, .1);
+            color: var(--teal-xl);
+            border: 1px solid rgba(20, 184, 166, .25);
+            margin-bottom: .85rem
+        }
+
+        .divider {
+            width: 44px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--teal), var(--gold));
+            border-radius: 999px;
+            margin: .6rem 0 0
+        }
+
+        .section-header {
+            margin-bottom: 3rem
+        }
+
+        .section-header.center {
+            text-align: center
+        }
+
+        .section-header.center .divider {
+            margin: .6rem auto 0
+        }
+
+        .lead {
+            font-size: .95rem;
+            color: var(--muted);
+            line-height: 1.85
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            backdrop-filter: blur(12px);
+            transition: border-color .3s, transform .3s, box-shadow .3s
+        }
+
+        .card-hover:hover {
+            border-color: rgba(20, 184, 166, .35);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(13, 148, 136, .15)
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            padding: .7rem 1.6rem;
+            border-radius: 10px;
+            font-size: .88rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            transition: all .25s;
+            white-space: nowrap;
+            letter-spacing: -.01em
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--teal), var(--teal-d));
+            color: #fff;
+            box-shadow: 0 0 28px rgba(13, 148, 136, .28)
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 36px rgba(13, 148, 136, .44)
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--muted);
+            border: 1px solid var(--border2)
+        }
+
+        .btn-ghost:hover {
+            color: var(--teal-xl);
+            border-color: rgba(20, 184, 166, .45);
+            background: rgba(20, 184, 166, .07)
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, var(--gold), #b8882a);
+            color: #fff;
+            box-shadow: 0 0 24px rgba(212, 168, 67, .22)
+        }
+
+        .btn-gold:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(212, 168, 67, .36)
+        }
+
+        .btn-lg {
+            padding: .9rem 2.2rem;
+            font-size: .98rem;
+            border-radius: 12px
+        }
+
+        .badge {
+            display: inline-block;
+            padding: .22rem .8rem;
+            border-radius: 999px;
+            font-size: .67rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .07em
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3.5rem;
+            align-items: start
+        }
+
+        .infobox {
+            display: flex;
+            gap: .8rem;
+            padding: 1rem 1.25rem;
+            border-radius: 12px;
+            font-size: .82rem;
+            line-height: 1.7;
+            align-items: flex-start;
+            margin-top: 1.5rem
+        }
+
+        .infobox-icon {
+            font-size: 1rem;
+            flex-shrink: 0;
+            margin-top: .15rem
+        }
+
+        /* ── HERO ── */
+        #hero {
+            min-height: 100svh;
+            padding-top: var(--nav-h);
+            display: flex;
+            align-items: center;
+            overflow: hidden
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            max-width: 1180px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 4rem 1.5rem
+        }
+
+        .hero-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            padding: .35rem .9rem;
+            border-radius: 999px;
+            font-size: .7rem;
+            font-weight: 700;
+            background: rgba(212, 168, 67, .1);
+            border: 1px solid rgba(212, 168, 67, .28);
+            color: var(--gold-l);
+            margin-bottom: 1.25rem;
+            animation: fade-up .6s ease both .1s;
+            max-width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .hero-title {
+            animation: fade-up .7s ease both .2s
+        }
+
+        .hero-desc {
+            animation: fade-up .7s ease both .3s
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: .75rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+            animation: fade-up .7s ease both .4s
+        }
+
+        .hero-cta .btn {
+            flex: 1 1 auto;
+            min-width: 0;
+            justify-content: center;
+            text-align: center
+        }
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-top: 2.5rem;
+            padding-top: 1.75rem;
+            border-top: 1px solid var(--border);
+            animation: fade-up .7s ease both .5s
+        }
+
+        .stat-val {
+            font-size: 1.6rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--teal-xl), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.1
+        }
+
+        .stat-lbl {
+            font-size: .65rem;
+            color: var(--muted);
+            margin-top: .2rem;
+            line-height: 1.3
+        }
+
+        @keyframes fade-up {
+            from {
+                opacity: 0;
+                transform: translateY(20px)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        /* ── COUNTDOWN CARD ── */
+        .cd-card {
+            padding: 1.85rem;
+            border-radius: 22px;
+            background: rgba(13, 148, 136, .07);
+            border: 1px solid rgba(20, 184, 166, .18);
+            backdrop-filter: blur(16px);
+            animation: fade-up .8s ease both .4s;
+            position: relative;
+            overflow: hidden
+        }
+
+        .cd-card::before {
+            content: '';
+            position: absolute;
+            top: -60%;
+            left: -60%;
+            width: 220%;
+            height: 220%;
+            background: radial-gradient(circle at 60% 40%, rgba(20, 184, 166, .08), transparent 55%);
+            pointer-events: none
+        }
+
+        .cd-label {
+            font-size: .69rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            color: var(--gold-l);
+            text-align: center;
+            margin-bottom: .85rem
+        }
+
+        .cd-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: .6rem
+        }
+
+        .cd-box {
+            background: rgba(13, 148, 136, .1);
+            border: 1px solid rgba(20, 184, 166, .15);
+            border-radius: 12px;
+            padding: .95rem .4rem;
+            text-align: center
+        }
+
+        .cd-n {
+            font-size: 1.95rem;
+            font-weight: 900;
+            font-variant-numeric: tabular-nums;
+            background: linear-gradient(135deg, var(--teal-xl), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1
+        }
+
+        .cd-l {
+            font-size: .57rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .12em;
+            margin-top: .28rem
+        }
+
+        .cd-footer {
+            margin-top: 1.25rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            font-size: .71rem;
+            color: var(--muted);
+            text-align: center
+        }
+
+        .cd-footer a {
+            color: var(--teal-xl);
+            text-decoration: none
+        }
+
+        .cd-jalur-row {
+            display: flex;
+            flex-direction: column;
+            gap: .55rem;
+            margin-top: .95rem;
+            padding-top: .9rem;
+            border-top: 1px solid var(--border)
+        }
+
+        .cd-jalur-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: .77rem;
+            gap: .5rem
+        }
+
+        /* ── STATS BAR ── */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            max-width: 1180px;
+            margin: 0 auto
+        }
+
+        .stat-box {
+            background: var(--surface);
+            padding: 1.85rem 1.25rem;
+            text-align: center;
+            transition: background .2s
+        }
+
+        .stat-box:hover {
+            background: rgba(13, 148, 136, .08)
+        }
+
+        .stat-box .val {
+            font-size: 2rem;
+            font-weight: 900
+        }
+
+        .stat-box .lbl {
+            font-size: .74rem;
+            color: var(--muted);
+            margin-top: .3rem
+        }
+
+        /* ── SECTION DIVIDER ── */
+        .sec-sep {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+            margin: 0;
+            position: relative;
+            z-index: 1
+        }
+
+        /* ── JALUR CARDS ── */
+        .jalur-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.35rem
+        }
+
+        .jalur-card {
+            padding: 1.85rem;
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+            gap: .45rem;
+            position: relative;
+            overflow: hidden
+        }
+
+        .jalur-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            opacity: 0;
+            transition: opacity .3s;
+            border-radius: 0 0 var(--radius) var(--radius)
+        }
+
+        .jalur-card:hover::after {
+            opacity: 1
+        }
+
+        .jalur-card.c-gold::after {
+            background: linear-gradient(90deg, var(--gold), var(--gold-l))
+        }
+
+        .jalur-card.c-blue::after {
+            background: linear-gradient(90deg, var(--blue), var(--blue-l))
+        }
+
+        .jalur-card.c-teal::after {
+            background: linear-gradient(90deg, var(--teal), var(--teal-xl))
+        }
+
+        .jalur-name {
+            font-size: 1.05rem;
+            font-weight: 800;
+            margin: .3rem 0;
+            letter-spacing: -.02em
+        }
+
+        .jalur-desc {
+            font-size: .82rem;
+            color: var(--muted);
+            line-height: 1.75;
+            flex: 1
+        }
+
+        .jalur-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 1.1rem;
+            padding-top: .9rem;
+            border-top: 1px solid var(--border2);
+            font-size: .73rem;
+            color: var(--muted)
+        }
+
+        /* ── JADWAL / SCHED ── */
+        .sched-list {
+            display: flex;
+            flex-direction: column
+        }
+
+        .sched-item {
+            display: flex;
+            align-items: flex-start;
+            gap: .85rem;
+            padding: .85rem 0;
+            border-bottom: 1px solid var(--border2);
+            transition: background .2s;
+            border-radius: 8px;
+            padding-left: .5rem;
+            padding-right: .5rem
+        }
+
+        .sched-item:last-child {
+            border-bottom: none
+        }
+
+        .sched-item:hover {
+            background: rgba(13, 148, 136, .05)
+        }
+
+        .sched-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            background: rgba(20, 184, 166, .1);
+            border: 1px solid rgba(20, 184, 166, .18);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .82rem;
+            flex-shrink: 0;
+            margin-top: .1rem
+        }
+
+        .sched-content {
+            flex: 1
+        }
+
+        .sched-title {
+            font-size: .84rem;
+            font-weight: 700
+        }
+
+        .sched-date {
+            font-size: .72rem;
+            color: var(--muted);
+            margin-top: .15rem;
+            line-height: 1.5
+        }
+
+        .sched-badge {
+            flex-shrink: 0;
+            margin-top: .1rem
+        }
+
+        /* ── TIMELINE ── */
+        .timeline {
+            padding-left: 1.85rem;
+            position: relative
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: .38rem;
+            top: .6rem;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--teal), var(--gold), transparent)
+        }
+
+        .tl-item {
+            position: relative;
+            padding: .95rem 0 .95rem 1.1rem;
+            border-bottom: 1px solid var(--border2)
+        }
+
+        .tl-item:last-child {
+            border-bottom: none
+        }
+
+        .tl-dot {
+            position: absolute;
+            left: -1.85rem;
+            top: 1.2rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--teal);
+            border: 3px solid var(--bg);
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, .2), 0 0 12px rgba(13, 148, 136, .3)
+        }
+
+        .tl-step {
+            font-size: .64rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: var(--teal-xl);
+            margin-bottom: .2rem
+        }
+
+        .tl-title {
+            font-size: .88rem;
+            font-weight: 700;
+            margin-bottom: .25rem
+        }
+
+        .tl-desc {
+            font-size: .79rem;
+            color: var(--muted);
+            line-height: 1.7
+        }
+
+        /* ── PERSYARATAN ── */
+        .req-tabs {
+            display: flex;
+            gap: .5rem;
+            margin-bottom: 1.6rem;
+            flex-wrap: wrap
+        }
+
+        .req-tab {
+            padding: .44rem 1.15rem;
+            border-radius: 999px;
+            font-size: .79rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--muted);
+            transition: all .25s
+        }
+
+        .req-panel {
+            display: none
+        }
+
+        .req-panel.active {
+            display: block
+        }
+
+        .req-list {
+            display: flex;
+            flex-direction: column;
+            gap: .65rem;
+            margin-top: .75rem
+        }
+
+        .req-item {
+            display: flex;
+            align-items: flex-start;
+            gap: .75rem;
+            padding: 1rem 1.15rem;
+            border-radius: 12px;
+            background: var(--card2);
+            border: 1px solid var(--border2)
+        }
+
+        .req-num {
+            min-width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, var(--teal), var(--teal-d));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .72rem;
+            font-weight: 800;
+            color: #fff
+        }
+
+        .req-text {
+            font-size: .83rem;
+            line-height: 1.65
+        }
+
+        .req-text strong {
+            display: block;
+            margin-bottom: .1rem
+        }
+
+        .req-note {
+            font-size: .73rem;
+            color: var(--muted);
+            margin-top: .22rem;
+            line-height: 1.6
+        }
+
+        .req-cond {
+            background: rgba(255, 255, 255, .025);
+            border-color: rgba(255, 255, 255, .07)
+        }
+
+        .map-box {
+            padding: 1.1rem 1.4rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: .4rem
+        }
+
+        .map-box-icon {
+            font-size: 1.75rem
+        }
+
+        .map-box-label {
+            font-size: .82rem;
+            font-weight: 700
+        }
+
+        .map-box-sub {
+            font-size: .7rem;
+            color: var(--muted)
+        }
+
+        /* ── SELEKSI ── */
+        .seleksi-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.15rem;
+            margin-top: .5rem
+        }
+
+        .seleksi-card {
+            padding: 1.65rem;
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+            gap: .5rem
+        }
+
+        .seleksi-name {
+            font-size: .92rem;
+            font-weight: 800;
+            margin-bottom: .3rem
+        }
+
+        .seleksi-body {
+            font-size: .8rem;
+            color: var(--muted);
+            line-height: 1.8;
+            flex: 1
+        }
+
+        .formula-box {
+            background: rgba(20, 184, 166, .09);
+            border: 1px solid rgba(20, 184, 166, .22);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            margin-top: .85rem;
+            text-align: center;
+            font-size: .9rem;
+            font-weight: 700
+        }
+
+        .formula-box span {
+            color: var(--teal-xl)
+        }
+
+        .tiebreak {
+            margin-top: .75rem;
+            font-size: .74rem;
+            color: var(--muted);
+            line-height: 1.75;
+            padding: .8rem;
+            background: rgba(255, 255, 255, .03);
+            border-radius: 8px;
+            border: 1px solid var(--border2)
+        }
+
+        /* ── GUGUR ── */
+        .gugur-list {
+            display: flex;
+            flex-direction: column;
+            gap: .55rem;
+            margin-top: 1rem
+        }
+
+        .gugur-item {
+            display: flex;
+            align-items: flex-start;
+            gap: .75rem;
+            padding: .95rem 1rem;
+            border-radius: 12px;
+            border: 1px solid rgba(220, 38, 38, .2);
+            background: rgba(220, 38, 38, .05);
+            font-size: .83rem;
+            line-height: 1.7;
+            transition: border-color .2s
+        }
+
+        .gugur-item:hover {
+            border-color: rgba(220, 38, 38, .38)
+        }
+
+        .gugur-no {
+            color: #ef4444;
+            font-size: 1rem;
+            flex-shrink: 0;
+            margin-top: .05rem;
+            font-weight: 700
+        }
+
+        /* ── KUOTA ── */
+        .kuota-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.15rem;
+            margin-top: .5rem
+        }
+
+        .kuota-card {
+            padding: 1.65rem;
+            border-radius: var(--radius);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: .45rem
+        }
+
+        .kuota-num {
+            font-size: 2.5rem;
+            font-weight: 900;
+            line-height: 1
+        }
+
+        .kuota-label {
+            font-size: .82rem;
+            font-weight: 700;
+            margin-top: .25rem
+        }
+
+        .kuota-sub {
+            font-size: .73rem;
+            color: var(--muted);
+            line-height: 1.55
+        }
+
+        .kuota-note-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: .85rem;
+            margin-top: 1.5rem
+        }
+
+        /* ── PROGRAM ── */
+        .prog-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem
+        }
+
+        .prog-card {
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+            gap: .3rem
+        }
+
+        .prog-icon {
+            font-size: 1.65rem;
+            margin-bottom: .4rem
+        }
+
+        .prog-title {
+            font-size: .88rem;
+            font-weight: 700
+        }
+
+        .prog-desc {
+            font-size: .77rem;
+            color: var(--muted);
+            line-height: 1.65
+        }
+
+        /* ── FAQ ── */
+        .faq-wrap {
+            max-width: 780px;
+            margin: 2.5rem auto 0
+        }
+
+        .faq-item {
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: .55rem
+        }
+
+        .faq-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 1.15rem 1.3rem;
+            background: transparent;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            text-align: left;
+            font-size: .87rem;
+            font-weight: 600;
+            transition: color .2s;
+            line-height: 1.45
+        }
+
+        .faq-btn:hover {
+            color: var(--teal-xl)
+        }
+
+        .faq-chev {
+            min-width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: rgba(20, 184, 166, .1);
+            border: 1px solid rgba(20, 184, 166, .22);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .62rem;
+            color: var(--teal-xl);
+            transition: transform .3s;
+            flex-shrink: 0
+        }
+
+        .faq-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height .38s ease
+        }
+
+        .faq-body p {
+            padding: .25rem 1.3rem 1.15rem;
+            font-size: .82rem;
+            color: var(--muted);
+            line-height: 1.85;
+            border-top: 1px solid var(--border2)
+        }
+
+        .faq-group {
+            margin-bottom: .85rem
+        }
+
+        .faq-group-label {
+            font-size: .68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            padding: .35rem .95rem;
+            border-radius: 999px;
+            display: inline-block;
+            margin: 0 .25rem 1rem
+        }
+
+        /* ── CTA FINAL ── */
+        .cta-section {
+            text-align: center;
+            padding: 6.5rem 1.5rem;
+            position: relative;
+            z-index: 1
+        }
+
+        .cta-glow {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(13, 148, 136, .1), transparent);
+            pointer-events: none
+        }
+
+        .cta-inner {
+            max-width: 620px;
+            margin: 0 auto;
+            position: relative
+        }
+
+        .cta-btns {
+            display: flex;
+            gap: .9rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 2.2rem
+        }
+
+        /* ── FOOTER ── */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 3.5rem 1.5rem;
+            position: relative;
+            z-index: 1
+        }
+
+        .footer-inner {
+            max-width: 1180px;
+            margin: 0 auto
+        }
+
+        .footer-top {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 2.5rem;
+            margin-bottom: 2.5rem
+        }
+
+        .footer-col-title {
+            font-size: .76rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            color: var(--teal-xl);
+            margin-bottom: 1rem
+        }
+
+        .footer-col p,
+        .footer-col a {
+            font-size: .79rem;
+            color: var(--muted);
+            line-height: 1.8;
+            text-decoration: none;
+            display: block
+        }
+
+        .footer-col a:hover {
+            color: var(--teal-xl)
+        }
+
+        .footer-bottom {
+            border-top: 1px solid var(--border);
+            padding-top: 1.5rem;
+            text-align: center;
+            font-size: .73rem;
+            color: var(--muted2);
+            line-height: 1.85
+        }
+
+        .footer-bottom a {
+            color: var(--teal-l);
+            text-decoration: none
+        }
+
+        /* ── WA FAB ── */
+        .wa-fab {
+            position: fixed;
+            bottom: 1.75rem;
+            right: 1.75rem;
+            z-index: 300;
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #25d366, #128c7e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 24px rgba(37, 211, 102, .38);
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            transition: transform .2s, box-shadow .2s
+        }
+
+        .wa-fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 32px rgba(37, 211, 102, .55)
+        }
+
+        .wa-fab-pulse {
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 2px solid rgba(37, 211, 102, .4);
+            animation: wa-pulse 2s ease infinite
+        }
+
+        @keyframes wa-pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: .6
+            }
+
+            50% {
+                transform: scale(1.15);
+                opacity: 0
+            }
+        }
+
+        /* ── SCROLL REVEAL ── */
+        .reveal {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity .55s ease, transform .55s ease
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: none
+        }
+
+        .reveal-delay-1 {
+            transition-delay: .1s
+        }
+
+        .reveal-delay-2 {
+            transition-delay: .18s
+        }
+
+        .reveal-delay-3 {
+            transition-delay: .26s
+        }
+
+        /* ── RESPONSIVE ── */
+        @media(max-width:1060px) {
+            .hero-grid {
+                grid-template-columns: 1fr;
+                gap: 2.5rem;
+                text-align: center;
+                padding: 3rem 1.25rem
+            }
+
+            .hero-cta {
+                justify-content: center
+            }
+
+            .hero-stats {
+                justify-content: center
+            }
+
+            .hero-visual {
+                display: none !important
+            }
+
+            .hero-eyebrow {
+                font-size: .65rem;
+                padding: .3rem .8rem
+            }
+        }
+
+        @media(max-width:900px) {
+
+            .jalur-grid,
+            .seleksi-grid,
+            .kuota-grid,
+            .prog-grid {
+                grid-template-columns: 1fr 1fr
+            }
+
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr)
+            }
+
+            .two-col {
+                grid-template-columns: 1fr;
+                gap: 2rem
+            }
+
+            .footer-top {
+                grid-template-columns: 1fr 1fr
+            }
+        }
+
+        @media(max-width:768px) {
+            :root {
+                --nav-h: 56px
+            }
+
+            section {
+                padding: 3rem 1rem
+            }
+
+            .wrap {
+                padding: 0 1rem
+            }
+
+            .nav-links,
+            #daftarBtnNav {
+                display: none !important
+            }
+
+            #menuBtn {
+                display: flex
+            }
+
+            .jalur-grid,
+            .seleksi-grid,
+            .kuota-grid {
+                grid-template-columns: 1fr
+            }
+
+            .prog-grid {
+                grid-template-columns: repeat(2, 1fr)
+            }
+
+            .cta-btns {
+                flex-direction: column;
+                align-items: center
+            }
+
+            .cta-btns .btn {
+                width: 100%;
+                max-width: 100%;
+                justify-content: center
+            }
+
+            h1 {
+                font-size: 1.95rem;
+                letter-spacing: -.02em
+            }
+
+            h2 {
+                font-size: 1.4rem
+            }
+
+            .footer-top {
+                grid-template-columns: 1fr
+            }
+
+            .two-col {
+                gap: 1.75rem
+            }
+
+            .hero-cta {
+                flex-direction: column;
+                gap: .6rem
+            }
+
+            .hero-cta .btn {
+                width: 100%;
+                max-width: 100%
+            }
+
+            .hero-stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: .75rem
+            }
+
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr)
+            }
+
+            .stat-box {
+                padding: 1.25rem .75rem
+            }
+
+            .stat-box .val {
+                font-size: 1.6rem
+            }
+
+            .seleksi-grid {
+                grid-template-columns: 1fr
+            }
+
+            .kuota-note-grid {
+                grid-template-columns: 1fr
+            }
+        }
+
+        @media(max-width:480px) {
+            :root {
+                --nav-h: 52px
+            }
+
+            section {
+                padding: 2.5rem 1rem
+            }
+
+            .prog-grid {
+                grid-template-columns: 1fr
+            }
+
+            .btn-lg {
+                padding: .75rem 1.4rem;
+                font-size: .88rem
+            }
+
+            .hero-eyebrow {
+                font-size: .62rem;
+                padding: .28rem .7rem
+            }
+
+            h1 {
+                font-size: 1.75rem
+            }
+
+            h2 {
+                font-size: 1.3rem
+            }
+
+            .nav-name {
+                font-size: .8rem
+            }
+
+            .nav-logo {
+                width: 32px;
+                height: 32px
+            }
+
+            .jalur-card {
+                padding: 1.4rem
+            }
+
+            .cd-n {
+                font-size: 1.6rem
+            }
+
+            .req-item {
+                padding: .85rem .9rem
+            }
+
+            .faq-btn {
+                font-size: .83rem;
+                padding: 1rem
+            }
+
+            .infobox {
+                flex-direction: column;
+                gap: .5rem
+            }
+        }
+
+        @media(max-width:360px) {
+            .nav-sub {
+                display: none
+            }
+
+            h1 {
+                font-size: 1.6rem
+            }
+
+            .hero-eyebrow {
+                white-space: normal;
+                text-align: center;
+                font-size: .6rem
+            }
+
+            .stat-val {
+                font-size: 1.35rem
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="grid-bg"></div>
+
+    <!-- ═══ NAVBAR ═══ -->
+    <nav id="mainNav">
+        <a href="#" class="nav-brand">
+            <div class="nav-logo">
+                <img src="{{ asset('img/logo.png') }}" alt="Logo MTsN 1 Pandeglang">
+            </div>
+            <div>
+                <div class="nav-name">MTsN 1 Pandeglang</div>
+                <div class="nav-sub">PMBM TP 2026/2027</div>
+            </div>
+        </a>
+        <ul class="nav-links">
+            <li><a href="#jalur">Jalur</a></li>
+            <li><a href="#jadwal">Jadwal</a></li>
+            <li><a href="#alur">Cara Daftar</a></li>
+            <li><a href="#syarat">Persyaratan</a></li>
+            <li><a href="#seleksi">Seleksi</a></li>
+            <li><a href="#kuota">Kuota</a></li>
+            <li><a href="#faq">FAQ</a></li>
+        </ul>
+        <div class="nav-right">
+            <button class="n-btn" id="menuBtn" aria-label="Menu"><span></span><span></span><span></span></button>
+            <a href="https://daftar.mtsn1pandeglang.sch.id/dashboard" class="btn btn-primary" id="daftarBtnNav"
+                style="height:36px;font-size:.78rem;padding:.4rem 1.1rem;">✦ Daftar Sekarang</a>
+        </div>
+    </nav>
+
+    <!-- MOBILE DRAWER -->
+    <div class="drawer" id="drawer">
+        <a href="#jalur" class="d-link">📋 Jalur Pendaftaran</a>
+        <a href="#jadwal" class="d-link">📅 Jadwal Kegiatan</a>
+        <a href="#alur" class="d-link">📌 Cara Mendaftar</a>
+        <a href="#syarat" class="d-link">📄 Persyaratan</a>
+        <a href="#seleksi" class="d-link">⚖️ Mekanisme Seleksi</a>
+        <a href="#gugur" class="d-link">❌ Ketentuan Gugur</a>
+        <a href="#kuota" class="d-link">🏫 Kuota & Rombel</a>
+        <a href="#faq" class="d-link">❓ FAQ</a>
+        <hr>
+        <a href="https://daftar.mtsn1pandeglang.sch.id/dashboard" style="color:var(--gold-l);font-weight:700;">🏆 Daftar
+            Prestasi / Afirmasi →</a>
+        <a href="https://pmbm-kanwilbanten.com" style="color:var(--teal-xl);font-weight:700;">📝 Daftar Reguler →</a>
+    </div>
+
+    <main>
+
+        <!-- ═══ HERO ═══ -->
+        <section id="hero" style="padding:0">
+            <div class="hero-grid">
+                <div>
+                    <div class="hero-eyebrow">Penerimaan Murid Baru Madrasah · TP 2026/2027</div>
+                    <h1 class="hero-title">Bergabung &amp;<br><span class="grad">Berprestasi</span><br>di MTsN 1</h1>
+                    <p class="lead hero-desc" style="margin-top:1.1rem;max-width:500px;">
+                        MTsN 1 Pandeglang membuka pendaftaran peserta didik baru melalui <strong>3 jalur resmi</strong>
+                        — Prestasi, Afirmasi, dan Reguler. Gratis, transparan, dan penuh peluang.
+                    </p>
+                    <p style="font-size:.79rem;color:var(--muted2);margin-top:.85rem;" class="hero-desc">
+                        Kepala Madrasah: <strong style="color:var(--muted)">Hj. Yanti Mariah, S.S., M.Pd.</strong>
+                        &nbsp;·&nbsp; Ketua PMBM: <strong style="color:var(--muted)">Umar Mu'tamar, S.Ag.</strong>
+                    </p>
+                    <div class="hero-cta">
+                        <a href="https://daftar.mtsn1pandeglang.sch.id/dashboard" class="btn btn-gold btn-lg">🏆 Daftar
+                            Prestasi / Afirmasi</a>
+                        <a href="https://pmbm-kanwilbanten.com" class="btn btn-ghost btn-lg">📝 Daftar Reguler →</a>
+                    </div>
+                    <div class="hero-stats">
+                        <div>
+                            <div class="stat-val">224</div>
+                            <div class="stat-lbl">Kuota Reguler</div>
+                        </div>
+                        <div>
+                            <div class="stat-val">A</div>
+                            <div class="stat-lbl">Akreditasi</div>
+                        </div>
+                        <div>
+                            <div class="stat-val">3</div>
+                            <div class="stat-lbl">Jalur Masuk</div>
+                        </div>
+                        <div>
+                            <div class="stat-val">Rp 0</div>
+                            <div class="stat-lbl">Biaya Daftar</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- HERO VISUAL DESKTOP -->
+                <div class="hero-visual" style="display:flex;justify-content:center;">
+                    <div class="cd-card" style="width:100%;max-width:360px;">
+                        <div class="cd-label" id="cd-label">Menghitung Waktu…</div>
+                        <div class="cd-grid">
+                            <div class="cd-box">
+                                <div class="cd-n" id="cd-d">--</div>
+                                <div class="cd-l">Hari</div>
+                            </div>
+                            <div class="cd-box">
+                                <div class="cd-n" id="cd-h">--</div>
+                                <div class="cd-l">Jam</div>
+                            </div>
+                            <div class="cd-box">
+                                <div class="cd-n" id="cd-m">--</div>
+                                <div class="cd-l">Menit</div>
+                            </div>
+                            <div class="cd-box">
+                                <div class="cd-n" id="cd-s">--</div>
+                                <div class="cd-l">Detik</div>
+                            </div>
+                        </div>
+                        <div class="cd-jalur-row">
+                            <div class="cd-jalur-item">
+                                <span>Prestasi &amp; Afirmasi</span>
+                                <span style="font-size:.72rem;color:var(--gold);font-weight:700;">6–8 Apr 2026</span>
+                            </div>
+                            <div class="cd-jalur-item">
+                                <span>Jalur Reguler</span>
+                                <span style="font-size:.72rem;color:var(--teal-xl);font-weight:700;">18–27 Apr
+                                    2026</span>
+                            </div>
+                            <div class="cd-jalur-item">
+                                <span>Pengumuman Reguler</span>
+                                <span style="font-size:.72rem;color:var(--blue-l);font-weight:700;">5 Mei 2026</span>
+                            </div>
+                        </div>
+                        <div class="cd-footer">Lapor diri terakhir: <strong>12 Mei 2026</strong> · <a
+                                href="https://pmbm-kanwilbanten.com">pmbm-kanwilbanten.com</a></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STATS BAR -->
+        <div style="padding:0 1.5rem;position:relative;z-index:1;margin-top:.5rem;">
+            <div class="stats-row wrap" style="padding:0">
+                <div class="stat-box reveal">
+                    <div class="val grad-teal">1970</div>
+                    <div class="lbl">Tahun Berdiri</div>
+                </div>
+                <div class="stat-box reveal reveal-delay-1">
+                    <div class="val"
+                        style="background:linear-gradient(135deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">
+                        70+</div>
+                    <div class="lbl">Tenaga Pendidik</div>
+                </div>
+                <div class="stat-box reveal reveal-delay-2">
+                    <div class="val grad-teal">A</div>
+                    <div class="lbl">Akreditasi BAN-S/M</div>
+                </div>
+                <div class="stat-box reveal reveal-delay-3">
+                    <div class="val"
+                        style="background:linear-gradient(135deg,#fb923c,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">
+                        1000+</div>
+                    <div class="lbl">Prestasi Kejuaraan</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sec-sep" style="margin-top:3rem"></div>
+
+        <!-- ═══ 3 JALUR ═══ -->
+        <section id="jalur">
+            <div class="wrap">
+                <div class="section-header center reveal">
+                    <div class="eyebrow">Jalur Pendaftaran</div>
+                    <h2>3 Jalur, <span class="grad">1 Tujuan</span></h2>
+                    <div class="divider"></div>
+                    <p class="lead" style="margin-top:.9rem;max-width:540px;margin-left:auto;margin-right:auto;">
+                        Pilih jalur yang paling sesuai dengan kondisimu. Tidak lolos Prestasi/Afirmasi? Kamu masih bisa
+                        daftar ke Jalur Reguler.</p>
+                </div>
+                <div class="jalur-grid">
+                    <!-- Prestasi -->
+                    <div class="card card-hover jalur-card c-gold reveal"
+                        style="background:linear-gradient(160deg,rgba(212,168,67,.08),transparent);">
+                        <div class="badge"
+                            style="background:rgba(212,168,67,.15);color:#d4a843;border:1px solid rgba(212,168,67,.3);align-self:flex-start;">
+                            🏆 Jalur Prestasi</div>
+                        <div class="jalur-name">Jalur Prestasi</div>
+                        <p class="jalur-desc">Untuk siswa berprestasi di bidang <strong>Tahfidz</strong> (min. 3 juz),
+                            <strong>Akademik</strong> (KSM, OSN, MYRES, OSP, OSK), atau <strong>Non-Akademik</strong>
+                            (MTQ, O2SN, FLS2N, Kaligrafi, dll). Minimal Juara 1 tingkat Kabupaten/Kota.
+                        </p>
+                        <div class="jalur-meta">
+                            <span>📅 Buka: 6–8 April 2026</span>
+                            <span style="color:#dc2626;font-weight:700;">Map Merah</span>
+                        </div>
+                        <a href="https://daftar.mtsn1pandeglang.sch.id/dashboard" class="btn btn-ghost"
+                            style="margin-top:1rem;width:100%;justify-content:center;border-color:rgba(212,168,67,.4);color:#d4a843;">Daftar
+                            Jalur Prestasi →</a>
+                    </div>
+                    <!-- Afirmasi -->
+                    <div class="card card-hover jalur-card c-blue reveal reveal-delay-1"
+                        style="background:linear-gradient(160deg,rgba(96,165,250,.08),transparent);">
+                        <div class="badge"
+                            style="background:rgba(96,165,250,.15);color:#60a5fa;border:1px solid rgba(96,165,250,.3);align-self:flex-start;">
+                            🤝 Jalur Afirmasi</div>
+                        <div class="jalur-name">Jalur Afirmasi</div>
+                        <p class="jalur-desc">Untuk keluarga penerima manfaat program sosial pemerintah: pemegang
+                            <strong>KIP</strong>, <strong>PKH</strong>, <strong>KKS</strong>, atau <strong>SKTM</strong>
+                            dari pemerintah daerah. Memberikan akses pendidikan yang berkeadilan.
+                        </p>
+                        <div class="jalur-meta">
+                            <span>📅 Buka: 6–8 April 2026</span>
+                            <span style="color:#eab308;font-weight:700;">Map Kuning</span>
+                        </div>
+                        <a href="https://daftar.mtsn1pandeglang.sch.id/dashboard" class="btn btn-ghost"
+                            style="margin-top:1rem;width:100%;justify-content:center;border-color:rgba(96,165,250,.4);color:#60a5fa;">Daftar
+                            Jalur Afirmasi →</a>
+                    </div>
+                    <!-- Reguler -->
+                    <div class="card card-hover jalur-card c-teal reveal reveal-delay-2"
+                        style="background:linear-gradient(160deg,rgba(20,184,166,.07),transparent);">
+                        <div class="badge"
+                            style="background:rgba(20,184,166,.13);color:var(--teal-xl);border:1px solid rgba(20,184,166,.28);align-self:flex-start;">
+                            📝 Jalur Reguler</div>
+                        <div class="jalur-name">Jalur Reguler</div>
+                        <p class="jalur-desc">Terbuka untuk <strong>semua</strong> lulusan MI/SD sederajat. Seleksi
+                            menggunakan <strong>CBT</strong> dan <strong>Tes BTQ</strong>. Kuota 224 kursi melalui
+                            sistem PMBM Bersama Kanwil Kemenag Banten. Pendaftaran di situs khusus.</p>
+                        <div class="jalur-meta">
+                            <span>📅 Buka: 18–27 April 2026</span>
+                            <span style="color:#16a34a;font-weight:700;">Map Hijau</span>
+                        </div>
+                        <a href="https://pmbm-kanwilbanten.com" class="btn btn-ghost"
+                            style="margin-top:1rem;width:100%;justify-content:center;border-color:rgba(20,184,166,.4);color:var(--teal-xl);">Daftar
+                            Jalur Reguler →</a>
+                    </div>
+                </div>
+                <div class="infobox reveal"
+                    style="background:rgba(20,184,166,.06);border:1px solid rgba(20,184,166,.22);">
+                    <span class="infobox-icon">💡</span>
+                    <div><strong>Tidak lolos Prestasi/Afirmasi? Tenang!</strong> Berkas dapat diambil kembali sehari
+                        setelah pengumuman <strong>(15 April 2026)</strong>. Kamu masih bisa mendaftar ke <strong>Jalur
+                            Reguler mulai 18 April 2026</strong> melalui https://pmbm-kanwilbanten.com.</div>
+                </div>
+            </div>
+        </section>
+
+        <div class="sec-sep"></div>
+
+        <!-- ═══ JADWAL ═══ -->
+        <section id="jadwal"
+            style="background:linear-gradient(180deg,transparent,rgba(13,148,136,.03),transparent)">
+            <div class="wrap">
+                <div class="section-header center reveal">
+                    <div class="eyebrow">Timeline Kegiatan</div>
+                    <h2>Jadwal <span class="grad">PMBM 2026</span></h2>
+                    <div class="divider"></div>
+                    <p class="lead" style="margin-top:.9rem;">Tandai kalendermu! Jadwal berikut berlaku untuk
+                        seluruh jalur pendaftaran.</p>
+                </div>
+                <div class="two-col">
+                    <div class="reveal">
+                        <div class="badge"
+                            style="background:rgba(212,168,67,.12);color:#d4a843;border:1px solid rgba(212,168,67,.3);margin-bottom:1rem;font-size:.72rem;padding:.35rem 1rem;">
+                            🏆 Jalur Prestasi &amp; Afirmasi</div>
+                        <div class="card" style="padding:1.5rem;">
+                            <div class="sched-list" id="sched-pa"></div>
+                            <div
+                                style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border2);font-size:.73rem;color:var(--muted);">
+                                ⏰ Jam layanan panitia: <strong>08.00–14.00 WIB</strong> &nbsp;|&nbsp; Istirahat:
+                                <strong>11.30–13.00 WIB</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="reveal reveal-delay-1">
+                        <div class="badge"
+                            style="background:rgba(20,184,166,.1);color:var(--teal-xl);border:1px solid rgba(20,184,166,.28);margin-bottom:1rem;font-size:.72rem;padding:.35rem 1rem;">
+                            📝 Jalur Reguler (PMBM Bersama Kanwil)</div>
+                        <div class="card" style="padding:1.5rem;">
+                            <div class="sched-list" id="sched-reg"></div>
+                            <div
+                                style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border2);font-size:.73rem;color:var(--muted);">
+                                🔗 Sistem pendaftaran: <a href="https://pmbm-kanwilbanten.com"
+                                    style="color:var(--teal-xl);text-decoration:none;font-weight:600;">pmbm-kanwilbanten.com</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="sec-sep"></div>
+
+        <!-- ═══ CARA DAFTAR ═══ -->
+        <section id="alur">
+            <div class="wrap">
+                <div class="section-header center reveal">
+                    <div class="eyebrow">Panduan Lengkap</div>
+                    <h2>Cara <span class="grad">Mendaftar</span></h2>
+                    <div class="divider"></div>
+                    <p class="lead" style="margin-top:.9rem;">Ikuti langkah-langkah berikut sesuai jalur yang kamu
+                        pilih.</p>
+                </div>
+                <div class="two-col">
+                    <!-- Prestasi & Afirmasi -->
+                    <div class="reveal">
+                        <div
+                            style="font-size:.75rem;font-weight:700;color:#d4a843;text-transform:uppercase;letter-spacing:.08em;margin-bottom:1.15rem;">
+                            🏆 Jalur Prestasi &amp; Afirmasi</div>
+                        <div class="timeline">
+                            <div class="tl-item">
+                                <div class="tl-dot"></div>
+                                <div class="tl-step">Langkah 1</div>
+                                <div class="tl-title">Isi Formulir Pendaftaran Online</div>
+                                <div class="tl-desc">Akses <strong>daftar.mtsn1pandeglang.sch.id/dashboard</strong>,
+                                    pilih jalur (Prestasi atau Afirmasi), dan isi formulir menggunakan NISN.</div>
+                            </div>
+                            <div class="tl-item">
+                                <div class="tl-dot"></div>
+                                <div class="tl-step">Langkah 2</div>
+                                <div class="tl-title">Siapkan &amp; Masukkan Berkas ke Map</div>
+                                <div class="tl-desc">Kumpulkan semua dokumen yang disyaratkan. Masukkan ke dalam
+                                    <strong>map snelhecter berwarna sesuai jalur</strong> (Merah = Prestasi, Kuning =
+                                    Afirmasi). Tempelkan label identitas.
+                                </div>
+                            </div>
+                            <div class="tl-item">
+                                <div class="tl-dot"></div>
+                                <div class="tl-step">Langkah 3</div>
+                                <div class="tl-title">Serahkan Berkas ke Sekretariat PMBM</div>
+                                <div class="tl-desc">Antar langsung ke Sekretariat PMBM MTsN 1 Pandeglang pada
+                                    <strong>6–8 April 2026</strong>, pukul <strong>08.00–14.00 WIB</strong> (istirahat
+                                    11.30–13.00).
+                                </div>
+                            </div>
+                            <div class="tl-item">
+                                <div class="tl-dot"></div>
+                                <div class="tl-step">Langkah 4</div>
+                                <div class="tl-title">Ikuti Tes Seleksi</div>
+                                <div class="tl-desc">Hadir di MTsN 1 Pandeglang pada <strong>13 April 2026</strong>
+                                    paling lambat pukul <strong>07.00 WIB</strong> untuk mengikuti tes kemampuan dan
+                                    BTQ. Khusus Tahfidz: tes hafalan langsung.</div>
+                            </div>
+                            <div class="tl-item">
+                                <div class="tl-dot"></div>
+                                <div class="tl-step">Langkah 5</div>
+                                <div class="tl-title">Cek Pengumuman &amp; Lapor Diri</div>
+                                <div class="tl-desc">Pengumuman hasil: <strong>14 April 2026</strong>. Jika diterima,
+                                    wajib lapor diri langsung ke madrasah pada <strong>15–16 April 2026</strong>. <span
+                                        style="color:#ef4444;font-weight:600;">Tidak lapor diri = gugur.</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Reguler -->
+                    <div class="reveal reveal-delay-1">
+                        <div
+                            style="font-size:.75rem;font-weight:700;color:var(--teal-xl);text-transform:uppercase;letter-spacing:.08em;margin-bottom:1.15rem;">
+                            📝 Jalur Reguler (PMBM Bersama)</div>
+                        <div class="timeline">
+                            <div class="tl-item">
+                                <div class="tl-dot"
+                                    style="background:var(--teal-l);box-shadow:0 0 0 3px rgba(20,184,166,.18),0 0 12px rgba(20,184,166,.3)">
+                                </div>
+                                <div class="tl-step">Langkah 1</div>
+                                <div class="tl-title">Akses Portal Pendaftaran</div>
+                                <div class="tl-desc">Buka <strong>pmbm-kanwilbanten.com</strong> mulai <strong>18 April
+                                        2026</strong> pukul 08.00 WIB. Masukkan <strong>NISN</strong> untuk memulai
+                                    proses pendaftaran.</div>
+                            </div>
+                            <div class="tl-item">
+                                <div class="tl-dot"
+                                    style="background:var(--teal-l);box-shadow:0 0 0 3px rgba(20,184,166,.18),0 0 12px rgba(20,184,166,.3)">
+                                </div>
+                                <div class="tl-step">Langkah 2</div>
+                                <div class="tl-title">Isi Formulir &amp; Pilih Madrasah</div>
+                                <div class="tl-desc">Lengkapi seluruh data diri, data orang tua, dan informasi sekolah
+                                    asal. Pilih <strong>MTsN 1 Pandeglang</strong> sebagai madrasah tujuan (minimal 1,
+                                    maksimal 2 pilihan).</div>
+                            </div>
+                            <div class="tl-item">
+                                <div class="tl-dot"
+                                    style="background:var(--teal-l);box-shadow:0 0 0 3px rgba(20,184,166,.18),0 0 12px rgba(20,184,166,.3)">
+                                </div>
+                                <div class="tl-step">Langkah 3</div>
+                                <div class="tl-title">Unggah Dokumen Persyaratan</div>
+                                <div class="tl-desc">Upload KK (terbit sebelum Maret 2026), Ijazah MI/SD, dan Surat
+                                    Pernyataan Pertanggungjawaban Mutlak bermaterai Rp 10.000. Tambahkan dokumen
+                                    kondisional jika diperlukan.</div>
+                            </div>
+                            <div class="tl-item">
+                                <div class="tl-dot"
+                                    style="background:var(--teal-l);box-shadow:0 0 0 3px rgba(20,184,166,.18),0 0 12px rgba(20,184,166,.3)">
+                                </div>
+                                <div class="tl-step">Langkah 4</div>
+                                <div class="tl-title">Cetak Bukti &amp; Ikuti Seleksi CBT</div>
+                                <div class="tl-desc">Cetak bukti pendaftaran setelah berkas dinyatakan lengkap. Ikuti
+                                    Uji Coba CBT <strong>30 April</strong>, lalu CBT resmi <strong>2 Mei 2026</strong>
+                                    dan Tes BTQ <strong>2–3 Mei 2026</strong>.</div>
+                            </div>
+                            <div class="tl-item">
+                                <div class="tl-dot"
+                                    style="background:var(--teal-l);box-shadow:0 0 0 3px rgba(20,184,166,.18),0 0 12px rgba(20,184,166,.3)">
+                                </div>
+                                <div class="tl-step">Langkah 5</div>
+                                <div class="tl-title">Cek Hasil &amp; Lapor Diri</div>
+                                <div class="tl-desc">Pengumuman kelulusan: <strong>5 Mei 2026</strong> di
+                                    pmbm-kanwilbanten.com. Jika diterima, wajib lapor diri ke madrasah <strong>6–12 Mei
+                                        2026</strong>. <span style="color:#ef4444;font-weight:600;">Tidak lapor diri =
+                                        gugur.</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="sec-sep"></div>
+
+        <!-- ═══ PERSYARATAN ═══ -->
+        <section id="syarat"
+            style="background:linear-gradient(180deg,transparent,rgba(212,168,67,.02),transparent)">
+            <div class="wrap">
+                <div class="section-header center reveal">
+                    <div class="eyebrow">Dokumen Pendaftaran</div>
+                    <h2>Persyaratan <span class="grad">Lengkap</span></h2>
+                    <div class="divider"></div>
+                </div>
+                <!-- Syarat Umum -->
+                <div style="margin-bottom:2.5rem;" class="reveal">
+                    <div
+                        style="font-size:.75rem;font-weight:700;color:var(--teal-xl);text-transform:uppercase;letter-spacing:.08em;margin-bottom:1rem;">
+                        Persyaratan Umum — Berlaku untuk Semua Jalur</div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:.7rem;">
+                        <div class="req-item">
+                            <div class="req-num">1</div>
+                            <div class="req-text"><strong>Usia Maksimal 15 Tahun</strong>Dihitung per 1 Juli 2026</div>
+                        </div>
+                        <div class="req-item">
+                            <div class="req-num">2</div>
+                            <div class="req-text"><strong>Surat Keterangan Aktif Kelas VI</strong>Diterbitkan oleh
+                                sekolah/madrasah asal</div>
+                        </div>
+                        <div class="req-item">
+                            <div class="req-num">3</div>
+                            <div class="req-text"><strong>Akta Kelahiran Berbarcode</strong>Wajib terbitan resmi Dinas
+                                Dukcapil</div>
+                        </div>
+                        <div class="req-item">
+                            <div class="req-num">4</div>
+                            <div class="req-text"><strong>Kartu Keluarga Berbarcode</strong>Wajib terbitan resmi Dinas
+                                Dukcapil</div>
+                        </div>
+                    </div>
+                    <div class="infobox"
+                        style="background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2);margin-top:1rem;">
+                        <span class="infobox-icon">⚠️</span>
+                        <span>KK dan Akta Kelahiran <strong>wajib berbarcode</strong> — yaitu dokumen resmi terbitan
+                            Dinas Kependudukan dan Catatan Sipil (Dukcapil). Dokumen lama tanpa barcode <strong>tidak
+                                diterima</strong>.</span>
+                    </div>
+                </div>
+                <!-- Tab Per Jalur -->
+                <div class="reveal">
+                    <div class="req-tabs" id="reqTabs">
+                        <button class="req-tab active" data-panel="tab-prestasi"
+                            style="background:rgba(212,168,67,.1);color:#d4a843;border-color:#d4a843;">🏆 Jalur
+                            Prestasi</button>
+                        <button class="req-tab" data-panel="tab-afirmasi">🤝 Jalur Afirmasi</button>
+                        <button class="req-tab" data-panel="tab-reguler">📝 Jalur Reguler</button>
+                    </div>
+                    <!-- PRESTASI -->
+                    <div id="tab-prestasi" class="req-panel active">
+                        <div class="req-list">
+                            <div class="req-item">
+                                <div class="req-num">1</div>
+                                <div class="req-text"><strong>Print Out Formulir Pendaftaran Online</strong>Dicetak
+                                    dari daftar.mtsn1pandeglang.sch.id setelah pengisian selesai</div>
+                            </div>
+                            <div class="req-item">
+                                <div class="req-num">2</div>
+                                <div class="req-text"><strong>Sertifikat Prestasi Asli</strong>
+                                    <div class="req-note"><strong>Akademik:</strong> KSM/OMI, MYRES, OSN, OSP, OSK —
+                                        Juara 1–3 minimal tingkat Kab/Kota, diselenggarakan Kemenag, Kemendikbud, BRIN,
+                                        atau PT Terakreditasi</div>
+                                    <div class="req-note"><strong>Non-Akademik:</strong> MTQ, MHQ, MSQ, Pidato Arab,
+                                        Kaligrafi, O2SN, FLS2N, Olahraga — Juara 1 Kab/Kota · Juara 1–2 Provinsi · Juara
+                                        1–3 Nasional</div>
+                                    <div class="req-note"><strong>Tahfidz:</strong> Sertifikat hafalan minimal 3 juz.
+                                        <em>Akan ada tes hafalan langsung pada 13 April 2026</em>
+                                    </div>
+                                    <div class="req-note"><strong>Olahraga Beregu:</strong> Hanya untuk <em>top
+                                            scorer</em> atau pemain terbaik yang tercantum namanya di sertifikat</div>
+                                </div>
+                            </div>
+                            <div class="req-item">
+                                <div class="req-num">3</div>
+                                <div class="req-text"><strong>Dokumen Persyaratan Umum</strong>Akta kelahiran
+                                    berbarcode + KK berbarcode + surat keterangan aktif kelas VI</div>
+                            </div>
+                            <div class="req-item"
+                                style="background:rgba(220,38,38,.05);border-color:rgba(220,38,38,.2);">
+                                <div class="req-num" style="background:linear-gradient(135deg,#dc2626,#b91c1c);">📁
+                                </div>
+                                <div class="req-text"><strong>Semua Berkas → Map Snelhecter Warna MERAH</strong>
+                                    <div class="req-note">Tempel label di map: Nama Lengkap · Asal Sekolah · Jalur
+                                        Prestasi</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top:1.25rem;display:flex;gap:1rem;flex-wrap:wrap;">
+                            <div class="map-box"
+                                style="background:rgba(220,38,38,.07);border-color:rgba(220,38,38,.3);">
+                                <div class="map-box-icon">📁</div>
+                                <div class="map-box-label" style="color:#ef4444;">Map Merah</div>
+                                <div class="map-box-sub">Jalur Prestasi</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- AFIRMASI -->
+                    <div id="tab-afirmasi" class="req-panel">
+                        <div class="req-list">
+                            <div class="req-item">
+                                <div class="req-num">1</div>
+                                <div class="req-text"><strong>Print Out Formulir Pendaftaran Online</strong>Dicetak
+                                    dari daftar.mtsn1pandeglang.sch.id/dashboard setelah pengisian selesai</div>
+                            </div>
+                            <div class="req-item">
+                                <div class="req-num">2</div>
+                                <div class="req-text"><strong>Fotokopi Kartu KIP / PKH / KKS / SKTM yang
+                                        Dilegalisir</strong>
+                                    <div class="req-note">Pilih salah satu sesuai yang dimiliki keluarga. Pastikan
+                                        sudah dilegalisir oleh instansi penerbit.</div>
+                                </div>
+                            </div>
+                            <div class="req-item"
+                                style="background:rgba(251,191,36,.05);border-color:rgba(251,191,36,.25);">
+                                <div class="req-num" style="background:linear-gradient(135deg,#f59e0b,#d97706);">⚠️
+                                </div>
+                                <div class="req-text"><strong>Khusus Pengguna SKTM — Wajib Tambah 2 Dokumen
+                                        Ini:</strong>
+                                    <div class="req-note">📄 Fotokopi tagihan/rekening listrik <strong>3 bulan
+                                            terakhir</strong></div>
+                                    <div class="req-note">📸 Foto tampak depan, dalam, dan belakang rumah</div>
+                                    <div class="req-note" style="color:#f59e0b;margin-top:.3rem;">SKTM hanya diterima
+                                        jika diterbitkan oleh pemerintah daerah (kelurahan, kecamatan, atau dinas
+                                        sosial). SKTM dari RT/RW <strong>tidak diterima</strong></div>
+                                </div>
+                            </div>
+                            <div class="req-item">
+                                <div class="req-num">3</div>
+                                <div class="req-text"><strong>Dokumen Persyaratan Umum</strong>Akta kelahiran
+                                    berbarcode + KK berbarcode + surat keterangan aktif kelas VI</div>
+                            </div>
+                            <div class="req-item"
+                                style="background:rgba(234,179,8,.05);border-color:rgba(234,179,8,.25);">
+                                <div class="req-num" style="background:linear-gradient(135deg,#ca8a04,#a16207);">📁
+                                </div>
+                                <div class="req-text"><strong>Semua Berkas → Map Snelhecter Warna KUNING</strong>
+                                    <div class="req-note">Tempel label di map: Nama Lengkap · Asal Sekolah · Jalur
+                                        Afirmasi</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top:1.25rem;display:flex;gap:1rem;flex-wrap:wrap;">
+                            <div class="map-box"
+                                style="background:rgba(234,179,8,.07);border-color:rgba(234,179,8,.35);">
+                                <div class="map-box-icon">📁</div>
+                                <div class="map-box-label" style="color:#eab308;">Map Kuning</div>
+                                <div class="map-box-sub">Jalur Afirmasi</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- REGULER -->
+                    <div id="tab-reguler" class="req-panel">
+                        <div class="req-list">
+                            <div class="req-item">
+                                <div class="req-num">1</div>
+                                <div class="req-text"><strong>NISN (Nomor Induk Siswa Nasional)</strong>Harus terdaftar
+                                    di EMIS atau DAPODIK. Bisa dicek di sekolah asal atau nisn.data.kemdikbud.go.id
+                                </div>
+                            </div>
+                            <div class="req-item">
+                                <div class="req-num">2</div>
+                                <div class="req-text"><strong>Kartu Keluarga (KK)</strong>Diterbitkan Dinas Dukcapil —
+                                    <strong>sebelum Maret 2026</strong>
+                                </div>
+                            </div>
+                            <div class="req-item">
+                                <div class="req-num">3</div>
+                                <div class="req-text"><strong>Ijazah MI/SD atau Surat Keterangan Lulus</strong>Dokumen
+                                    resmi yang membuktikan penyelesaian pendidikan dasar</div>
+                            </div>
+                            <div class="req-item">
+                                <div class="req-num">4</div>
+                                <div class="req-text"><strong>Surat Pernyataan Pertanggungjawaban Mutlak</strong>
+                                    <div class="req-note">Ditandatangani orang tua/wali, bermaterai Rp 10.000. Format
+                                        tersedia di portal pmbm-kanwilbanten.com. Menyatakan keabsahan seluruh dokumen
+                                        yang diunggah.</div>
+                                </div>
+                            </div>
+                            <div class="req-item req-cond">
+                                <div class="req-num"
+                                    style="background:rgba(255,255,255,.12);color:var(--muted);font-size:.8rem;">⚙️
+                                </div>
+                                <div class="req-text"><strong>Sertifikat Akreditasi Sekolah Asal</strong> <span
+                                        style="color:var(--gold);font-size:.72rem;font-weight:700;">KONDISIONAL</span>
+                                    <div class="req-note">Hanya wajib jika asal sekolah dari <strong>luar Provinsi
+                                            Banten.</strong> Sekolah yang belum/tidak terakreditasi → nilai akreditasi
+                                        dihitung otomatis = 65.</div>
+                                </div>
+                            </div>
+                            <div class="req-item req-cond">
+                                <div class="req-num"
+                                    style="background:rgba(255,255,255,.12);color:var(--muted);font-size:.8rem;">⚙️
+                                </div>
+                                <div class="req-text"><strong>Surat Rekomendasi / Kesetaraan Ijazah</strong> <span
+                                        style="color:var(--gold);font-size:.72rem;font-weight:700;">KONDISIONAL</span>
+                                    <div class="req-note">Hanya untuk calon murid dari <strong>sekolah asing</strong>.
+                                        Diterbitkan oleh Kemenag atau Kemendikdasmen.</div>
+                                </div>
+                            </div>
+                            <div class="req-item"
+                                style="background:rgba(22,163,74,.05);border-color:rgba(22,163,74,.25);">
+                                <div class="req-num" style="background:linear-gradient(135deg,#16a34a,#15803d);">📁
+                                </div>
+                                <div class="req-text"><strong>Semua Berkas → Map Snelhecter Warna HIJAU</strong>
+                                    <div class="req-note">Tempel label di map: Nama Lengkap · Asal Sekolah · Jalur
+                                        Reguler. Berkas fisik diserahkan saat lapor diri ke madrasah pada <strong>6–12
+                                            Mei 2026</strong>.</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top:1.25rem;display:flex;gap:1rem;flex-wrap:wrap;">
+                            <div class="map-box"
+                                style="background:rgba(22,163,74,.08);border-color:rgba(22,163,74,.4);">
+                                <div class="map-box-icon">📁</div>
+                                <div class="map-box-label" style="color:#16a34a;">Map Hijau</div>
+                                <div class="map-box-sub">Jalur Reguler</div>
+                            </div>
+                        </div>
+                        <div class="infobox"
+                            style="background:rgba(20,184,166,.06);border:1px solid rgba(20,184,166,.2);margin-top:1rem;">
+                            <span class="infobox-icon">ℹ️</span><span>Semua dokumen <strong>diunggah secara
+                                    online</strong> melalui pmbm-kanwilbanten.com. Setelah berkas dinyatakan lengkap,
+                                cetak bukti pendaftaran. Lapor diri fisik dengan <strong>map hijau</strong> hanya
+                                dilakukan setelah pengumuman kelulusan (6–12 Mei 2026).</span>
+                        </div>
+                        <div class="infobox"
+                            style="background:rgba(220,38,38,.05);border:1px solid rgba(220,38,38,.18);margin-top:.75rem;">
+                            <span class="infobox-icon">🚫</span><span><strong>Pemalsuan dokumen</strong> akan
+                                mengakibatkan diskualifikasi dari seluruh proses seleksi dan <strong>sanksi
+                                    hukum</strong> sesuai peraturan perundang-undangan yang berlaku.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="sec-sep"></div>
+
+        <!-- ═══ SELEKSI ═══ -->
+        <section id="seleksi">
+            <div class="wrap">
+                <div class="section-header center reveal">
+                    <div class="eyebrow">Sistem Penilaian</div>
+                    <h2>Mekanisme <span class="grad">Seleksi</span></h2>
+                    <div class="divider"></div>
+                    <p class="lead" style="margin-top:.9rem;">Setiap jalur memiliki metode seleksi yang berbeda.
+                        Pahami agar kamu bisa mempersiapkan diri dengan baik.</p>
+                </div>
+                <div class="seleksi-grid">
+                    <div class="card seleksi-card reveal"
+                        style="background:linear-gradient(160deg,rgba(212,168,67,.08),transparent);">
+                        <div class="badge"
+                            style="background:rgba(212,168,67,.15);color:#d4a843;border:1px solid rgba(212,168,67,.3);align-self:flex-start;">
+                            Prestasi</div>
+                        <div class="seleksi-name">Jalur Prestasi</div>
+                        <div class="seleksi-body">Seleksi berdasarkan <strong>verifikasi sertifikat prestasi
+                                asli</strong> oleh panitia madrasah.<br><br>Khusus <strong>Tahfidz</strong>: verifikasi
+                            sertifikat disertai <strong>tes hafalan langsung</strong> pada 13 April 2026 di
+                            madrasah.<br><br><span style="color:#d4a843;font-weight:600;">Tidak ada CBT untuk jalur
+                                ini.</span></div>
+                    </div>
+                    <div class="card seleksi-card reveal reveal-delay-1"
+                        style="background:linear-gradient(160deg,rgba(96,165,250,.08),transparent);">
+                        <div class="badge"
+                            style="background:rgba(96,165,250,.15);color:#60a5fa;border:1px solid rgba(96,165,250,.3);align-self:flex-start;">
+                            Afirmasi</div>
+                        <div class="seleksi-name">Jalur Afirmasi</div>
+                        <div class="seleksi-body">Seleksi berdasarkan <strong>verifikasi kelayakan ekonomi</strong>
+                            melalui dokumen KIP/PKH/KKS/SKTM.<br><br>Pengguna SKTM: panitia akan melakukan
+                            <strong>pengecekan lapangan</strong> berdasarkan foto rumah dan tagihan listrik yang
+                            dilampirkan.<br><br><span style="color:#60a5fa;font-weight:600;">Tidak ada CBT untuk jalur
+                                ini.</span>
+                        </div>
+                    </div>
+                    <div class="card seleksi-card reveal reveal-delay-2"
+                        style="background:linear-gradient(160deg,rgba(20,184,166,.07),transparent);">
+                        <div class="badge"
+                            style="background:rgba(20,184,166,.13);color:var(--teal-xl);border:1px solid rgba(20,184,166,.25);align-self:flex-start;">
+                            Reguler</div>
+                        <div class="seleksi-name">Jalur Reguler</div>
+                        <div class="seleksi-body">Nilai Akhir dihitung dari dua komponen tes:
+                            <div class="formula-box">Nilai Akhir = <span>70%</span> CBT <span
+                                    style="color:var(--muted)">+</span> <span>30%</span> BTQ</div>
+                            <div class="tiebreak"><strong>Aturan jika nilai akhir sama:</strong><br>1. Prioritas siswa
+                                dengan <strong>usia lebih tua</strong><br>2. Jika usia sama → prioritas <strong>waktu
+                                    daftar lebih awal</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="sec-sep"></div>
+
+        <!-- ═══ KETENTUAN GUGUR ═══ -->
+        <section id="gugur" style="padding-top:2rem;">
+            <div class="wrap">
+                <div style="max-width:800px;margin:0 auto;" class="reveal">
+                    <div class="eyebrow"
+                        style="background:rgba(220,38,38,.1);color:#ef4444;border-color:rgba(220,38,38,.22);">⚠️
+                        Perhatian Penting</div>
+                    <h2 style="margin-bottom:.5rem;">Ketentuan <span
+                            style="background:linear-gradient(135deg,#ef4444,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Gugur</span>
+                    </h2>
+                    <div class="divider" style="background:linear-gradient(90deg,#ef4444,#f97316)"></div>
+                    <p style="color:var(--muted);font-size:.85rem;margin:.85rem 0 1.1rem;line-height:1.75;">Bacalah
+                        dengan seksama. Peserta yang melanggar ketentuan berikut <strong>tidak dapat diproses lebih
+                            lanjut</strong>:</p>
+                    <div class="gugur-list">
+                        <div class="gugur-item"><span class="gugur-no">✗</span><span>Mengisi formulir online
+                                <strong>tanpa menyerahkan berkas fisik</strong> ke sekretariat (Prestasi &amp; Afirmasi)
+                                — keduanya wajib dilakukan</span></div>
+                        <div class="gugur-item"><span class="gugur-no">✗</span><span>Menyerahkan berkas fisik
+                                <strong>tanpa mengisi formulir online</strong> (Prestasi &amp; Afirmasi) — keduanya
+                                wajib dilakukan</span></div>
+                        <div class="gugur-item"><span class="gugur-no">✗</span><span>Dokumen fisik yang diserahkan
+                                <strong>tidak sesuai</strong> dengan data yang diunggah secara online</span></div>
+                        <div class="gugur-item"><span class="gugur-no">✗</span><span>Tidak lapor diri ke madrasah
+                                sesuai jadwal → dianggap secara otomatis <strong>mengundurkan diri</strong>, meskipun
+                                telah dinyatakan lulus seleksi</span></div>
+                        <div class="gugur-item"><span class="gugur-no">✗</span><span>Terbukti <strong>memalsukan data
+                                    atau dokumen</strong> → diskualifikasi dari seluruh proses seleksi + sanksi hukum
+                                sesuai peraturan perundang-undangan</span></div>
+                    </div>
+                    <div class="infobox"
+                        style="background:rgba(20,184,166,.06);border:1px solid rgba(20,184,166,.2);margin-top:1.35rem;">
+                        <span class="infobox-icon">💡</span>
+                        <div>Tidak lolos Jalur Prestasi atau Afirmasi? <strong>Berkas dapat diambil kembali mulai 15
+                                April 2026</strong> (sehari setelah pengumuman) di Sekretariat PMBM. Kamu masih bisa
+                            mendaftar ke <strong>Jalur Reguler mulai 18 April 2026</strong>.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="sec-sep"></div>
+
+        <!-- ═══ KUOTA ═══ -->
+        <section id="kuota">
+            <div class="wrap">
+                <div class="section-header center reveal">
+                    <div class="eyebrow">Kapasitas Penerimaan</div>
+                    <h2>Kuota &amp; <span class="grad">Rombongan Belajar</span></h2>
+                    <div class="divider"></div>
+                    <p class="lead" style="margin-top:.9rem;">Informasi kuota penerimaan untuk Tahun Pelajaran
+                        2026/2027.</p>
+                </div>
+                <div class="kuota-grid">
+                    <div class="card kuota-card reveal"
+                        style="background:linear-gradient(160deg,rgba(212,168,67,.08),transparent);">
+                        <div class="kuota-num"
+                            style="background:linear-gradient(135deg,#d4a843,#f0c96a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">
+                            TBD</div>
+                        <div class="kuota-label">Kuota Jalur Prestasi</div>
+                        <div class="kuota-sub">Dikonfirmasi oleh Panitia PMBM<br>MTsN 1 Pandeglang</div>
+                    </div>
+                    <div class="card kuota-card reveal reveal-delay-1"
+                        style="background:linear-gradient(160deg,rgba(96,165,250,.08),transparent);">
+                        <div class="kuota-num"
+                            style="background:linear-gradient(135deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">
+                            TBD</div>
+                        <div class="kuota-label">Kuota Jalur Afirmasi</div>
+                        <div class="kuota-sub">Dikonfirmasi oleh Panitia PMBM<br>MTsN 1 Pandeglang</div>
+                    </div>
+                    <div class="card kuota-card reveal reveal-delay-2"
+                        style="background:linear-gradient(160deg,rgba(20,184,166,.07),transparent);">
+                        <div class="kuota-num grad">224</div>
+                        <div class="kuota-label">Kuota Jalur Reguler</div>
+                        <div class="kuota-sub">Estimasi 7 kelas baru<br>Maks. 32 murid per kelas</div>
+                    </div>
+                </div>
+                <div class="kuota-note-grid">
+                    <div class="card req-item reveal" style="margin:0">
+                        <div class="req-num" style="background:linear-gradient(135deg,var(--teal),var(--teal-d))">🆓
+                        </div>
+                        <div class="req-text"><strong>Biaya Pendidikan: Rp 0 (GRATIS)</strong>
+                            <div class="req-note">Seluruh biaya dibebankan pada anggaran BOS/BOP Madrasah. Tidak ada
+                                pungutan dari peserta didik.</div>
+                        </div>
+                    </div>
+                    <div class="card req-item reveal reveal-delay-1" style="margin:0">
+                        <div class="req-num" style="background:linear-gradient(135deg,#1d4ed8,#1e40af)">🏫</div>
+                        <div class="req-text"><strong>Kapasitas Per Kelas: 32 Murid</strong>
+                            <div class="req-note">Sesuai ketentuan rombongan belajar Kemenag RI.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="sec-sep"></div>
+
+        <!-- ═══ PROGRAM ═══ -->
+        <section id="program"
+            style="background:linear-gradient(180deg,transparent,rgba(13,148,136,.03),transparent)">
+            <div class="wrap">
+                <div class="section-header center reveal">
+                    <div class="eyebrow">Keunggulan Madrasah</div>
+                    <h2>Program &amp; <span class="grad">Ekstrakurikuler</span></h2>
+                    <div class="divider"></div>
+                    <p class="lead" style="margin-top:.9rem;">Lebih dari sekadar belajar — temukan passionmu di
+                        sini.</p>
+                </div>
+                <div class="prog-grid">
+                    <div class="card card-hover prog-card reveal">
+                        <div class="prog-icon">📖</div>
+                        <div class="prog-title">Tahfidz Al-Qur'an</div>
+                        <p class="prog-desc">Target minimal 3 juz selama 3 tahun dengan bimbingan hafiz berpengalaman.
+                        </p>
+                    </div>
+                    <div class="card card-hover prog-card reveal reveal-delay-1">
+                        <div class="prog-icon">🔬</div>
+                        <div class="prog-title">Olimpiade Sains</div>
+                        <p class="prog-desc">Persiapan KSM & OSN mulai dari tingkat kabupaten hingga nasional.</p>
+                    </div>
+                    <div class="card card-hover prog-card reveal reveal-delay-2">
+                        <div class="prog-icon">💻</div>
+                        <div class="prog-title">Teknologi & IT</div>
+                        <p class="prog-desc">Literasi digital dan coding dasar untuk menyiapkan generasi era global.
+                        </p>
+                    </div>
+                    <div class="card card-hover prog-card reveal">
+                        <div class="prog-icon">⚽</div>
+                        <div class="prog-title">Olahraga Prestasi</div>
+                        <p class="prog-desc">O2SN, sepak bola, bulu tangkis, karate, dan atletik bersama pelatih
+                            berpengalaman.</p>
+                    </div>
+                    <div class="card card-hover prog-card reveal reveal-delay-1">
+                        <div class="prog-icon">🎭</div>
+                        <div class="prog-title">Seni & Budaya</div>
+                        <p class="prog-desc">Paskibra, drumband, hadroh, kaligrafi, MTQ, dan seni rupa.</p>
+                    </div>
+                    <div class="card card-hover prog-card reveal reveal-delay-2">
+                        <div class="prog-icon">🌐</div>
+                        <div class="prog-title">Bahasa Asing</div>
+                        <p class="prog-desc">English Club & Arabic Club untuk mendukung komunikasi internasional.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="sec-sep"></div>
+
+        <!-- ═══ FAQ ═══ -->
+        <section id="faq">
+            <div class="wrap">
+                <div class="section-header center reveal">
+                    <div class="eyebrow">FAQ</div>
+                    <h2>Pertanyaan yang<br><span class="grad">Sering Diajukan</span></h2>
+                    <div class="divider"></div>
+                </div>
+                <div class="faq-wrap" id="faqList"></div>
+            </div>
+        </section>
+
+        <!-- ═══ CTA FINAL ═══ -->
+        <section class="cta-section">
+            <div class="cta-glow"></div>
+            <div class="cta-inner reveal">
+                <div class="eyebrow" style="margin-bottom:1rem;display:inline-flex;">⏳ Kuota Terbatas</div>
+                <h2>Siap Bergabung?<br><span class="grad">Daftar Sekarang</span></h2>
+                <p class="lead" style="margin:1rem auto 0;max-width:460px;">Pendaftaran gratis, transparan, dan
+                    objektif. Pilih jalur yang tepat dan raih masa depanmu bersama MTsN 1 Pandeglang.</p>
+                <div class="cta-btns">
+                    <a href="https://daftar.mtsn1pandeglang.sch.id/dashboard" class="btn btn-gold btn-lg">🏆 Prestasi
+                        / Afirmasi →</a>
+                    <a href="https://pmbm-kanwilbanten.com" class="btn btn-ghost btn-lg">📝 Reguler (PMBM Bersama)
+                        →</a>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ═══ FOOTER ═══ -->
+    <footer>
+        <div class="footer-inner">
+            <div class="footer-top">
+                <div class="footer-col">
+                    <div class="footer-col-title">MTsN 1 Pandeglang</div>
+                    <p>Madrasah Tsanawiyah Negeri 1 Pandeglang</p>
+                    <p>Jl. Raya Labuan, Kadulisung</p>
+                    <p>Pandeglang, Banten 42253</p>
+                    <p style="margin-top:.5rem;">adm@mtsn1pandeglang.sch.id</p>
+                    <p><em>+62895351856267</em></p>
+                </div>
+                <div class="footer-col">
+                    <div class="footer-col-title">Pimpinan</div>
+                    <p>Kepala Madrasah:</p>
+                    <p><strong style="color:var(--text)">Hj. Yanti Mariah, S.S., M.Pd.</strong></p>
+                    <p style="margin-top:.6rem;">Ketua PMBM:</p>
+                    <p><strong style="color:var(--text)">Umar Mu'tamar, S.Ag.</strong></p>
+                    <p style="margin-top:.6rem;font-size:.74rem;line-height:1.65;color:var(--muted2)">Kementerian
+                        Agama<br>Kabupaten Pandeglang</p>
+                </div>
+                <div class="footer-col">
+                    <div class="footer-col-title">Link Penting</div>
+                    <a href="https://daftar.mtsn1pandeglang.sch.id/dashboard">Daftar Prestasi / Afirmasi</a>
+                    <a href="https://pmbm-kanwilbanten.com">Portal Reguler (PMBM Bersama)</a>
+                    <a href="https://mtsn1pandeglang.sch.id">Website Resmi Madrasah</a>
+                    <a href="https://banten.kemenag.go.id">Kanwil Kemenag Banten</a>
+                    <a href="https://nisn.data.kemdikbud.go.id">Cek NISN</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>Diselenggarakan berdasarkan Keputusan Kepala Kanwil Kemenag Provinsi Banten No. 009/B/Tahun 2026
+                    &amp; Juknis PMBM MTsN 1 Pandeglang Tahun 2026.</p>
+                <p style="margin-top:.4rem;">© 2026 MTs Negeri 1 Pandeglang</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- WhatsApp FAB -->
+    <a class="wa-fab" href="https://wa.me/62895351856267" target="_blank" rel="noopener"
+        title="Hubungi Panitia via WhatsApp">
+        <div class="wa-fab-pulse"></div>
+        💬
+    </a>
+
+    <!-- ═══ SCRIPT ═══ -->
+    <script>
+        // ── DATA ─────────────────────────────────────────────────────────
+        const schedPA = [{
+                icon: '📋',
+                label: 'Pendaftaran Online',
+                mulai: '2026-04-06',
+                selesai: '2026-04-08',
+                note: 'daftar.mtsn1pandeglang.sch.id/dashboard'
+            },
+            {
+                icon: '📁',
+                label: 'Penyerahan Berkas Fisik',
+                mulai: '2026-04-06',
+                selesai: '2026-04-08',
+                note: 'Sekretariat PMBM MTsN 1 Pandeglang'
+            },
+            {
+                icon: '🔍',
+                label: 'Verifikasi Berkas',
+                mulai: '2026-04-09',
+                selesai: '2026-04-10',
+                note: 'Dilakukan panitia'
+            },
+            {
+                icon: '✍️',
+                label: 'Tes Kemampuan & BTQ',
+                mulai: '2026-04-13',
+                selesai: '2026-04-13',
+                note: 'Hadir max. pukul 07.00 WIB'
+            },
+            {
+                icon: '📢',
+                label: 'Pengumuman Hasil',
+                mulai: '2026-04-14',
+                selesai: '2026-04-14',
+                note: 'Website resmi madrasah'
+            },
+            {
+                icon: '🏫',
+                label: 'Lapor Diri & Pemberkasan',
+                mulai: '2026-04-15',
+                selesai: '2026-04-16',
+                note: 'Langsung ke madrasah'
+            },
+        ];
+        const schedReg = [{
+                icon: '📋',
+                label: 'Pendaftaran Online',
+                mulai: '2026-04-18',
+                selesai: '2026-04-27',
+                note: '08.00 buka – 16.00 tutup WIB'
+            },
+            {
+                icon: '🔍',
+                label: 'Verifikasi Dokumen',
+                mulai: '2026-04-19',
+                selesai: '2026-04-28',
+                note: '08.00–16.00 WIB'
+            },
+            {
+                icon: '📢',
+                label: 'Pengumuman Peserta CBT',
+                mulai: '2026-04-29',
+                selesai: '2026-04-29',
+                note: '08.00 WIB'
+            },
+            {
+                icon: '🖥️',
+                label: 'Uji Coba CBT',
+                mulai: '2026-04-30',
+                selesai: '2026-04-30',
+                note: '07.30–16.00 WIB'
+            },
+            {
+                icon: '🖥️',
+                label: 'Pelaksanaan CBT',
+                mulai: '2026-05-02',
+                selesai: '2026-05-02',
+                note: '07.30–16.00 WIB'
+            },
+            {
+                icon: '📖',
+                label: "Tes BTQ (Al-Qur'an)",
+                mulai: '2026-05-02',
+                selesai: '2026-05-03',
+                note: '07.30–16.00 WIB'
+            },
+            {
+                icon: '🎉',
+                label: 'Pengumuman Kelulusan',
+                mulai: '2026-05-05',
+                selesai: '2026-05-05',
+                note: '08.00 WIB di pmbm-kanwilbanten.com'
+            },
+            {
+                icon: '🏫',
+                label: 'Lapor Diri & Berkas (Map Hijau)',
+                mulai: '2026-05-06',
+                selesai: '2026-05-12',
+                note: '08.00–16.00 WIB · Bawa map hijau'
+            },
+        ];
+        const faqData = [{
+                group: 'Umum & Teknis',
+                items: [
+                    ['Apakah ada biaya pendaftaran?',
+                        'Tidak ada biaya sama sekali. Seluruh proses PMBM MTsN 1 Pandeglang 100% gratis — tidak ada pungutan dalam bentuk apapun dari calon peserta didik. Semua biaya operasional ditanggung anggaran BOS/BOP Madrasah sesuai regulasi Kemenag RI.'
+                    ],
+                    ['Apakah boleh mendaftar di dua jalur sekaligus (Prestasi dan Afirmasi)?',
+                        'Tidak boleh. Setiap calon murid hanya dapat memilih satu jalur antara Prestasi atau Afirmasi. Jika terbukti mendaftar di dua jalur sekaligus, keduanya dapat dibatalkan. Namun jika tidak lolos, kamu masih bisa mendaftar ke Jalur Reguler mulai 18 April 2026.'
+                    ],
+                    ['Apakah siswa dari luar Pandeglang atau luar Banten bisa mendaftar?',
+                        'Bisa. Tidak ada batasan domisili untuk mendaftar. Untuk Jalur Reguler, jika sekolah asal berasal dari luar Provinsi Banten, wajib melampirkan sertifikat akreditasi sekolah asal. Jika tidak terakreditasi, nilainya dihitung otomatis = 65.'
+                    ],
+                    ['Apa itu NISN dan bagaimana cara mengeceknya?',
+                        'NISN (Nomor Induk Siswa Nasional) adalah nomor identitas unik setiap siswa yang terdaftar di EMIS (Kemenag) atau DAPODIK (Kemendikbud). Cara cek: hubungi guru/wali kelas di sekolah asal, atau cek mandiri di nisn.data.kemdikbud.go.id. Pastikan NISN sudah aktif sebelum mendaftar.'
+                    ],
+                    ['Mengapa KK dan Akta Kelahiran harus berbarcode?',
+                        'Barcode pada dokumen kependudukan adalah tanda keaslian yang membuktikan dokumen diterbitkan resmi oleh Dinas Dukcapil. Dokumen lama (format lama tanpa barcode) tidak dapat diterima karena tidak dapat diverifikasi secara digital. Jika dokumenmu belum berbarcode, segera urus pembaruan di kantor Dukcapil setempat — prosesnya gratis.'
+                    ],
+                    ['Apa warna map snelhecter untuk masing-masing jalur?',
+                        'Warna map berbeda untuk tiap jalur dan wajib sesuai: 🔴 Merah = Jalur Prestasi, 🟡 Kuning = Jalur Afirmasi, 🟢 Hijau = Jalur Reguler. Menggunakan warna yang salah dapat menyebabkan berkas sulit diproses. Tempel label identitas (Nama, Asal Sekolah, Jalur) di bagian depan map.'
+                    ],
+                    ['Di mana lokasi Sekretariat PMBM MTsN 1 Pandeglang?',
+                        'Sekretariat PMBM berada di MTsN 1 Pandeglang, Jl. Raya Labuan, Kadulisung, Pandeglang, Banten 42253. Jam pelayanan: 08.00–14.00 WIB (istirahat 11.30–13.00 WIB) selama periode penyerahan berkas berlangsung.'
+                    ],
+                    ['Bagaimana cara menghubungi panitia jika ada pertanyaan?',
+                        'Kamu bisa menghubungi panitia PMBM melalui WhatsApp di nomor +62895351856267, atau klik tombol 💬 di pojok kanan bawah halaman ini. Bisa juga melalui email adm@mtsn1pandeglang.sch.id. Harap hubungi di jam kerja (08.00–14.00 WIB).'
+                    ],
+                    ['Apakah ada batas usia untuk mendaftar?',
+                        'Ya. Calon peserta didik baru maksimal berusia 15 tahun dihitung per 1 Juli 2026. Artinya, calon murid yang lahir sebelum 1 Juli 2011 tidak dapat diterima.'
+                    ],
+                    ['Apakah anak berkebutuhan khusus (ABK) bisa mendaftar?',
+                        'Untuk informasi lebih lanjut mengenai penerimaan peserta didik berkebutuhan khusus, silakan hubungi langsung panitia PMBM karena ketentuannya bersifat kasuistis dan memerlukan koordinasi khusus.'
+                    ],
+                ]
+            },
+            {
+                group: 'Jalur Prestasi',
+                items: [
+                    ['Prestasi apa saja yang diakui untuk Jalur Prestasi?',
+                        'Ada tiga kategori: (1) Tahfidz: sertifikat hafalan minimal 3 juz — akan ada tes hafalan langsung. (2) Akademik: KSM/OMI, MYRES, OSN, OSP, OSK — diselenggarakan Kemenag, Kemendikbud, BRIN, atau PT Terakreditasi, minimal Juara 1–3 Kab/Kota. (3) Non-Akademik: MTQ, MHQ, MSQ, Pidato Arab, Kaligrafi, O2SN, FLS2N, Olahraga — minimal Juara 1 Kab/Kota, Juara 1–2 Provinsi, atau Juara 1–3 Nasional.'
+                    ],
+                    ['Apakah sertifikat fotokopi bisa diterima?',
+                        'Tidak. Sertifikat yang diserahkan harus asli. Fotokopi, scan, atau sertifikat digital tidak diterima untuk proses verifikasi. Pastikan sertifikat asli dalam kondisi baik dan terbaca jelas.'
+                    ],
+                    ['Bagaimana jika sertifikat prestasi sudah lama atau sudah rusak?',
+                        'Sertifikat tetap harus asli. Jika rusak atau hilang, coba urus surat keterangan pengganti dari instansi penyelenggara lomba. Konfirmasi terlebih dahulu ke panitia PMBM apakah surat keterangan pengganti dapat diterima.'
+                    ],
+                    ['Untuk olahraga beregu, siapa yang bisa menggunakan sertifikat tersebut?',
+                        'Hanya top scorer atau pemain terbaik yang namanya tercantum secara eksplisit di sertifikat beregu. Anggota tim biasa yang tidak tercantum namanya di sertifikat tidak dapat menggunakan sertifikat beregu tersebut.'
+                    ],
+                    ['Apakah prestasi dari tingkat kecamatan atau sekolah bisa digunakan?',
+                        'Tidak. Minimal harus Juara 1 tingkat Kabupaten/Kota untuk kategori Non-Akademik, dan minimal Juara 1–3 tingkat Kab/Kota untuk Akademik. Prestasi tingkat kecamatan atau internal sekolah tidak diakui.'
+                    ],
+                    ['Apakah ada tes tambahan selain verifikasi sertifikat?',
+                        'Untuk kategori Tahfidz: ya, ada tes hafalan langsung pada 13 April 2026 di madrasah. Untuk kategori Akademik dan Non-Akademik: seleksi hanya berupa verifikasi sertifikat oleh panitia, tidak ada CBT.'
+                    ],
+                    ['Jika punya lebih dari satu sertifikat prestasi, apakah semua bisa dilampirkan?',
+                        'Boleh melampirkan lebih dari satu sertifikat, namun panitia akan mempertimbangkan sertifikat dengan tingkat tertinggi. Lampirkan semua yang relevan untuk memperkuat berkas pendaftaran.'
+                    ],
+                ]
+            },
+            {
+                group: 'Jalur Afirmasi',
+                items: [
+                    ['Dokumen apa saja yang bisa digunakan untuk Jalur Afirmasi?',
+                        'Pilih salah satu yang dimiliki keluarga: KIP (Kartu Indonesia Pintar), PKH (Kartu Program Keluarga Harapan), KKS (Kartu Keluarga Sejahtera), atau SKTM (Surat Keterangan Tidak Mampu) dari pemerintah daerah. Semua harus difotokopi dan dilegalisir oleh instansi penerbit.'
+                    ],
+                    ['SKTM dari RT/RW apakah bisa digunakan?',
+                        'Tidak bisa. SKTM hanya diterima jika diterbitkan oleh pemerintah daerah — minimal tingkat kelurahan, kecamatan, atau dinas sosial. SKTM dari RT/RW tidak memiliki kekuatan hukum yang cukup dan tidak akan diterima panitia.'
+                    ],
+                    ['Apa saja dokumen tambahan untuk pengguna SKTM?',
+                        'Pengguna SKTM wajib melampirkan dua dokumen tambahan: (1) Fotokopi tagihan/rekening listrik 3 bulan terakhir, dan (2) Foto kondisi rumah dari tiga sisi: tampak depan, tampak dalam, dan tampak belakang. Panitia dapat melakukan pengecekan lapangan berdasarkan dokumen ini.'
+                    ],
+                    ['KIP yang digunakan, atas nama siapa — anak atau orang tua?',
+                        'KIP yang digunakan adalah KIP atas nama calon murid (anak), bukan orang tua. Pastikan KIP masih aktif dan telah dilegalisir oleh instansi penerbit sebelum dilampirkan.'
+                    ],
+                    ['Apakah ada tes atau seleksi tambahan untuk Jalur Afirmasi?',
+                        'Tidak ada CBT atau tes akademik untuk Jalur Afirmasi. Seleksi dilakukan murni berdasarkan verifikasi dokumen kelayakan ekonomi. Khusus pengguna SKTM, panitia dapat melakukan pengecekan lapangan.'
+                    ],
+                    ['Jika keluarga punya KIP dan PKH sekaligus, mana yang harus dilampirkan?',
+                        'Cukup lampirkan salah satu yang paling kuat dan mudah diverifikasi. Namun boleh juga melampirkan keduanya sebagai penguat. Pastikan semua dokumen yang dilampirkan sudah dilegalisir.'
+                    ],
+                ]
+            },
+            {
+                group: 'Jalur Reguler',
+                items: [
+                    ['Berapa madrasah yang bisa dipilih di Jalur Reguler?',
+                        'Minimal 1 dan maksimal 2 madrasah tujuan dalam satu kali pendaftaran di sistem pmbm-kanwilbanten.com. Pertimbangkan baik-baik pilihan madrasah karena akan memengaruhi penempatan jika diterima.'
+                    ],
+                    ['Bagaimana sistem penilaian Jalur Reguler?',
+                        'Nilai Akhir dihitung dari: 70% Nilai CBT + 30% Nilai BTQ. Jika nilai akhir sama, prioritas diberikan kepada siswa yang lebih tua usianya. Jika usia pun sama persis, yang mendaftar lebih awal yang diprioritaskan. Tidak ada nilai rapor atau nilai akademik lain yang diperhitungkan.'
+                    ],
+                    ['Apa itu CBT dan BTQ? Materi apa yang diujikan?',
+                        'CBT (Computer Based Test) adalah tes berbasis komputer yang menguji kemampuan akademik. BTQ (Baca Tulis Al-Qur\'an) adalah tes kemampuan membaca dan menulis Al-Qur\'an. Untuk persiapan CBT, pelajari materi pelajaran SD/MI kelas 4–6. Untuk BTQ, pastikan kemampuan membaca Al-Qur\'an dengan baik dan benar.'
+                    ],
+                    ['Kapan dan di mana pelaksanaan CBT?',
+                        'Uji Coba CBT dilaksanakan pada 30 April 2026 (07.30–16.00 WIB), dan CBT resmi pada 2 Mei 2026 (07.30–16.00 WIB) di MTsN 1 Pandeglang. Tes BTQ dilaksanakan 2–3 Mei 2026. Pastikan hadir tepat waktu karena keterlambatan bisa menyebabkan tidak diperkenankan mengikuti tes.'
+                    ],
+                    ['Apakah ada uji coba CBT sebelum tes resmi?',
+                        'Ya. Uji Coba CBT diadakan pada 30 April 2026 agar peserta bisa mengenal sistem dan antarmuka CBT sebelum tes sesungguhnya. Sangat disarankan untuk hadir.'
+                    ],
+                    ['Dokumen apa yang perlu diunggah saat daftar online Reguler?',
+                        'Tiga dokumen wajib: (1) KK diterbitkan sebelum Maret 2026, (2) Ijazah MI/SD atau Surat Keterangan Lulus, (3) Surat Pernyataan Pertanggungjawaban Mutlak bermaterai Rp 10.000 (format tersedia di pmbm-kanwilbanten.com). Dokumen kondisional: Sertifikat Akreditasi Sekolah (jika dari luar Banten) atau Surat Rekomendasi (jika dari sekolah asing).'
+                    ],
+                    ['KK saya terbit setelah Maret 2026, apakah masih bisa mendaftar?',
+                        'KK yang diterbitkan pada atau setelah Maret 2026 tidak memenuhi syarat untuk Jalur Reguler. Segera hubungi panitia PMBM untuk mendapatkan solusi atau informasi alternatif dokumen yang dapat digunakan.'
+                    ],
+                    ['Sekolah asal saya belum terakreditasi, apakah bisa mendaftar?',
+                        'Bisa. Jika sekolah asal belum atau tidak terakreditasi, sistem akan menghitung nilai akreditasi secara otomatis sebesar 65. Tidak perlu dokumen akreditasi dalam kondisi ini.'
+                    ],
+                    ['Kapan dan di mana menyerahkan map hijau Jalur Reguler?',
+                        'Map snelhecter warna HIJAU berisi berkas fisik diserahkan langsung ke madrasah saat lapor diri, yaitu 6–12 Mei 2026 (setelah pengumuman kelulusan 5 Mei 2026), pukul 08.00–16.00 WIB. Pendaftaran online dilakukan lebih dulu melalui pmbm-kanwilbanten.com.'
+                    ],
+                    ['Apa yang terjadi jika diterima tapi tidak lapor diri?',
+                        'Peserta dianggap secara otomatis mengundurkan diri dan kursinya hangus. Lapor diri adalah kewajiban mutlak yang harus dilakukan pada 6–12 Mei 2026 dengan membawa map hijau dan seluruh berkas. Tidak ada perpanjangan waktu lapor diri.'
+                    ],
+                ]
+            },
+            {
+                group: 'Jadwal & Pengumuman',
+                items: [
+                    ['Di mana bisa melihat pengumuman hasil seleksi?',
+                        'Pengumuman Jalur Prestasi & Afirmasi: 14 April 2026 di website resmi madrasah (daftar.mtsn1pandeglang.sch.id). Pengumuman Jalur Reguler: 5 Mei 2026 pukul 08.00 WIB di pmbm-kanwilbanten.com. Pantau terus kedua situs tersebut pada tanggal pengumuman.'
+                    ],
+                    ['Bagaimana jika tidak lolos Jalur Prestasi atau Afirmasi?',
+                        'Berkas fisik dapat diambil kembali di Sekretariat PMBM mulai 15 April 2026 (sehari setelah pengumuman). Setelah itu, kamu masih bisa mendaftar ke Jalur Reguler yang dibuka 18–27 April 2026 melalui pmbm-kanwilbanten.com. Tidak lolos satu jalur bukan akhir segalanya!'
+                    ],
+                    ['Apakah ada masa sanggah atau banding hasil seleksi?',
+                        'Untuk Jalur Prestasi dan Afirmasi, keputusan panitia bersifat final berdasarkan verifikasi dokumen. Jika merasa ada kekeliruan, segera hubungi panitia PMBM sebelum batas lapor diri. Untuk Jalur Reguler, nilai dan peringkat ditetapkan otomatis oleh sistem PMBM Bersama Kanwil.'
+                    ],
+                    ['Kapan tahun ajaran baru dimulai?',
+                        'Tahun Pelajaran 2026/2027 diperkirakan dimulai pada Juli 2026. Informasi lebih lanjut mengenai hari pertama masuk sekolah akan diumumkan setelah proses lapor diri selesai.'
+                    ],
+                    ['Apakah ada orientasi atau MATSAMA setelah diterima?',
+                        'Informasi mengenai kegiatan Masa Ta\'aruf Siswa Madrasah (MATSAMA) akan disampaikan saat atau setelah lapor diri. Pantau pengumuman resmi dari madrasah.'
+                    ],
+                ]
+            },
+            {
+                group: 'Dokumen & Teknis',
+                items: [
+                    ['Bagaimana jika NISN saya tidak ditemukan di sistem?',
+                        'Segera koordinasikan dengan operator sekolah asal untuk memastikan NISN sudah terdaftar dan aktif di EMIS/DAPODIK. Proses sinkronisasi data bisa memakan waktu. Jangan menunggu mepet deadline untuk mengecek NISN.'
+                    ],
+                    ['Dokumen saya ada yang hilang atau belum jadi, apa yang harus dilakukan?',
+                        'Segera urus dokumen yang kurang sebelum periode pendaftaran berakhir. Untuk dokumen kependudukan (KK, Akta), bisa diurus di kantor Dukcapil. Untuk surat keterangan aktif, minta ke sekolah asal. Jangan menunda karena tidak ada perpanjangan waktu untuk pengumpulan berkas.'
+                    ],
+                    ['Apakah formulir online harus diisi sebelum menyerahkan berkas fisik (Prestasi/Afirmasi)?',
+                        'Ya, keduanya wajib dilakukan dan saling melengkapi. Isi formulir online terlebih dahulu di daftar.mtsn1pandeglang.sch.id/dashboard, lalu cetak buktinya dan lampirkan bersama berkas fisik ke sekretariat. Salah satu saja tanpa yang lain = dinyatakan gugur.'
+                    ],
+                    ['Apakah berkas yang sudah diserahkan bisa diubah atau ditarik kembali?',
+                        'Berkas yang sudah diserahkan ke sekretariat tidak bisa diubah selama proses verifikasi berlangsung. Jika ada kesalahan data, segera hubungi panitia PMBM sesegera mungkin. Berkas hanya bisa diambil kembali jika dinyatakan tidak lolos seleksi (mulai 15 April 2026 untuk Prestasi/Afirmasi).'
+                    ],
+                    ['Format foto rumah untuk Jalur Afirmasi (SKTM) seperti apa?',
+                        'Foto harus jelas, tidak buram, dan menampilkan kondisi nyata rumah dari tiga sudut: tampak depan (terlihat fasad dan pintu utama), tampak dalam (ruang utama), dan tampak belakang. Foto bisa diambil dengan kamera HP. Tidak perlu resolusi tinggi, yang penting terang dan jelas.'
+                    ],
+                    ['Apakah pendaftaran bisa dilakukan malam hari atau di luar jam kerja?',
+                        'Pendaftaran online (mengisi formulir di website) bisa dilakukan kapan saja selama server aktif. Namun penyerahan berkas fisik ke sekretariat hanya bisa dilakukan pada jam layanan panitia: 08.00–14.00 WIB (istirahat 11.30–13.00 WIB) pada tanggal yang telah ditentukan.'
+                    ],
+                ]
+            },
+        ];
+
+        // ── RENDER JADWAL ────────────────────────────────────────────────
+        function statusBadge(mulai, selesai) {
+            const now = new Date(),
+                m = new Date(mulai),
+                s = new Date(selesai);
+            s.setHours(23, 59, 59);
+            if (now < m) return {
+                text: 'Mendatang',
+                bg: 'rgba(255,255,255,.05)',
+                tc: 'var(--muted)'
+            };
+            if (now <= s) return {
+                text: '🔴 Aktif',
+                bg: 'rgba(212,168,67,.15)',
+                tc: '#d4a843'
+            };
+            return {
+                text: '✓ Selesai',
+                bg: 'rgba(20,184,166,.12)',
+                tc: 'var(--teal-xl)'
+            };
+        }
+
+        function fmtDate(a, b) {
+            const o = {
+                day: 'numeric',
+                month: 'short'
+            };
+            const da = new Date(a).toLocaleDateString('id-ID', o);
+            const db = new Date(b).toLocaleDateString('id-ID', {
+                ...o,
+                year: 'numeric'
+            });
+            return a === b ? db : da + ' – ' + db;
+        }
+
+        function renderSched(data, elId) {
+            const el = document.getElementById(elId);
+            if (!el) return;
+            el.innerHTML = data.map(j => {
+                const {
+                    text,
+                    bg,
+                    tc
+                } = statusBadge(j.mulai, j.selesai);
+                return `<div class="sched-item">
+      <div class="sched-icon">${j.icon}</div>
+      <div class="sched-content">
+        <div class="sched-title">${j.label}</div>
+        <div class="sched-date">${fmtDate(j.mulai,j.selesai)}${j.note?' · '+j.note:''}</div>
+      </div>
+      <div class="sched-badge badge" style="background:${bg};color:${tc};border:1px solid ${tc}33;">${text}</div>
+    </div>`;
+            }).join('');
+        }
+        renderSched(schedPA, 'sched-pa');
+        renderSched(schedReg, 'sched-reg');
+
+        // ── RENDER FAQ ───────────────────────────────────────────────────
+        const grpClrs = {
+            'Umum & Teknis': {
+                bg: 'rgba(20,184,166,.1)',
+                tc: 'var(--teal-xl)'
+            },
+            'Jalur Prestasi': {
+                bg: 'rgba(212,168,67,.12)',
+                tc: '#d4a843'
+            },
+            'Jalur Afirmasi': {
+                bg: 'rgba(96,165,250,.12)',
+                tc: '#60a5fa'
+            },
+            'Jalur Reguler': {
+                bg: 'rgba(20,184,166,.1)',
+                tc: 'var(--teal-xl)'
+            },
+            'Jadwal & Pengumuman': {
+                bg: 'rgba(167,139,250,.12)',
+                tc: '#a78bfa'
+            },
+            'Dokumen & Teknis': {
+                bg: 'rgba(251,146,60,.1)',
+                tc: '#fb923c'
+            }
+        };
+        let faqHtml = '';
+        faqData.forEach(grp => {
+            const c = grpClrs[grp.group] || {
+                bg: 'rgba(255,255,255,.06)',
+                tc: 'var(--muted)'
+            };
+            faqHtml +=
+                `<div class="faq-group"><div class="faq-group-label" style="background:${c.bg};color:${c.tc};border:1px solid ${c.tc}33;">${grp.group}</div>`;
+            grp.items.forEach(([q, a]) => {
+                faqHtml +=
+                    `<div class="card faq-item"><button class="faq-btn" onclick="toggleFaq(this)"><span>${q}</span><span class="faq-chev">▼</span></button><div class="faq-body"><p>${a}</p></div></div>`;
+            });
+            faqHtml += '</div>';
+        });
+        document.getElementById('faqList').innerHTML = faqHtml;
+
+        // ── COUNTDOWN ────────────────────────────────────────────────────
+        (function() {
+            const pad = n => String(n).padStart(2, '0');
+            const deadlines = [{
+                    label: 'Pendaftaran Prestasi &amp; Afirmasi',
+                    d: '2026-04-08T16:00:00'
+                },
+                {
+                    label: 'Pendaftaran Reguler Ditutup',
+                    d: '2026-04-27T16:00:00'
+                },
+                {
+                    label: 'Pengumuman Kelulusan Reguler',
+                    d: '2026-05-05T08:00:00'
+                },
+                {
+                    label: 'Batas Lapor Diri',
+                    d: '2026-05-12T16:00:00'
+                },
+            ];
+            const lEl = document.getElementById('cd-label'),
+                dEl = document.getElementById('cd-d'),
+                hEl = document.getElementById('cd-h'),
+                mEl = document.getElementById('cd-m'),
+                sEl = document.getElementById('cd-s');
+            if (!lEl) return;
+
+            function getActive() {
+                const now = Date.now();
+                return deadlines.find(d => new Date(d.d).getTime() > now) || null
+            }
+
+            function tick() {
+                const active = getActive();
+                if (!active) {
+                    lEl.textContent = 'Seluruh proses PMBM 2026 telah selesai.';
+                    return
+                }
+                const diff = new Date(active.d).getTime() - Date.now();
+                if (diff <= 0) {
+                    tick();
+                    return
+                }
+                lEl.innerHTML = active.label;
+                dEl.textContent = pad(Math.floor(diff / 86400000));
+                hEl.textContent = pad(Math.floor((diff % 86400000) / 3600000));
+                mEl.textContent = pad(Math.floor((diff % 3600000) / 60000));
+                sEl.textContent = pad(Math.floor((diff % 60000) / 1000));
+            }
+            tick();
+            setInterval(tick, 1000);
+        })();
+
+        // ── NAV SCROLL ───────────────────────────────────────────────────
+        const nav = document.getElementById('mainNav');
+        window.addEventListener('scroll', () => {
+            nav.classList.toggle('scrolled', window.scrollY > 40)
+        }, {
+            passive: true
+        });
+
+        // ── DRAWER ───────────────────────────────────────────────────────
+        const menuBtn = document.getElementById('menuBtn'),
+            drawer = document.getElementById('drawer');
+        menuBtn.addEventListener('click', () => {
+            const o = drawer.classList.toggle('open');
+            menuBtn.classList.toggle('open', o)
+        });
+        drawer.querySelectorAll('.d-link,a').forEach(a => a.addEventListener('click', () => {
+            drawer.classList.remove('open');
+            menuBtn.classList.remove('open')
+        }));
+        document.addEventListener('click', e => {
+            if (!drawer.contains(e.target) && !menuBtn.contains(e.target)) {
+                drawer.classList.remove('open');
+                menuBtn.classList.remove('open')
+            }
+        });
+
+        // ── NAV ACTIVE ───────────────────────────────────────────────────
+        const secEls = document.querySelectorAll('section[id]'),
+            navAs = document.querySelectorAll('.nav-links a');
+        secEls.forEach(s => new IntersectionObserver(entries => {
+            entries.forEach(e => {
+                if (!e.isIntersecting) return;
+                navAs.forEach(a => a.classList.remove('active'));
+                const a = document.querySelector(`.nav-links a[href="#${e.target.id}"]`);
+                if (a) a.classList.add('active')
+            })
+        }, {
+            threshold: .3
+        }).observe(s));
+
+        // ── FAQ TOGGLE ───────────────────────────────────────────────────
+        function toggleFaq(btn) {
+            const body = btn.nextElementSibling,
+                chev = btn.querySelector('.faq-chev');
+            const isOpen = body.style.maxHeight && body.style.maxHeight !== '0px';
+            document.querySelectorAll('.faq-body').forEach(b => b.style.maxHeight = '0px');
+            document.querySelectorAll('.faq-chev').forEach(c => c.style.transform = '');
+            if (!isOpen) {
+                body.style.maxHeight = body.scrollHeight + 'px';
+                chev.style.transform = 'rotate(180deg)'
+            }
+        }
+
+        // ── REQ TABS ─────────────────────────────────────────────────────
+        const tabClrs = {
+            'tab-prestasi': {
+                bg: 'rgba(212,168,67,.1)',
+                tc: '#d4a843',
+                bc: '#d4a843'
+            },
+            'tab-afirmasi': {
+                bg: 'rgba(96,165,250,.1)',
+                tc: '#60a5fa',
+                bc: '#60a5fa'
+            },
+            'tab-reguler': {
+                bg: 'rgba(20,184,166,.1)',
+                tc: 'var(--teal-xl)',
+                bc: 'var(--teal)'
+            }
+        };
+        document.getElementById('reqTabs').addEventListener('click', e => {
+            const btn = e.target.closest('.req-tab');
+            if (!btn) return;
+            const pId = btn.dataset.panel;
+            document.querySelectorAll('.req-tab').forEach(t => {
+                t.classList.remove('active');
+                t.style.background = 'transparent';
+                t.style.color = 'var(--muted)';
+                t.style.borderColor = 'var(--border)'
+            });
+            document.querySelectorAll('.req-panel').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            const c = tabClrs[pId];
+            if (c) {
+                btn.style.background = c.bg;
+                btn.style.color = c.tc;
+                btn.style.borderColor = c.bc
+            }
+            const panel = document.getElementById(pId);
+            if (panel) panel.classList.add('active');
+        });
+
+        // ── SCROLL REVEAL ────────────────────────────────────────────────
+        const revealEls = document.querySelectorAll('.reveal');
+        const revealObs = new IntersectionObserver(entries => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.classList.add('visible');
+                    revealObs.unobserve(e.target)
+                }
+            })
+        }, {
+            threshold: .12,
+            rootMargin: '0px 0px -40px 0px'
+        });
+        revealEls.forEach(el => revealObs.observe(el));
+
+        // ── TOMBOL DAFTAR DINAMIS ─────────────────────────────────────────
+        // Letakkan script ini di bagian bawah <body>, setelah elemen navbar ada
+        // atau gabungkan dengan script yang sudah ada di halaman
+
+        (function() {
+            const btn = document.getElementById('daftarBtnNav');
+            if (!btn) return;
+
+            // Definisi periode — gunakan format YYYY-MM-DDTHH:MM:SS (WIB = UTC+7)
+            const phases = [{
+                    // Prestasi & Afirmasi dibuka
+                    start: '2026-04-06T08:00:00+07:00',
+                    end: '2026-04-08T16:00:00+07:00',
+                    href: 'https://daftar.mtsn1pandeglang.sch.id/dashboard',
+                    label: '🏆 Daftar Prestasi / Afirmasi',
+                    style: {
+                        background: 'linear-gradient(135deg,#d4a843,#b8882a)',
+                        boxShadow: '0 0 24px rgba(212,168,67,.3)'
+                    },
+                    disabled: false,
+                },
+                {
+                    // Jeda verifikasi & tes (9–17 April)
+                    start: '2026-04-08T16:00:01+07:00',
+                    end: '2026-04-17T23:59:59+07:00',
+                    href: null,
+                    label: '⏳ Sedang Diverifikasi',
+                    style: {
+                        background: 'rgba(255,255,255,.06)',
+                        color: 'var(--muted)',
+                        boxShadow: 'none',
+                        cursor: 'not-allowed',
+                        border: '1px solid var(--border)'
+                    },
+                    disabled: true,
+                },
+                {
+                    // Reguler dibuka
+                    start: '2026-04-18T08:00:00+07:00',
+                    end: '2026-04-27T16:00:00+07:00',
+                    href: 'https://pmbm-kanwilbanten.com',
+                    label: '📝 Daftar Reguler',
+                    style: {
+                        background: 'linear-gradient(135deg,var(--teal),var(--teal-d))',
+                        boxShadow: '0 0 28px rgba(13,148,136,.3)'
+                    },
+                    disabled: false,
+                },
+                {
+                    // Pendaftaran ditutup
+                    start: '2026-04-27T16:00:01+07:00',
+                    end: '2099-12-31T00:00:00+07:00',
+                    href: null,
+                    label: '🔒 Pendaftaran Ditutup',
+                    style: {
+                        background: 'rgba(220,38,38,.12)',
+                        color: '#ef4444',
+                        boxShadow: 'none',
+                        cursor: 'not-allowed',
+                        border: '1px solid rgba(220,38,38,.3)'
+                    },
+                    disabled: true,
+                },
+            ];
+
+            // Default — sebelum semua periode (sebelum 6 April)
+            const defaultPhase = {
+                href: null,
+                label: '🕐 Belum Dibuka',
+                style: {
+                    background: 'rgba(255,255,255,.05)',
+                    color: 'var(--muted)',
+                    boxShadow: 'none',
+                    cursor: 'not-allowed',
+                    border: '1px solid var(--border)'
+                },
+                disabled: true,
+            };
+
+            function applyPhase(phase) {
+                // Teks
+                btn.textContent = phase.label;
+
+                // Style
+                Object.assign(btn.style, {
+                    background: '',
+                    color: '#fff',
+                    boxShadow: '',
+                    cursor: 'pointer',
+                    border: 'none',
+                    ...phase.style,
+                });
+
+                // Link & klik
+                if (phase.disabled) {
+                    btn.removeAttribute('href');
+                    btn.style.pointerEvents = 'none';
+                    btn.setAttribute('aria-disabled', 'true');
+                } else {
+                    btn.setAttribute('href', phase.href);
+                    btn.style.pointerEvents = 'auto';
+                    btn.removeAttribute('aria-disabled');
+                }
+            }
+
+            function update() {
+                const now = Date.now();
+                const active = phases.find(p =>
+                    now >= new Date(p.start).getTime() &&
+                    now <= new Date(p.end).getTime()
+                );
+                applyPhase(active || defaultPhase);
+            }
+
+            // Jalankan langsung & perbarui tiap menit
+            update();
+            setInterval(update, 60_000);
+        })();
+    </script>
+</body>
+
+</html>
+
+```
+
+---
+
+### ./resources/views/landing.blade.php.bkp
+
+```
 @php
     use Carbon\Carbon;
 
@@ -18933,90 +22377,36 @@ Route::middleware('web')->group(function () {
     if ($tahun) {
         $map = [
             [
-                '🏆',
                 'Jalur Prestasi',
                 'tanggal_pendaftaran_jalur_prestasi_mulai',
                 'tanggal_pendaftaran_jalur_prestasi_selesai',
             ],
             [
-                '📚',
-                'Jalur Reguler',
-                'tanggal_pendaftaran_jalur_reguler_mulai',
-                'tanggal_pendaftaran_jalur_reguler_selesai',
-            ],
-            [
-                '🤝',
                 'Jalur Afirmasi',
                 'tanggal_pendaftaran_jalur_afirmasi_mulai',
                 'tanggal_pendaftaran_jalur_afirmasi_selesai',
             ],
-            [
-                '🏘️',
-                'Jalur Zonasi',
-                'tanggal_pendaftaran_jalur_zonasi_mulai',
-                'tanggal_pendaftaran_jalur_zonasi_selesai',
-            ],
-            [
-                '🔄',
-                'Jalur Mutasi',
-                'tanggal_pendaftaran_jalur_mutasi_mulai',
-                'tanggal_pendaftaran_jalur_mutasi_selesai',
-            ],
-            ['📝', 'Tes Seleksi (CBT)', 'tanggal_tes_akademik_mulai', 'tanggal_tes_akademik_selesai'],
-            [
-                '📢',
-                'Pengumuman Reguler',
-                'tanggal_pengumuman_jalur_reguler_mulai',
-                'tanggal_pengumuman_jalur_reguler_selesai',
-            ],
-            ['✅', 'Registrasi Berkas', 'tanggal_registrasi_berkas_mulai', 'tanggal_registrasi_berkas_selesai'],
+            ['Tes Seleksi (CBT)', 'tanggal_tes_akademik_mulai', 'tanggal_tes_akademik_selesai'],
+            ['Pengumuman', 'tanggal_pengumuman_jalur_prestasi_mulai', 'tanggal_pengumuman_jalur_prestasi_selesai'],
+            ['Registrasi Berkas', 'tanggal_registrasi_berkas_mulai', 'tanggal_registrasi_berkas_selesai'],
         ];
-        foreach ($map as [$icon, $label, $mk, $sk]) {
+        foreach ($map as [$label, $mk, $sk]) {
             if ($tahun->$mk) {
-                $jadwals[] = ['icon' => $icon, 'label' => $label, 'mulai' => $tahun->$mk, 'selesai' => $tahun->$sk];
+                $jadwals[] = ['label' => $label, 'mulai' => $tahun->$mk, 'selesai' => $tahun->$sk];
             }
         }
     }
 
     $jalurMeta = [
-        'Prestasi' => [
-            'icon' => '🏆',
-            'color' => '#d4a843',
-            'bg' => 'rgba(212,168,67,.12)',
-            'border' => 'rgba(212,168,67,.3)',
-        ],
-        'Reguler' => [
-            'icon' => '📚',
-            'color' => '#10b981',
-            'bg' => 'rgba(16,185,129,.12)',
-            'border' => 'rgba(16,185,129,.3)',
-        ],
-        'Afirmasi' => [
-            'icon' => '🤝',
-            'color' => '#60a5fa',
-            'bg' => 'rgba(96,165,250,.12)',
-            'border' => 'rgba(96,165,250,.3)',
-        ],
-        'Zonasi' => [
-            'icon' => '🏘️',
-            'color' => '#a78bfa',
-            'bg' => 'rgba(167,139,250,.12)',
-            'border' => 'rgba(167,139,250,.3)',
-        ],
-        'Mutasi' => [
-            'icon' => '🔄',
-            'color' => '#fb923c',
-            'bg' => 'rgba(251,146,60,.12)',
-            'border' => 'rgba(251,146,60,.3)',
-        ],
+        'Prestasi' => ['color' => '#d4a843', 'bg' => 'rgba(212,168,67,.12)', 'border' => 'rgba(212,168,67,.3)'],
+        'Afirmasi' => ['color' => '#60a5fa', 'bg' => 'rgba(96,165,250,.12)', 'border' => 'rgba(96,165,250,.3)'],
     ];
 
     $jalurDesc = [
-        'Prestasi' => 'Untuk siswa berprestasi akademik/non-akademik di tingkat kabupaten, provinsi, atau nasional.',
-        'Reguler' => 'Seleksi berbasis tes CBT dan ujian praktik. Terbuka untuk semua calon peserta didik.',
-        'Afirmasi' => 'Untuk keluarga pemegang KIP, PKH, atau KKS. Bukti kartu bantuan wajib dilampirkan.',
-        'Zonasi' => 'Diprioritaskan bagi yang berdomisili terdekat dengan madrasah berdasarkan Kartu Keluarga.',
-        'Mutasi' => 'Untuk calon peserta yang pindah domisili karena orang tua dipindahtugaskan secara resmi.',
+        'Prestasi' =>
+            'Untuk siswa berprestasi akademik (KSM, OSN, MYRES) atau non-akademik (MTQ, O2SN, FLS2N) minimal tingkat kabupaten/kota. Termasuk jalur Tahfidz minimal 3 juz.',
+        'Afirmasi' =>
+            'Untuk keluarga pemegang KIP, PKH, KKS, atau SKTM yang diterbitkan pemerintah daerah. Bukti kartu bantuan wajib dilampirkan.',
     ];
 
     $closestDeadline = null;
@@ -19055,7 +22445,6 @@ Route::middleware('web')->group(function () {
             --green-l: #10b981;
             --gold: #d4a843;
             --gold-l: #f0c96a;
-
             --bg: #0b0f0e;
             --surface: #111a17;
             --card: rgba(255, 255, 255, .04);
@@ -19083,7 +22472,6 @@ Route::middleware('web')->group(function () {
             line-height: 1.6;
         }
 
-        /* ─── nav brand mobile truncation fix ─── */
         @media (max-width: 400px) {
             .nav-name {
                 font-size: .78rem;
@@ -19094,7 +22482,6 @@ Route::middleware('web')->group(function () {
             }
         }
 
-        /* ─── scrollbar ─── */
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -19108,7 +22495,6 @@ Route::middleware('web')->group(function () {
             border-radius: 4px;
         }
 
-        /* ─── ambient ─── */
         .orb {
             position: fixed;
             border-radius: 50%;
@@ -19138,7 +22524,6 @@ Route::middleware('web')->group(function () {
             right: -150px;
         }
 
-        /* ─── layout helpers ─── */
         .wrap {
             max-width: 1180px;
             margin: 0 auto;
@@ -19163,7 +22548,6 @@ Route::middleware('web')->group(function () {
             margin: .5rem auto 0;
         }
 
-        /* ─── type ─── */
         .eyebrow {
             display: inline-flex;
             align-items: center;
@@ -19218,7 +22602,6 @@ Route::middleware('web')->group(function () {
             line-height: 1.75;
         }
 
-        /* ─── glass card ─── */
         .card {
             background: var(--card);
             border: 1px solid var(--border);
@@ -19237,7 +22620,6 @@ Route::middleware('web')->group(function () {
             box-shadow: 0 8px 32px rgba(5, 150, 105, .12);
         }
 
-        /* ─── buttons ─── */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -19281,7 +22663,6 @@ Route::middleware('web')->group(function () {
             border-radius: 12px;
         }
 
-        /* ─── badge ─── */
         .badge {
             display: inline-block;
             padding: .2rem .7rem;
@@ -19292,9 +22673,6 @@ Route::middleware('web')->group(function () {
             letter-spacing: .06em;
         }
 
-        /* ═══════════════════════════════════════
-           NAV
-        ═══════════════════════════════════════ */
         nav {
             position: fixed;
             top: 0;
@@ -19396,7 +22774,6 @@ Route::middleware('web')->group(function () {
             transform: scale(1.1);
         }
 
-        /* hamburger */
         #menuBtn {
             display: none;
             width: 34px;
@@ -19434,7 +22811,6 @@ Route::middleware('web')->group(function () {
             transform: translateY(-6px) rotate(-45deg);
         }
 
-        /* drawer */
         .drawer {
             position: fixed;
             top: 56px;
@@ -19461,11 +22837,6 @@ Route::middleware('web')->group(function () {
             border-color: var(--border);
         }
 
-        .drawer.open {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
         .drawer a {
             text-decoration: none;
             color: var(--muted);
@@ -19487,9 +22858,6 @@ Route::middleware('web')->group(function () {
             margin: .6rem 0;
         }
 
-        /* ═══════════════════════════════════════
-           HERO
-        ═══════════════════════════════════════ */
         #hero {
             min-height: 100vh;
             padding-top: 60px;
@@ -19552,7 +22920,6 @@ Route::middleware('web')->group(function () {
             margin-top: .15rem;
         }
 
-        /* hero card */
         .hero-card {
             padding: 1.75rem;
             border-radius: 22px;
@@ -19621,9 +22988,6 @@ Route::middleware('web')->group(function () {
             border-radius: 999px;
         }
 
-        /* ═══════════════════════════════════════
-           STATS ROW
-        ═══════════════════════════════════════ */
         .stats-row {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -19653,9 +23017,6 @@ Route::middleware('web')->group(function () {
             margin-top: .25rem;
         }
 
-        /* ═══════════════════════════════════════
-           JALUR
-        ═══════════════════════════════════════ */
         .jalur-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
@@ -19704,9 +23065,6 @@ Route::middleware('web')->group(function () {
             margin-bottom: .35rem;
         }
 
-        /* ═══════════════════════════════════════
-           TIMELINE + JADWAL
-        ═══════════════════════════════════════ */
         .two-col {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -19797,19 +23155,6 @@ Route::middleware('web')->group(function () {
             border-bottom: none;
         }
 
-        .sched-ico {
-            min-width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            background: rgba(255, 255, 255, .04);
-            border: 1px solid var(--border);
-            flex-shrink: 0;
-        }
-
         .sched-title {
             font-size: .82rem;
             font-weight: 700;
@@ -19825,9 +23170,6 @@ Route::middleware('web')->group(function () {
             margin-left: auto;
         }
 
-        /* ═══════════════════════════════════════
-           PROGRAM
-        ═══════════════════════════════════════ */
         .prog-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -19838,12 +23180,6 @@ Route::middleware('web')->group(function () {
             padding: 1.5rem;
             border-radius: var(--radius);
             text-align: center;
-        }
-
-        .prog-ico {
-            font-size: 2.2rem;
-            display: block;
-            margin-bottom: .6rem;
         }
 
         .prog-title {
@@ -19858,9 +23194,6 @@ Route::middleware('web')->group(function () {
             line-height: 1.55;
         }
 
-        /* ═══════════════════════════════════════
-           SYARAT
-        ═══════════════════════════════════════ */
         .req-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -19900,9 +23233,6 @@ Route::middleware('web')->group(function () {
             margin-bottom: .15rem;
         }
 
-        /* ═══════════════════════════════════════
-           INFORMASI
-        ═══════════════════════════════════════ */
         .info-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -19945,9 +23275,6 @@ Route::middleware('web')->group(function () {
             margin-top: .85rem;
         }
 
-        /* ═══════════════════════════════════════
-           FAQ
-        ═══════════════════════════════════════ */
         .faq-wrap {
             max-width: 760px;
             margin: 2.5rem auto 0;
@@ -20008,9 +23335,6 @@ Route::middleware('web')->group(function () {
             border-top: 1px solid var(--border);
         }
 
-        /* ═══════════════════════════════════════
-           CTA
-        ═══════════════════════════════════════ */
         .cta-section {
             text-align: center;
             padding: 6rem 1.5rem;
@@ -20037,9 +23361,6 @@ Route::middleware('web')->group(function () {
             flex-wrap: wrap;
         }
 
-        /* ═══════════════════════════════════════
-           FOOTER
-        ═══════════════════════════════════════ */
         footer {
             border-top: 1px solid var(--border);
             padding: 2.5rem 1.5rem;
@@ -20089,9 +23410,6 @@ Route::middleware('web')->group(function () {
             text-decoration: none;
         }
 
-        /* ═══════════════════════════════════════
-           RESPONSIVE
-        ═══════════════════════════════════════ */
         @media (max-width: 960px) {
             .hero-grid {
                 grid-template-columns: 1fr;
@@ -20220,7 +23538,6 @@ Route::middleware('web')->group(function () {
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
 
-    {{-- ═══ NAV ═══ --}}
     <nav>
         <a href="{{ route('landing') }}" class="nav-brand">
             <div class="nav-logo">🕌</div>
@@ -20244,40 +23561,39 @@ Route::middleware('web')->group(function () {
             <button id="menuBtn" aria-label="Menu">
                 <span></span><span></span><span></span>
             </button>
-            <a href="{{ url('/login') }}" class="btn btn-ghost" style="display:none;" id="loginBtnNav">Masuk</a>
-            <a href="{{ url('/register') }}" class="btn btn-primary" id="registerBtnNav">📝 Daftar</a>
+            <a href="{{ url('/dashboard/login') }}" class="btn btn-ghost" style="display:none;"
+                id="loginBtnNav">Masuk</a>
+            <a href="{{ url('/dashboard/register') }}" class="btn btn-primary" id="registerBtnNav">Daftar</a>
         </div>
     </nav>
 
     <nav class="drawer" id="drawer">
-        <a href="#jalur" class="d-link">🗂️ Jalur Pendaftaran</a>
-        <a href="#alur" class="d-link">🗺️ Alur Daftar</a>
-        <a href="#syarat" class="d-link">📄 Persyaratan</a>
-        <a href="#program" class="d-link">🎓 Program Unggulan</a>
-        <a href="#informasi" class="d-link">📰 Informasi</a>
-        <a href="#faq" class="d-link">❓ FAQ</a>
+        <a href="#jalur" class="d-link">Jalur Pendaftaran</a>
+        <a href="#alur" class="d-link">Alur Daftar</a>
+        <a href="#syarat" class="d-link">Persyaratan</a>
+        <a href="#program" class="d-link">Program Unggulan</a>
+        <a href="#informasi" class="d-link">Informasi</a>
+        <a href="#faq" class="d-link">FAQ</a>
         <hr>
-        <a href="{{ url('/login') }}" class="d-link">🔐 Masuk Akun</a>
-        <a href="{{ url('/register') }}" class="d-link" style="color:var(--green-l);font-weight:700;">📝 Daftar
+        <a href="{{ url('/dashboard/login') }}" class="d-link">Masuk Akun</a>
+        <a href="{{ url('/dashboard/register') }}" class="d-link" style="color:var(--green-l);font-weight:700;">Daftar
             Sekarang</a>
     </nav>
 
     <main>
 
-        {{-- ═══ HERO ═══ --}}
         <section id="hero">
             <div class="hero-grid wrap">
-                {{-- left --}}
                 <div>
-                    <div class="hero-eyebrow">✨ Penerimaan Peserta Didik Baru {{ $tahun?->nama ?? '' }}</div>
+                    <div class="hero-eyebrow">Penerimaan Peserta Didik Baru {{ $tahun?->nama ?? '' }}</div>
                     <h1>Raih Masa Depan<br><span class="grad">Bersama Kami</span></h1>
                     <p class="lead" style="margin-top:1rem;">
                         MTsN 1 Pandeglang — Madrasah unggulan dengan kurikulum terpadu antara ilmu umum dan ilmu agama.
                         Tempat terbaik untuk generasi penerus bangsa yang berakhlak mulia dan berprestasi.
                     </p>
                     <div class="hero-cta">
-                        <a href="{{ url('/register') }}" class="btn btn-primary btn-lg">📝 Daftar Sekarang</a>
-                        <a href="#alur" class="btn btn-ghost btn-lg">Lihat Alur →</a>
+                        <a href="{{ url('/dashboard/register') }}" class="btn btn-primary btn-lg">Daftar Sekarang</a>
+                        <a href="#alur" class="btn btn-ghost btn-lg">Lihat Alur</a>
                     </div>
                     <div class="hero-stats">
                         <div>
@@ -20301,14 +23617,13 @@ Route::middleware('web')->group(function () {
                     </div>
                 </div>
 
-                {{-- right card --}}
                 <div class="hero-visual" style="display:flex;align-items:center;justify-content:center;">
                     <div class="card hero-card">
                         <div class="eyebrow" style="justify-content:center;display:flex;margin-bottom:.75rem;">
                             @if ($closestDeadline)
-                                ⏳ Pendaftaran Ditutup Dalam
+                                Pendaftaran Ditutup Dalam
                             @else
-                                📋 Status PMBM
+                                Status PMBM
                             @endif
                         </div>
 
@@ -20342,10 +23657,9 @@ Route::middleware('web')->group(function () {
                                 <p style="font-size:.7rem;color:var(--muted);text-align:center;margin-bottom:.75rem;">
                                     Sisa Kuota Per Jalur</p>
                                 <div style="display:flex;flex-direction:column;gap:.6rem;">
-                                    @foreach ($jalurs as $j)
+                                    @foreach ($jalurs->whereIn('nama', ['Prestasi', 'Afirmasi']) as $j)
                                         @php
                                             $m = $jalurMeta[$j->nama] ?? [
-                                                'icon' => '📋',
                                                 'color' => '#10b981',
                                                 'bg' => 'rgba(16,185,129,.12)',
                                                 'border' => 'rgba(16,185,129,.3)',
@@ -20354,8 +23668,7 @@ Route::middleware('web')->group(function () {
                                             $pct = $j->kuantitas > 0 ? round(($j->terisi / $j->kuantitas) * 100) : 0;
                                         @endphp
                                         <div class="quota-row">
-                                            <span style="font-size:.78rem;">{{ $m['icon'] }}
-                                                {{ $j->nama }}</span>
+                                            <span style="font-size:.78rem;">{{ $j->nama }}</span>
                                             <div style="display:flex;align-items:center;gap:.5rem;">
                                                 <div class="progress">
                                                     <div class="progress-fill"
@@ -20376,7 +23689,6 @@ Route::middleware('web')->group(function () {
             </div>
         </section>
 
-        {{-- ═══ STATS ROW ═══ --}}
         <div style="padding:0 1.5rem;position:relative;z-index:1;max-width:1180px;margin:0 auto;">
             <div class="stats-row">
                 <div class="stat-box">
@@ -20402,21 +23714,21 @@ Route::middleware('web')->group(function () {
             </div>
         </div>
 
-        {{-- ═══ JALUR ═══ --}}
         <section id="jalur">
             <div class="wrap">
                 <div class="section-header">
-                    <div class="eyebrow">📋 Jalur Pendaftaran</div>
+                    <div class="eyebrow">Jalur Pendaftaran</div>
                     <h2>Pilih Jalur yang<br><span class="grad">Tepat Untukmu</span></h2>
                     <div class="divider"></div>
                 </div>
 
-                @if ($jalurs->isNotEmpty())
+                @php $jalursTampil = $jalurs->whereIn('nama', ['Prestasi', 'Afirmasi']); @endphp
+
+                @if ($jalursTampil->isNotEmpty())
                     <div class="jalur-grid">
-                        @foreach ($jalurs as $j)
+                        @foreach ($jalursTampil as $j)
                             @php
                                 $m = $jalurMeta[$j->nama] ?? [
-                                    'icon' => '📋',
                                     'color' => '#10b981',
                                     'bg' => 'rgba(16,185,129,.12)',
                                     'border' => 'rgba(16,185,129,.3)',
@@ -20427,9 +23739,6 @@ Route::middleware('web')->group(function () {
                             @endphp
                             <div class="card card-hover jalur-card"
                                 style="background:linear-gradient(135deg,{{ $m['bg'] }},transparent);">
-                                <div class="jalur-icon"
-                                    style="background:{{ $m['bg'] }};border:1px solid {{ $m['border'] }};">
-                                    {{ $m['icon'] }}</div>
                                 <div class="badge"
                                     style="background:{{ $m['bg'] }};color:{{ $m['color'] }};border:1px solid {{ $m['border'] }};margin-bottom:.6rem;">
                                     {{ $j->kuantitas }} Kursi</div>
@@ -20450,21 +23759,18 @@ Route::middleware('web')->group(function () {
                         @endforeach
                     </div>
                 @else
-                    <div class="card" style="padding:3rem;text-align:center;color:var(--muted);">
-                        Informasi jalur pendaftaran belum tersedia. Pantau terus halaman ini.
-                    </div>
+                    <div class="card" style="padding:3rem;text-align:center;color:var(--muted);">Informasi jalur
+                        pendaftaran belum tersedia.</div>
                 @endif
             </div>
         </section>
 
-        {{-- ═══ ALUR + JADWAL ═══ --}}
         <section id="alur">
             <div class="wrap">
                 <div class="two-col">
-                    {{-- alur --}}
                     <div>
                         <div class="section-header">
-                            <div class="eyebrow">🗺️ Alur Pendaftaran</div>
+                            <div class="eyebrow">Alur Pendaftaran</div>
                             <h2>Cara<br><span class="grad">Mendaftar</span></h2>
                             <div class="divider"></div>
                         </div>
@@ -20480,10 +23786,9 @@ Route::middleware('web')->group(function () {
                         </div>
                     </div>
 
-                    {{-- jadwal --}}
                     <div>
                         <div class="section-header">
-                            <div class="eyebrow">📅 Jadwal PMBM</div>
+                            <div class="eyebrow">Jadwal PMBM</div>
                             <h2>Timeline<br><span class="grad">Kegiatan</span></h2>
                             <div class="divider"></div>
                         </div>
@@ -20508,7 +23813,6 @@ Route::middleware('web')->group(function () {
                                         }
                                     @endphp
                                     <div class="sched-item">
-                                        <div class="sched-ico">{{ $j['icon'] }}</div>
                                         <div>
                                             <div class="sched-title">{{ $j['label'] }}</div>
                                             <div class="sched-date">{{ $m->translatedFormat('d M') }} –
@@ -20529,21 +23833,20 @@ Route::middleware('web')->group(function () {
             </div>
         </section>
 
-        {{-- ═══ PERSYARATAN ═══ --}}
         <section id="syarat">
             <div class="wrap">
                 <div class="two-col">
-                    {{-- dokumen --}}
                     <div>
                         <div class="section-header">
-                            <div class="eyebrow">📄 Dokumen</div>
+                            <div class="eyebrow">Dokumen</div>
                             <h2>Berkas yang<br><span class="grad">Diperlukan</span></h2>
                             <div class="divider"></div>
                             <p class="lead" style="margin-top:.75rem;">Siapkan dokumen berikut sebelum memulai
-                                pendaftaran. Format JPG/PNG/PDF, maks 1 MB, min 10 KB.</p>
+                                pendaftaran. Semua berkas fisik dimasukkan ke map snelhecter dan diantar langsung ke
+                                sekretariat PMBM.</p>
                         </div>
                         <div class="req-grid">
-                            @foreach ([['Kartu Keluarga', 'Scan/foto KK asli yang masih berlaku.'], ['Akta Kelahiran', 'Scan/foto akta kelahiran yang jelas.'], ['Pas Foto Formal', 'Berlatar merah, berpakaian formal.'], ['Screenshot NISN', 'Dari nisn.data.kemdikbud.go.id.'], ['SKBB & SKAB', 'Surat keterangan dari kepala sekolah asal.'], ['KIP / PKH / KKS', 'Jika berlaku — kartu bantuan sosial.']] as $i => [$dok, $ket])
+                            @foreach ([['Kartu Keluarga', 'Wajib berbarcode dan masih berlaku.'], ['Akta Kelahiran', 'Scan/foto akta kelahiran yang jelas.'], ['Pas Foto Formal', 'Berlatar merah, berpakaian formal.'], ['Surat Keterangan Aktif', 'Surat aktif sebagai murid kelas VI dari sekolah asal.'], ['Sertifikat Prestasi', 'Sertifikat asli kejuaraan (Jalur Prestasi).'], ['KIP / PKH / KKS / SKTM', 'Fotokopi kartu dilegalisir (Jalur Afirmasi). SKTM wajib lampirkan rekening listrik 3 bulan terakhir dan foto rumah.']] as $i => [$dok, $ket])
                                 <div class="card req-item">
                                     <div class="req-num">{{ $i + 1 }}</div>
                                     <div class="req-text"><strong>{{ $dok }}</strong>{{ $ket }}
@@ -20553,16 +23856,15 @@ Route::middleware('web')->group(function () {
                         </div>
                     </div>
 
-                    {{-- ketentuan --}}
                     <div>
                         <div class="section-header">
-                            <div class="eyebrow">✅ Ketentuan</div>
+                            <div class="eyebrow">Ketentuan</div>
                             <h2>Ketentuan<br><span class="grad">Umum</span></h2>
                             <div class="divider"></div>
                         </div>
                         <div class="card" style="padding:1.75rem;">
                             <ul style="list-style:none;display:flex;flex-direction:column;gap:.9rem;">
-                                @foreach (['Calon peserta didik telah <strong>lulus SD/MI</strong> atau sederajat.', 'Berusia <strong>maksimal 15 tahun</strong> per 1 Juli tahun berjalan.', 'Memiliki <strong>NISN yang valid</strong> sesuai data Kemendikbud.', 'Pendaftaran dilakukan <strong>sepenuhnya online</strong> melalui sistem ini.', 'Setiap pendaftar hanya dapat <strong>memilih satu jalur</strong>.', 'Berkas asli diminta saat <strong>verifikasi dan daftar ulang</strong>.'] as $ket)
+                                @foreach (['Calon peserta didik telah <strong>lulus SD/MI</strong> atau sederajat.', 'Berusia <strong>maksimal 15 tahun</strong> per 1 Juli 2026.', 'Memiliki <strong>Kartu Keluarga berbarcode</strong> yang masih berlaku.', 'Pendaftaran dilakukan <strong>online</strong> melalui website mtsn1pandeglang.sch.id.', 'Setiap pendaftar hanya dapat <strong>memilih satu jalur</strong>.', 'Mengisi formulir online <strong>dan</strong> menyerahkan berkas fisik ke sekretariat.', 'Jam kerja panitia <strong>08.00–14.00 WIB</strong>, istirahat 11.30–13.00 WIB.', 'Peserta tes hadir paling lambat <strong>pukul 07.00 WIB</strong> pada hari tes.'] as $ket)
                                     <li
                                         style="display:flex;gap:.65rem;font-size:.85rem;line-height:1.65;align-items:flex-start;">
                                         <span
@@ -20577,18 +23879,16 @@ Route::middleware('web')->group(function () {
             </div>
         </section>
 
-        {{-- ═══ PROGRAM ═══ --}}
         <section id="program">
             <div class="wrap">
                 <div class="section-header center">
-                    <div class="eyebrow">🎓 Unggulan</div>
+                    <div class="eyebrow">Unggulan</div>
                     <h2>Program & <span class="grad">Ekstrakurikuler</span></h2>
                     <div class="divider"></div>
                 </div>
                 <div class="prog-grid">
-                    @foreach ([['📖', 'Tahfidz Al-Qur\'an', 'Target minimal 3 juz selama 3 tahun belajar.'], ['🔬', 'Olimpiade Sains', 'Persiapan OSN mulai dari tingkat kabupaten hingga nasional.'], ['💻', 'Teknologi & IT', 'Literasi digital, coding dasar, dan robotika.'], ['⚽', 'Olahraga Prestasi', 'Sepak bola, bulu tangkis, karate, dan atletik.'], ['🎭', 'Seni & Budaya', 'Paskibra, drumband, hadroh, dan seni rupa.'], ['🌍', 'Bahasa Asing', 'English Club dan Arabic Club untuk era global.']] as [$ico, $judul, $desc])
+                    @foreach ([['Tahfidz Al-Qur\'an', 'Target minimal 3 juz selama 3 tahun belajar.'], ['Olimpiade Sains', 'Persiapan OSN mulai dari tingkat kabupaten hingga nasional.'], ['Teknologi & IT', 'Literasi digital, coding dasar, dan robotika.'], ['Olahraga Prestasi', 'Sepak bola, bulu tangkis, karate, dan atletik.'], ['Seni & Budaya', 'Paskibra, drumband, hadroh, dan seni rupa.'], ['Bahasa Asing', 'English Club dan Arabic Club untuk era global.']] as [$judul, $desc])
                         <div class="card card-hover prog-card">
-                            <span class="prog-ico">{{ $ico }}</span>
                             <div class="prog-title">{{ $judul }}</div>
                             <p class="prog-desc">{{ $desc }}</p>
                         </div>
@@ -20597,28 +23897,27 @@ Route::middleware('web')->group(function () {
             </div>
         </section>
 
-        {{-- ═══ INFORMASI ═══ --}}
         <section id="informasi">
             <div class="wrap">
                 <div
                     style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;margin-bottom:2rem;">
                     <div>
-                        <div class="eyebrow">📰 Informasi</div>
+                        <div class="eyebrow">Informasi</div>
                         <h2>Berita & <span class="grad">Pengumuman</span></h2>
                         <div class="divider"></div>
                     </div>
-                    <a href="{{ url('/informasi') }}" class="btn btn-ghost">Lihat Semua →</a>
+                    <a href="{{ url('/informasi') }}" class="btn btn-ghost">Lihat Semua</a>
                 </div>
                 @if ($informasis->isNotEmpty())
                     <div class="info-grid">
                         @foreach ($informasis as $info)
                             <div class="card card-hover info-card">
-                                <div class="info-tag">
-                                    {{ $info->status === 'Publish' ? '📢 Pengumuman' : '📋 Informasi' }}</div>
+                                <div class="info-tag">{{ $info->status === 'Publish' ? 'Pengumuman' : 'Informasi' }}
+                                </div>
                                 <div class="info-title">{{ $info->judul }}</div>
                                 <p class="info-excerpt">
                                     {{ \Illuminate\Support\Str::limit(strip_tags($info->isi), 110) }}</p>
-                                <div class="info-date">📅
+                                <div class="info-date">
                                     {{ ($info->tanggal ?? $info->updated_at)->translatedFormat('d F Y') }}</div>
                             </div>
                         @endforeach
@@ -20630,23 +23929,27 @@ Route::middleware('web')->group(function () {
             </div>
         </section>
 
-        {{-- ═══ FAQ ═══ --}}
         <section id="faq">
             <div class="wrap">
                 <div class="section-header center">
-                    <div class="eyebrow">❓ FAQ</div>
+                    <div class="eyebrow">FAQ</div>
                     <h2>Pertanyaan yang<br><span class="grad">Sering Diajukan</span></h2>
                     <div class="divider"></div>
                 </div>
                 <div class="faq-wrap">
                     @foreach ([
-        ['Apakah pendaftaran bisa dilakukan secara offline?', 'Tidak. Seluruh proses pendaftaran dilakukan secara online melalui sistem PMBM ini. Panitia tidak melayani pendaftaran manual.'],
-        ['Berapa jalur yang bisa dipilih oleh satu calon peserta didik?', 'Setiap calon peserta didik hanya boleh memilih satu jalur pendaftaran sesuai kondisi dan dokumen yang dimiliki.'],
-        ['Apa yang terjadi jika dokumen yang diunggah tidak memenuhi syarat?', 'Panitia akan mengirim notifikasi melalui WhatsApp. Pendaftar diberikan kesempatan mengunggah ulang sebelum batas waktu verifikasi.'],
-        ['Apakah nilai rapor memengaruhi seleksi jalur Reguler?', 'Tidak. Jalur Reguler menggunakan hasil tes CBT dan ujian praktik ibadah sebagai dasar seleksi, bukan nilai rapor.'],
+        ['Apakah pendaftaran bisa dilakukan secara offline?', 'Tidak. Pendaftaran dilakukan secara online melalui website mtsn1pandeglang.sch.id. Namun berkas fisik tetap harus diantar langsung ke sekretariat PMBM pada tanggal 6–8 April 2026.'],
+        ['Apa saja jalur pendaftaran yang tersedia?', 'PMBM MTsN 1 Pandeglang Tahun Pelajaran 2026/2027 membuka dua jalur: Jalur Prestasi (akademik, non-akademik, dan tahfidz) dan Jalur Afirmasi (KIP, PKH, KKS, atau SKTM).'],
+        ['Apa syarat jalur Prestasi bidang Tahfidz?', 'Calon peserta wajib memiliki hafalan minimal 3 juz, dibuktikan dengan sertifikat, dan mengikuti tes kemampuan hafalan pada 13 April 2026.'],
+        ['Prestasi apa saja yang diakui untuk Jalur Prestasi?', 'Prestasi akademik: KSM/OMI, MYRES, OSN, OSP, OSK minimal juara 1–3 tingkat kabupaten/kota. Prestasi non-akademik: MTQ, MHQ, O2SN, FLS2N, dan kompetisi yang diselenggarakan Kemenag, Kemendikdasmen, atau Pemda. Untuk olahraga beregu, hanya diakui sertifikat top score atau pemain terbaik.'],
+        ['Apa yang diperlukan untuk Jalur Afirmasi menggunakan SKTM?', 'Selain SKTM yang dilegalisir, wajib melampirkan print out/fotokopi rekening listrik 3 bulan terakhir dan foto tampak depan, dalam, serta belakang rumah.'],
+        ['Warna map apa yang digunakan untuk menyerahkan berkas?', 'Jalur Prestasi menggunakan map snelhecter warna merah, sedangkan Jalur Afirmasi menggunakan map snelhecter warna kuning. Masing-masing diberi label identitas.'],
+        ['Kapan dan di mana tes dilaksanakan?', 'Tes kemampuan dan tes BTQ dilaksanakan pada 13 April 2026 di sekolah. Seluruh peserta diharuskan hadir pukul 07.00 WIB.'],
+        ['Apa yang terjadi jika tidak lolos seleksi Jalur Prestasi/Afirmasi?', 'Peserta yang tidak lolos dapat mendaftar kembali melalui jalur Reguler (PMBM Bersama). Berkas dapat diambil kembali ke sekretariat sehari setelah pengumuman hasil seleksi.'],
+        ['Kapan pengumuman hasil seleksi?', 'Pengumuman hasil seleksi Jalur Prestasi dan Afirmasi diumumkan pada 14 April 2026 melalui website mtsn1pandeglang.sch.id.'],
+        ['Kapan lapor diri dilakukan?', 'Lapor diri dan pemberkasan dilakukan pada 15–16 April 2026 di sekolah. Peserta yang tidak lapor diri sesuai waktu dinyatakan mengundurkan diri.'],
+        ['Apa penyebab pendaftar dinyatakan gugur?', 'Pendaftar gugur jika: mengisi formulir online tapi tidak menyerahkan berkas, menyerahkan berkas tapi tidak mengisi formulir online, atau dokumen yang diserahkan tidak sesuai dengan yang diunggah.'],
         ['Apakah ada biaya pendaftaran?', 'Tidak ada. Seluruh proses PMBM MTsN 1 Pandeglang tidak dipungut biaya apapun.'],
-        ['Kapan pengumuman hasil seleksi disampaikan?', 'Pengumuman disampaikan sesuai jadwal yang tertera di Timeline Kegiatan. Notifikasi otomatis juga dikirim ke WhatsApp pendaftar.'],
-        ['Apa yang harus dibawa saat daftar ulang?', 'Peserta wajib membawa seluruh dokumen asli: KK, akta kelahiran, pas foto terbaru, dan surat keterangan dari sekolah asal.'],
     ] as [$q, $a])
                         <div class="card faq-item">
                             <button class="faq-btn" onclick="toggleFaq(this)">
@@ -20662,13 +23965,11 @@ Route::middleware('web')->group(function () {
             </div>
         </section>
 
-        {{-- ═══ CTA ═══ --}}
         <section class="cta-section" style="position:relative;z-index:1;">
             <div
                 style="position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(5,150,105,.1) 0%,transparent 70%);pointer-events:none;">
             </div>
             <div class="cta-inner" style="position:relative;">
-                <div style="font-size:3rem;margin-bottom:.75rem;">🎓</div>
                 <h2>Bergabunglah Bersama<br><span class="grad">Generasi Terbaik</span></h2>
                 <p class="lead">
                     @if ($tahun && $tahun->kuantitas)
@@ -20677,18 +23978,16 @@ Route::middleware('web')->group(function () {
                     Daftarkan diri sekarang dan wujudkan masa depan lebih cerah.
                 </p>
                 <div class="cta-btns">
-                    <a href="{{ url('/register') }}" class="btn btn-primary btn-lg">📝 Daftar Sekarang</a>
-                    <a href="{{ url('/login') }}" class="btn btn-ghost btn-lg">🔐 Masuk Akun</a>
+                    <a href="{{ url('/dashboard/register') }}" class="btn btn-primary btn-lg">Daftar Sekarang</a>
+                    <a href="{{ url('/dashboard/login') }}" class="btn btn-ghost btn-lg">Masuk Akun</a>
                 </div>
             </div>
         </section>
 
     </main>
 
-    {{-- ═══ FOOTER ═══ --}}
     <footer>
         <div class="wrap">
-            <div style="font-size:2rem;margin-bottom:.5rem;">🕌</div>
             <div class="footer-logo">MTs Negeri 1 Pandeglang</div>
             <div class="footer-sub">Kementerian Agama Kabupaten Pandeglang · PMBM {{ $tahun?->nama ?? '' }}</div>
             <div class="footer-sub" style="margin-top:.25rem;">Jl. Raya Labuan, Kabupaten Pandeglang, Banten 42213
@@ -20700,7 +23999,7 @@ Route::middleware('web')->group(function () {
                 <a href="#program">Program</a>
                 <a href="#informasi">Informasi</a>
                 <a href="#faq">FAQ</a>
-                <a href="https://mtsn1pandeglang.sch.id" target="_blank" rel="noopener">Website Resmi ↗</a>
+                <a href="https://mtsn1pandeglang.sch.id" target="_blank" rel="noopener">Website Resmi</a>
             </div>
             <div class="footer-copy">
                 &copy; 2022–{{ date('Y') }} MTs Negeri 1 Pandeglang.
@@ -20711,7 +24010,6 @@ Route::middleware('web')->group(function () {
     </footer>
 
     <script>
-        // ── theme ──
         const html = document.documentElement;
         const themeBtn = document.getElementById('themeBtn');
         const saved = localStorage.getItem('theme');
@@ -20728,7 +24026,6 @@ Route::middleware('web')->group(function () {
             localStorage.setItem('theme', light ? 'light' : 'dark');
         });
 
-        // ── hamburger ──
         const menuBtn = document.getElementById('menuBtn');
         const drawer = document.getElementById('drawer');
         menuBtn.addEventListener('click', () => {
@@ -20746,7 +24043,6 @@ Route::middleware('web')->group(function () {
             }
         });
 
-        // ── countdown ──
         const cdEl = document.getElementById('countdown');
         if (cdEl) {
             const dead = new Date(cdEl.dataset.deadline);
@@ -20768,19 +24064,8 @@ Route::middleware('web')->group(function () {
             setInterval(tick, 1000);
         }
 
-        // ── active nav ──
         const sections = document.querySelectorAll('section[id]');
         const navAs = document.querySelectorAll('.nav-links a');
-        new IntersectionObserver(entries => {
-            entries.forEach(e => {
-                if (!e.isIntersecting) return;
-                navAs.forEach(a => a.classList.remove('active'));
-                const a = document.querySelector(`.nav-links a[href="#${e.target.id}"]`);
-                if (a) a.classList.add('active');
-            });
-        }, {
-            threshold: 0.35
-        }).observe;
         sections.forEach(s => new IntersectionObserver(entries => {
             entries.forEach(e => {
                 if (!e.isIntersecting) return;
@@ -20792,7 +24077,6 @@ Route::middleware('web')->group(function () {
             threshold: 0.35
         }).observe(s));
 
-        // ── faq ──
         function toggleFaq(btn) {
             const body = btn.nextElementSibling;
             const chevron = btn.querySelector('.faq-chevron');
@@ -20807,6 +24091,849 @@ Route::middleware('web')->group(function () {
     </script>
 </body>
 
+</html>
+
+```
+
+---
+
+### ./resources/views/landing.blade.php.bkp2
+
+```
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="PMBM MTsN 1 Pandeglang TP 2026/2027 — Pendaftaran peserta didik baru Jalur Prestasi, Afirmasi, dan Reguler.">
+<title>PMBM MTsN 1 Pandeglang — TP 2026/2027</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:16px}
+:root{
+  --green:#059669;--green-l:#10b981;--gold:#d4a843;--gold-l:#f0c96a;
+  --red:#dc2626;--red-l:#ef4444;--blue:#1d4ed8;--blue-l:#60a5fa;
+  --bg:#0b0f0e;--surface:#111a17;--card:rgba(255,255,255,.04);
+  --border:rgba(255,255,255,.08);--text:#e8f1ee;--muted:#7a9e92;--radius:16px;
+}
+html.light{
+  --bg:#f4f7f5;--surface:#ffffff;--card:rgba(255,255,255,.9);
+  --border:rgba(0,0,0,.08);--text:#0d1f1a;--muted:#5a7a6e;
+}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;line-height:1.6;transition:background .3s,color .3s}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-thumb{background:var(--green);border-radius:4px}
+.orb{position:fixed;border-radius:50%;filter:blur(110px);opacity:.1;pointer-events:none;z-index:0}
+html.light .orb{opacity:.05}
+.orb-1{width:600px;height:600px;background:var(--green);top:-200px;left:-200px}
+.orb-2{width:400px;height:400px;background:var(--gold);bottom:0;right:-150px}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;height:60px;padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;background:rgba(11,15,14,.88);border-bottom:1px solid var(--border);backdrop-filter:blur(18px) saturate(160%);transition:background .3s}
+html.light nav{background:rgba(244,247,245,.94)}
+.nav-brand{display:flex;align-items:center;gap:.7rem;text-decoration:none;color:inherit;font-weight:700;flex-shrink:0}
+.nav-logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--green),var(--gold));display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.nav-name{font-size:.88rem;line-height:1.25}
+.nav-sub{font-size:.68rem;font-weight:400;color:var(--muted)}
+.nav-links{display:flex;gap:.1rem;list-style:none}
+.nav-links a{text-decoration:none;color:var(--muted);font-size:.82rem;padding:.35rem .65rem;border-radius:8px;transition:all .2s}
+.nav-links a:hover,.nav-links a.active{color:var(--green-l);background:rgba(16,185,129,.08)}
+.nav-right{display:flex;align-items:center;gap:.6rem;flex-shrink:0}
+#themeBtn,#menuBtn{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--card);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;color:inherit;transition:all .2s}
+#themeBtn:hover{transform:scale(1.1)}
+#menuBtn{flex-direction:column;gap:4px;display:none}
+#menuBtn span{display:block;width:16px;height:2px;background:currentColor;border-radius:2px;transition:all .3s}
+#menuBtn.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+#menuBtn.open span:nth-child(2){opacity:0;transform:scaleX(0)}
+#menuBtn.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+.drawer{position:fixed;top:60px;left:0;right:0;z-index:190;flex-direction:column;padding:0 1.25rem;background:#0b0f0e;border-bottom:1px solid transparent;max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s,border-color .3s;display:flex}
+html.light .drawer{background:#f4f7f5}
+.drawer.open{max-height:520px;padding:1rem 1.25rem 1.5rem;border-color:var(--border)}
+.drawer a{text-decoration:none;color:var(--muted);font-size:.9rem;font-weight:500;padding:.6rem .9rem;border-radius:10px;transition:all .2s}
+.drawer a:hover{color:var(--green-l);background:rgba(16,185,129,.08)}
+.drawer hr{border:none;border-top:1px solid var(--border);margin:.6rem 0}
+
+/* UTILS */
+.wrap{max-width:1180px;margin:0 auto;padding:0 1.5rem}
+section{padding:5rem 1.5rem;position:relative;z-index:1}
+.eyebrow{display:inline-flex;align-items:center;gap:.4rem;padding:.28rem .85rem;border-radius:999px;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:rgba(16,185,129,.1);color:var(--green-l);border:1px solid rgba(16,185,129,.2);margin-bottom:.75rem}
+.divider{width:40px;height:3px;background:linear-gradient(90deg,var(--green),var(--gold));border-radius:999px;margin:.5rem 0 0}
+h1,h2{font-weight:800;letter-spacing:-.03em;line-height:1.1}
+h1{font-size:clamp(2.2rem,5vw,3.6rem)}
+h2{font-size:clamp(1.7rem,3.5vw,2.5rem);margin-bottom:.75rem}
+.grad{background:linear-gradient(135deg,var(--green-l),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.lead{font-size:1.05rem;color:var(--muted);max-width:540px;line-height:1.75}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);backdrop-filter:blur(10px);transition:border-color .25s,transform .25s,box-shadow .25s}
+html.light .card{box-shadow:0 2px 16px rgba(0,0,0,.06)}
+.card-hover:hover{border-color:rgba(16,185,129,.3);transform:translateY(-3px);box-shadow:0 8px 32px rgba(5,150,105,.12)}
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1.4rem;border-radius:10px;font-size:.875rem;font-weight:600;cursor:pointer;border:none;text-decoration:none;transition:all .2s}
+.btn-primary{background:linear-gradient(135deg,var(--green),#047857);color:#fff;box-shadow:0 0 20px rgba(5,150,105,.25)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 28px rgba(5,150,105,.4)}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.btn-ghost:hover{color:var(--green-l);border-color:rgba(16,185,129,.4);background:rgba(16,185,129,.06)}
+.btn-lg{padding:.8rem 2rem;font-size:1rem;border-radius:12px}
+.badge{display:inline-block;padding:.2rem .7rem;border-radius:999px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.section-header{margin-bottom:3rem}
+.section-header.center{text-align:center}
+.section-header.center .divider{margin:.5rem auto 0}
+
+/* HERO */
+#hero{min-height:100vh;padding-top:60px;display:flex;align-items:center}
+.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;max-width:1180px;margin:0 auto;width:100%}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:.45rem;padding:.35rem 1rem;border-radius:999px;font-size:.75rem;font-weight:600;background:rgba(212,168,67,.1);border:1px solid rgba(212,168,67,.2);color:var(--gold-l);margin-bottom:1.25rem}
+.hero-cta{display:flex;gap:.85rem;flex-wrap:wrap;margin-top:2rem}
+.hero-stats{display:flex;gap:2rem;flex-wrap:wrap;margin-top:2.5rem;padding-top:2rem;border-top:1px solid var(--border)}
+.stat-val{font-size:1.6rem;font-weight:800;background:linear-gradient(135deg,var(--green-l),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-lbl{font-size:.74rem;color:var(--muted);margin-top:.15rem}
+.hero-card{padding:1.75rem;border-radius:22px;max-width:400px;width:100%}
+.cd-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.65rem;margin-top:1.25rem}
+.cd-box{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:12px;padding:.9rem .5rem;text-align:center}
+html.light .cd-box{background:rgba(0,0,0,.04)}
+.cd-n{font-size:1.75rem;font-weight:900;font-variant-numeric:tabular-nums;background:linear-gradient(135deg,var(--green-l),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.cd-l{font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-top:.15rem}
+
+/* STATS BAR */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin:0 auto;max-width:1180px}
+.stat-box{background:var(--surface);padding:2rem 1.5rem;text-align:center}
+.stat-box .val{font-size:2rem;font-weight:800}
+.stat-box .lbl{font-size:.78rem;color:var(--muted);margin-top:.25rem}
+
+/* JALUR PILIH */
+.jalur-picker{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-top:.5rem}
+.jalur-card{padding:1.75rem;border-radius:var(--radius);position:relative;overflow:hidden;display:flex;flex-direction:column;gap:.5rem}
+.jalur-icon{width:48px;height:48px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:.5rem}
+.jalur-tag{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.15rem}
+.jalur-name{font-size:1.05rem;font-weight:800;margin-bottom:.3rem}
+.jalur-desc{font-size:.8rem;color:var(--muted);line-height:1.65;flex:1}
+.jalur-meta{display:flex;align-items:center;justify-content:space-between;margin-top:1rem;padding-top:.85rem;border-top:1px solid var(--border);font-size:.75rem;color:var(--muted)}
+.progress-bar{width:72px;height:5px;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden}
+html.light .progress-bar{background:rgba(0,0,0,.08)}
+.progress-fill{height:100%;border-radius:999px}
+
+/* INFO BOX */
+.infobox{display:flex;gap:.75rem;padding:1rem 1.25rem;border-radius:12px;font-size:.82rem;line-height:1.6;align-items:flex-start;margin-top:1.5rem}
+.infobox-icon{font-size:1.1rem;flex-shrink:0;margin-top:.1rem}
+
+/* TIMELINE / JADWAL */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start}
+.timeline{padding-left:1.75rem;position:relative}
+.timeline::before{content:'';position:absolute;left:.35rem;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,var(--green),var(--gold),transparent)}
+.tl-item{position:relative;padding:1rem 0 1rem 1.25rem;border-bottom:1px solid var(--border)}
+.tl-item:last-child{border-bottom:none}
+.tl-dot{position:absolute;left:-1.75rem;top:1.2rem;width:12px;height:12px;border-radius:50%;background:var(--green);border:3px solid var(--bg);transition:background .2s}
+html.light .tl-dot{border-color:var(--bg)}
+.tl-item:hover .tl-dot{background:var(--gold)}
+.tl-step{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--green-l);margin-bottom:.25rem}
+.tl-title{font-size:.9rem;font-weight:700;margin-bottom:.2rem}
+.tl-desc{font-size:.78rem;color:var(--muted);line-height:1.6}
+
+/* JADWAL TABLE */
+.jadwal-section{display:flex;flex-direction:column;gap:1.5rem}
+.jadwal-group-title{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:.4rem .9rem;border-radius:999px;display:inline-block;margin-bottom:.75rem}
+.sched-list{display:flex;flex-direction:column}
+.sched-item{display:flex;align-items:center;gap:.85rem;padding:.85rem 0;border-bottom:1px solid var(--border)}
+.sched-item:last-child{border-bottom:none}
+.sched-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.sched-title{font-size:.82rem;font-weight:700}
+.sched-date{font-size:.72rem;color:var(--muted);margin-top:.1rem}
+.sched-badge{margin-left:auto;white-space:nowrap}
+
+/* PERSYARATAN */
+.req-tabs{display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.req-tab{padding:.4rem 1rem;border-radius:999px;font-size:.78rem;font-weight:700;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .2s}
+.req-tab.active{color:#fff;border-color:transparent}
+.req-panel{display:none}
+.req-panel.active{display:block}
+.req-list{display:flex;flex-direction:column;gap:.65rem;margin-top:1rem}
+.req-item{display:flex;align-items:flex-start;gap:.75rem;padding:1rem;border-radius:12px;background:var(--card);border:1px solid var(--border)}
+.req-num{min-width:26px;height:26px;border-radius:7px;flex-shrink:0;background:linear-gradient(135deg,var(--green),#047857);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:#fff}
+.req-text{font-size:.82rem;line-height:1.6}
+.req-text strong{display:block;margin-bottom:.15rem}
+.req-note{font-size:.72rem;color:var(--muted);margin-top:.15rem;font-style:italic}
+
+/* MAP VISUAL */
+.map-boxes{display:flex;gap:1rem;margin-top:1.25rem;flex-wrap:wrap}
+.map-box{flex:1;min-width:140px;padding:1.1rem;border-radius:12px;text-align:center;border:2px solid transparent}
+.map-box-icon{font-size:2rem;margin-bottom:.5rem}
+.map-box-label{font-size:.78rem;font-weight:700;margin-bottom:.2rem}
+.map-box-sub{font-size:.7rem;color:var(--muted)}
+
+/* GUGUR */
+.gugur-list{display:flex;flex-direction:column;gap:.6rem;margin-top:1rem}
+.gugur-item{display:flex;align-items:flex-start;gap:.75rem;padding:.9rem 1rem;border-radius:12px;border:1px solid rgba(220,38,38,.2);background:rgba(220,38,38,.05);font-size:.83rem;line-height:1.6}
+.gugur-icon{color:#ef4444;font-size:1rem;flex-shrink:0;margin-top:.05rem}
+
+/* SELEKSI */
+.seleksi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.seleksi-card{padding:1.5rem;border-radius:var(--radius)}
+.seleksi-name{font-size:.88rem;font-weight:800;margin-bottom:.6rem}
+.seleksi-body{font-size:.78rem;color:var(--muted);line-height:1.7}
+.formula-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.5rem;margin-top:1rem;text-align:center;font-size:.9rem;font-weight:700;letter-spacing:.02em}
+.formula-box span{color:var(--green-l)}
+
+/* PROG */
+.prog-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem}
+.prog-card{padding:1.5rem;border-radius:var(--radius);text-align:center}
+.prog-icon{font-size:1.8rem;margin-bottom:.6rem}
+.prog-title{font-size:.88rem;font-weight:700;margin-bottom:.35rem}
+.prog-desc{font-size:.76rem;color:var(--muted);line-height:1.55}
+
+/* FAQ */
+.faq-wrap{max-width:760px;margin:2.5rem auto 0}
+.faq-item{border-radius:12px;overflow:hidden;margin-bottom:.6rem}
+.faq-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.1rem 1.25rem;background:transparent;border:none;color:inherit;cursor:pointer;text-align:left;font-size:.88rem;font-weight:600;transition:color .2s}
+.faq-btn:hover{color:var(--green-l)}
+.faq-chevron{min-width:20px;height:20px;border-radius:50%;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);display:flex;align-items:center;justify-content:center;font-size:.65rem;color:var(--green-l);transition:transform .3s}
+.faq-body{max-height:0;overflow:hidden;transition:max-height .35s ease}
+.faq-body p{padding:0 1.25rem 1.1rem;font-size:.83rem;color:var(--muted);line-height:1.75;border-top:1px solid var(--border)}
+
+/* CTA */
+.cta-section{text-align:center;padding:6rem 1.5rem;position:relative;z-index:1}
+.cta-inner{max-width:600px;margin:0 auto;position:relative}
+.cta-inner h2{font-size:clamp(2rem,4.5vw,3rem);margin-bottom:1rem}
+.cta-inner .lead{margin:0 auto 2rem}
+.cta-btns{display:flex;gap:.85rem;justify-content:center;flex-wrap:wrap}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:2.5rem 1.5rem;text-align:center;position:relative;z-index:1}
+.footer-logo{font-size:.95rem;font-weight:800;margin-bottom:.3rem}
+.footer-sub{font-size:.78rem;color:var(--muted)}
+.footer-links{display:flex;justify-content:center;gap:1.25rem;flex-wrap:wrap;margin-top:1.5rem}
+.footer-links a{font-size:.78rem;color:var(--muted);text-decoration:none;transition:color .2s}
+.footer-links a:hover{color:var(--green-l)}
+.footer-copy{font-size:.73rem;color:var(--muted);margin-top:1.5rem}
+.footer-copy a{color:var(--green-l);text-decoration:none}
+
+/* RESPONSIVE */
+@media(max-width:960px){
+  .hero-grid,.two-col{grid-template-columns:1fr;gap:3rem}
+  .hero-visual,.jalur-picker{display:none}
+  .jalur-picker-mobile{display:flex!important}
+  .stats-row,.seleksi-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:768px){
+  section{padding:3.5rem 1.25rem}
+  nav{padding:0 1rem;height:56px}
+  #hero{padding-top:56px;padding-bottom:3rem;align-items:flex-start}
+  .nav-links,#loginBtnNav,#registerBtnNav{display:none!important}
+  #menuBtn{display:flex}
+  .jalur-picker{grid-template-columns:1fr}
+  .prog-grid{grid-template-columns:repeat(2,1fr)}
+  .req-tabs{gap:.4rem}
+}
+@media(max-width:480px){
+  h2{font-size:1.5rem}
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .seleksi-grid{grid-template-columns:1fr}
+  .cta-btns{flex-direction:column;align-items:stretch}
+  .cta-btns .btn{width:100%;justify-content:center}
+}
+@media(max-width:400px){.nav-name{font-size:.78rem}.nav-sub{display:none}}
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-brand">
+    <div class="nav-logo">🕌</div>
+    <div>
+      <div class="nav-name">MTsN 1 Pandeglang</div>
+      <div class="nav-sub">PMBM TP 2026/2027</div>
+    </div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#jalur">Jalur</a></li>
+    <li><a href="#jadwal">Jadwal</a></li>
+    <li><a href="#alur">Alur Daftar</a></li>
+    <li><a href="#syarat">Persyaratan</a></li>
+    <li><a href="#seleksi">Seleksi</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <div class="nav-right">
+    <button id="themeBtn" title="Ganti tema">☀️</button>
+    <button id="menuBtn" aria-label="Menu"><span></span><span></span><span></span></button>
+    <a href="https://daftar.mtsn1pandeglang.sch.id" class="btn btn-primary" id="registerBtnNav">Daftar</a>
+  </div>
+</nav>
+
+<nav class="drawer" id="drawer">
+  <a href="#jalur" class="d-link">Jalur Pendaftaran</a>
+  <a href="#jadwal" class="d-link">Jadwal Kegiatan</a>
+  <a href="#alur" class="d-link">Alur Mendaftar</a>
+  <a href="#syarat" class="d-link">Persyaratan</a>
+  <a href="#seleksi" class="d-link">Mekanisme Seleksi</a>
+  <a href="#gugur" class="d-link">Ketentuan Gugur</a>
+  <a href="#faq" class="d-link">FAQ</a>
+  <hr>
+  <a href="https://daftar.mtsn1pandeglang.sch.id" class="d-link" style="color:var(--green-l);font-weight:700;">Daftar Sekarang →</a>
+</nav>
+
+<main>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-grid wrap">
+    <div>
+      <div class="hero-eyebrow">📅 Penerimaan Peserta Didik Baru TP 2026/2027</div>
+      <h1>Bergabung &amp;<br><span class="grad">Berprestasi</span></h1>
+      <p class="lead" style="margin-top:1rem;">
+        MTsN 1 Pandeglang membuka pendaftaran peserta didik baru melalui <strong>3 jalur resmi</strong> — Prestasi, Afirmasi, dan Reguler. Pendaftaran online, gratis, dan transparan.
+      </p>
+      <div class="hero-cta">
+        <a href="https://daftar.mtsn1pandeglang.sch.id" class="btn btn-primary btn-lg">Daftar Prestasi / Afirmasi</a>
+        <a href="https://pmbm-kanwilbanten.com" class="btn btn-ghost btn-lg">Daftar Reguler →</a>
+      </div>
+      <div class="hero-stats">
+        <div><div class="stat-val">224</div><div class="stat-lbl">Kuota Reguler</div></div>
+        <div><div class="stat-val">A</div><div class="stat-lbl">Akreditasi</div></div>
+        <div><div class="stat-val">3</div><div class="stat-lbl">Jalur Masuk</div></div>
+        <div><div class="stat-val">Gratis</div><div class="stat-lbl">Biaya Daftar</div></div>
+      </div>
+    </div>
+    <div class="hero-visual" style="display:flex;align-items:center;justify-content:center;">
+      <div class="card hero-card">
+        <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--gold-l);text-align:center;margin-bottom:.5rem;">⏳ Pendaftaran Prestasi &amp; Afirmasi</div>
+        <div class="cd-grid" id="countdown" data-deadline="2026-04-08T16:00:00">
+          <div class="cd-box"><div class="cd-n" id="cd-d">--</div><div class="cd-l">Hari</div></div>
+          <div class="cd-box"><div class="cd-n" id="cd-h">--</div><div class="cd-l">Jam</div></div>
+          <div class="cd-box"><div class="cd-n" id="cd-m">--</div><div class="cd-l">Menit</div></div>
+          <div class="cd-box"><div class="cd-n" id="cd-s">--</div><div class="cd-l">Detik</div></div>
+        </div>
+        <div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.65rem;">
+          <div style="display:flex;align-items:center;justify-content:space-between;font-size:.78rem;">
+            <span>Jalur Prestasi</span>
+            <div style="display:flex;align-items:center;gap:.5rem;">
+              <div class="progress-bar" style="width:70px;"><div class="progress-fill" style="width:0%;background:#d4a843;"></div></div>
+              <span style="font-weight:700;color:#d4a843;font-size:.72rem;">— Kuota</span>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;font-size:.78rem;">
+            <span>Jalur Afirmasi</span>
+            <div style="display:flex;align-items:center;gap:.5rem;">
+              <div class="progress-bar" style="width:70px;"><div class="progress-fill" style="width:0%;background:#60a5fa;"></div></div>
+              <span style="font-weight:700;color:#60a5fa;font-size:.72rem;">— Kuota</span>
+            </div>
+          </div>
+          <div style="margin-top:.4rem;padding-top:.75rem;border-top:1px solid var(--border);font-size:.72rem;color:var(--muted);text-align:center;">Reguler: 224 kursi · Buka 18 April 2026</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS BAR -->
+<div style="padding:0 1.5rem;position:relative;z-index:1;max-width:1180px;margin:0 auto;">
+  <div class="stats-row">
+    <div class="stat-box"><div class="val grad">54</div><div class="lbl">Tahun Berdiri</div></div>
+    <div class="stat-box"><div class="val" style="background:linear-gradient(135deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">70+</div><div class="lbl">Tenaga Pendidik</div></div>
+    <div class="stat-box"><div class="val grad">A</div><div class="lbl">Akreditasi</div></div>
+    <div class="stat-box"><div class="val" style="background:linear-gradient(135deg,#fb923c,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">100+</div><div class="lbl">Prestasi Kejuaraan</div></div>
+  </div>
+</div>
+
+<!-- SECTION JALUR -->
+<section id="jalur">
+  <div class="wrap">
+    <div class="section-header center">
+      <div class="eyebrow">Jalur Pendaftaran</div>
+      <h2>3 Jalur, <span class="grad">1 Tujuan</span></h2>
+      <div class="divider"></div>
+      <p style="color:var(--muted);font-size:.9rem;margin-top:.85rem;max-width:520px;margin-left:auto;margin-right:auto;">Pilih jalur yang sesuai dengan profilmu. Tidak lolos Prestasi/Afirmasi? Kamu masih bisa daftar ke Jalur Reguler.</p>
+    </div>
+
+    <div class="jalur-picker" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;">
+      <!-- Prestasi -->
+      <div class="card card-hover jalur-card" style="background:linear-gradient(135deg,rgba(212,168,67,.1),transparent);">
+        <div class="badge" style="background:rgba(212,168,67,.15);color:#d4a843;border:1px solid rgba(212,168,67,.3);align-self:flex-start;">🏆 Jalur Prestasi</div>
+        <div class="jalur-name">Jalur Prestasi</div>
+        <p class="jalur-desc">Untuk siswa berprestasi di bidang Tahfidz (min. 3 juz), akademik (KSM, OSN, MYRES), atau non-akademik (MTQ, O2SN, FLS2N). Minimal juara tingkat Kabupaten/Kota.</p>
+        <div class="jalur-meta">
+          <span>Buka 6–8 April 2026</span>
+          <span style="color:#d4a843;font-weight:700;font-size:.72rem;">Map Merah 📁</span>
+        </div>
+        <a href="https://daftar.mtsn1pandeglang.sch.id" class="btn btn-ghost" style="margin-top:1rem;width:100%;justify-content:center;border-color:rgba(212,168,67,.4);color:#d4a843;">Daftar Jalur Ini →</a>
+      </div>
+      <!-- Afirmasi -->
+      <div class="card card-hover jalur-card" style="background:linear-gradient(135deg,rgba(96,165,250,.1),transparent);">
+        <div class="badge" style="background:rgba(96,165,250,.15);color:#60a5fa;border:1px solid rgba(96,165,250,.3);align-self:flex-start;">💙 Jalur Afirmasi</div>
+        <div class="jalur-name">Jalur Afirmasi</div>
+        <p class="jalur-desc">Untuk keluarga pemegang KIP, PKH, KKS, atau SKTM yang diterbitkan pemerintah daerah. Memberikan akses pendidikan yang berkeadilan.</p>
+        <div class="jalur-meta">
+          <span>Buka 6–8 April 2026</span>
+          <span style="color:#60a5fa;font-weight:700;font-size:.72rem;">Map Kuning 📁</span>
+        </div>
+        <a href="https://daftar.mtsn1pandeglang.sch.id" class="btn btn-ghost" style="margin-top:1rem;width:100%;justify-content:center;border-color:rgba(96,165,250,.4);color:#60a5fa;">Daftar Jalur Ini →</a>
+      </div>
+      <!-- Reguler -->
+      <div class="card card-hover jalur-card" style="background:linear-gradient(135deg,rgba(16,185,129,.08),transparent);">
+        <div class="badge" style="background:rgba(16,185,129,.12);color:#10b981;border:1px solid rgba(16,185,129,.25);align-self:flex-start;">📝 Jalur Reguler</div>
+        <div class="jalur-name">Jalur Reguler</div>
+        <p class="jalur-desc">Terbuka untuk semua lulusan MI/SD sederajat. Seleksi menggunakan CBT dan Tes BTQ. Kuota 224 kursi melalui sistem PMBM Bersama Kanwil Kemenag Banten.</p>
+        <div class="jalur-meta">
+          <span>Buka 18–27 April 2026</span>
+          <span style="color:#10b981;font-weight:700;font-size:.72rem;">pmbm-kanwilbanten.com</span>
+        </div>
+        <a href="https://pmbm-kanwilbanten.com" class="btn btn-ghost" style="margin-top:1rem;width:100%;justify-content:center;border-color:rgba(16,185,129,.4);color:#10b981;">Daftar Jalur Ini →</a>
+      </div>
+    </div>
+
+    <div class="infobox" style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.2);">
+      <span class="infobox-icon">💡</span>
+      <span>Tidak lolos Jalur Prestasi atau Afirmasi? Berkas dapat diambil kembali <strong>sehari setelah pengumuman (15 April 2026)</strong>. Kamu masih bisa mendaftar ke <strong>Jalur Reguler mulai 18 April 2026</strong> melalui pmbm-kanwilbanten.com.</span>
+    </div>
+  </div>
+</section>
+
+<!-- JADWAL -->
+<section id="jadwal">
+  <div class="wrap">
+    <div class="section-header center">
+      <div class="eyebrow">Timeline Kegiatan</div>
+      <h2>Jadwal <span class="grad">Lengkap PMBM</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div class="two-col">
+      <!-- Prestasi & Afirmasi -->
+      <div>
+        <div class="jadwal-group-title" style="background:rgba(212,168,67,.12);color:#d4a843;border:1px solid rgba(212,168,67,.3);">📁 Jalur Prestasi &amp; Afirmasi</div>
+        <div class="card" style="padding:1.5rem;">
+          <div class="sched-list" id="sched-pa"></div>
+          <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);font-size:.75rem;color:var(--muted);">
+            ⏰ Jam panitia: <strong>08.00–14.00 WIB</strong> | Istirahat: <strong>11.30–13.00 WIB</strong>
+          </div>
+        </div>
+      </div>
+      <!-- Reguler -->
+      <div>
+        <div class="jadwal-group-title" style="background:rgba(16,185,129,.1);color:#10b981;border:1px solid rgba(16,185,129,.25);">📝 Jalur Reguler (PMBM Bersama)</div>
+        <div class="card" style="padding:1.5rem;">
+          <div class="sched-list" id="sched-reg"></div>
+          <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);font-size:.75rem;color:var(--muted);">
+            🌐 Sistem: <a href="https://pmbm-kanwilbanten.com" style="color:var(--green-l);text-decoration:none;">pmbm-kanwilbanten.com</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ALUR DAFTAR -->
+<section id="alur">
+  <div class="wrap">
+    <div class="section-header center">
+      <div class="eyebrow">Panduan Daftar</div>
+      <h2>Cara <span class="grad">Mendaftar</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div class="two-col">
+      <div>
+        <div style="font-size:.78rem;font-weight:700;color:#d4a843;text-transform:uppercase;letter-spacing:.07em;margin-bottom:1rem;">Jalur Prestasi &amp; Afirmasi</div>
+        <div class="timeline">
+          <div class="tl-item"><div class="tl-dot"></div><div class="tl-step">Langkah 1</div><div class="tl-title">Isi Formulir Online</div><div class="tl-desc">Akses daftar.mtsn1pandeglang.sch.id dan isi formulir menggunakan NISN. Pilih jalur Prestasi atau Afirmasi.</div></div>
+          <div class="tl-item"><div class="tl-dot"></div><div class="tl-step">Langkah 2</div><div class="tl-title">Siapkan Berkas Fisik</div><div class="tl-desc">Masukkan semua dokumen ke map snelhecter sesuai warna jalur. Beri label identitas (nama, asal sekolah, jalur).</div></div>
+          <div class="tl-item"><div class="tl-dot"></div><div class="tl-step">Langkah 3</div><div class="tl-title">Serahkan Berkas ke Sekretariat</div><div class="tl-desc">Antar berkas fisik langsung ke Sekretariat PMBM MTsN 1 Pandeglang pada <strong>6–8 April 2026</strong> jam 08.00–14.00 WIB.</div></div>
+          <div class="tl-item"><div class="tl-dot"></div><div class="tl-step">Langkah 4</div><div class="tl-title">Ikuti Tes Seleksi</div><div class="tl-desc">Hadir di madrasah pada <strong>13 April 2026</strong> paling lambat pukul <strong>07.00 WIB</strong> untuk tes kemampuan dan BTQ.</div></div>
+          <div class="tl-item"><div class="tl-dot"></div><div class="tl-step">Langkah 5</div><div class="tl-title">Cek Pengumuman &amp; Lapor Diri</div><div class="tl-desc">Pengumuman 14 April. Jika diterima, wajib lapor diri <strong>15–16 April 2026</strong>. Tidak lapor diri = gugur/mengundurkan diri.</div></div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:.78rem;font-weight:700;color:#10b981;text-transform:uppercase;letter-spacing:.07em;margin-bottom:1rem;">Jalur Reguler (PMBM Bersama)</div>
+        <div class="timeline">
+          <div class="tl-item"><div class="tl-dot" style="background:var(--green-l);"></div><div class="tl-step">Langkah 1</div><div class="tl-title">Akses Portal PMBM</div><div class="tl-desc">Buka pmbm-kanwilbanten.com mulai <strong>18 April 2026</strong>. Masukkan NISN untuk memulai pendaftaran.</div></div>
+          <div class="tl-item"><div class="tl-dot" style="background:var(--green-l);"></div><div class="tl-step">Langkah 2</div><div class="tl-title">Isi Formulir &amp; Pilih Madrasah</div><div class="tl-desc">Lengkapi data diri dan pilih MTsN 1 Pandeglang sebagai madrasah tujuan (minimal 1, maksimal 2 pilihan).</div></div>
+          <div class="tl-item"><div class="tl-dot" style="background:var(--green-l);"></div><div class="tl-step">Langkah 3</div><div class="tl-title">Unggah Dokumen</div><div class="tl-desc">Upload KK (terbit sebelum Maret 2026), Ijazah MI/SD, Surat Pernyataan bermaterai Rp 10.000, dan dokumen kondisional lainnya.</div></div>
+          <div class="tl-item"><div class="tl-dot" style="background:var(--green-l);"></div><div class="tl-step">Langkah 4</div><div class="tl-title">Cetak Bukti &amp; Ikuti CBT</div><div class="tl-desc">Cetak bukti pendaftaran. Ikuti Uji Coba CBT (30 April) lalu CBT resmi pada <strong>2 Mei 2026</strong> dan Tes BTQ 2–3 Mei.</div></div>
+          <div class="tl-item"><div class="tl-dot" style="background:var(--green-l);"></div><div class="tl-step">Langkah 5</div><div class="tl-title">Pengumuman &amp; Lapor Diri</div><div class="tl-desc">Pengumuman 5 Mei. Jika diterima, wajib lapor diri langsung ke madrasah <strong>6–12 Mei 2026</strong>.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PERSYARATAN -->
+<section id="syarat">
+  <div class="wrap">
+    <div class="section-header center">
+      <div class="eyebrow">Dokumen</div>
+      <h2>Persyaratan <span class="grad">Pendaftaran</span></h2>
+      <div class="divider"></div>
+    </div>
+
+    <!-- Syarat Umum -->
+    <div style="margin-bottom:2.5rem;">
+      <div style="font-size:.78rem;font-weight:700;color:var(--green-l);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.85rem;">✅ Persyaratan Umum (Semua Jalur)</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.75rem;">
+        <div class="card req-item"><div class="req-num">1</div><div class="req-text"><strong>Usia Maksimal 15 Tahun</strong>Per 1 Juli 2026</div></div>
+        <div class="card req-item"><div class="req-num">2</div><div class="req-text"><strong>Surat Keterangan Aktif Kelas VI</strong>Dari sekolah/madrasah asal</div></div>
+        <div class="card req-item"><div class="req-num">3</div><div class="req-text"><strong>Akta Kelahiran Berbarcode</strong>Terbitan resmi Dinas Dukcapil</div></div>
+        <div class="card req-item"><div class="req-num">4</div><div class="req-text"><strong>Kartu Keluarga Berbarcode</strong>Terbitan resmi Dinas Dukcapil</div></div>
+      </div>
+    </div>
+
+    <!-- Tabs per jalur -->
+    <div>
+      <div class="req-tabs">
+        <button class="req-tab active" onclick="switchTab(this,'tab-prestasi')" style="border-color:#d4a843;color:#d4a843;background:rgba(212,168,67,.1);">🏆 Prestasi</button>
+        <button class="req-tab" onclick="switchTab(this,'tab-afirmasi')">💙 Afirmasi</button>
+        <button class="req-tab" onclick="switchTab(this,'tab-reguler')">📝 Reguler</button>
+      </div>
+
+      <div id="tab-prestasi" class="req-panel active">
+        <div class="req-list">
+          <div class="card req-item"><div class="req-num">1</div><div class="req-text"><strong>Print Out Formulir Pendaftaran Online</strong>Dicetak dari daftar.mtsn1pandeglang.sch.id</div></div>
+          <div class="card req-item"><div class="req-num">2</div><div class="req-text"><strong>Sertifikat Prestasi Asli</strong>
+            <div class="req-note">Akademik: KSM/OMI, MYRES, OSN, OSP, OSK — juara 1–3 min. Kab/Kota, oleh Kemenag/Kemendikbud/BRIN/PT Terakreditasi</div>
+            <div class="req-note">Non-Akademik: MTQ, MHQ, MSQ, Pidato Arab, Kaligrafi, O2SN, FLS2N — Kab: Juara 1 · Prov: Juara 1–2 · Nasional: Juara 1–3</div>
+            <div class="req-note">Tahfidz: Sertifikat min. 3 juz + akan ada tes hafalan langsung</div>
+            <div class="req-note">Olahraga beregu: hanya top scorer/pemain terbaik yang tercantum di sertifikat</div>
+          </div></div>
+          <div class="card req-item"><div class="req-num">3</div><div class="req-text"><strong>Semua Dokumen dalam Map Snelhecter Merah</strong>Diberi label: nama lengkap, asal sekolah, jalur Prestasi</div></div>
+        </div>
+        <div class="map-boxes" style="margin-top:1.25rem;">
+          <div class="map-box" style="background:rgba(220,38,38,.08);border-color:rgba(220,38,38,.3);">
+            <div class="map-box-icon">📁</div>
+            <div class="map-box-label" style="color:#ef4444;">Map Merah</div>
+            <div class="map-box-sub">Jalur Prestasi</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-afirmasi" class="req-panel">
+        <div class="req-list">
+          <div class="card req-item"><div class="req-num">1</div><div class="req-text"><strong>Print Out Formulir Pendaftaran Online</strong>Dicetak dari daftar.mtsn1pandeglang.sch.id</div></div>
+          <div class="card req-item"><div class="req-num">2</div><div class="req-text"><strong>Fotokopi Kartu KIP / PKH / KKS / SKTM yang Dilegalisir</strong>
+            <div class="req-note">Pilih salah satu sesuai yang dimiliki keluarga</div>
+          </div></div>
+          <div class="card req-item" style="border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.04);">
+            <div class="req-num" style="background:linear-gradient(135deg,#f59e0b,#d97706);">⚠</div>
+            <div class="req-text"><strong>Khusus SKTM — Wajib Tambah:</strong>
+              <div class="req-note">• Fotokopi tagihan/rekening listrik 3 bulan terakhir</div>
+              <div class="req-note">• Foto tampak depan, dalam, dan belakang rumah</div>
+              <div class="req-note">SKTM hanya diterima jika diterbitkan pemerintah daerah (kelurahan/kecamatan/dinas sosial), bukan RT/RW</div>
+            </div>
+          </div>
+          <div class="card req-item"><div class="req-num">3</div><div class="req-text"><strong>Semua Dokumen dalam Map Snelhecter Kuning</strong>Diberi label: nama lengkap, asal sekolah, jalur Afirmasi</div></div>
+        </div>
+        <div class="map-boxes" style="margin-top:1.25rem;">
+          <div class="map-box" style="background:rgba(234,179,8,.08);border-color:rgba(234,179,8,.35);">
+            <div class="map-box-icon">📁</div>
+            <div class="map-box-label" style="color:#eab308;">Map Kuning</div>
+            <div class="map-box-sub">Jalur Afirmasi</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-reguler" class="req-panel">
+        <div class="req-list">
+          <div class="card req-item"><div class="req-num">1</div><div class="req-text"><strong>NISN (Nomor Induk Siswa Nasional)</strong>Terdaftar di EMIS atau DAPODIK</div></div>
+          <div class="card req-item"><div class="req-num">2</div><div class="req-text"><strong>Kartu Keluarga (KK)</strong>Diterbitkan Dinas Dukcapil sebelum Maret 2026</div></div>
+          <div class="card req-item"><div class="req-num">3</div><div class="req-text"><strong>Ijazah MI/SD atau Surat Keterangan Lulus</strong>Dokumen yang membuktikan telah menyelesaikan pendidikan</div></div>
+          <div class="card req-item"><div class="req-num">4</div><div class="req-text"><strong>Surat Pernyataan Pertanggungjawaban Mutlak</strong>Ditandatangani orang tua/wali, bermaterai Rp 10.000 — format dari portal</div></div>
+          <div class="card req-item"><div class="req-num" style="background:rgba(255,255,255,.15);color:var(--muted);">±</div><div class="req-text"><strong>Sertifikat Akreditasi (Kondisional)</strong><div class="req-note">Hanya wajib jika asal sekolah dari luar Provinsi Banten. Sekolah belum/tidak terakreditasi → nilai akreditasi otomatis = 65</div></div></div>
+          <div class="card req-item"><div class="req-num" style="background:rgba(255,255,255,.15);color:var(--muted);">±</div><div class="req-text"><strong>Surat Rekomendasi/Kesetaraan Ijazah (Kondisional)</strong><div class="req-note">Hanya untuk calon murid asal sekolah asing. Diterbitkan Kemenag atau Kemendikdasmen.</div></div></div>
+        </div>
+        <div class="infobox" style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.2);margin-top:1rem;">
+          <span class="infobox-icon">🌐</span>
+          <span>Semua dokumen diunggah secara online melalui <strong>pmbm-kanwilbanten.com</strong>. Setelah berkas lengkap, cetak bukti pendaftaran. Lapor diri fisik dilakukan setelah pengumuman.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MEKANISME SELEKSI -->
+<section id="seleksi">
+  <div class="wrap">
+    <div class="section-header center">
+      <div class="eyebrow">Penilaian</div>
+      <h2>Mekanisme <span class="grad">Seleksi</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div class="seleksi-grid">
+      <div class="card jalur-card" style="background:linear-gradient(135deg,rgba(212,168,67,.08),transparent);">
+        <div class="badge" style="background:rgba(212,168,67,.15);color:#d4a843;border:1px solid rgba(212,168,67,.3);">🏆 Prestasi</div>
+        <div class="seleksi-name">Jalur Prestasi</div>
+        <div class="seleksi-body">
+          Seleksi berdasarkan <strong>verifikasi sertifikat prestasi asli</strong> oleh panitia.<br><br>
+          Khusus <strong>Tahfidz</strong>: verifikasi sertifikat + <strong>tes hafalan langsung</strong> pada 13 April 2026.<br><br>
+          Tidak ada CBT untuk jalur ini.
+        </div>
+      </div>
+      <div class="card jalur-card" style="background:linear-gradient(135deg,rgba(96,165,250,.08),transparent);">
+        <div class="badge" style="background:rgba(96,165,250,.15);color:#60a5fa;border:1px solid rgba(96,165,250,.3);">💙 Afirmasi</div>
+        <div class="seleksi-name">Jalur Afirmasi</div>
+        <div class="seleksi-body">
+          Seleksi berdasarkan <strong>verifikasi kelayakan ekonomi</strong> melalui dokumen KIP/PKH/KKS/SKTM.<br><br>
+          SKTM akan dilakukan <strong>pengecekan lapangan</strong> berdasarkan foto rumah dan tagihan listrik.<br><br>
+          Tidak ada CBT untuk jalur ini.
+        </div>
+      </div>
+      <div class="card jalur-card" style="background:linear-gradient(135deg,rgba(16,185,129,.06),transparent);">
+        <div class="badge" style="background:rgba(16,185,129,.12);color:#10b981;border:1px solid rgba(16,185,129,.25);">📝 Reguler</div>
+        <div class="seleksi-name">Jalur Reguler</div>
+        <div class="seleksi-body">
+          Nilai Akhir dihitung dari dua komponen:
+          <div class="formula-box"><span>70%</span> Nilai CBT <span style="color:var(--muted);font-size:.85em;">+</span> <span>30%</span> Nilai BTQ</div>
+          <div style="margin-top:.85rem;font-size:.75rem;color:var(--muted);">
+            Tie-breaking (nilai sama):<br>
+            1. Usia lebih tua diprioritaskan<br>
+            2. Jika usia sama → waktu mendaftar lebih awal
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KETENTUAN GUGUR -->
+<section id="gugur" style="padding-top:2rem;">
+  <div class="wrap">
+    <div style="max-width:780px;margin:0 auto;">
+      <div class="eyebrow" style="background:rgba(220,38,38,.1);color:#ef4444;border-color:rgba(220,38,38,.2);">⚠️ Perhatian Penting</div>
+      <h2 style="margin-bottom:.5rem;">Ketentuan <span style="background:linear-gradient(135deg,#ef4444,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Gugur</span></h2>
+      <div class="divider" style="background:linear-gradient(90deg,#ef4444,#f97316);"></div>
+      <p style="color:var(--muted);font-size:.85rem;margin-top:.75rem;margin-bottom:1.25rem;">Peserta dinyatakan gugur dan tidak dapat diproses lebih lanjut apabila:</p>
+      <div class="gugur-list">
+        <div class="gugur-item"><span class="gugur-icon">✗</span><span>Mengisi formulir online <strong>tapi tidak menyerahkan berkas fisik</strong> ke sekretariat (Prestasi/Afirmasi)</span></div>
+        <div class="gugur-item"><span class="gugur-icon">✗</span><span>Menyerahkan berkas fisik <strong>tapi tidak mengisi formulir online</strong> (Prestasi/Afirmasi)</span></div>
+        <div class="gugur-item"><span class="gugur-icon">✗</span><span>Dokumen fisik yang diserahkan <strong>tidak sesuai</strong> dengan yang diunggah secara online</span></div>
+        <div class="gugur-item"><span class="gugur-icon">✗</span><span>Tidak lapor diri sesuai jadwal → dianggap <strong>mengundurkan diri</strong> meskipun dinyatakan lulus seleksi</span></div>
+        <div class="gugur-item"><span class="gugur-icon">✗</span><span>Terbukti <strong>memalsukan data atau dokumen</strong> → diskualifikasi + sanksi sesuai peraturan perundang-undangan</span></div>
+      </div>
+      <div class="infobox" style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.2);margin-top:1.25rem;">
+        <span class="infobox-icon">💡</span>
+        <span>Tidak lolos? Tenang. Berkas peserta yang tidak lolos dapat <strong>diambil kembali sehari setelah pengumuman (15 April 2026)</strong>. Kamu masih bisa daftar ke Jalur Reguler mulai 18 April 2026.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROGRAM UNGGULAN -->
+<section id="program">
+  <div class="wrap">
+    <div class="section-header center">
+      <div class="eyebrow">Keunggulan</div>
+      <h2>Program & <span class="grad">Ekstrakurikuler</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div class="prog-grid">
+      <div class="card card-hover prog-card"><div class="prog-icon">📖</div><div class="prog-title">Tahfidz Al-Qur'an</div><p class="prog-desc">Target minimal 3 juz selama 3 tahun belajar dengan bimbingan hafiz berpengalaman.</p></div>
+      <div class="card card-hover prog-card"><div class="prog-icon">🔬</div><div class="prog-title">Olimpiade Sains</div><p class="prog-desc">Persiapan KSM & OSN mulai dari tingkat kabupaten hingga nasional.</p></div>
+      <div class="card card-hover prog-card"><div class="prog-icon">💻</div><div class="prog-title">Teknologi & IT</div><p class="prog-desc">Literasi digital, coding dasar, dan teknologi informasi untuk era global.</p></div>
+      <div class="card card-hover prog-card"><div class="prog-icon">⚽</div><div class="prog-title">Olahraga Prestasi</div><p class="prog-desc">O2SN, sepak bola, bulu tangkis, karate, dan atletik dengan pelatih profesional.</p></div>
+      <div class="card card-hover prog-card"><div class="prog-icon">🎭</div><div class="prog-title">Seni & Budaya</div><p class="prog-desc">Paskibra, drumband, hadroh, kaligrafi, MTQ, dan seni rupa.</p></div>
+      <div class="card card-hover prog-card"><div class="prog-icon">🌍</div><div class="prog-title">Bahasa Asing</div><p class="prog-desc">English Club dan Arabic Club untuk mendukung komunikasi di era global.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="wrap">
+    <div class="section-header center">
+      <div class="eyebrow">FAQ</div>
+      <h2>Pertanyaan yang<br><span class="grad">Sering Diajukan</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div class="faq-wrap" id="faqList"></div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(5,150,105,.1) 0%,transparent 70%);pointer-events:none;"></div>
+  <div class="cta-inner">
+    <h2>Siap Bergabung?<br><span class="grad">Daftar Sekarang</span></h2>
+    <p class="lead" style="margin:1rem auto 2rem;">Pendaftaran gratis, transparan, dan objektif. Kuota terbatas — jangan sampai ketinggalan.</p>
+    <div class="cta-btns">
+      <a href="https://daftar.mtsn1pandeglang.sch.id" class="btn btn-primary btn-lg">Prestasi / Afirmasi →</a>
+      <a href="https://pmbm-kanwilbanten.com" class="btn btn-ghost btn-lg">Reguler (PMBM Bersama) →</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-logo">MTs Negeri 1 Pandeglang</div>
+    <div class="footer-sub">Kementerian Agama Kabupaten Pandeglang · PMBM TP 2026/2027</div>
+    <div class="footer-sub" style="margin-top:.25rem;">Jl. Raya Labuan, Kadulisung, Pandeglang, Banten 42213</div>
+    <div class="footer-sub" style="margin-top:.2rem;">Kepala Madrasah: Hj. Yanti Mariah, S.S., M.Pd. · Ketua PMBM: Umar Mu'tamar, S.Ag</div>
+    <div class="footer-links">
+      <a href="#jalur">Jalur</a>
+      <a href="#jadwal">Jadwal</a>
+      <a href="#alur">Alur Daftar</a>
+      <a href="#syarat">Persyaratan</a>
+      <a href="#seleksi">Seleksi</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://mtsn1pandeglang.sch.id" target="_blank" rel="noopener">Website Resmi</a>
+      <a href="https://pmbm-kanwilbanten.com" target="_blank" rel="noopener">Portal Reguler</a>
+    </div>
+    <div class="footer-copy">
+      &copy; 2026 MTs Negeri 1 Pandeglang. Diselenggarakan berdasarkan SK Kanwil Kemenag Banten No. 009/B/Tahun 2026.<br>
+      Dikembangkan oleh <a href="https://github.com/zulfikriyahya" target="_blank" rel="noopener">Yahya Zulfikri</a>.
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────
+const schedPA = [
+  {label:'Pendaftaran Online',       mulai:'2026-04-06', selesai:'2026-04-08', note:'daftar.mtsn1pandeglang.sch.id'},
+  {label:'Penyerahan Berkas Fisik',  mulai:'2026-04-06', selesai:'2026-04-08', note:'Sekretariat PMBM MTsN 1 Pandeglang'},
+  {label:'Verifikasi Berkas',        mulai:'2026-04-09', selesai:'2026-04-10', note:'Dilakukan panitia'},
+  {label:'Tes Kemampuan & BTQ',      mulai:'2026-04-13', selesai:'2026-04-13', note:'Hadir pukul 07.00 WIB'},
+  {label:'Pengumuman Hasil',         mulai:'2026-04-14', selesai:'2026-04-14', note:'Website madrasah'},
+  {label:'Lapor Diri & Pemberkasan', mulai:'2026-04-15', selesai:'2026-04-16', note:'Langsung ke madrasah'},
+];
+const schedReg = [
+  {label:'Pendaftaran Online',       mulai:'2026-04-18', selesai:'2026-04-27', note:'Buka 08.00, tutup 16.00 WIB'},
+  {label:'Verifikasi Dokumen',       mulai:'2026-04-19', selesai:'2026-04-28', note:'08.00–16.00 WIB'},
+  {label:'Pengumuman Peserta CBT',   mulai:'2026-04-29', selesai:'2026-04-29', note:'08.00 WIB'},
+  {label:'Uji Coba CBT',             mulai:'2026-04-30', selesai:'2026-04-30', note:'07.30–16.00 WIB'},
+  {label:'Pelaksanaan CBT',          mulai:'2026-05-02', selesai:'2026-05-02', note:'07.30–16.00 WIB'},
+  {label:'Tes BTQ',                  mulai:'2026-05-02', selesai:'2026-05-03', note:'07.30–16.00 WIB'},
+  {label:'Pengumuman Kelulusan',     mulai:'2026-05-05', selesai:'2026-05-05', note:'08.00 WIB'},
+  {label:'Lapor Diri & Berkas',      mulai:'2026-05-06', selesai:'2026-05-12', note:'Buka 08.00, tutup 16.00 WIB'},
+];
+const faqs = [
+  ['Apakah ada biaya pendaftaran?','Tidak. Seluruh proses PMBM MTsN 1 Pandeglang gratis, tidak ada pungutan biaya apapun dari calon peserta didik.'],
+  ['Berapa jalur yang tersedia dan apa bedanya?','Ada 3 jalur: Prestasi (untuk siswa berprestasi akademik/non-akademik/tahfidz), Afirmasi (untuk keluarga pemegang KIP/PKH/KKS/SKTM), dan Reguler (untuk semua lulusan MI/SD, seleksi CBT+BTQ melalui pmbm-kanwilbanten.com).'],
+  ['Apakah boleh mendaftar di dua jalur sekaligus?','Setiap pendaftar hanya dapat memilih satu jalur (Prestasi atau Afirmasi). Namun jika tidak lolos, kamu masih bisa mendaftar ke Jalur Reguler yang dibuka terpisah mulai 18 April 2026.'],
+  ['Apa warna map untuk masing-masing jalur?','Jalur Prestasi menggunakan map snelhecter warna MERAH. Jalur Afirmasi menggunakan map snelhecter warna KUNING. Setiap map harus diberi label identitas (nama, asal sekolah, jalur).'],
+  ['Apa saja prestasi yang diakui untuk Jalur Prestasi?','Tahfidz min. 3 juz; Akademik: KSM/OMI, MYRES, OSN, OSP, OSK; Non-Akademik: MTQ, MHQ, MSQ, Pidato Arab, Kaligrafi, O2SN, FLS2N, Olahraga. Minimal Juara 1 tingkat kab/kota. Untuk beregu hanya top scorer/pemain terbaik yang tercantum di sertifikat.'],
+  ['SKTM dari RT/RW apakah diterima untuk Jalur Afirmasi?','Tidak. SKTM harus diterbitkan oleh pemerintah daerah (kelurahan, kecamatan, atau dinas sosial). Selain itu wajib melampirkan rekening listrik 3 bulan terakhir dan foto rumah (tampak depan, dalam, belakang).'],
+  ['Apa yang terjadi jika formulir online sudah diisi tapi berkas fisik tidak diserahkan?','Pendaftar dinyatakan GUGUR. Kedua syarat (formulir online dan berkas fisik) harus dipenuhi. Begitu pula sebaliknya.'],
+  ['Bagaimana cara kerja seleksi Jalur Reguler?','Nilai Akhir = 70% Nilai CBT + 30% Nilai BTQ. Jika nilai sama, diprioritaskan yang lebih tua usianya. Jika usia pun sama, yang lebih awal mendaftar diprioritaskan.'],
+  ['Kapan dan di mana bisa mengambil berkas jika tidak lolos?','Berkas peserta yang tidak lolos dapat diambil di Sekretariat PMBM MTsN 1 Pandeglang sehari setelah pengumuman, yaitu mulai 15 April 2026 untuk Jalur Prestasi/Afirmasi.'],
+  ['Mengapa KK dan Akta Kelahiran harus berbarcode?','Dokumen harus diterbitkan secara resmi oleh Dinas Kependudukan dan Catatan Sipil (Dukcapil). Barcode adalah tanda keaslian dan validitas dokumen kependudukan resmi.'],
+];
+
+// ── JADWAL RENDER ──────────────────────────────────────────────────
+function statusBadge(mulai, selesai) {
+  const now = new Date(), m = new Date(mulai), s = new Date(selesai);
+  s.setHours(23,59,59);
+  if (now < m) return {text:'Mendatang',sc:'rgba(255,255,255,.06)',tc:'var(--muted)'};
+  if (now <= s) return {text:'Aktif',sc:'rgba(212,168,67,.15)',tc:'#d4a843'};
+  return {text:'Selesai',sc:'rgba(16,185,129,.12)',tc:'#10b981'};
+}
+function fmtDate(a, b) {
+  const opt = {day:'numeric',month:'short'};
+  const da = new Date(a).toLocaleDateString('id-ID',opt);
+  const db = new Date(b).toLocaleDateString('id-ID',{...opt,year:'numeric'});
+  return a === b ? db : da + ' – ' + db;
+}
+function renderSched(data, elId) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  el.innerHTML = data.map(j => {
+    const {text,sc,tc} = statusBadge(j.mulai, j.selesai);
+    return `<div class="sched-item">
+      <div style="flex:1;">
+        <div class="sched-title">${j.label}</div>
+        <div class="sched-date">${fmtDate(j.mulai,j.selesai)}${j.note ? ' · ' + j.note : ''}</div>
+      </div>
+      <div class="sched-badge badge" style="background:${sc};color:${tc};border:1px solid ${tc}44;">${text}</div>
+    </div>`;
+  }).join('');
+}
+renderSched(schedPA,'sched-pa');
+renderSched(schedReg,'sched-reg');
+
+// ── FAQ RENDER ────────────────────────────────────────────────────
+document.getElementById('faqList').innerHTML = faqs.map(([q,a]) => `
+  <div class="card faq-item">
+    <button class="faq-btn" onclick="toggleFaq(this)">
+      <span>${q}</span><span class="faq-chevron">▼</span>
+    </button>
+    <div class="faq-body"><p>${a}</p></div>
+  </div>`).join('');
+
+// ── COUNTDOWN ────────────────────────────────────────────────────
+const cdEl = document.getElementById('countdown');
+if (cdEl) {
+  const dead = new Date(cdEl.dataset.deadline);
+  const pad = n => String(n).padStart(2,'0');
+  function tick() {
+    const diff = dead - Date.now();
+    if (diff <= 0) { cdEl.innerHTML = '<p style="grid-column:span 4;text-align:center;padding:1rem;opacity:.5;font-size:.8rem;">Pendaftaran telah ditutup.</p>'; return; }
+    document.getElementById('cd-d').textContent = pad(Math.floor(diff/86400000));
+    document.getElementById('cd-h').textContent = pad(Math.floor((diff%86400000)/3600000));
+    document.getElementById('cd-m').textContent = pad(Math.floor((diff%3600000)/60000));
+    document.getElementById('cd-s').textContent = pad(Math.floor((diff%60000)/1000));
+  }
+  tick(); setInterval(tick,1000);
+}
+
+// ── THEME ─────────────────────────────────────────────────────────
+const html = document.documentElement;
+const themeBtn = document.getElementById('themeBtn');
+if (localStorage.getItem('theme')==='light') { html.classList.add('light'); themeBtn.textContent='🌙'; }
+themeBtn.addEventListener('click', () => {
+  html.classList.toggle('light');
+  const l = html.classList.contains('light');
+  themeBtn.textContent = l ? '🌙' : '☀️';
+  localStorage.setItem('theme', l?'light':'dark');
+});
+
+// ── DRAWER ────────────────────────────────────────────────────────
+const menuBtn = document.getElementById('menuBtn');
+const drawer = document.getElementById('drawer');
+menuBtn.addEventListener('click', () => {
+  const o = drawer.classList.toggle('open');
+  menuBtn.classList.toggle('open', o);
+});
+drawer.querySelectorAll('.d-link').forEach(a => a.addEventListener('click', () => {
+  drawer.classList.remove('open'); menuBtn.classList.remove('open');
+}));
+document.addEventListener('click', e => {
+  if (!drawer.contains(e.target) && !menuBtn.contains(e.target)) {
+    drawer.classList.remove('open'); menuBtn.classList.remove('open');
+  }
+});
+
+// ── NAV ACTIVE ────────────────────────────────────────────────────
+const sections = document.querySelectorAll('section[id]');
+const navAs = document.querySelectorAll('.nav-links a');
+sections.forEach(s => new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    navAs.forEach(a => a.classList.remove('active'));
+    const a = document.querySelector(`.nav-links a[href="#${e.target.id}"]`);
+    if (a) a.classList.add('active');
+  });
+}, {threshold:.35}).observe(s));
+
+// ── FAQ TOGGLE ────────────────────────────────────────────────────
+function toggleFaq(btn) {
+  const body = btn.nextElementSibling;
+  const chev = btn.querySelector('.faq-chevron');
+  const isOpen = body.style.maxHeight && body.style.maxHeight !== '0px';
+  document.querySelectorAll('.faq-body').forEach(b => b.style.maxHeight='0px');
+  document.querySelectorAll('.faq-chevron').forEach(c => c.style.transform='');
+  if (!isOpen) { body.style.maxHeight = body.scrollHeight+'px'; chev.style.transform='rotate(180deg)'; }
+}
+
+// ── REQ TABS ──────────────────────────────────────────────────────
+function switchTab(btn, panelId) {
+  document.querySelectorAll('.req-tab').forEach(t => {
+    t.classList.remove('active');
+    t.style.background='transparent'; t.style.color='var(--muted)'; t.style.borderColor='var(--border)';
+  });
+  document.querySelectorAll('.req-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(panelId).classList.add('active');
+  if (panelId==='tab-prestasi') { btn.style.background='rgba(212,168,67,.1)'; btn.style.color='#d4a843'; btn.style.borderColor='#d4a843'; }
+  else if (panelId==='tab-afirmasi') { btn.style.background='rgba(96,165,250,.1)'; btn.style.color='#60a5fa'; btn.style.borderColor='#60a5fa'; }
+  else { btn.style.background='rgba(16,185,129,.1)'; btn.style.color='#10b981'; btn.style.borderColor='#10b981'; }
+}
+</script>
+</body>
 </html>
 
 ```
@@ -22867,6 +26994,1390 @@ VITE_APP_NAME="${APP_NAME}"
 
 ---
 
+### ./juknis-bersama.md
+
+```markdown
+KEMENTERIAN AGAMA REPUBLIK INDONESIA
+KANTOR WILAYAH KEMENTERIAN AGAMA
+
+PROVINSI BANTEN
+Kawasan Pusat Pemerintah Provinsi Banten
+
+Jalan Syekh Nawawi Al Bantani Blok Instansi Vertikal No. 01 Serang 42171
+Telepon (0254) 8480080 Faksimili (0254) 8480083
+
+website : http://banten.kemenag.go.id email : kanwilbanten@kemenag.go.id
+Nomor : SP-5/Kw.28.02/PP.00/03/2026 17 Maret 2026
+Sifat : Biasa
+Lampiran : 1 (satu) bundel
+Hal : Surat Penyampain Petunjuk Pelaksanaan PMBM Bersama
+di Lingkungan Kantor Wilayah Kementerian Agama Provinsi Banten
+Tahun Pelajaran 2026/2027
+Yth. Kepala Kantor Kementerian Agama Kab./Kota;
+se-Provinsi Banten.
+Assalamu’alaikum Wr.Wb.
+Dengan hormat, dalam rangka Penerimaan Murid Baru Madrasah Bersama, Kantor
+Wilayah Kementerian Agama Provinsi Banten telah menetapkan Keputusan Kepala Kantor
+Wilayah Kementerian Agama Provinsi Banten Nomor: 009/B/ Tahun 2026 tanggal 16 Maret
+2026 tentang Petunjuk Pelaksanaan Penerimaan Murid Baru Madrasah Bersama Madrasah
+Tsanawiyah Negeri dan Madrasah Aliyah Negeri di Lingkungan Kantor Wilayah Kementerian
+Agama Provinsi Banten Tahun Pelajaran 2026/2027. Berkenaan dengan hal tersebut, kami
+mohon Saudara untuk memberikan dukungan terhadap penyelenggaraan PMBM Bersama
+Tahun Pelajaran 2026/2027 dengan melaksanakan hal-hal sebagai berikut:
+1. Menyampaikan dan mensosialisasikan Petunjuk Pelaksanaan PMBM Bersama Tahun
+Pelajaran 20206/2027 sebagaimana terlampir secara luring maupun daring melalui
+media publikasi cetak maupun elektorinik kepada, seluruh Madrasah Ibtidaiyah
+(MI)/Sederajat, Madrasah Tsanawiyah (MTs)/Sederajat di wilayah masing-masing dan
+instansi/Dinas Pendidikan Kabupaten Kota untuk mendaftarkan muridnya ke MTsN
+dan MAN di Provinsi Banten;
+2. Melakukan koordinasi dengan Madrasah Tsanawiah Negeri dan Madrasah Aliyah
+Negeri terkait untuk teknis fasilitasi dan pemanfaatan lokasi CBT yang menjadi
+penyelenggara;
+3. Membentuk kepanitiaan atau tim khusus di madrasah penyelenggara untuk
+memastikan pelaksanaan PMBM Bersama berjalan secara baik dan transparan;
+4. Menyediakan kanal pengaduan dan mengelola pengaduan masyarakat sebagaimana
+mestinya untuk menyelesaikan permasalahan PMBM Bersama.
+Demikian, untuk dipedomani atas perhatiannya diucapkan terima kasih.
+Wassalamu’alaikum Wr. Wb.
+
+a.n. Kepala
+Kepala Bidang Pendidikan Madrasah,
+
+${ttd}
+
+Hairul Umam
+
+Tembusan :
+Kepala Kantor Wilayah Kementerian Agama Provinsi Banten.
+
+Dokumen ini telah ditandatangani secara elektronik menggunakan sertifikat elektronik
+yang diterbitkan oleh Balai Besar Sertifikasi Elektronik (BSrE), Badan Siber dan Sandi Negara (BSSN).
+
+Powered by TCPDF (www.tcpdf.org)
+
+1 / 1
+
+Powered by TCPDF (www.tcpdf.org)
+
+1 / 1
+
+KEPUTUSAN
+
+KEPALA KANTOR WILAYAH KEMENTERIAN AGAMA PROVINSI BANTEN
+
+NOMOR 009/B/TAHUN 2026
+
+TENTANG
+
+PETUNJUK PELAKSANAN PENERIMAAN MURID BARU MADRASAH BERSAMA
+PADA MADRASAH TSANAWIYAH NEGERI DAN MADRASAH ALIYAH NEGERI
+DI LINGKUNGAN KANTOR WILAYAH KEMENTERIAN AGAMA PROVINSI BANTEN
+
+TAHUN PELAJARAN 2026/2027
+DENGAN RAHMAT TUHAN YANG MAHA ESA
+
+KEPALA KANTOR WILAYAH KEMENTERIAN AGAMA PROVINSI BANTEN,
+Menimbang : a. bahwa untuk menjamin kualitas dan pencapaian standar
+Penerimaan Murid Baru pada Madrasah Tsanawiyah
+Negeri dan Madrasah Aliyah Negeri, perlu dilaksanakan
+Penerimaan Murid Baru Madrasah Bersama;
+b. bahwa untuk tertib administrasi dan mengatur mekanisme
+Penerimaan Murid Baru Madrasah Berama sebagaimana
+dimaksud dalam huruf a, perlu diatur dalam Petunjuk
+Pelaksanaan;
+c. bahwa berdasarkan pertimbangan sebagaimana dimaksud
+dalam huruf a, dan huruf b, perlu menetapkan Keputusan
+Kepala Kantor Wilayah Kementerian Agama Provinsi
+Banten tentang Petunjuk Pelaksanaan Penerimaan Murid
+Baru Madrasah Bersama pada Madrasah Tsanawiyah
+Negeri dan Madrasah Aliyah Negeri di lingkungan Kantor
+Wilayah Kementerian Agama Provinsi Banten Tahun
+Pelajaran 2026/2027;
+
+Mengingat : 1. Undang-Undang Nomor 20 Tahun 2003 tentang Sistem
+Pendidikan Nasional (Lembaran Negara Republik Indonesia
+Tahun 2003 Nomor 78, Tambahan Lembaran Negara
+Republik Indonesia Nomor 4301);
+2. Undang-Undang Nomor 30 Tahun 2014 tentang
+Administrasi Pemerintahan (Lembaran Negara Republik
+Indonesia Tahun 2014 Nomor 292, Tambahan Lembaran
+Negara Republik Indonesia Nomor 5601);
+3. Peraturan Pemerintah Nomor 48 Tahun 2008 tentang
+Pendanaan Pendidikan (Lembaran Negara Republik
+Indonesia Tahun 2008 Nomor 91, Tambahan Lembaran
+Negara Republik Indonesia Nomor 4864) sebagaimana
+telah diubah dengan Peraturan Pemerintah Nomor 18
+Tahun 2022 tentang Perubahan atas Peraturan
+Pemerintah Nomor 48 tahun 2008 tentang Pendanaan
+Pendidikan (Lembaran Negara Republik Indonesia Tahun
+2022 Nomor 121);
+
+Dokumen ini telah ditandatangani secara elektronik menggunakan sertifikat elektronik yang diterbitkan Balai Besar Sertifikasi Elektronik (BBSrE).
+Token : FWNLzRAN
+
+-2-
+
+4. Peraturan Pemerintah Nomor 17 Tahun 2010 tentang
+Pengelolaan dan Penyelenggaraan Pendidikan (Lembaran
+Negara Republik Indonesia Tahun 2010 Nomor 23,
+Tambahan Lembaran Negara Republik Indonesia Nomor
+5105) sebagaimana telah diubah dengan Peraturan
+Pemerintah Nomor 66 Tahun 2010 tentang Perubahan
+atas Peraturan Pemerintah Nomor 17 Tahun 2010 tentang
+Pengelolaan dan Penyelenggaraan Pendidikan (Lembaran
+Negara Republik Indonesia Tahun 2010 Nomor 112,
+Tambahan Lembaran Negara Republik Indonesia Nomor
+5157);
+5. Peraturan Pemerintah Nomor 57 Tahun 2021 tentang
+Standar Nasional Pendidikan (Lembaran Negara Republik
+Indonesia Tahun 2021 Nomor 87, Tambahan Lembaran
+Negara Republik Indonesia Tahun 2021 Nomor 6676)
+sebagaimana telah beberapa kali diubah dengan Peraturan
+Pemerintah Nomor 4 Tahun 2022 tentang perubahan atas
+Peraturan Pemerintah Nomor 57 Tahun 2021 tentang
+Standar Nasional Pendidikan (Lembaran Negara Republik
+Indonesia Tahun 2022 Nomor 14, Tambahan Lembaran
+Negara Republik Indonesia Nomor 6762);
+6. Peraturan Presiden Nomor 152 Tahun 2024 tentang
+Kementerian Agama (Lembaran Negara Republik Indonesia
+Tahun 2024 Nomor 348);
+7. Peraturan Menteri Agama Nomor 90 Tahun 2013 tentang
+Penyelenggaraan Pendidikan Madrasah (Berita Negara
+Republik Indonesia Tahun 2013 Nomor 1382)
+sebagaimana telah beberapa kali diubah terakhir dengan
+Peraturan Menteri Agama Republik Indonesia Nomor 66
+Tahun 2016 tentang Perubahan Kedua Atas Peraturan
+Menteri Agama Republik Indonesia Nomor 90 Tahun 2013
+tentang Penyelenggaraan Pendidikan Madrasah (Berita
+Negara Republik Indonesia Tahun 2016 Nomor 2101);
+8. Peraturan Menteri Agama Nomor 19 Tahun 2019 tentang
+Organisasi dan Tata Kerja Instansi Vertikal Kementerian
+Agama (Berita Negara Republik Indonesia Tahun 2019
+Nomor 1115) sebagaimana telah dengan Peraturan Menteri
+Agama Republik Indonesia Nomor 6 Tahun 2022 tentang
+Perubahan Atas Peraturan Menteri Agama Republik
+Indonesia Nomor 19 Tahun 2019 tentang Organisasi dan
+Tata Kerja Instansi Vertikal Kementerian Agama (Berita
+Negara Republik Indonesia Tahun 2022 Nomor 288);
+9. Peraturan Menteri Agama Nomor 33 Tahun 2024 tentang
+Organisasi dan Tata Kerja Instansi Vertikal Kementerian
+Agama (Berita Negara Republik Indonesia Tahun 2024
+Nomor 1070)
+10. Keputusan Direktur Jenderal Pendidikan Islam
+Kementerian Agama Nomor 10041 Tahun 2025 tentang
+Petunjuk Teknis Penerimaan Murid Baru Madrasah Tahun
+Pelajajaran 2026/2027;
+
+Dokumen ini telah ditandatangani secara elektronik menggunakan sertifikat elektronik yang diterbitkan Balai Besar Sertifikasi Elektronik (BBSrE).
+Token : FWNLzRAN
+
+-3-
+
+MEMUTUSKAN :
+
+Menetapkan : KEPUTUSAN KEPALA KANTOR WILAYAH KEMENTERIAN
+AGAMA PROVINSI BANTEN TENTANG PETUNJUK
+PELAKSANAAN PENERIMAAN MURID BARU MADRASAH
+BERSAMA PADA MADRASAH TSANAWIYAH NEGERI DAN
+MADRASAH ALIYAH NEGERI DI LINGKUNGAN KANTOR
+WILAYAH KEMENTERIAN AGAMA PROVINSI BANTEN TAHUN
+PELAJARAN 2026/2027
+
+KESATU : Menetapkan Petunjuk Pelaksanaan Penerimaan Murid Baru
+Madrasah Bersama pada Madrasah Tsanawiyah Negeri dan
+Madrasah Aliyah Negeri di lingkungan Kantor Wilayah
+Kementerian Agama Provinsi Banten Tahun Pelajaran
+2026/2027 sebagaimana tercantum dalam Lampiran yang
+merupakan bagian tidak terpisahkan dari keputusan ini.
+KEDUA : Petunjuk Pelaksanaan sebagaimana dimaksud dalam diktum
+KESATU merupakan pedoman dalam pelaksanaan Penerimaan
+Murid Baru Madrasah bersama.
+
+KETIGA : Keputusan ini mulai berlaku pada tanggal ditetapkan.
+
+Ditetapkan di Serang
+pada tanggal 16 Maret 2026
+KEPALA KANTOR WILAYAH
+KEMENTERIAN AGAMA PROVINSI BANTEN,
+^
+
+AMRULLAH
+
+Dokumen ini telah ditandatangani secara elektronik menggunakan sertifikat elektronik yang diterbitkan Balai Besar Sertifikasi Elektronik (BBSrE).
+Token : FWNLzRAN
+
+-4-
+
+LAMPIRAN
+KEPUTUSAN KEPALA KANTOR WILAYAH KEMENTERIAN AGAMA
+PROVINSI BANTEN
+NOMOR 009/B/TAHUN 2026
+TENTANG
+PETUNJUK PELAKSANAAN PENERIMAAN MURID BARU MADRASAH
+BERSAMA UNTUK MADRASAH TSANAWIYAH NEGERI DAN
+MADRASAH ALIYAH NEGERI DI LINGKUNGAN KANTOR WILAYAH
+KEMENTERIAN AGAMA PROVINSI BANTEN TAHUN PELAJARAN
+2026/2027
+
+BAB I
+PENDAHULUAN
+
+A.
+Latar Belakang
+Madrasah adalah salah satu jenis pendidikan umum yang mempunyai
+kekhasan Agama Islam dalam binaan Menteri Agama. Pelaksanaan Penerimaan
+Murid Baru Madrasah merupakan layanan pendidikan guna memenuhi hak-hak
+dasar warga negara untuk memperoleh pendidikan yang bermutu dan
+berkeadilan dengan menerapkan asas objektif, akuntabel, transparan dan tidak
+diskriminatif sehingga mendorong peningkatan akses layanan pendidikan yang
+bermutu.
+Dalam rangka peningkatan akses dan mutu serta relevansi pendidikan, pada
+tahun pelajaran 2026/2027 Kantor Wilayah Kementerian Agama Provinsi Banten
+berkomitmen memberikan akses pendidikan yang bermutu di madrasah. Oleh
+karena itu, untuk memberikan panduan Penerimaan Murid Baru Madrasah pada
+Madrasah Tsanawiyah Negeri dan Madrasah Aliyah Negeri melalui Kantor
+Wilayah Kementerian Agama Provinsi Banten menetapkan Petunjuk Pelaksanaan
+Penerimaan Murid Baru Madrasah Bersama pada Madrasah Tsanawiyah Negeri
+dan Madrasah Aliyah Negeri di Lingkungan Kantor Wilayah Kementerian Agama
+Provinsi Banten Tahun Pelajaran 2026/2027.
+B.
+Tujuan
+Petunjuk Pelaksanaan Penerimaan Murid Baru Madrasah Bersama pada
+Madrasah Tsanawiyah Negeri dan Madrasah Aliyah Negeri di Lingkungan Kantor
+Wilayah Kementerian Agama Provinsi Banten Tahun Pelajaran 2026/2027
+bertujuan untuk:
+1. Menjamin Penerimaan Murid Baru di madrasah berjalan secara objektif,
+akuntabel, transparan dan tidak diskriminatif sehingga mendorong
+peningkatan akses layanan pendidikan yang berkeadilan.
+2. Memberikan pedoman bagi Kepala Madrasah, orang tua murid, masyarakat
+dan para pemangku kepentingan dalam rangka pelaksanaan Penerimaan
+Murid Baru Madrasah.
+
+Dokumen ini telah ditandatangani secara elektronik menggunakan sertifikat elektronik yang diterbitkan Balai Besar Sertifikasi Elektronik (BBSrE).
+Token : FWNLzRAN
+
+-5-
+BAB II
+PERSYARATAN
+
+A. Ketentuan Umum
+1) Sistem Penerimaan Murid Baru Madrasah Bersama pada MTsN dan MAN ini
+dilakukan secara daring dengan menggunakan sistem teknologi yang
+dirancang untuk melakukan pendaftaran, verifikasi, proses seleksi, dan
+pengumuman dengan media online/internet;
+2) Untuk Madrasah Berasrama pelaksanaan Penerimaan Murid Baru Madrasah
+disesuaikan dengan kebutuhan satuan pendidikan masing-masing.
+B. Persyaratan Calon Murid Baru Madrasah Tsanawiyah Negeri (MTsN)
+NO PERSYARATAN Reguler
+1 Asal Madrasah/Sekolah harus memiliki NPSN (Nomor Pokok
+Sekolah Nasional) dan terdaftar di EMIS (Madrasah) atau
+DAPODIK (Sekolah).
+
+√
+
+2
+Calon Murid Baru harus memiliki NISN dan terdaftar di EMIS
+(Madrasah) atau DAPODIK (Sekolah).
+
+√
+3 Calon Murid Baru MTsN Berusia paling tinggi 15 (lima belas)
+tahun pada tanggal 1 Juli tahun berjalan.
+
+√
+4 Ijazah MI/SD sederajat atau Dokumen lain yang menjelaskan
+telah menyelesaikan Pendidikan.
+5 Calon Murid Baru asal Madrasah/Sekolah luar provinsi Banten
+yang sudah Terakreditasi Mengunggah Sertifikat Akreditasi.
+
+√
+6 Mengunggah Kartu Keluarga yang diterbitkan oleh Dinas
+Kependudukan dan Catatan Sipil paling lambat sebelum bulan
+Maret 2026.
+
+√
+7 Calon Murid Baru yang bertempat tinggal dan bersekolah di
+Provinsi Banten berdasarkan Kartu Keluarga (KK) dan NIK
+Calon Murid Baru asal dari Provinsi Banten.
+
+√
+8 Calon Murid Baru yang bertempat tinggal di Provinsi Banten
+berdasarkan Kartu Keluarga (KK) dan bersekolah di luar
+Provinsi Banten dengan NIK Calon Murid Baru asal dari
+Provinsi Banten.
+
+√
+9 Calon Murid Baru yang bertempat tinggal di luar Provinsi
+Banten berdasarkan Kartu Keluarga (KK) dan bersekolah di
+Provinsi Banten.
+
+√
+10 Calon Murid Baru yang bertempat tinggal di luar Provinsi
+Banten berdasarkan Kartu Keluarga (KK) dan bersekolah di luar
+Provinsi Banten.
+
+√
+11 Calon Murid Baru yang berasal dari Sekolah Asing wajib
+melampirkan Surat Rekomendasi/Kesetaraan Ijazah dari
+Kementerian Agama atau Kementerian Pendidikan Dasar dan
+Menengah.
+
+√
+12 Mengunggah Surat Pernyataan Pertanggung Jawaban Mutlak
+(sesuai format pada lampiran) tentang keabsahan dokumen dari
+orang tua/wali calon Murid Baru bermaterai Rp.10.000,-
+
+√
+13 Mengunggah Syahadah Diniyah untuk Calon Murid Baru yang
+bertempat tinggal di dalam dan luar Kabupaten Serang dan
+akan bersekolah di Kabupaten Serang.
+
+√
+
+14 Pemberkasan Manual di madrasah tujuan masing–masing. √
+
+Dokumen ini telah ditandatangani secara elektronik menggunakan sertifikat elektronik yang diterbitkan Balai Besar Sertifikasi Elektronik (BBSrE).
+Token : FWNLzRAN
+
+-6-
+
+C. Persyaratan Calon Murid Baru Madrasah Aliyah Negeri (MAN)
+
+D. Kepanitiaan
+Kepanitian Penerimaan Murid Baru Madrasah Bersama pada MTsN dan MAN
+dilingkungan Kantor Wilayah Kementerian Agama Provinsi Banten Tahun
+Pelajaran 2026/2027 terdiri dari:
+1. Panitia Tingkat Provinsi, ditetapkan oleh Kepala Wilayah Kementerian Agama
+Provinsi Banten;
+2. Panitia Tingkat Satuan Pendidikan ditetapkan oleh Kepala MTsN dan MAN
+setempat.
+NO PERSYARATAN Reguler
+1 Asal Madrasah/Sekolah harus memiliki NPSN (Nomor Pokok
+Sekolah Nasional) dan terdaftar di EMIS (Madrasah) atau
+DAPODIK (Sekolah).
+
+√
+
+2
+Calon Murid Baru harus memiliki NISN dan terdaftar di EMIS
+(Madrasah) atau DAPODIK (Sekolah).
+
+√
+3 Calon Murid Baru MAN Berusia paling tinggi 21 (dua puluh
+satu) pada tanggal 1 Juli tahun berjalan.
+
+√
+4 Ijazah MTs/SMP sederajat atau Dokumen lain yang
+menjelaskan telah menyelesaikan Pendidikan.
+5 Calon Murid Baru asal Madrasah/Sekolah luar provinsi Banten
+yang sudah Terakreditasi Mengunggah Sertifikat Akreditasi.
+
+√
+6 Mengunggah Kartu Keluarga yang diterbitkan oleh Dinas
+Kependudukan dan Catatan Sipil paling lambat sebelum bulan
+Maret 2026.
+
+√
+7 Calon Murid Baru yang bertempat tinggal dan bersekolah di
+Provinsi Banten berdasarkan Kartu Keluarga (KK) dan NIK
+Calon Murid Baru asal dari Provinsi Banten.
+
+√
+8 Calon Murid Baru yang bertempat tinggal di Provinsi Banten
+berdasarkan Kartu Keluarga (KK) dan bersekolah di luar
+Provinsi Banten dengan NIK Calon Murid Baru asal dari
+Provinsi Banten.
+
+√
+9 Calon Murid Baru yang bertempat tinggal di luar Provinsi
+Banten berdasarkan Kartu Keluarga (KK) dan bersekolah di
+Provinsi Banten.
+
+√
+10 Calon Murid Baru yang bertempat tinggal di luar Provinsi
+Banten berdasarkan Kartu Keluarga (KK) dan bersekolah di luar
+Provinsi Banten.
+
+√
+11 Calon Murid Baru yang berasal dari Sekolah Asing wajib
+melampirkan Surat Rekomendasi/Kesetaraan Ijazah dari
+Kementerian Agama atau Kementerian Pendidikan Dasar dan
+Menengah.
+
+√
+12 Mengunggah Surat Pernyataan Pertanggung Jawaban Mutlak
+(sesuai format pada lampiran) tentang keabsahan dokumen dari
+orang tua/wali calon Murid Baru bermaterai Rp.10.000,-
+
+√
+13 Pemberkasan Manual di madrasah tujuan masing–masing. √
+
+Dokumen ini telah ditandatangani secara elektronik menggunakan sertifikat elektronik yang diterbitkan Balai Besar Sertifikasi Elektronik (BBSrE).
+Token : FWNLzRAN
+
+-7-
+E. Pembagian Tugas Dan Tanggung Jawab
+1. Kantor Wilayah Kementerian Agama Provinsi Banten
+a. Menyusun petunjuk pelaksanaan Penerimaan Murid Baru Madrasah;
+b. Melakukan sosialisasi Penerimaan Murid Baru Madrasah;
+c. Melakukan koordinasi pendataan, persiapan, pelaksanaan, Penerimaan
+Murid Baru Madrasah di tingkat provinsi;
+d. Mensosialisasikan sistem aplikasi pendaftaran Penerimaan Murid Baru
+Madrasah;
+e. Menyiapkan aplikasi Pendaftaran dan CBT Penerimaan Murid Baru
+Madrasah;
+f. Menyiapkan Tim Helpdesk dalam rangka pengelolaan aplikasi;
+g. Menyiapkan Posko PMBM;
+h. Menetapkan calon murid baru lolos verifikasi berkas pendaftaran dan
+mengikuti tes; dan
+i. Menetapkan kelulusan calon murid baru.
+2. Kantor Kementerian Agama Kabupaten/Kota
+a. Melakukan sosialisasi Penerimaan Murid Baru Madrasah;
+b. Mensosialisasikan sistem aplikasi pendaftaran Penerimaan Murid Baru
+Madrasah.
+3. Tingkat Satuan Pendidikan
+a. Melakukan sosialisasi Penerimaan Murid Baru Madrasah;
+b. Mensosialiasikan informasi mekanisme pendaftaran Penerimaan Murid
+Baru Madrasah;
+c. Mensosialisasikan dan memberikan bimbingan teknis tentang
+pengoperasian Sistem aplikasi pendaftaran PMBM;
+d. Melakukan verifikasi berkas pendaftaran dan mengusulkan nominasi
+calon murid baru yang mengikuti tes;
+e. Membuka meja pelayanan dan konsultasi secara tatap muka;
+f. Memfasilitasi tempat penyelenggaraan tes CBT dan BTQ.
+F. Pembiayaan
+1. Pembiayaan Penerimaan Murid Baru Madrasah pada madrasah negeri tidak
+boleh dibebankan kepada calon murid;
+2. Biaya dalam pelaksanaan Penerimaan Murid Baru Madrasah pada Madrasah
+Tsanawiyah Negeri dan Madrasah Aliyah Negeri dibebankan pada anggaran
+BOS dan/atau BOP Madrasah sebagaimana tercantum dalam anggaran pada
+tahun anggaran berjalan.
+
+Dokumen ini telah ditandatangani secara elektronik menggunakan sertifikat elektronik yang diterbitkan Balai Besar Sertifikasi Elektronik (BBSrE).
+Token : FWNLzRAN
+
+-8-
+BAB III
+
+KETENTUAN PENDAFTARAN DAN MEKANISME SELEKSI
+
+A. Ketentuan Pendaftaran
+Pendaftaran Penerimaan Murid Baru Madrasah jenjang MTsN dan MAN:
+1. Penerimaan murid baru dilaksanakan secara online;
+2. Calon murid baru mengisi formulir pendaftaran dan mengunggah berkas
+persyaratan PMBM melalui website http://pmbm-kanwilbanten.com/
+3. Nilai Akreditasi Lembaga asal Madrasah/Sekolah diberlakukan sebagai
+berikut :
+a. Status Terakreditasi dan Tidak Terakreditasi diinput Calon Murid Baru
+sesuai dengan nilai yang tertera dalam Sertifikat Akreditasi;
+b. Status Belum Terakreditasi dan/atau lulusan luar negeri akan memperoleh
+nilai akreditasi 65.
+4. Calon Murid Baru Wajib mengunggah dokumen yang dibutuhkan;
+5. Bukti Pendaftaran Wajib dicetak bagi pendaftar yang dinyatakan lengkap
+berkasnya;
+6. Verifikasi kelengkapan berkas dan data pendaftaran dilakukan secara online;
+7. Pengumuman kelulusan dapat diakses melalui aplikasi PMBM.
+B. Tata Cara Pendaftara
+Tata cara pendaftaran calon murid baru tingkat MTsN:
+1. Calon murid baru mengakses website http://pmbm-kanwilbanten.com/
+2. Calon murid baru melakukan pendaftaran berbasis Nomor Induk Siswa
+Nasional (NISN);
+3. Calon murid baru mengisi formulir pendaftaran secara online;
+4. Calon murid baru memilih minimal 1 (satu) atau maksimal 2 (dua) pilihan
+madrasah tujuan;
+5. Calon murid baru mengunggah berkas persyaratan sebagai berikut:
+a. Kartu Keluarga (KK);
+b. Ijazah MI/SD sederajat atau Dokumen lain yang menjelaskan telah
+menyelesaikan pendidikan;
+c. Syahadah Diniyah yang bertempat tinggal di dalam dan luar Kabupaten
+Serang dan akan bersekolah di Kabupaten Serang;
+d. Mengunggah Sertifikat Akreditasi Madrasah/Sekolah asal (bagi asal
+Madrasah/Sekolah di luar Provinsi Banten);
+e. Mengunggah Surat Pernyataan Pertanggung Jawaban Mutlak (sesuai
+format pada lampiran) tentang keabsahan dokumen dari orang tua/wali
+calon Murid Baru bermaterai Rp.10.000,-
+f. Surat Rekomendasi/Kesetaraan Ijazah dari Kementerian Agama atau
+Kementerian Pendidikan Dasar dan Menengah khusus bagi calon murid
+baru yang berasal dari Madrasah/Sekolah asing;
+6. Calon murid baru yang telah memenuhi persyaratan dan mengajukan
+pendaftaran dapat mencetak bukti pendaftaran secara online.
+
+Dokumen ini telah ditandatangani secara elektronik menggunakan sertifikat elektronik yang diterbitkan Balai Besar Sertifikasi Elektronik (BBSrE).
+Token : FWNLzRAN
+
+-9-
+
+Tata cara pendaftaran calon murid baru tingkat MAN:
+1. Calon murid baru mengakses website http://pmbm-kanwilbanten.com/
+2. Calon murid baru melakukan pendaftaran berbasis Nomor Induk Siswa
+Nasional (NISN);
+3. Calon murid baru mengisi formulir pendaftaran secara online;
+4. Calon murid baru memilih minimal 1 (satu) atau maksimal 2 (dua) pilihan
+madrasah tujuan;
+5. Calon murid baru mengunggah berkas persyaratan sebagai berikut:
+a. Kartu Keluarga (KK);
+b. Ijazah MTs/SMP sederajat atau Dokumen lain yang menjelaskan telah
+menyelesaikan pendidikan;
+c. Mengunggah Sertifikat Akreditasi Madrasah/Sekolah asal (bagi asal
+Madrasah/Sekolah di luar Provinsi Banten);
+d. Mengunggah Surat Pernyataan Pertanggung Jawaban Mutlak (sesuai
+format pada lampiran) tentang keabsahan dokumen dari orang tua/wali
+calon Murid Baru bermaterai Rp.10.000,-
+e. Surat Rekomendasi/Kesetaraan Ijazah dari Kementerian Agama atau
+Kementerian Pendidikan Dasar dan Menengah khusus bagi calon murid
+baru yang berasal dari Madrasah/Sekolah asing;
+6. Calon murid baru yang telah memenuhi persyaratan dan mengajukan
+pendaftaran dapat mencetak bukti pendaftaran secara online.
+C. Mekanisme Seleksi Penerimaan Murid Baru Madrasah
+a. Jalur Prestasi
+Pelaksanaan Seleksi untuk Jalur prestasi dilaksanakan di Madrasah
+Tsanawiyah Negeri dan Madrasah Aliyah Negeri masing-masing.
+b. Jalur Afirmasi
+Pelaksanaan Seleksi untuk Jalur Afirmasi dilaksanakan di Madrasah
+Tsanawiyah Negeri dan Madrasah Aliyah Negeri masing-masing.
+c. Jalur Reguler
+1) Calon Murid Baru dari Madrasah Ibtidaiyah/Sekolah Dasar dan atau
+Madrasah Tsanawiyah/Sekolah Menengah Pertama;
+2) Mekanisme Seleksi Calon Murid Baru Jalur Reguler menggunakan
+Computer Based Test (CBT) dan Tes Baca Tulis Al-Qur’an;
+3) Untuk Tes Baca Tulis Al-Qur’an dilaksanakan di madrasah pilihan atau di
+lokasi CBT;
+4) Calon Murid Baru yang dinyatakan diterima sesuai dengan hasil seleksi
+akhir adalah berdasarkan Hasil Nilai Computer Based Test (CBT) dan Nilai
+BTQ;
+5) Nilai Akhir yang dimaksud adalah 70% Nilai Computer Based Test (CBT)
+dan ditambah 30% Nilai BTQ;
+6) Apabila terdapat nilai akhir sama, pengurutan seleksi dilakukan
+berdasarkan usia paling tua.
+7) Apabila terdapat nilai akhir sama dan usia juga sama,
+pengurutan seleksi diurutkan berdasarkan waktu mendaftar.
+
+Dokumen ini telah ditandatangani secara elektronik menggunakan sertifikat elektronik yang diterbitkan Balai Besar Sertifikasi Elektronik (BBSrE).
+Token : FWNLzRAN
+
+-10-
+D. Pengumuman dan Lapor Diri (Daftar Ulang)
+1. Pengumuman penerimaan murid baru yang diterima maupun tidak
+ditema pada jenjang MTsN dan MAN dilakukan secara online melalui
+website http://pmbm-kanwilbanten.com/
+2.Calon murid baru yang dinyatakan diterima, wajib melakukan lapor
+diri secara langsung ke madrasah tempat diterima sesuai jadwal yang
+ditentukan;
+3.Calon murid baru yang dinyatakan diterima tapi tidak melakukan
+lapor diri, maka dianggap gugur dari hasil seleksi;
+4.Ketentuan teknis dan persyaratan lapor diri diatur oleh madrasah
+masing-masing;
+5.Calon murid baru yang dinyatakan tidak diterima, dapat mengikuti
+jalur seleksi lainnya pada seleksi PMBM pada tahun 2026.
+
+E.JADWAL PENERIMAN MURID BARU MADRASAH
+JADWAL PMBM MTsN dan MAN
+
+JALUR REGULER MAN
+
+URAIAN TANGGAL KETERANGAN
+
+Informasi dan Sosialisasi Maret-April
+Pendaftaran 6-15 April Dibuka tanggal 6 April
+2026 jam 08.00 WIB dan
+ditutup tanggal 15 April
+jam 16.00
+Verifikasi Dokumen Pendaftaran 7-15 April 08.00 -16.00 WIB
+Pengumuman Peserta CBT 16 April 08.00 WIB
+Uji Coba CBT 17 April 07.30 -16.00 WIB
+Pelaksanaan CBT 18 April 07.30 -16.00 WIB
+Tes Baca Tulis Al-Qur’an 18-19 April 07.30 -16.00 WIB
+Pengumuman Hasil Kelulusan 21 April 08.00 WIB
+Lapor Diri dan Pemberkasan
+Manual
+
+22-29 April Dibuka tanggal 22 April
+jam 08.00 WIB dan ditutup
+29 April jam 16.00 WIB
+
+JALUR REGULER MTsN
+
+URAIAN TANGGAL KETERANGAN
+
+Informasi dan Sosialisasi Maret-April
+Pendaftaran 18-27 April Dibuka tanggal 18 April
+2026 jam 08.00 WIB dan
+ditutup tanggal 27 April
+jam 16.00
+Verifikasi Dokumen Pendaftaran 19-28 April 08.00 -16.00 WIB
+Pengumuman Peserta CBT 29 April 08.00 WIB
+Uji Coba CBT 30 April 07.30 -16.00 WIB
+Pelaksanaan CBT 2 Mei 07.30 -16.00 WIB
+Tes Baca Tulis Al-Qur’an 2-3 Mei 07.30 -16.00 WIB
+Penguman Hasil Kelulusan 5 Mei 08.00 WIB
+Lapor Diri dan Pemberkasan
+Manual
+
+6-12 Mei Dibuka tanggal 6 Mei jam
+08.00 WIB dan ditutup 12
+Mei jam 16.00 WIB
+
+Dokumen ini telah ditandatangani secara elektronik menggunakan sertifikat elektronik yang diterbitkan Balai Besar Sertifikasi Elektronik (BBSrE).
+Token : FWNLzRAN
+
+-11-
+
+F.Pilihan Madrasah
+1. Madrasah Tsanawiyah Negeri
+No. Nama Madrasah Alamat
+
+1
+MTsN 1 PANDEGLANG
+KABUPATEN PANDEGLANG
+
+Jl. Raya labuan, Kadulisung-Pandeglang
+mtsnpdg1.417849@gmail.com
+
+2
+MTSN 2 PANDEGLANG
+KABUPATEN PANDEGLANG
+
+Jl. Raya Labuan Km. 02 Karabohong Labuan
+mtsnpandeglang2@gmail.com
+
+3
+MTsN 3 PANDEGLANG
+KABUPATEN PANDEGLANG
+
+Jl. Alun-alun Timur Sukajadi Cibaliung
+Pandeglang
+mtsn03pandeglang@gmail.com
+
+4
+MTsN 5 PANDEGLANG
+KABUPATEN PANDEGLANG
+
+Jln raya ceuning KM 9 cikedal Pandeglang
+Mtsncening@gmail.com
+
+5
+MTsN 7 PANDEGLANG
+KABUPATEN PANDEGLANG
+
+Jl. Raya munjul panimbang KM.4 Desa
+Cikayas Kec Angsana Kab. Pandeglang kode
+pos 42277
+mtsn7pandeglang@gmail.com
+
+6
+MTSN 1 LEBAK
+KABUPATEN LEBAK
+
+Jl. Komplek Pendidikan NO. 31 L Kel. MC.
+Timur kec. Rangkasbitung Lebak
+mtsnpasirsukarayat65@gmail.com
+
+7
+MTsN 3 TANGERANG
+KABUPATEN TANGERANG
+
+JLn. H. Abdurrahman No. 85A Desa Jatake
+Kecamatan Pagedangan Kabupaten
+Tangerang
+mtsnlegok@gmail.com
+
+8
+MTsN 6 TANGERANG
+KABUPATEN TANGERANG
+
+Jalan Gili Cisadane Teluk Naga Tangerang
+mtsn6tng2020@gmail.com
+
+9
+MTSN 1 SERANG
+KABUPATEN SERANG
+
+JL. Ciptayasa KM. 01 DS. Singamerta Kec.
+Ciruas kab. Serang
+mtsn1srg@gmail.com
+
+10
+MTsN 2 SERANG
+KABUPATEN SERANG
+
+JL. Palka KM. 25 DS. Cisaat Kec.
+Padarincang kab. Serang-banten
+mtsnmodelpadarincang@gmail.com
+
+11
+MTsN 3 SERANG
+KABUPATEN SERANG
+
+Jl. Raya Cikeusal - Panosogan Km.O3,
+Kp.Kubang Asem RT.007,RW.002 Cikeusal
+Serang
+mtsnceko@gmail.com
+
+12
+MTsN 4 SERANG
+KABUPATEN SERANG
+
+Jl.Raya jaha Km.01 Kubar Desa Mekarsari
+kecamatan Anyer Kabupaten Serang Banten
+www.mtsn4kabserang.sch.id
+
+13
+MTsN 5 SERANG
+KABUPATEN SERANG
+
+Jl. Ki. M. Idris Kp. Sumuranja RT. 001 RW.
+001 Ds. Sumuranja Kec. Pulo Ampel Kab.
+Serang Kode Pos 42455
+mtsn5serang@gmail.com
+
+14 MTSN 3 KOTA TANGERANG
+
+Jl. Adi Sucipto RT 02/08 Kelurahan
+Belendung Kecamatan Benda Kota Tangerang
+mtsn3.kotang@gmail.com
+
+Dokumen ini telah ditandatangani secara elektronik menggunakan sertifikat elektronik yang diterbitkan Balai Besar Sertifikasi Elektronik (BBSrE).
+Token : FWNLzRAN
+
+-12-
+
+No. Nama Madrasah Alamat
+
+15 MTsN 1 KOTA CILEGON
+
+Jl. Bhayangkara KM.1.5 Kebondalem Kec.
+Purwakarta Kota Cilegon
+mtsn.cilegon@ymail.com
+
+16 MTsN 2 KOTA CILEGON
+
+Jl. Ir. Sutami Link. Cimerak RT. 003 RW. 003
+Kel. Kebonsari kec. Citangkil kota cilegon
+provinsi banten
+ad.mtsn2kotacilegon@gmail.com
+
+17 MTsN 3 KOTA CILEGON
+
+Jl. H. Leman Kebayuran Baru, Jl. H. Leman
+Pintu Air, Gerem, Kec. Gerogol, Kota Cilegon,
+Banten 42438
+mtsn3kotacilegon@gmail.com
+
+18
+MTSN 1 KOTA SERANG
+
+Jl. Bhayangkara No. 84 kel. Sumurpecung
+Kec. Serang Kota Serang
+mtsnserang@yahoo.com
+
+19
+MTSN 1 KOTA TANGERANG
+SELATAN
+
+Jalan Pajajaran NO. 31 Pamulang Kota
+Tangerang Selatan
+humas@mtsn1kotatangsel.sch.id
+
+2. Madrasah Aliyah Negeri
+No. Nama Madrasah Alamat
+
+1
+MAN 1 PANDEGLANG
+KABUPATEN PANDEGLANG
+
+Jl. Raya Labuan Km. 02 Ciekek Karaton
+Pandeglang
+man.pandeglang@gmail.com
+
+2
+MAN 2 PANDEGLANG
+KABUPATEN PANDEGLANG
+
+Jl. Raya Labuan, Km. 10, Cigunung,
+Cimanuk, Pandeglang.
+humas.mandapa@gmail.com
+
+3
+MAN 3 PANDEGLANG
+KABUPATEN PANDEGLANG
+
+JL.Raya Panimbang Km 01 Solodongen
+Pandeglang
+man_panimbang@yahoo.co.id
+
+4
+MAN 4 PANDEGLANG
+KABUPATEN PANDEGLANG
+
+Jl. Sukajadi Barat Blok Situ Sadang Sukajadi
+Cibaliung
+man4pandeglang@gmail.com
+
+5
+MAN 1 LEBAK
+KABUPATEN LEBAK
+
+Jl. Siliwangi Pasir Ona Rangkas Bitung Kab.
+Lebak
+man_rangkasbitung@yahoo.co.id
+
+6
+MAN 2 LEBAK
+KABUPATEN LEBAK
+
+Jl. Raya Bayah Cikotok KM 2.5 Kec. Bayah
+Kab Lebak
+man2lebak@gmail.com
+
+7
+MAN 1 TANGERANG
+KABUATEN TANGERANG
+
+Jl. Aria Wangsakara, Desa Tapos Kec.
+Tigaraksa Kab Tangerang
+man1tangerang@gmail.com
+
+8
+MAN 2 TANGERANG
+KABUPATEN TANGERANG
+
+Jl. Raya Serang Talagasari Kec. Balaraja Kab.
+Tangerang
+man2tangerang@gmail.com
+
+9
+MAN 3 TANGERANG
+KABUPATEN TANGERANG
+
+Jl. Raya Mauk KM. 16 Ds. Buaranjati Kec.
+Sukadiri Kab. Tangerang Prop. Banten 15530
+admin@man3tangerang.sch.id
+
+Dokumen ini telah ditandatangani secara elektronik menggunakan sertifikat elektronik yang diterbitkan Balai Besar Sertifikasi Elektronik (BBSrE).
+Token : FWNLzRAN
+
+-13-
+
+No. Nama Madrasah Alamat
+
+10
+MAN 4 TANGERANG
+KABUPATEN TANGERANG
+
+Jl. Kronjo KM 3 Kp Pejamuran Ds Pasilian
+Kec. Kronjo - Tangerang 15550
+admin@man4tangerang.sch.id
+
+11
+MAN 5 TANGERANG
+KABUPATEN TANGERANG
+
+Jl.Cinogo Pesanggrahan kec. Solear Kab
+Tangerang
+man05tangerang@gmail.com
+
+12
+MAN 1 SERANG
+KABUPATEN SERANG
+
+Jl. Sentul - Pematang KM 1.5 Ds Kendayakan
+Kec, Kragilan Kab Serang.
+man_kragilan@yahoo.co.id
+
+13
+MAN 2 SERANG
+KABUPATEN SERANG
+
+Jl. Raya Cikeusal Panosogan Km 03 Cikeusal
+Kab. Serang
+ma.negeri2serang@gmail.com
+
+14
+MAN 3 SERANG
+KABUPATEN SERANG
+
+Jl. Palka Km 25 Kp. Kebon Desa Cisaat Kec.
+Padarincang Kode pos 42168 Kab Serang
+man3kab.serang@gmail.com
+
+15 MAN 1 KOTA TANGERANG
+
+Jl. Lamda Raya No. 1 RT/RW 05/05 Cimone
+Permai - Karawaci Baru - Kota Tangerang
+mantangerang8@gmail.com
+
+16 MAN 2 KOTA TANGERANG
+
+Jl. Panglima Polim No, 6 Pors Plawad Utara
+Cipondoh Kota Tangerang.
+mancipondoh364@gmail.com
+
+17 MAN 1 KOTA CILEGON
+
+Jl. Ir. Sutami Km 2,5 Lebak Denok, Kec,
+Citangkil, Kota Cilegon, 42442
+man1cilegon@gmail.com
+
+18 MAN 2 KOTA CILEGON
+
+Jl. Puskesmas Rawa Arum Kp. Bujang
+gadung Kel Rawa Arum Kec. Grogol Kota
+Cilegon
+man2.kotacilegon@gmail.com
+
+19 MAN 1 KOTA SERANG
+
+Jl. Empat Lima No.20 1, RW.5, Serang, Kec.
+Serang, Kota Serang
+mansatukotaserang@gmail.com
+
+20 MAN 2 KOTA SERANG
+
+JL. KH. Abd. Hadi No. 03 RT.03 RW. 16 Kel.
+Cipare Kota Serang
+man2_serang@yahoo.com
+
+G. Kuota Madrasah
+1. Madrasah Tsanawiyah Negeri
+NO NAMA MADRASAH KABUPATEN/KOTA KUOTA
+1 MTsN 1 Serang Kabupaten Serang 202
+2 MTsN 2 Serang Kabupaten Serang 224
+3 MTsN 3 Serang Kabupaten Serang 224
+4 MTsN 4 Serang Kabupaten Serang 324
+5 MTsN 5 Serang Kabupaten Serang 198
+6 MTsN 1 Lebak Kabupaten Lebak 156
+
+Dokumen ini telah ditandatangani secara elektronik menggunakan sertifikat elektronik yang diterbitkan Balai Besar Sertifikasi Elektronik (BBSrE).
+Token : FWNLzRAN
+
+-14-
+
+NO NAMA MADRASAH KABUPATEN/KOTA KUOTA
+7 MTsN 1 Pandeglang Kabupaten Pandeglang 224
+8 MTsN 2 Pandeglang Kabupaten Pandeglang 200
+9 MTsN 3 Pandeglang Kabupaten Pandeglang 224
+10 MTsN 5 Pandeglang Kabupaten Pandeglang 157
+11 MTsN 7 Pandeglang Kabupaten Pandeglang 90
+12 MTsN 1 Kota Cilegon Kota Cilegon 32
+13 MTsN 2 kota Cilegon Kota Cilegon 32
+14 MTsN 3 Kota Cilegon Kota Cilegon 32
+15 MTsN 1 Kota Serang Kota Cilegon 160
+16 MTsN 3 Tangerang Kabupaten Tangerang 134
+17 MTsN 6 Tangerang Kabupaten Tangerang 100
+18 MTsN 3 Kota Tangerang Kota Tangerang 100
+19 MTsN 1 Kota Tangerang Selatan Kota Tangerang Selatan 190
+Jumlah 3003
+
+2. Madrasah Aliyah Negeri
+NO NAMA MADRASAH KABUPATEN/KOTA KUOTA
+1 MAN 1 Pandeglang Kabupaten Pandeglang 101
+2 MAN 2 Pandeglang Kabupaten Pandeglang 74
+3 MAN 3 Pandeglang Kabupaten Pandeglang 180
+4 MAN 4 Pandeglang Kabupaten Pandeglang 101
+5 MAN 1 Lebak Kabupaten Lebak 88
+6 MAN 2 Lebak Kabupaten Lebak 85
+7 MAN 1 Tangerang Kabupaten Tangerang 126
+8 MAN 2 Tangerang Kabupaten Tangerang 100
+9 MAN 3 Tangerang Kabupaten Tangerang 126
+10 MAN 4 Tangerang Kabupaten Tangerang 101
+11 MAN 5 Tangerang Kabupaten Tangerang 144
+12 MAN 1 Serang Kabupaten Serang 254
+13 MAN 2 Serang Kabupaten Serang 140
+14 MAN 3 Serang Kabupaten Serang 70
+15 MAN 1 Kota Tangerang Kota Tangerang 90
+16 MAN 2 Kota Tangerang Kpta Tangerang 83
+17 MAN 1 Kota Cilegon Kota Cilegon 88
+18 MAN 2 Kota Cilegon Kota Cilegon 75
+19 MAN 1 Kota Serang Kota Serang 288
+20 MAN 2 Kota Serang Kota Serang 324
+JUMLAH 2638
+
+Dokumen ini telah ditandatangani secara elektronik menggunakan sertifikat elektronik yang diterbitkan Balai Besar Sertifikasi Elektronik (BBSrE).
+Token : FWNLzRAN
+
+-15-
+BAB IV
+
+ROMBONGAN BELAJAR
+A. Jumlah Murid dalam Satu Rombongan Belajar
+Jumlah murid dalam satu rombongan belajar diatur sebagai berikut :
+1. Madrasah Tsanawiyah dalam satu kelas berjumlah paling banyak 32 (tiga
+puluh dua) murid; dan
+2. Madrasah Aliyah dalam satu kelas berjumlah paling banyak 36 (tiga puluh
+enam) murid.
+B. Jumlah Rombongan Belajar pada Madrasah
+Jumlah Rombongan Belajar pada Madrasah diatur sebagai berikut :
+1. MTs berjumlah paling sedikit 3 (tiga) dan paling banyak 32 (tiga puluh dua)
+Rombongan Belajar, masing-masing tingkat paling banyak 11 (sebelas)
+Rombongan Belajar;
+2. MA berjumlah paling sedikit 3 (tiga) dan paling banyak 36 (tiga puluh enam)
+Rombongan Belajar, masing-masing tingkat paling banyak 12 (dua belas)
+Rombongan Belajar; dan
+3. Madrasah dapat mempunyai jumlah rombongan belajar melebihi ketentuan
+yang ditetapkan diatas dengan ketentuan sebagai berikut:
+a. Madrasah menjamin/memastikan tercapainya mutu pembelajaran
+minimal sesuai Standar Nasional Pendidikan (SNP) sehingga penambahan
+jumlah rombongan belajar tidak mengganggu pencapaian mutu
+pembelajaran/pelayanan;
+b. Madrasah menjamin/memastikan tercukupinya ruang kelas yang ada
+sehingga penambahan jumlah rombongan belajar tidak berdampak pada
+pembangunan jumlah ruang kelas baru; dan
+c. Madrasah menjamin/memastikan tercukupinya jumlah guru yang ada
+sehingga penambahan jumlah rombongan belajar tidak berdampak pada
+pengangkatan guru baru.
+
+Dokumen ini telah ditandatangani secara elektronik menggunakan sertifikat elektronik yang diterbitkan Balai Besar Sertifikasi Elektronik (BBSrE).
+Token : FWNLzRAN
+
+-16-
+BAB V
+
+PERPINDAHAN MURID
+A. Perpindahan Murid antar madrasah/sekolah
+1. Perpindahan murid antar madrasah/sekolah dalam suatu daerah
+kabupaten/kota, antar kabupaten/kota dalam satu daerah provinsi, atau
+antar provinsi dilaksanakan atas dasar persetujuan kepala satuan
+pendidikan asal dan kepala madrasah yang dituju; dan
+2. Dalam hal terdapat perpindahan murid sebagaimana dimaksud pada poin 1,
+maka madrasah yang bersangkutan wajib memperbaharui Data Pokok pada
+EMIS.
+B. Perpindahan Murid dari Luar Negeri
+1. Murid pendidikan dasar setara MI/SD di negara lain dapat pindah ke MI di
+Provinsi Banten setelah memenuhi persyaratan :
+a. Lulus tes kelayakan dan penempatan yang diselenggarakan madrasah
+yang dituju;
+b. Mendapatkan surat pernyataan dari kepala satuan pendidikan asal; dan
+c. Mendapatkan surat rekomendasi dari Direktur Jenderal Pendidikan Islam.
+Tata cara mendapatkan surat rekomendasi pindah dari Direktur Jenderal
+Pendidikan Islam mengacu pada peraturan perundang-undangan yang
+berlaku.
+2. Murid pendidikan dasar dan menengah setara MTs/SMP, MA/SMA atau
+MAK/SMK di negara lain dapat diterima di MTs, MA dan MAK di Provinsi
+Banten setelah menunjukkan :
+a. Ijazah atau dokumen lain yang membuktikan bahwa murid yang
+bersangkutan telah menyelesaikan pendidikan jenjang sebelumnya;
+b. Surat pernyataan dari kepala satuan pendidikan asal;
+c. Lulus tes kelayakan dan penempatan yang diselenggarakan madrasah
+yang dituju; dan
+d. Mendapatkan surat kesetaraan ijazah luar negeri yang diterbitkan oleh
+Kementerian Agama dan/atau Kementerian Pendidikan Dasar dan
+Menengah.
+
+C. Perpindahan Murid dari satuan pendidikan non formal dan/atau informal
+1. Murid jalur non formal dan informal dapat diterima di MTs tidak pada awal
+kelas 7 (tujuh) setelah memenuhi persyaratan :
+a. Lulus ujian kesetaraan Paket A; dan
+b. Lulus tes kelayakan dan penempatan yang diselenggarakan oleh MTs atau
+bentuk lain yang sederajat yang bersangkutan.
+2. Murid jalur non formal dan informal dapat diterima di MA atau MAK tidak
+pada awal kelas 10 (sepuluh) setelah :
+a. Lulus ujian kesetaraan Paket B; dan
+b. Lulus tes kelayakan dan penempatan yang diselenggarakan oleh MA atau
+MAK yang bersangkutan.
+
+Dokumen ini telah ditandatangani secara elektronik menggunakan sertifikat elektronik yang diterbitkan Balai Besar Sertifikasi Elektronik (BBSrE).
+Token : FWNLzRAN
+
+-17-
+
+3. Madrasah menentukan syarat dalam tes kelayakan dan penempatan
+perpindahan murid jalur non formal dan informal ke madarasah yang
+bersangkutan; dan
+4. Dalam hal terdapat perpindahan murid dari satuan pendidikan non formal
+atau informal ke madrasah sebagaimana dimaksud pada poin 1, 2, 3 dan 4,
+maka madrasah yang bersangkutan wajib memperbaharui data EMIS.
+D. Biaya Perpindahan
+Biaya perpindahan murid ke madrasah yang diselenggarakan oleh Pemerintah
+tidak dapat dilakukan pungutan dari murid.
+
+Dokumen ini telah ditandatangani secara elektronik menggunakan sertifikat elektronik yang diterbitkan Balai Besar Sertifikasi Elektronik (BBSrE).
+Token : FWNLzRAN
+
+-18-
+BAB VI
+
+PELAPORAN DAN PENGAWASAN
+
+1. Madrasah wajib melaporkan pelaksanaan PMBM Bersama pada MTsN dan MAN,
+dan perpindahan murid antar madrasah/sekolah setiap tahun pelajaran kepada
+Kantor Wilayah Kementerian Agama Provinsi Banten,
+2. Madrasah wajib melakukan pengisian, pengiriman dan pemutakhiran data
+murid dan Rombongan Belajar dalam EMIS (termasuk data NISN dan data
+NPSN) sejak awal tahun pelajaran baru berjalan dan secara berkala paling
+sedikit 1 (satu) kali dalam 1 (satu) semester;
+3. Kantor Wilayah Kementerian Agama Provinsi Banten memiliki kanal pelaporan
+untuk menerima laporan masyarakat terkait pelaksanaan PMBM Bersama pada
+MTsN dan MAN; dan
+4. Kantor Wilayah Kementerian Agama Provinsi Banten melakukan pemantauan
+dan evaluasi terhadap pelaksanaan PMBM Bersama pada MTsN dan MAN sesuai
+dengan peraturan perundang-undangan yang berlaku.
+
+Dokumen ini telah ditandatangani secara elektronik menggunakan sertifikat elektronik yang diterbitkan Balai Besar Sertifikasi Elektronik (BBSrE).
+Token : FWNLzRAN
+
+-19-
+BAB VII
+SANKSI DAN PENUTUP
+
+1. SANKSI
+Pemalsuan dalam penginputan data dan atau dokumen-dokumen yang
+disertakan pada saat pendaftaran PMBM Bersama pada MTsN dan MAN dikenai
+sanksi diskualifikasi dan sanksi lain sesuai ketentuan perundang-undangan.
+2. PENUTUP
+Petunjuk Pelaksanaan ini merupakan panduan teknis bagi para pemangku
+kepentingan terkait pelaksanaan Penerimaan Murid Baru Madrasah Bersama
+pada MTsN dan MAN.
+
+KEPALA KANTOR WILAYAH
+KEMENTERIAN AGAMA PROVINSI BANTEN,
+$
+AMRULLAH
+
+Dokumen ini telah ditandatangani secara elektronik menggunakan sertifikat elektronik yang diterbitkan Balai Besar Sertifikasi Elektronik (BBSrE).
+
+```
+
+---
+
+### ./juknis-mandiri.md
+
+```markdown
+# Ringkasan Juknis PMBM MTsN 1 Pandeglang
+**Tahun Pelajaran 2026/2027**
+
+---
+
+## Jalur yang Dibuka
+
+| Jalur | Kuota | Warna Map |
+|---|---|---|
+| Prestasi | - | Merah |
+| Afirmasi | - | Kuning |
+
+---
+
+## Jadwal Kegiatan
+
+| Kegiatan | Tanggal | Keterangan |
+|---|---|---|
+| Pendaftaran Online | 6–8 April 2026 | Website |
+| Penyerahan Berkas | 6–8 April 2026 | Sekretariat PMBM |
+| Verifikasi | 9–10 April 2026 | Panitia |
+| Tes Kemampuan & BTQ | 13 April 2026 | Hadir pukul 07.00 WIB |
+| Pengumuman Hasil | 14 April 2026 | Website |
+| Lapor Diri & Pemberkasan | 15–16 April 2026 | Sekolah |
+
+> Jam kerja panitia: **08.00–14.00 WIB** | Istirahat: **11.30–13.00 WIB**
+
+---
+
+## Persyaratan Umum (Semua Jalur)
+
+- Usia maksimal **15 tahun** per 1 Juli 2026
+- Surat keterangan aktif murid kelas VI
+- Akta kelahiran & Kartu Keluarga **berbarcode**
+
+---
+
+## Jalur Prestasi
+
+### Kategori yang Diakui
+- **Tahfidz** — minimal 3 juz, dibuktikan sertifikat + tes hafalan
+- **Akademik** — KSM/OMI, MYRES, OSN, OSP, OSK; juara 1–3 minimal tingkat kabupaten/kota; diselenggarakan Kemenag, Kemendikbud, BRIN, atau PT Terakreditasi
+- **Non-Akademik** — MTQ, MHQ, MSQ, Pidato Arab, Kaligrafi, Olahraga (hanya top score/pemain terbaik untuk beregu), O2SN, FLS2N
+  - Tingkat kabupaten/kota: Juara 1
+  - Tingkat provinsi: Juara 1–2
+  - Tingkat nasional: Juara 1–3
+
+### Berkas yang Diserahkan
+1. Print out formulir pendaftaran online
+2. Sertifikat prestasi **asli**
+3. Semua dimasukkan map snelhecter **merah**, diberi label identitas
+
+---
+
+## Jalur Afirmasi
+
+### Kriteria
+- Pemegang **KIP, PKH, KKS**, atau **SKTM** dari pemerintah daerah
+- SKTM wajib dilengkapi:
+  - Fotokopi rekening listrik 3 bulan terakhir
+  - Foto tampak depan, dalam, dan belakang rumah
+
+### Berkas yang Diserahkan
+1. Print out formulir pendaftaran online
+2. Fotokopi kartu KIP/PKH/KKS/SKTM yang dilegalisir
+3. Semua dimasukkan map snelhecter **kuning**, diberi label identitas
+
+---
+
+## Ketentuan Gugur
+
+Pendaftar dinyatakan **gugur** apabila:
+- Isi formulir online tapi tidak serahkan berkas
+- Serahkan berkas tapi tidak isi formulir online
+- Dokumen fisik tidak sesuai dengan yang diunggah
+- Tidak lapor diri sesuai jadwal → dinyatakan **mengundurkan diri**
+
+---
+
+## Informasi Penting
+
+- Peserta tidak lolos → boleh daftar ulang ke **Jalur Reguler (PMBM Bersama)**
+- Berkas peserta tidak lolos dapat diambil sehari setelah pengumuman
+- Pendaftaran **gratis**, tidak ada pungutan biaya apapun
+- Website resmi: **daftar.mtsn1pandeglang.sch.id**
+
+---
+
+*Pandeglang, 31 Maret 2026*
+*Kepala Madrasah: Hj. Yanti Mariah, S.S., M.Pd.*
+*Ketua PMBM: Umar Mu'tamar, S.Ag*
+
+```
+
+---
+
+### ./lirik.md
+
+```markdown
+# Anak Lanang - Ajeng Febria
+
+## Verse 1
+Aku iki anak lanang
+_Aku ini anak laki-laki_
+Kerjo ku mung turut dalan
+_Pekerjaanku hanya mengikuti jalan_
+Mugo iso mulyakke drajate keluargo
+_Semoga bisa memuliakan derajat keluarga_
+Pak e bu e rekasane
+_Susah payahnya ayah dan ibu_
+Ngrawat aku kanti gede
+_Merawatku hingga besar_
+Cen kathah luput ku
+_Memang banyak kesalahanku_
+Kulo nyuwun pangestu
+_Saya mohon doa restu_
+
+## Verse 2
+Biyen omahku gedek
+_Dulu rumahku berdinding gedek (anyaman bambu)_
+Trocoh yen udan bledek
+_Bocor kalau hujan deras_
+Bapak kerjo yen mung ono proyek
+_Bapak kerja kalau hanya ada proyek_
+Biyen durung kramikan
+_Dulu belum menikah_
+Arep turu adem kanginan
+_Mau tidur pun gerah kegerahan_
+Penting saben dino iso mangan
+_Yang penting setiap hari bisa makan_
+
+## Verse 3
+Saiki aku wes gede
+_Sekarang aku sudah besar_
+Iso golek duit dewe
+_Bisa mencari uang sendiri_
+Senajan biyen mung iso nyusahke
+_Meskipun dulu hanya bisa menyusahkan_
+Pak e buk e ngapurane
+_Ayah dan ibu maafkanlah_
+Saiki aku wis kerjo
+_Sekarang aku sudah bekerja_
+Senajan uripku rekoso
+_Meskipun hidupku susah_
+Ikhlas bekti kanggo keluargo
+_Ikhlas berbakti untuk keluarga_
+
+## Chorus
+Aku iki anak lanang
+_Aku ini anak laki-laki_
+Kerjo ku mung turut dalan
+_Pekerjaanku hanya mengikuti jalan_
+Mugo iso mulyakke drajate keluargo
+_Semoga bisa memuliakan derajat keluarga_
+Pak e bu e rekasane
+_Susah payahnya ayah dan ibu_
+Ngrawat aku kanti gede
+_Merawatku hingga besar_
+Cen kathah luput ku
+_Memang banyak kesalahanku_
+Kulo nyuwun pangestu
+_Saya mohon doa restu_
+
+## Verse 4
+Biyen durung kramikan
+_Dulu belum menikah_
+Arep turu adem kanginan
+_Mau tidur pun gerah kegerahan_
+Penting saben dino iso mangan
+_Yang penting setiap hari bisa makan_
+
+## Verse 5
+Saiki aku wes gede
+_Sekarang aku sudah besar_
+Iso golek duit dewe
+_Bisa mencari uang sendiri_
+Senajan biyen mung iso nyusahke
+_Meskipun dulu hanya bisa menyusahkan_
+Pak e buk e ngapurane
+_Ayah dan ibu maafkanlah_
+Saiki aku wis kerjo
+_Sekarang aku sudah bekerja_
+Senajan uripku rekoso
+_Meskipun hidupku susah_
+Ikhlas bekti kanggo keluargo
+_Ikhlas berbakti untuk keluarga_
+
+## Chorus
+Aku iki anak lanang
+_Aku ini anak laki-laki_
+Kerjo ku mung turut dalan
+_Pekerjaanku hanya mengikuti jalan_
+Mugo iso mulyakke drajate keluargo
+_Semoga bisa memuliakan derajat keluarga_
+Pak e bu e rekasane
+_Susah payahnya ayah dan ibu_
+Ngrawat aku kanti gede
+_Merawatku hingga besar_
+Cen kathah luput ku
+_Memang banyak kesalahanku_
+Kulo nyuwun pangestu
+_Saya mohon doa restu_
+
+## Outro
+Aku iki anak lanang
+_Aku ini anak laki-laki_
+Kerjo ku mung turut dalan
+_Pekerjaanku hanya mengikuti jalan_
+Mugo iso mulyakke drajate keluargo
+_Semoga bisa memuliakan derajat keluarga_
+Pak e bu e rekasane
+_Susah payahnya ayah dan ibu_
+Ngrawat aku kanti gede
+_Merawatku hingga besar_
+Cen kathah luput ku
+_Memang banyak kesalahanku_
+Kulo nyuwun pangestu
+_Saya mohon doa restu_
+Cen kathah luput ku
+_Memang banyak kesalahanku_
+Kulo nyuwun pangestu
+_Saya mohon doa restu_
+Kathah klenta klentu
+_Banyak kekeliruan dan kesalahan_
+Kulo nyuwun donga restu
+_Saya mohon doa restu_
+Biyen pedot sekolah
+_Dulu putus sekolah_
+Mergo kahanane susah
+_Karena keadaan susah_
+Weling bapak dadi wong sing genah
+_Pesan bapak jadilah orang yang benar_
+
+```
+
+---
+
 ### ./package.json
 
 ```json
@@ -22905,6 +28416,1302 @@ export default {
         autoprefixer: {},
     },
 };
+
+```
+
+---
+
+### ./ringkasan.md
+
+```markdown
+| Jalur/Kegiatan | Mulai | Selesai |
+|---|---|---|
+| **PPDB Global** | 6 Apr 08:00 | 12 Mei 18:00 |
+| **Prestasi** — Pendaftaran | 6 Apr 08:00 | 8 Apr 18:00 |
+| **Prestasi** — Pengumuman | 14 Apr 08:00 | 14 Apr 18:00 |
+| **Afirmasi** — Pendaftaran | 6 Apr 08:00 | 8 Apr 18:00 |
+| **Afirmasi** — Pengumuman | 14 Apr 08:00 | 14 Apr 18:00 |
+
+| **Reguler** — Pendaftaran | 18 Apr 08:00 | 27 Apr 18:00 |
+| **Reguler** — Pengumuman | 5 Mei 08:00 | 5 Mei 18:00 |
+| **Kartu Tes** | 29 Apr 08:00 | 30 Apr 18:00 |
+| **Tes Akademik (CBT)** | 2 Mei 08:00 | 2 Mei 18:00 |
+| **Tes Praktik/BTQ** | 2 Mei 08:00 | 3 Mei 18:00 |
+| **Registrasi Berkas** | 6 Mei 08:00 | 12 Mei 18:00 |
+
+```
+
+---
+
+### ./SRS-Bersama.md
+
+```markdown
+# KONSEP SOFTWARE REQUIREMENTS SPECIFICATION (SRS)
+## Landing Page PMBM MTsN 1 Pandeglang
+### Tahun Pelajaran 2026/2027
+
+---
+
+## LANGKAH 1 — GAMBARAN UMUM SISTEM
+
+### 1.1 Deskripsi Produk
+Landing page ini adalah antarmuka web satu halaman (single-page) yang berfungsi sebagai:
+- Pusat informasi resmi PMBM MTsN 1 Pandeglang TP 2026/2027
+- Panduan lengkap pendaftaran bagi calon murid dan orang tua
+- Pintu masuk (gateway) menuju sistem pendaftaran online resmi di http://pmbm-kanwilbanten.com/
+- Kanal komunikasi antara madrasah dan masyarakat
+
+### 1.2 Ruang Lingkup
+- Cakupan: Informasi PMBM Jalur Reguler MTsN 1 Pandeglang
+- Platform: Website (responsif — desktop, tablet, mobile)
+- Bahasa: Bahasa Indonesia
+- Bukan sistem pendaftaran (tidak ada database murid di sisi ini)
+
+### 1.3 Pengguna Sistem (User Persona)
+
+| Persona | Deskripsi | Kebutuhan Utama |
+|---|---|---|
+| Orang tua/wali | Dewasa, literasi digital menengah | Informasi syarat, jadwal, cara daftar |
+| Calon murid (anak SD/MI) | Usia 10–12 tahun, melek gadget | Visual menarik, langkah daftar mudah dipahami |
+| Guru/operator MI/SD | Profesional pendidikan | Data teknis: NISN, NPSN, EMIS, kuota |
+| Masyarakat umum | Beragam | Info umum madrasah, kontak, pengaduan |
+
+---
+
+## LANGKAH 2 — STRUKTUR HALAMAN (SITEMAP / SECTION LAYOUT)
+
+Landing page terdiri dari **9 section** yang tersusun secara linear dari atas ke bawah:
+
+```
+[1] HERO / BANNER UTAMA
+[2] TENTANG PMBM
+[3] PERSYARATAN PENDAFTARAN
+[4] ALUR / TATA CARA PENDAFTARAN
+[5] JADWAL PENTING
+[6] MEKANISME SELEKSI
+[7] KUOTA & ROMBEL
+[8] FAQ
+[9] FOOTER & KONTAK
+```
+
+---
+
+## LANGKAH 3 — DETAIL SETIAP SECTION
+
+---
+
+### SECTION 1 — HERO / BANNER UTAMA
+
+**Tujuan:** Memberikan kesan pertama yang kuat dan menyampaikan informasi inti dalam 3 detik.
+
+**Elemen yang harus ada:**
+- Logo MTsN 1 Pandeglang (placeholder jika belum tersedia)
+- Logo Kementerian Agama RI
+- Judul besar: *"Penerimaan Murid Baru Madrasah (PMBM) MTsN 1 Pandeglang Tahun Pelajaran 2026/2027"*
+- Subjudul: *"Pendaftaran Online Jalur Reguler — Terbuka untuk Lulusan MI/SD Sederajat"*
+- Informasi ringkas kuota: **224 kursi tersedia**
+- Dua tombol CTA (Call to Action):
+  - **[Daftar Sekarang]** → link ke http://pmbm-kanwilbanten.com/
+  - **[Unduh Panduan]** → opsional, file PDF juknis
+- Countdown timer: Hitung mundur menuju tanggal buka pendaftaran (18 April 2026)
+- Background: Foto eksterior madrasah atau ilustrasi islami (placeholder awal)
+
+---
+
+### SECTION 2 — TENTANG PMBM
+
+**Tujuan:** Memberi konteks mengapa PMBM diadakan dan siapa penyelenggaranya.
+
+**Elemen yang harus ada:**
+- Penjelasan singkat PMBM (2–3 paragraf):
+  - Dasar hukum: Keputusan Kanwil Kemenag Banten No. 009/B/Tahun 2026
+  - Prinsip: Objektif, akuntabel, transparan, tidak diskriminatif
+  - Gratis: tidak ada pungutan biaya dari calon murid
+- Informasi madrasah:
+  - Nama: MTsN 1 Pandeglang
+  - Alamat: Jl. Raya Labuan, Kadulisung, Pandeglang
+  - Email: mtsnpdg1.417849@gmail.com
+- Badge/highlight: "Terakreditasi", "Negeri", "Gratis"
+
+---
+
+### SECTION 3 — PERSYARATAN PENDAFTARAN
+
+**Tujuan:** Memastikan calon murid dan orang tua tahu apa saja yang perlu disiapkan sebelum mendaftar.
+
+**Elemen yang harus ada:**
+
+**3A. Persyaratan Umum (checklist visual):**
+1. Asal sekolah memiliki NPSN dan terdaftar di EMIS/DAPODIK
+2. Calon murid memiliki NISN dan terdaftar di EMIS/DAPODIK
+3. Usia maksimal **15 tahun** per 1 Juli 2026
+4. Ijazah MI/SD sederajat atau dokumen penyelesaian pendidikan
+
+**3B. Dokumen yang Harus Diunggah (checklist visual):**
+1. Kartu Keluarga (KK) — diterbitkan sebelum Maret 2026
+2. Ijazah MI/SD sederajat
+3. Syahadah Diniyah *(khusus calon murid yang tinggal di dalam/luar Kab. Serang dan akan sekolah di Kab. Serang — tidak berlaku untuk MTsN 1 Pandeglang)*
+4. Sertifikat Akreditasi sekolah asal *(hanya bagi asal luar Provinsi Banten)*
+5. Surat Pernyataan Pertanggungjawaban Mutlak — bermaterai Rp 10.000
+6. Surat Rekomendasi/Kesetaraan Ijazah *(hanya bagi asal sekolah asing)*
+
+**3C. Catatan penting:**
+- Calon murid yang sekolah asal belum/tidak terakreditasi → nilai akreditasi otomatis = **65**
+- Pemalsuan dokumen = **diskualifikasi + sanksi hukum**
+
+**Desain rekomendasi:** Tampilkan sebagai card checklist dengan ikon centang, beri tanda "Wajib" vs "Kondisional".
+
+---
+
+### SECTION 4 — ALUR / TATA CARA PENDAFTARAN
+
+**Tujuan:** Memandu calon murid langkah demi langkah agar tidak bingung.
+
+**Desain rekomendasi:** Stepper horizontal atau vertikal (numbered steps dengan ikon).
+
+**Langkah-langkah:**
+
+**TAHAP 1 — Persiapan Dokumen**
+> Siapkan semua dokumen digital (scan/foto): KK, Ijazah, Surat Pernyataan bermaterai, dan dokumen kondisional lainnya.
+
+**TAHAP 2 — Akses Website Pendaftaran**
+> Buka http://pmbm-kanwilbanten.com/ menggunakan browser di HP atau komputer.
+
+**TAHAP 3 — Input NISN**
+> Masukkan NISN (Nomor Induk Siswa Nasional) sebagai identitas pendaftaran.
+
+**TAHAP 4 — Isi Formulir Online**
+> Lengkapi data diri, data orang tua, dan informasi sekolah asal.
+
+**TAHAP 5 — Pilih Madrasah Tujuan**
+> Pilih minimal 1 dan maksimal 2 madrasah tujuan. Salah satunya bisa MTsN 1 Pandeglang.
+
+**TAHAP 6 — Unggah Dokumen**
+> Upload semua berkas persyaratan sesuai ketentuan (format file dan ukuran menyesuaikan sistem).
+
+**TAHAP 7 — Cetak Bukti Pendaftaran**
+> Setelah berkas dinyatakan lengkap, cetak bukti pendaftaran secara online.
+
+**TAHAP 8 — Tunggu Verifikasi**
+> Panitia madrasah akan melakukan verifikasi berkas secara online (7–15 April).
+
+**TAHAP 9 — Cek Pengumuman Peserta CBT**
+> Pengumuman peserta yang lolos verifikasi dan berhak mengikuti CBT pada 29 April 2026.
+
+**TAHAP 10 — Ikuti Uji Coba & Pelaksanaan CBT**
+> Uji coba: 30 April. Pelaksanaan CBT: 2 Mei. Tes BTQ: 2–3 Mei.
+
+**TAHAP 11 — Cek Hasil Kelulusan**
+> Pengumuman hasil kelulusan pada 5 Mei 2026 melalui http://pmbm-kanwilbanten.com/
+
+**TAHAP 12 — Lapor Diri (Daftar Ulang)**
+> Jika diterima, wajib lapor diri langsung ke madrasah pada 6–12 Mei 2026. Jika tidak lapor diri = **gugur**.
+
+---
+
+### SECTION 5 — JADWAL PENTING
+
+**Tujuan:** Menampilkan timeline PMBM MTsN secara visual agar mudah diingat.
+
+**Desain rekomendasi:** Timeline card horizontal dengan warna berbeda per fase.
+
+| No | Kegiatan | Tanggal | Waktu |
+|---|---|---|---|
+| 1 | Informasi & Sosialisasi | Maret – April 2026 | — |
+| 2 | **Pendaftaran Online** | **18 – 27 April 2026** | 08.00–16.00 WIB |
+| 3 | Verifikasi Dokumen | 19 – 28 April 2026 | 08.00–16.00 WIB |
+| 4 | Pengumuman Peserta CBT | 29 April 2026 | 08.00 WIB |
+| 5 | Uji Coba CBT | 30 April 2026 | 07.30–16.00 WIB |
+| 6 | Pelaksanaan CBT | 2 Mei 2026 | 07.30–16.00 WIB |
+| 7 | Tes Baca Tulis Al-Qur'an | 2 – 3 Mei 2026 | 07.30–16.00 WIB |
+| 8 | **Pengumuman Kelulusan** | **5 Mei 2026** | 08.00 WIB |
+| 9 | Lapor Diri & Berkas Manual | 6 – 12 Mei 2026 | 08.00–16.00 WIB |
+
+**Fitur tambahan:** Highlight jadwal yang sedang aktif / akan datang berdasarkan tanggal hari ini (JavaScript).
+
+---
+
+### SECTION 6 — MEKANISME SELEKSI
+
+**Tujuan:** Menjelaskan bagaimana penilaian dilakukan agar calon murid dapat mempersiapkan diri.
+
+**Elemen yang harus ada:**
+
+**6A. Jenis Jalur Seleksi:**
+- Jalur Reguler (yang dibahas di landing page ini)
+- Jalur Prestasi dan Afirmasi → arahkan ke madrasah untuk info lebih lanjut
+
+**6B. Komponen Nilai Akhir (Jalur Reguler):**
+
+```
+NILAI AKHIR = (70% × Nilai CBT) + (30% × Nilai BTQ)
+```
+
+- **CBT (Computer Based Test):** Tes berbasis komputer di lokasi yang ditentukan
+- **BTQ (Baca Tulis Al-Qur'an):** Dilaksanakan di madrasah pilihan atau lokasi CBT
+
+**6C. Aturan Tie-Breaking (jika nilai sama):**
+1. Prioritas usia lebih tua
+2. Jika usia juga sama → prioritas waktu mendaftar lebih awal
+
+**6D. Pengumuman:**
+- Hasil dapat diakses di: http://pmbm-kanwilbanten.com/
+- Jika diterima: wajib lapor diri langsung ke madrasah
+- Jika tidak diterima: dapat mengikuti jalur seleksi lainnya pada PMBM 2026
+
+---
+
+### SECTION 7 — KUOTA & ROMBONGAN BELAJAR
+
+**Tujuan:** Transparansi kapasitas penerimaan.
+
+**Elemen:**
+- Kuota MTsN 1 Pandeglang: **224 murid baru**
+- Maksimal per kelas (rombel): **32 murid**
+- Estimasi jumlah kelas baru: **7 kelas**
+- Catatan: biaya pendidikan = Rp 0 (gratis, dibiayai BOS/BOP Madrasah)
+
+---
+
+### SECTION 8 — FAQ (Pertanyaan yang Sering Diajukan)
+
+**Desain rekomendasi:** Accordion (expand/collapse).
+
+**Daftar FAQ yang disarankan:**
+
+1. **Apakah pendaftaran dikenakan biaya?**
+   → Tidak. Seluruh biaya PMBM dibebankan pada anggaran BOS/BOP Madrasah.
+
+2. **Berapa madrasah yang bisa dipilih?**
+   → Minimal 1, maksimal 2 madrasah tujuan.
+
+3. **Apa itu NISN dan bagaimana cara mendapatkannya?**
+   → NISN adalah Nomor Induk Siswa Nasional. Bisa dicek di sekolah asal atau di https://nisn.data.kemdikbud.go.id/
+
+4. **Saya lulusan sekolah luar Provinsi Banten, apakah bisa daftar?**
+   → Bisa, dengan syarat mengunggah Sertifikat Akreditasi sekolah asal.
+
+5. **Apa itu Surat Pernyataan Pertanggungjawaban Mutlak?**
+   → Surat bermaterai Rp 10.000 dari orang tua/wali yang menyatakan keabsahan seluruh dokumen. Format tersedia di website pendaftaran.
+
+6. **Jika diterima, kapan lapor diri?**
+   → 6 – 12 Mei 2026, langsung datang ke MTsN 1 Pandeglang.
+
+7. **Apa yang terjadi jika tidak lapor diri meski dinyatakan diterima?**
+   → Dianggap gugur dari hasil seleksi.
+
+8. **Apa yang diujikan dalam CBT?**
+   → Materi CBT mengacu pada kurikulum MI/SD. Detail materi dapat ditanyakan langsung ke panitia madrasah.
+
+9. **Di mana saya bisa mengadukan masalah pendaftaran?**
+   → Melalui kanal pengaduan yang disediakan Kanwil Kemenag Banten atau langsung ke meja pelayanan MTsN 1 Pandeglang.
+
+---
+
+### SECTION 9 — FOOTER & KONTAK
+
+**Elemen yang harus ada:**
+- Nama resmi: MTsN 1 Pandeglang
+- Alamat lengkap: Jl. Raya Labuan, Kadulisung, Pandeglang, Banten
+- Email: mtsnpdg1.417849@gmail.com
+- Nomor telepon: *(perlu diisi dari pihak madrasah)*
+- Link eksternal:
+  - Website pendaftaran: http://pmbm-kanwilbanten.com/
+  - Website Kanwil Kemenag Banten: http://banten.kemenag.go.id
+- Tombol CTA terakhir: **[Daftar Sekarang →]**
+- Keterangan hukum: *"Diselenggarakan berdasarkan Keputusan Kepala Kanwil Kemenag Provinsi Banten No. 009/B/Tahun 2026"*
+- Tahun: © 2026 MTsN 1 Pandeglang
+
+---
+
+## LANGKAH 4 — SPESIFIKASI TEKNIS
+
+### 4.1 Platform & Stack Teknologi (rekomendasi)
+| Komponen | Rekomendasi |
+|---|---|
+| Frontend | HTML5 + CSS3 + JavaScript (atau React/Vue jika dinamis) |
+| Framework CSS | Tailwind CSS atau Bootstrap 5 |
+| Hosting | GitHub Pages / Netlify / VPS Kemenag |
+| Domain | Subdomain madrasah atau domain baru |
+| Responsif | Wajib (mobile-first) |
+
+### 4.2 Fitur Fungsional
+| ID | Fitur | Prioritas |
+|---|---|---|
+| F-01 | Countdown timer ke tanggal buka pendaftaran | Tinggi |
+| F-02 | Highlight jadwal aktif (berdasarkan tanggal hari ini) | Tinggi |
+| F-03 | Tombol CTA ke link pendaftaran eksternal | Tinggi |
+| F-04 | Accordion FAQ | Sedang |
+| F-05 | Smooth scroll navigasi | Sedang |
+| F-06 | Sticky navbar | Sedang |
+| F-07 | Tombol WhatsApp/kontak cepat | Sedang |
+| F-08 | Download template Surat Pernyataan | Sedang |
+| F-09 | Dark/Light mode | Rendah |
+| F-10 | Multi-bahasa (Indonesia/Arab) | Rendah |
+
+### 4.3 Fitur Non-Fungsional
+- Waktu loading: < 3 detik pada jaringan 4G
+- Kompatibel browser: Chrome, Firefox, Safari, Edge (versi 2 tahun terakhir)
+- Aksesibilitas: Teks dapat dibaca di layar kecil (font min 14px)
+- Keamanan: HTTPS wajib
+- SEO: Meta tag, Open Graph, judul halaman deskriptif
+
+---
+
+## LANGKAH 5 — ASET YANG PERLU DISIAPKAN
+
+Karena dimulai dari nol, berikut daftar aset yang perlu dikumpulkan dari pihak madrasah:
+
+| No | Aset | Format | Prioritas |
+|---|---|---|---|
+| 1 | Logo MTsN 1 Pandeglang | PNG transparan | Wajib |
+| 2 | Logo Kementerian Agama RI | PNG transparan | Wajib |
+| 3 | Foto eksterior gedung madrasah | JPG min 1200px | Wajib |
+| 4 | Foto kegiatan belajar/siswa | JPG min 800px | Dianjurkan |
+| 5 | Nomor telepon resmi madrasah | Teks | Wajib |
+| 6 | Nomor WhatsApp panitia | Teks | Dianjurkan |
+| 7 | Template Surat Pernyataan | DOCX/PDF | Wajib |
+| 8 | Nama Kepala Madrasah | Teks | Dianjurkan |
+| 9 | Akun media sosial resmi | URL | Opsional |
+
+---
+
+## LANGKAH 6 — PANDUAN DESAIN VISUAL
+
+### 6.1 Identitas Warna (rekomendasi)
+- **Hijau tua** (#1B5E20) — warna primer, identitas Islam/Kemenag
+- **Hijau muda** (#4CAF50) — aksen
+- **Putih** (#FFFFFF) — background utama
+- **Abu-abu terang** (#F5F5F5) — background section alternatif
+- **Emas/kuning** (#FFC107) — highlight/CTA
+- **Merah** (#D32F2F) — peringatan/batas waktu
+
+### 6.2 Tipografi (rekomendasi)
+- Judul: **Poppins Bold** atau **Plus Jakarta Sans Bold**
+- Body: **Poppins Regular** atau **Inter**
+- Arab/Islami (jika diperlukan): **Amiri** atau **Scheherazade New**
+
+### 6.3 Tone Visual
+- Bersih, profesional, terpercaya (institusi pemerintah)
+- Ramah dan mudah dipahami (untuk orang tua dan anak)
+- Islami namun modern
+
+---
+
+*Dokumen ini merupakan konsep awal SRS Landing Page PMBM MTsN 1 Pandeglang TP 2026/2027. Revisi dapat dilakukan sesuai kebutuhan dan masukan stakeholder.*
+
+```
+
+---
+
+### ./SRS-Mandiri.md
+
+```markdown
+# KONSEP SOFTWARE REQUIREMENTS SPECIFICATION (SRS)
+## Landing Page PMBM MTsN 1 Pandeglang
+### Tahun Pelajaran 2026/2027
+
+---
+
+## LANGKAH 1 — GAMBARAN UMUM SISTEM
+
+### 1.1 Deskripsi Produk
+Landing page ini adalah antarmuka web satu halaman (single-page) yang berfungsi sebagai:
+- Pusat informasi resmi PMBM MTsN 1 Pandeglang TP 2026/2027 untuk **3 jalur sekaligus**
+- Panduan lengkap pendaftaran bagi calon murid dan orang tua
+- Pintu masuk ke dua sistem pendaftaran:
+  - Jalur Prestasi & Afirmasi → **daftar.mtsn1pandeglang.sch.id** (sistem lokal madrasah)
+  - Jalur Reguler → **http://pmbm-kanwilbanten.com/** (sistem Kanwil Kemenag Banten)
+- Kanal komunikasi antara madrasah dan masyarakat
+
+### 1.2 Ruang Lingkup
+- Cakupan: PMBM MTsN 1 Pandeglang — Jalur Prestasi, Afirmasi, dan Reguler
+- Platform: Website responsif (desktop, tablet, mobile)
+- Bahasa: Bahasa Indonesia
+- Sifat: Informatif + gateway; bukan sistem pendaftaran itu sendiri
+
+### 1.3 Pengguna Sistem (User Persona)
+
+| Persona | Deskripsi | Kebutuhan Utama |
+|---|---|---|
+| Orang tua/wali | Dewasa, literasi digital menengah | Syarat, jadwal, biaya, cara daftar |
+| Calon murid (kelas VI MI/SD) | Usia 10–12 tahun, melek gadget | Langkah daftar visual & mudah dipahami |
+| Guru/operator MI/SD | Profesional pendidikan | Data teknis: NISN, NPSN, jalur, kuota |
+| Masyarakat umum | Beragam | Info umum, kontak, kanal pengaduan |
+
+---
+
+## LANGKAH 2 — ARSITEKTUR INFORMASI & STRUKTUR HALAMAN
+
+### 2.1 Konsep Utama: "3 Jalur, 1 Pintu"
+Landing page dirancang dengan konsep **satu pintu masuk** yang memandu pengunjung memilih jalur yang tepat sebelum masuk ke sistem pendaftaran masing-masing. Alurnya:
+
+```
+Pengunjung tiba
+      ↓
+[Hero] → Pilih Jalur
+      ↓              ↓              ↓
+[Prestasi]      [Afirmasi]      [Reguler]
+      ↓              ↓              ↓
+daftar.mtsn1   daftar.mtsn1   pmbm-kanwil
+pandeglang     pandeglang     banten.com
+.sch.id        .sch.id
+```
+
+### 2.2 Susunan Section (Linear Scroll)
+
+```
+[01] HERO / BANNER UTAMA
+[02] PENGENALAN 3 JALUR (Pemilihan Jalur)
+[03] JADWAL — Prestasi & Afirmasi
+[04] JADWAL — Reguler (PMBM Bersama)
+[05] PERSYARATAN UMUM (Semua Jalur)
+[06] DETAIL JALUR PRESTASI
+[07] DETAIL JALUR AFIRMASI
+[08] DETAIL JALUR REGULER
+[09] MEKANISME SELEKSI
+[10] KETENTUAN GUGUR (Penting!)
+[11] KUOTA & ROMBONGAN BELAJAR
+[12] FAQ
+[13] FOOTER & KONTAK
+```
+
+---
+
+## LANGKAH 3 — DETAIL SETIAP SECTION
+
+---
+
+### SECTION 01 — HERO / BANNER UTAMA
+
+**Tujuan:** Kesan pertama kuat; sampaikan inti informasi dalam 3 detik.
+
+**Elemen wajib:**
+- Logo MTsN 1 Pandeglang + Logo Kementerian Agama RI (berdampingan)
+- Judul utama:
+  *"Penerimaan Murid Baru Madrasah (PMBM) MTsN 1 Pandeglang — Tahun Pelajaran 2026/2027"*
+- Subjudul:
+  *"Terbuka untuk Lulusan MI/SD Sederajat | 3 Jalur Pendaftaran | Gratis"*
+- Nama Kepala Madrasah: **Hj. Yanti Mariah, S.S., M.Pd.**
+- Kuota tersedia: **224 kursi** (Jalur Reguler) + kuota Prestasi & Afirmasi *(diisi setelah data tersedia)*
+- **Countdown timer** menuju tanggal pembukaan terdekat:
+  - Prestasi & Afirmasi: **6 April 2026**
+  - Reguler: **18 April 2026**
+  - Logika: tampilkan countdown ke tanggal terdekat yang belum lewat
+- Dua tombol CTA:
+  - **[Daftar Prestasi/Afirmasi]** → daftar.mtsn1pandeglang.sch.id
+  - **[Daftar Reguler]** → http://pmbm-kanwilbanten.com/
+- Background: foto eksterior madrasah atau ilustrasi islami (placeholder awal)
+
+---
+
+### SECTION 02 — PENGENALAN 3 JALUR
+
+**Tujuan:** Bantu pengunjung memahami perbedaan jalur agar bisa memilih yang tepat.
+
+**Desain rekomendasi:** 3 card berdampingan, masing-masing berwarna berbeda sesuai warna map fisik.
+
+| Elemen | Jalur Prestasi | Jalur Afirmasi | Jalur Reguler |
+|---|---|---|---|
+| Warna card | Merah | Kuning | Biru/Hijau |
+| Ikon | 🏆 Piala | 💛 Hati | 📝 Formulir |
+| Singkatan untuk siapa | Berprestasi (akademik/non-akademik/tahfidz) | Keluarga kurang mampu (KIP/PKH/KKS/SKTM) | Umum / semua calon murid |
+| Sistem daftar | daftar.mtsn1pandeglang.sch.id | daftar.mtsn1pandeglang.sch.id | pmbm-kanwilbanten.com |
+| Jadwal buka | 6 April 2026 | 6 April 2026 | 18 April 2026 |
+| Tombol CTA | [Pelajari & Daftar] | [Pelajari & Daftar] | [Pelajari & Daftar] |
+
+**Catatan:** Tiap tombol CTA melakukan smooth scroll ke section detail jalur masing-masing, bukan langsung ke link eksternal — agar pengunjung membaca syarat terlebih dahulu.
+
+**Catatan penting untuk pengunjung (infoboks):**
+> "Tidak lolos Jalur Prestasi/Afirmasi? Anda masih bisa mendaftar ke Jalur Reguler (PMBM Bersama) yang dibuka mulai 18 April 2026."
+
+---
+
+### SECTION 03 — JADWAL PRESTASI & AFIRMASI
+
+**Tujuan:** Tampilkan timeline Jalur Prestasi & Afirmasi secara visual.
+
+**Desain rekomendasi:** Timeline vertikal dengan indikator status (mendatang / sedang berlangsung / selesai) berbasis tanggal hari ini.
+
+| No | Kegiatan | Tanggal | Keterangan |
+|---|---|---|---|
+| 1 | Pendaftaran Online | 6 – 8 April 2026 | Website: daftar.mtsn1pandeglang.sch.id |
+| 2 | Penyerahan Berkas Fisik | 6 – 8 April 2026 | Sekretariat PMBM MTsN 1 Pandeglang |
+| 3 | Verifikasi Berkas | 9 – 10 April 2026 | Dilakukan panitia |
+| 4 | Tes Kemampuan & BTQ | 13 April 2026 | Hadir pukul **07.00 WIB** |
+| 5 | Pengumuman Hasil | 14 April 2026 | Website resmi madrasah |
+| 6 | Lapor Diri & Pemberkasan | 15 – 16 April 2026 | Langsung ke madrasah |
+
+**Infoboks jam kerja panitia:**
+> ⏰ Jam layanan panitia: **08.00 – 14.00 WIB** | Istirahat: **11.30 – 13.00 WIB**
+
+---
+
+### SECTION 04 — JADWAL REGULER (PMBM BERSAMA)
+
+**Tujuan:** Tampilkan timeline Jalur Reguler dengan sumber dari Juknis Kanwil Kemenag Banten.
+
+| No | Kegiatan | Tanggal | Keterangan |
+|---|---|---|---|
+| 1 | Informasi & Sosialisasi | Maret – April 2026 | — |
+| 2 | Pendaftaran Online | 18 – 27 April 2026 | Buka 18 Apr 08.00 WIB, tutup 27 Apr 16.00 WIB |
+| 3 | Verifikasi Dokumen | 19 – 28 April 2026 | 08.00 – 16.00 WIB |
+| 4 | Pengumuman Peserta CBT | 29 April 2026 | 08.00 WIB |
+| 5 | Uji Coba CBT | 30 April 2026 | 07.30 – 16.00 WIB |
+| 6 | Pelaksanaan CBT | 2 Mei 2026 | 07.30 – 16.00 WIB |
+| 7 | Tes Baca Tulis Al-Qur'an | 2 – 3 Mei 2026 | 07.30 – 16.00 WIB |
+| 8 | Pengumuman Kelulusan | 5 Mei 2026 | 08.00 WIB |
+| 9 | Lapor Diri & Berkas Manual | 6 – 12 Mei 2026 | Buka 6 Mei 08.00, tutup 12 Mei 16.00 WIB |
+
+---
+
+### SECTION 05 — PERSYARATAN UMUM (SEMUA JALUR)
+
+**Tujuan:** Tampilkan syarat dasar yang berlaku untuk semua jalur agar tidak terulang di tiap section.
+
+**Checklist visual:**
+1. ✅ Usia maksimal **15 tahun** per 1 Juli 2026
+2. ✅ Surat keterangan aktif murid **kelas VI** (MI/SD)
+3. ✅ Akta kelahiran **berbarcode**
+4. ✅ Kartu Keluarga **berbarcode**
+
+**Infoboks:**
+> ⚠️ Dokumen KK dan Akta Kelahiran **wajib berbarcode** (terbitan Dinas Dukcapil). Dokumen lama tanpa barcode tidak dapat diterima.
+
+---
+
+### SECTION 06 — DETAIL JALUR PRESTASI
+
+**Tujuan:** Informasi lengkap Jalur Prestasi agar calon murid dapat menilai kelayakan dirinya.
+
+**Desain rekomendasi:** Background/aksen warna merah sesuai warna map.
+
+**6A. Kategori Prestasi yang Diakui:**
+
+| Kategori | Ketentuan | Bukti |
+|---|---|---|
+| **Tahfidz** | Minimal 3 juz | Sertifikat + tes hafalan langsung |
+| **Akademik** | KSM/OMI, MYRES, OSN, OSP, OSK — Juara 1–3, minimal tingkat Kab/Kota; diselenggarakan Kemenag, Kemendikbud, BRIN, atau PT Terakreditasi | Sertifikat asli |
+| **Non-Akademik** | MTQ, MHQ, MSQ, Pidato Arab, Kaligrafi, O2SN, FLS2N, Olahraga (beregu: hanya top scorer/pemain terbaik) | Sertifikat asli |
+
+**6B. Jenjang Kejuaraan yang Diakui:**
+
+| Tingkat | Juara yang Diakui |
+|---|---|
+| Kabupaten / Kota | Juara 1 |
+| Provinsi | Juara 1 dan 2 |
+| Nasional | Juara 1, 2, dan 3 |
+
+**6C. Berkas yang Diserahkan Secara Fisik:**
+1. Print out formulir pendaftaran online
+2. Sertifikat prestasi **asli**
+3. Dokumen persyaratan umum (akta, KK, surat keterangan aktif)
+4. Semua dimasukkan **map snelhecter warna MERAH** + label identitas (nama, asal sekolah, jalur)
+
+**6D. Tombol CTA:**
+- **[Daftar Jalur Prestasi →]** → daftar.mtsn1pandeglang.sch.id
+
+---
+
+### SECTION 07 — DETAIL JALUR AFIRMASI
+
+**Tujuan:** Informasi lengkap Jalur Afirmasi agar keluarga yang berhak dapat mendaftar dengan percaya diri.
+
+**Desain rekomendasi:** Background/aksen warna kuning sesuai warna map.
+
+**7A. Kriteria Penerima:**
+Calon murid yang berasal dari keluarga penerima manfaat program sosial pemerintah:
+- 🟡 Kartu Indonesia Pintar (KIP)
+- 🟡 Program Keluarga Harapan (PKH)
+- 🟡 Kartu Keluarga Sejahtera (KKS)
+- 🟡 Surat Keterangan Tidak Mampu (SKTM) dari pemerintah daerah
+
+**7B. Dokumen Tambahan Khusus SKTM:**
+Jika menggunakan SKTM, wajib melampirkan:
+- Fotokopi rekening/tagihan listrik **3 bulan terakhir**
+- Foto rumah: tampak **depan, dalam, dan belakang**
+
+**7C. Berkas yang Diserahkan Secara Fisik:**
+1. Print out formulir pendaftaran online
+2. Fotokopi kartu KIP/PKH/KKS/SKTM yang telah **dilegalisir**
+3. Dokumen persyaratan umum (akta, KK, surat keterangan aktif)
+4. *(Jika SKTM)* Fotokopi rekening listrik 3 bulan + foto rumah
+5. Semua dimasukkan **map snelhecter warna KUNING** + label identitas
+
+**7D. Tombol CTA:**
+- **[Daftar Jalur Afirmasi →]** → daftar.mtsn1pandeglang.sch.id
+
+---
+
+### SECTION 08 — DETAIL JALUR REGULER
+
+**Tujuan:** Panduan lengkap Jalur Reguler (PMBM Bersama Kanwil Kemenag Banten).
+
+**8A. Tata Cara Pendaftaran (Stepper):**
+
+1. Akses **http://pmbm-kanwilbanten.com/**
+2. Input **NISN** sebagai identitas pendaftaran
+3. Isi formulir pendaftaran online secara lengkap
+4. Pilih **1–2 madrasah tujuan** (MTsN 1 Pandeglang masuk pilihan)
+5. Unggah dokumen:
+   - Kartu Keluarga (diterbitkan sebelum Maret 2026)
+   - Ijazah MI/SD sederajat
+   - Sertifikat Akreditasi sekolah asal *(hanya jika asal luar Provinsi Banten)*
+   - Surat Pernyataan Pertanggungjawaban Mutlak bermaterai Rp 10.000
+   - Surat Rekomendasi/Kesetaraan Ijazah *(hanya jika asal sekolah asing)*
+6. Cetak bukti pendaftaran setelah berkas dinyatakan lengkap
+
+**8B. Informasi Nilai Akreditasi:**
+- Sekolah asal terakreditasi → nilai akreditasi sesuai sertifikat
+- Sekolah belum/tidak terakreditasi → nilai akreditasi otomatis = **65**
+
+**8C. Tombol CTA:**
+- **[Daftar Jalur Reguler →]** → http://pmbm-kanwilbanten.com/
+- **[Unduh Template Surat Pernyataan]** *(opsional, jika file tersedia)*
+
+---
+
+### SECTION 09 — MEKANISME SELEKSI
+
+**Tujuan:** Jelaskan bagaimana penilaian dilakukan di masing-masing jalur.
+
+**9A. Jalur Prestasi:**
+- Seleksi berdasarkan verifikasi sertifikat prestasi + tes hafalan (khusus Tahfidz)
+- Tidak ada CBT
+
+**9B. Jalur Afirmasi:**
+- Seleksi berdasarkan verifikasi kelayakan ekonomi (dokumen KIP/PKH/KKS/SKTM)
+- Tidak ada CBT
+
+**9C. Jalur Reguler:**
+
+```
+NILAI AKHIR = (70% × Nilai CBT) + (30% × Nilai BTQ)
+```
+
+- **CBT** = Computer Based Test, dilaksanakan 2 Mei 2026
+- **BTQ** = Tes Baca Tulis Al-Qur'an, dilaksanakan 2–3 Mei 2026
+
+**Aturan tie-breaking (jika nilai akhir sama):**
+1. Prioritas usia **lebih tua**
+2. Jika usia juga sama → prioritas **waktu mendaftar lebih awal**
+
+---
+
+### SECTION 10 — KETENTUAN GUGUR ⚠️
+
+**Tujuan:** Peringatan tegas agar calon murid tidak melakukan kesalahan prosedural.
+
+**Desain rekomendasi:** Card dengan warna merah/oranye, ikon peringatan, teks tegas tapi tidak menakutkan.
+
+**Calon murid dinyatakan GUGUR apabila:**
+
+| # | Kondisi |
+|---|---|
+| 1 | Mengisi formulir online **tapi tidak menyerahkan berkas fisik** (Prestasi/Afirmasi) |
+| 2 | Menyerahkan berkas fisik **tapi tidak mengisi formulir online** (Prestasi/Afirmasi) |
+| 3 | Dokumen fisik **tidak sesuai** dengan yang diunggah secara online |
+| 4 | Tidak lapor diri sesuai jadwal → dianggap **mengundurkan diri** |
+| 5 | Terbukti memalsukan data/dokumen → **diskualifikasi + sanksi hukum** |
+
+**Catatan positif (bawah section):**
+> 💡 Tidak lolos Jalur Prestasi atau Afirmasi? Tenang — Anda masih bisa mendaftar ke **Jalur Reguler** mulai 18 April 2026. Berkas yang tidak lolos dapat diambil **sehari setelah pengumuman** (15 April 2026).
+
+---
+
+### SECTION 11 — KUOTA & ROMBONGAN BELAJAR
+
+**Elemen:**
+- Kuota Jalur Reguler MTsN 1 Pandeglang: **224 murid baru**
+- Kuota Jalur Prestasi: *(diisi sesuai keputusan madrasah)*
+- Kuota Jalur Afirmasi: *(diisi sesuai keputusan madrasah)*
+- Maksimal murid per kelas: **32 murid**
+- Estimasi kelas baru dari Jalur Reguler: ~7 kelas
+- Biaya pendidikan: **Rp 0 (Gratis)** — dibiayai BOS/BOP Madrasah
+
+---
+
+### SECTION 12 — FAQ
+
+**Desain:** Accordion expand/collapse. Kelompokkan per jalur.
+
+**FAQ Umum:**
+1. Apakah pendaftaran dikenakan biaya? → Tidak, gratis.
+2. Bisakah mendaftar lebih dari satu jalur? → *(perlu konfirmasi ke panitia — umumnya tidak diperbolehkan mendaftar dua jalur sekaligus untuk madrasah yang sama)*
+3. Apa itu NISN? → Nomor Induk Siswa Nasional. Bisa dicek di sekolah asal.
+4. Mengapa KK dan Akta harus berbarcode? → Karena harus diterbitkan resmi oleh Dinas Dukcapil sebagai dokumen terverifikasi.
+
+**FAQ Jalur Prestasi:**
+5. Apakah piagam tanpa cap basah diterima? → *(perlu konfirmasi panitia)*
+6. Sertifikat beregu apakah bisa digunakan? → Hanya untuk top scorer/pemain terbaik yang tercantum.
+
+**FAQ Jalur Afirmasi:**
+7. SKTM dari RT/RW apakah bisa? → Tidak, harus dari pemerintah daerah (kelurahan/kecamatan/dinas sosial).
+8. Apakah foto rumah bisa selfie dari HP? → *(perlu konfirmasi panitia; umumnya diterima selama jelas)*
+
+**FAQ Jalur Reguler:**
+9. Berapa madrasah yang bisa dipilih? → Minimal 1, maksimal 2.
+10. Nilai akreditasi sekolah saya 0/belum akreditasi, apakah bisa daftar? → Bisa, nilai akreditasi otomatis dihitung 65.
+11. Jika diterima tapi tidak lapor diri, apa yang terjadi? → Dinyatakan gugur/mengundurkan diri.
+
+---
+
+### SECTION 13 — FOOTER & KONTAK
+
+**Elemen wajib:**
+- Nama resmi: **MTsN 1 Pandeglang**
+- Alamat: Jl. Raya Labuan, Kadulisung, Pandeglang, Banten
+- Email: mtsnpdg1.417849@gmail.com
+- Nomor telepon: *(diisi pihak madrasah)*
+- WhatsApp Panitia: *(diisi pihak madrasah)*
+- Ketua PMBM: **Umar Mu'tamar, S.Ag**
+- Kepala Madrasah: **Hj. Yanti Mariah, S.S., M.Pd.**
+- Link penting:
+  - Pendaftaran Prestasi/Afirmasi: daftar.mtsn1pandeglang.sch.id
+  - Pendaftaran Reguler: http://pmbm-kanwilbanten.com/
+  - Kanwil Kemenag Banten: http://banten.kemenag.go.id
+- Tombol CTA terakhir: **[Daftar Sekarang →]** (dengan dropdown pilihan jalur)
+- Teks hukum:
+  *"Diselenggarakan berdasarkan Keputusan Kepala Kanwil Kemenag Prov. Banten No. 009/B/Tahun 2026 dan Juknis PMBM MTsN 1 Pandeglang Tahun 2026."*
+- © 2026 MTsN 1 Pandeglang — Pandeglang, 31 Maret 2026
+
+---
+
+## LANGKAH 4 — SPESIFIKASI TEKNIS
+
+### 4.1 Stack Teknologi (Rekomendasi)
+| Komponen | Rekomendasi |
+|---|---|
+| Frontend | HTML5 + CSS3 + JavaScript |
+| Framework CSS | Tailwind CSS atau Bootstrap 5 |
+| Hosting | GitHub Pages / Netlify / hosting madrasah |
+| Domain | daftar.mtsn1pandeglang.sch.id atau subdomain |
+| Responsif | Wajib (mobile-first) |
+
+### 4.2 Fitur Fungsional
+
+| ID | Fitur | Prioritas | Catatan |
+|---|---|---|---|
+| F-01 | Countdown timer ke tanggal pembukaan terdekat | Tinggi | Otomatis switch ke jalur berikutnya |
+| F-02 | Highlight status jadwal (mendatang/aktif/selesai) | Tinggi | Berbasis tanggal hari ini |
+| F-03 | Tombol CTA per jalur ke link eksternal | Tinggi | Beda URL per jalur |
+| F-04 | Smooth scroll dari card jalur ke section detail | Tinggi | UX penting |
+| F-05 | Accordion FAQ | Sedang | Grouped per jalur |
+| F-06 | Sticky navbar dengan link ke tiap section | Sedang | |
+| F-07 | Tombol WhatsApp floating (kontak panitia) | Sedang | |
+| F-08 | Download template Surat Pernyataan (Reguler) | Sedang | |
+| F-09 | Infoboks "Tidak lolos? Daftar Reguler" | Tinggi | Lintas jalur |
+| F-10 | Pop-up/modal pengumuman penting | Rendah | Opsional |
+
+### 4.3 Fitur Non-Fungsional
+- Waktu loading: < 3 detik pada jaringan 4G
+- Kompatibel: Chrome, Firefox, Safari, Edge (2 tahun terakhir)
+- Font minimum: 14px untuk body teks
+- HTTPS wajib
+- SEO: meta tag, Open Graph, deskripsi halaman
+
+---
+
+## LANGKAH 5 — ASET YANG PERLU DIKUMPULKAN
+
+| No | Aset | Format | Prioritas | Sumber |
+|---|---|---|---|---|
+| 1 | Logo MTsN 1 Pandeglang | PNG transparan | Wajib | TU Madrasah |
+| 2 | Logo Kementerian Agama RI | PNG transparan | Wajib | kemenag.go.id |
+| 3 | Foto eksterior gedung | JPG min 1200px | Wajib | Dokumentasi madrasah |
+| 4 | Foto kegiatan belajar/siswa | JPG min 800px | Dianjurkan | Dokumentasi madrasah |
+| 5 | Nomor telepon resmi madrasah | Teks | Wajib | TU Madrasah |
+| 6 | Nomor WhatsApp panitia PMBM | Teks | Wajib | Ketua PMBM |
+| 7 | Kuota Jalur Prestasi & Afirmasi | Angka | Wajib | Ketua PMBM |
+| 8 | Template Surat Pernyataan (PDF/DOCX) | File | Dianjurkan | Panitia |
+| 9 | Akun media sosial resmi madrasah | URL | Opsional | TU Madrasah |
+| 10 | Foto Kepala Madrasah | JPG | Opsional | TU Madrasah |
+
+---
+
+## LANGKAH 6 — PANDUAN DESAIN VISUAL
+
+### 6.1 Palet Warna
+| Fungsi | Warna | Hex |
+|---|---|---|
+| Primer (institusi/islami) | Hijau tua | #1B5E20 |
+| Aksen primer | Hijau muda | #4CAF50 |
+| Jalur Prestasi | Merah | #C62828 |
+| Jalur Afirmasi | Kuning/Amber | #F9A825 |
+| Jalur Reguler | Biru tua | #1565C0 |
+| Background utama | Putih | #FFFFFF |
+| Background alternatif | Abu-abu terang | #F5F5F5 |
+| CTA / tombol utama | Emas | #FFC107 |
+| Peringatan/gugur | Merah cerah | #D32F2F |
+
+### 6.2 Tipografi
+- Judul: **Poppins Bold** atau **Plus Jakarta Sans Bold**
+- Body: **Poppins Regular** atau **Inter**
+- Elemen Arab/Islami: **Amiri** atau **Scheherazade New**
+
+### 6.3 Tone Visual
+- Bersih, profesional, terpercaya (institusi pemerintah)
+- Ramah dan mudah dipahami (orang tua dan anak)
+- Islami namun modern — hindari terlalu formal/kaku
+
+---
+
+## LANGKAH 7 — PERTANYAAN TERBUKA (Perlu Konfirmasi ke Pihak Madrasah)
+
+Beberapa hal yang belum tercantum di juknis dan perlu dikonfirmasi sebelum development:
+
+| No | Pertanyaan | Untuk Section |
+|---|---|---|
+| 1 | Berapa kuota Jalur Prestasi & Afirmasi? | Section 02, 11 |
+| 2 | Apakah boleh mendaftar dua jalur berbeda sekaligus? | FAQ |
+| 3 | Nomor telepon/WhatsApp panitia PMBM? | Section 13 |
+| 4 | Apakah ada template resmi Surat Pernyataan untuk Jalur Reguler? | Section 08 |
+| 5 | Apakah piagam fotokopi bisa diterima untuk Jalur Prestasi? | FAQ, Section 06 |
+| 6 | Lokasi tepat sekretariat PMBM untuk penyerahan berkas fisik? | Section 03 |
+| 7 | Apakah ada media sosial resmi yang perlu ditampilkan? | Section 13 |
+
+---
+
+*Dokumen ini merupakan konsep SRS Landing Page PMBM MTsN 1 Pandeglang TP 2026/2027 yang mencakup 3 jalur pendaftaran. Revisi dapat dilakukan sesuai kebutuhan dan masukan stakeholder.*
+
+*Referensi: Keputusan Kepala Kanwil Kemenag Prov. Banten No. 009/B/Tahun 2026 & Juknis PMBM MTsN 1 Pandeglang, Pandeglang 31 Maret 2026.*
+
+```
+
+---
+
+### ./SRS-System.md
+
+```markdown
+# Software Requirements Specification (SRS)
+
+## PPDB MTsN 1 Pandeglang
+
+---
+
+## 1. Pendahuluan
+
+### 1.1 Tujuan Dokumen
+
+Dokumen ini mendeskripsikan kebutuhan fungsional dan non-fungsional sistem Penerimaan Peserta Didik Baru (PPDB) MTsN 1 Pandeglang secara lengkap, mencakup alur logika bisnis, struktur teknis, dan daftar fitur yang perlu disempurnakan.
+
+### 1.2 Ruang Lingkup
+
+Sistem ini adalah aplikasi web berbasis Laravel 12 dengan antarmuka Filament v3. Sistem mengelola seluruh siklus PPDB mulai dari registrasi akun calon siswa, pengisian formulir, verifikasi berkas, penjadwalan tes, pengumuman hasil, hingga daftar ulang. Notifikasi dikirim secara otomatis melalui WhatsApp menggunakan gateway eksternal dengan sistem antrian.
+
+### 1.3 Definisi dan Singkatan
+
+| Istilah | Keterangan |
+|---|---|
+| PPDB | Penerimaan Peserta Didik Baru |
+| OTP | One-Time Password |
+| NISN | Nomor Induk Siswa Nasional |
+| NIK | Nomor Induk Kependudukan |
+| KIP | Kartu Indonesia Pintar |
+| KKS | Kartu Keluarga Sejahtera |
+| PKH | Program Keluarga Harapan |
+| SKL | Surat Keterangan Lulus |
+| SKBB | Surat Keterangan Berkelakuan Baik |
+| SKAB | Surat Keterangan Aktif Belajar |
+| CBT | Computer Based Test |
+| TTE | Tanda Tangan Elektronik |
+| SRS | Software Requirements Specification |
+
+---
+
+## 2. Gambaran Umum Sistem
+
+### 2.1 Perspektif Sistem
+
+Sistem berjalan sebagai aplikasi monolitik Laravel dengan Filament sebagai admin panel. Antrian job menggunakan Redis. Cache menggunakan Redis. Session menggunakan Redis. Penyimpanan file menggunakan disk lokal. Autentikasi menggunakan session-based dengan verifikasi OTP via WhatsApp, bukan email standar Laravel.
+
+### 2.2 Fungsi Utama
+
+Sistem memiliki tiga domain utama: manajemen master data, proses pendaftaran, dan administrasi PPDB.
+
+Manajemen master data mencakup data wilayah (negara, provinsi, kabupaten, kecamatan, kelurahan), data referensi (jalur pendaftaran, prestasi, ekstrakurikuler, mata pelajaran, jurusan, kelas), data administrasi (pimpinan, ketua, sekretaris, bendahara, anggota), dan data instansi (sekolah, sekolah asal).
+
+Proses pendaftaran mencakup registrasi akun dengan verifikasi OTP WhatsApp, pengisian formulir multi-step wizard, unggah berkas, formulir prestasi khusus jalur prestasi, pembuatan kartu tes, dan pencetakan dokumen PDF.
+
+Administrasi PPDB mencakup verifikasi berkas, perubahan status formulir dan pendaftaran, penjadwalan tes, penilaian, penetapan kelas, pengiriman notifikasi WhatsApp, ekspor dan impor data, serta publikasi informasi.
+
+### 2.3 Aktor Sistem
+
+| Role | Kewenangan |
+|---|---|
+| super_admin | Akses penuh ke seluruh fitur termasuk manajemen pengguna, perubahan status apapun, dan penghapusan permanen |
+| admin | Akses ke verifikasi, perubahan status formulir dan pendaftaran, penjadwalan tes, dan pengiriman notifikasi |
+| verifikator | Akses terbatas untuk memeriksa dan mengubah status formulir |
+| panitia | Akses untuk melihat data dan mengirim notifikasi |
+| calon_siswa | Akses hanya pada data milik sendiri: membuat formulir, melihat status, mencetak dokumen |
+
+---
+
+## 3. Alur Logika Bisnis
+
+### 3.1 Alur Registrasi dan Verifikasi Akun
+
+Sistem memeriksa apakah pendaftaran akun sedang dibuka dengan mengambil data TahunPendaftaran yang berstatus Aktif dari cache (TTL 60 detik). Jika tanggal saat ini berada di luar rentang tanggal_ppdb_mulai dan tanggal_ppdb_selesai, halaman register dialihkan ke halaman login dengan notifikasi penutupan.
+
+Jika pendaftaran terbuka, calon siswa mengisi form: nama lengkap, NISN (10 digit numerik, unik), nomor WhatsApp aktif, email (unik), password, dan konfirmasi password. Sistem membuat akun User dengan role calon_siswa yang ditetapkan otomatis melalui event User::created di model booted(). Status email_verified_at dibiarkan null.
+
+Sistem menghasilkan OTP 6 digit acak, menyimpannya di Redis dengan TTL 300 detik menggunakan key "otp:{user_id}", kemudian mengirim OTP ke nomor WhatsApp melalui WhatsAppService::send() yang mendispatch SendWhatsAppJob dengan delay 1-5 detik. Session menyimpan otp_user_id.
+
+Pengguna diarahkan ke halaman verifikasi OTP. Pengguna memasukkan 6 digit OTP. Sistem mengambil OTP dari Redis, membandingkan dengan hash_equals() untuk mencegah timing attack. Jika cocok, sistem mengupdate user: email_verified_at diisi now(), status diubah ke Aktif. Redis key OTP dan cooldown dihapus. User di-login otomatis lalu diarahkan ke dashboard.
+
+Jika OTP kadaluarsa (Redis key tidak ada), pengguna dapat meminta ulang dengan batasan cooldown 60 detik menggunakan Redis key "otp_cooldown:{user_id}".
+
+Jika pengguna login tanpa verifikasi email, LoginCustom::authenticate() mendeteksi hasVerifiedEmail() false, menyimpan otp_user_id ke session, logout, lalu redirect ke halaman verifikasi OTP.
+
+### 3.2 Alur Lupa Password
+
+Pengguna memasukkan identitas: username, email, atau nomor WhatsApp. Sistem mencari user yang cocok di salah satu kolom tersebut dengan kondisi status Aktif. Jika tidak ditemukan, sistem tetap menampilkan pesan sukses palsu untuk mencegah user enumeration.
+
+Sistem memeriksa cooldown Redis key "otp_cooldown:{user_id}". Jika ada, sistem menolak dengan informasi sisa waktu tunggu. Jika tidak ada, sistem menghasilkan OTP baru, menyimpan di Redis "reset_otp:{user_id}" (TTL 300 detik) dan cooldown 60 detik, lalu mengirim ke WhatsApp. Session menyimpan reset_otp_user_id.
+
+Pengguna mengisi OTP di halaman ResetPasswordOtp. Setelah OTP valid, Redis key OTP dihapus dan Redis key "reset_token:{user_id}" dibuat dengan TTL 900 detik. Pengguna diarahkan ke halaman NewPassword.
+
+Di halaman NewPassword, sistem memverifikasi keberadaan reset_token di Redis. Jika ada, password baru disimpan menggunakan forceFill dengan Hash::make(). Semua Redis key terkait dihapus. Notifikasi WhatsApp konfirmasi perubahan password dikirim. Pengguna diarahkan ke halaman login.
+
+### 3.3 Alur Pengisian Formulir Pendaftaran
+
+Calon siswa yang sudah terverifikasi mengakses ListCalonSiswas. Jika belum pernah mendaftar, tombol "Daftar Sekarang" ditampilkan yang mengarah ke CreateCalonSiswa.
+
+Formulir menggunakan Wizard 3 step dengan canSkipWizardSteps() false (urutan wajib):
+
+Step 1 berisi data calon siswa: jalur pendaftaran (hanya yang berstatus Aktif), nama (diisi otomatis dari Auth::user()->name, readonly), NISN (dari username, disabled), NIK (unik), KK, tempat lahir, tanggal lahir, tahun lulus, data demografis, data bantuan sosial (KIP/KKS/PKH bersifat kondisional), nomor telepon, sekolah asal, pilihan ekstrakurikuler dan mata pelajaran, serta alamat domisili dengan cascade wilayah. Upload berkas foto, KK, akta, SKBB, SKAB, NISN. Berkas KIP/KKS/PKH muncul hanya jika nomor yang bersesuaian diisi.
+
+Step 2 berisi data orang tua: ibu kandung, ayah kandung, wali (opsional, collapsed by default), dan kepemilikan rumah.
+
+Step 3 berisi data tes: hanya terlihat bagi non-calon_siswa. Berisi jadwal tes (sesi, ruang, waktu akademik, waktu praktik) dan nilai tes (bobot dan nilai akademik/praktik).
+
+Pada mutateFormDataBeforeCreate, sistem mengisi user_id dari Auth::id() dan tahun_pendaftaran_id dari TahunPendaftaran yang berstatus Aktif. Nomor pendaftaran di-generate otomatis di model CalonSiswa::booted() melalui static::creating, menggunakan lockForUpdate() untuk mencegah race condition, dengan format "PPDB-{TAHUN}-{NNNNNN}".
+
+Setelah create berhasil, afterCreate() memeriksa apakah jalur pendaftaran adalah "Prestasi". Jika ya dan belum ada FormulirPrestasi, ditampilkan notifikasi peringatan dan pengguna diarahkan ke halaman CreateFormulirPrestasi.
+
+CalonSiswaObserver::created() dipanggil dan mengirim notifikasi WhatsApp konfirmasi pendaftaran ke nomor telepon user dengan delay 5-60 detik.
+
+### 3.4 Alur Formulir Prestasi
+
+Hanya dapat diakses oleh calon siswa yang jalur pendaftarannya adalah "Prestasi". Navigasi menu dan akses halaman difilter oleh shouldRegisterNavigation() dan getEloquentQuery() yang masing-masing memverifikasi kondisi ini.
+
+Pada CreateFormulirPrestasi::mount(), sistem memverifikasi bahwa user sudah mengisi formulir utama dan jalur yang dipilih adalah Prestasi. Jika tidak memenuhi, pengguna diarahkan kembali ke index formulir dengan notifikasi.
+
+calon_siswa_id diisi otomatis dari CalonSiswa yang dimiliki user pada mutateFormDataBeforeCreate(), menggunakan withoutGlobalScopes() untuk melewati global scope tahun_aktif dan milik_sendiri.
+
+### 3.5 Alur Verifikasi dan Perubahan Status
+
+Admin atau verifikator membuka daftar CalonSiswa. Kolom status_formulir dapat diubah ke: Diproses, Berkas Tidak Lengkap, Disetujui, atau Ditolak. Kolom status_pendaftaran dapat diubah ke: Diproses, Tidak Diterima, Diterima, Diterima Di Kelas Reguler, atau Diterima Di Kelas Unggulan (hanya super_admin yang bisa ke status non-Diproses).
+
+Saat status_pendaftaran atau status_formulir berubah, CalonSiswaObserver::updated() dipicu. Observer memeriksa wasChanged() untuk kedua kolom. Pesan WhatsApp yang sesuai dengan kondisi baru disiapkan dan dikirim melalui WhatsAppService dengan delay 5-60 detik untuk mencegah rate limit.
+
+Bulk action tersedia untuk super_admin: set jalur pendaftaran massal, set status pendaftaran massal (dengan pemilihan kelas jika status diterima di kelas tertentu), dan kirim notifikasi massal. Notifikasi massal menggunakan delay 10-120 detik per pesan untuk menyebarkan beban pengiriman.
+
+### 3.6 Alur Pencetakan Dokumen PDF
+
+Pencetakan menggunakan paket torgodly/html2media dengan metode Html2MediaAction yang merender view Blade ke PDF.
+
+Formulir dapat dicetak jika status_formulir calon siswa adalah "Disetujui".
+
+Kartu tes dapat dicetak jika status_formulir adalah "Disetujui", status_pendaftaran bukan Tidak Diterima, Diterima Di Kelas Reguler, atau Diterima Di Kelas Unggulan, dan waktu saat ini berada dalam rentang tanggal_penerbitan_kartu_tes_mulai hingga tanggal_penerbitan_kartu_tes_selesai.
+
+Hasil/SKL dapat dicetak jika status_pendaftaran adalah salah satu dari: Diterima, Diterima Di Kelas Reguler, Diterima Di Kelas Unggulan, atau Tidak Diterima, dan waktu saat ini berada dalam salah satu rentang tanggal_pengumuman jalur manapun yang aktif.
+
+### 3.7 Alur Global Scope CalonSiswa
+
+Model CalonSiswa memiliki dua global scope yang diterapkan otomatis:
+
+Scope "tahun_aktif" memfilter data berdasarkan TahunPendaftaran yang berstatus Aktif, yang dimuat dari Cache::rememberForever dengan key "tahun_pendaftaran_aktif". Cache ini di-flush saat TahunPendaftaran disimpan atau dihapus melalui event saved dan deleted di model TahunPendaftaran::booted().
+
+Scope "milik_sendiri" memfilter data agar calon_siswa hanya melihat record milik sendiri berdasarkan user_id. Scope ini aktif hanya jika user terautentikasi dan memiliki role calon_siswa.
+
+Beberapa operasi menggunakan withoutGlobalScopes() secara eksplisit untuk melewati kedua scope ini: resolveRecord di importer, formulir prestasi, relasi calonSiswa di User model, dan query di CalonSiswaObserver.
+
+### 3.8 Alur Notifikasi WhatsApp
+
+WhatsAppService::send() mendispatch SendWhatsAppJob ke queue dengan delay acak dalam rentang yang ditentukan (minDelay hingga maxDelay detik). Ini mencegah pengiriman serentak yang dapat menyebabkan rate limit atau pemblokiran dari gateway.
+
+SendWhatsAppJob::handle() memanggil WhatsAppService::sendDirect() yang melakukan HTTP POST ke endpoint WhatsApp gateway dengan header X-Api-Key. Nomor telepon dinormalisasi terlebih dahulu: prefix "0" diganti "62", jika tidak dimulai "62" maka ditambahkan "62". Job dikonfigurasi dengan tries 3 dan backoff 60 detik.
+
+### 3.9 Alur Cache TahunPendaftaran
+
+Data TahunPendaftaran aktif di-cache dengan Cache::rememberForever. Strategi ini berarti cache tidak pernah kedaluarsa secara otomatis, tetapi di-flush secara manual saat ada perubahan data. Cache Landing Page menggunakan TTL 60-300 detik.
+
+---
+
+## 4. Kebutuhan Fungsional
+
+### 4.1 Manajemen Akun dan Autentikasi
+
+| Kode | Kebutuhan |
+|---|---|
+| F-AUTH-01 | Sistem menyediakan halaman registrasi yang hanya aktif dalam periode PPDB |
+| F-AUTH-02 | Registrasi menghasilkan OTP 6 digit yang dikirim ke WhatsApp dengan TTL 5 menit |
+| F-AUTH-03 | Login mendukung username (NISN) dan email |
+| F-AUTH-04 | Sistem memblokir login jika email belum terverifikasi dan mengarahkan ke verifikasi OTP |
+| F-AUTH-05 | Sistem menyediakan reset password berbasis OTP WhatsApp tanpa email |
+| F-AUTH-06 | OTP memiliki mekanisme cooldown 60 detik untuk permintaan ulang |
+| F-AUTH-07 | Perbandingan OTP menggunakan hash_equals() untuk mencegah timing attack |
+| F-AUTH-08 | Profil pengguna dapat mengedit nama, NISN/username, nomor WhatsApp, email, password, dan avatar |
+
+### 4.2 Manajemen Master Data Wilayah
+
+| Kode | Kebutuhan |
+|---|---|
+| F-WILAYAH-01 | Sistem mengelola hierarki wilayah: Negara, Provinsi, Kabupaten, Kecamatan, Kelurahan |
+| F-WILAYAH-02 | Form wilayah di seluruh sistem menggunakan cascade dropdown yang mereset level bawah saat level atas berubah |
+| F-WILAYAH-03 | Dropdown wilayah menggunakan searchable dengan getSearchResultsUsing untuk performa pada data besar |
+
+### 4.3 Manajemen Referensi
+
+| Kode | Kebutuhan |
+|---|---|
+| F-REF-01 | Sistem mengelola Jalur Pendaftaran dengan nama (Prestasi, Reguler, Afirmasi, Zonasi, Mutasi), kuota, status, dan tahun pendaftaran |
+| F-REF-02 | Sistem mengelola master Prestasi dengan jenis (Hafalan Al-Quran, Olimpiade/Kejuaraan), tingkat, kategori, dan peringkat |
+| F-REF-03 | Sistem mengelola Ekstrakurikuler, Mata Pelajaran, Jurusan, dan Kelas |
+| F-REF-04 | Sistem mengelola Sekolah (instansi sendiri) dan Sekolah Asal (instansi lain) dengan data lengkap termasuk NPSN, NSS, logo, akreditasi, alamat, dan kontak |
+| F-REF-05 | Sekolah Asal dapat dibuat inline langsung dari form formulir pendaftaran melalui createOptionForm |
+
+### 4.4 Manajemen Administrasi Panitia
+
+| Kode | Kebutuhan |
+|---|---|
+| F-PANITIA-01 | Sistem mengelola data Pimpinan, Ketua, Sekretaris, Bendahara, dan Anggota panitia |
+| F-PANITIA-02 | Setiap panitia memiliki foto, TTE (Tanda Tangan Elektronik), SK, NIP, dan status aktif |
+| F-PANITIA-03 | Form panitia menggunakan wizard 2 step: data biodata dan upload berkas |
+| F-PANITIA-04 | Data panitia digunakan di dokumen PDF (formulir, kartu tes, SKL) |
+
+### 4.5 Manajemen Tahun Pendaftaran
+
+| Kode | Kebutuhan |
+|---|---|
+| F-TAHUN-01 | Sistem mengelola TahunPendaftaran dengan seluruh tanggal periode per jalur |
+| F-TAHUN-02 | Setiap jalur memiliki tanggal pendaftaran mulai-selesai dan tanggal pengumuman mulai-selesai |
+| F-TAHUN-03 | Tersedia tanggal penerbitan kartu tes, tanggal tes akademik, tanggal tes praktik, dan tanggal registrasi berkas |
+| F-TAHUN-04 | Terdapat kuota maksimal registrasi akun |
+| F-TAHUN-05 | Perubahan TahunPendaftaran secara otomatis memflush cache "tahun_pendaftaran_aktif" |
+
+### 4.6 Formulir Pendaftaran Calon Siswa
+
+| Kode | Kebutuhan |
+|---|---|
+| F-FORM-01 | Formulir menggunakan Wizard multi-step dengan urutan yang tidak dapat dilewati |
+| F-FORM-02 | Step 1 mencakup data pribadi, data bantuan sosial (kondisional), alamat domisili dengan cascade wilayah, dan upload berkas |
+| F-FORM-03 | Step 2 mencakup data ibu kandung, ayah kandung (termasuk kepemilikan rumah), dan wali (opsional) |
+| F-FORM-04 | Nomor pendaftaran di-generate otomatis saat create dengan format PPDB-{TAHUN}-{NNNNNN} menggunakan lockForUpdate |
+| F-FORM-05 | Kolom NIK, KK, dan nomor telepon dienkripsi di database menggunakan cast "encrypted" |
+| F-FORM-06 | Calon siswa hanya dapat melihat dan mengedit formulir milik sendiri |
+| F-FORM-07 | Calon siswa tidak dapat mengedit formulir jika status pendaftaran sudah final (Diterima/Tidak Diterima) |
+| F-FORM-08 | Admin dapat melihat semua formulir dan mengubah status serta data tes |
+
+### 4.7 Formulir Prestasi
+
+| Kode | Kebutuhan |
+|---|---|
+| F-PRESTASI-01 | Formulir prestasi hanya tersedia untuk jalur pendaftaran "Prestasi" |
+| F-PRESTASI-02 | Satu calon siswa dapat memiliki banyak entri formulir prestasi |
+| F-PRESTASI-03 | Setiap entri formulir prestasi berisi jenis prestasi (dari master), nama, tahun, penyelenggara, dan berkas bukti |
+| F-PRESTASI-04 | Navigasi menu formulir prestasi tersembunyi otomatis bagi yang bukan jalur prestasi |
+| F-PRESTASI-05 | Admin melihat semua formulir prestasi dari semua calon siswa |
+
+### 4.8 Manajemen Status dan Verifikasi
+
+| Kode | Kebutuhan |
+|---|---|
+| F-STATUS-01 | Status formulir: Diproses, Berkas Tidak Lengkap, Disetujui, Ditolak |
+| F-STATUS-02 | Status pendaftaran: Diproses, Tidak Diterima, Diterima, Diterima Di Kelas Reguler, Diterima Di Kelas Unggulan |
+| F-STATUS-03 | Perubahan status memicu notifikasi WhatsApp otomatis melalui observer |
+| F-STATUS-04 | Bulk action untuk mengubah status pendaftaran banyak calon sekaligus |
+| F-STATUS-05 | Bulk action untuk mengubah jalur pendaftaran |
+| F-STATUS-06 | Penetapan kelas wajib diisi saat status Diterima Di Kelas Reguler atau Diterima Di Kelas Unggulan |
+
+### 4.9 Penjadwalan Tes
+
+| Kode | Kebutuhan |
+|---|---|
+| F-TES-01 | Admin dapat mengisi sesi tes, ruang tes, waktu tes akademik, dan waktu tes praktik per calon siswa |
+| F-TES-02 | Nilai tes akademik dan praktik beserta bobotnya dapat diisi oleh admin |
+| F-TES-03 | Data tes diimpor secara massal menggunakan importer |
+| F-TES-04 | Kartu tes menampilkan informasi jadwal, ruang, sesi, dan kredensial login CBT (NISN sebagai username, NIK sebagai password) |
+
+### 4.10 Pencetakan Dokumen PDF
+
+| Kode | Kebutuhan |
+|---|---|
+| F-PDF-01 | Formulir pendaftaran dapat dicetak jika status formulir adalah "Disetujui" |
+| F-PDF-02 | Kartu tes dapat dicetak dalam periode penerbitan kartu tes |
+| F-PDF-03 | Dokumen hasil (SKL) terdiri dari 4 lembar: SKL, Pakta Integritas, Surat Pernyataan Siswa, dan Checklist Daftar Ulang |
+| F-PDF-04 | Dokumen PDF menyertakan QR code yang mengarah ke URL formulir untuk verifikasi |
+| F-PDF-05 | Dokumen PDF menampilkan TTE pimpinan, ketua, dan sekretaris yang berstatus Aktif |
+| F-PDF-06 | Header PDF menampilkan logo institusi, logo madrasah, nama, alamat, dan kontak instansi |
+
+### 4.11 Notifikasi WhatsApp
+
+| Kode | Kebutuhan |
+|---|---|
+| F-WA-01 | Notifikasi dikirim otomatis saat: pendaftaran berhasil, status formulir berubah, status pendaftaran berubah |
+| F-WA-02 | Notifikasi dapat dikirim manual per calon siswa oleh admin |
+| F-WA-03 | Notifikasi dapat dikirim massal ke target yang dipilih: semua, terverifikasi, atau diterima |
+| F-WA-04 | Informasi yang dipublikasikan dapat dikirim notifikasinya ke target tertentu |
+| F-WA-05 | Pengiriman menggunakan antrian dengan delay acak untuk mencegah rate limit |
+| F-WA-06 | Job memiliki retry 3 kali dengan backoff 60 detik |
+
+### 4.12 Ekspor dan Impor Data
+
+| Kode | Kebutuhan |
+|---|---|
+| F-EKSPOR-01 | Data calon siswa dapat diekspor ke Excel dengan seluruh kolom termasuk data orang tua, berkas, dan jadwal tes |
+| F-EKSPOR-02 | Ekspor dapat dilakukan per record terpilih (bulk) atau seluruh data |
+| F-IMPOR-01 | Data tes dan status pendaftaran dapat diimpor dari Excel |
+| F-IMPOR-02 | Importer menggunakan NISN sebagai kunci untuk update-or-create |
+| F-IMPOR-03 | Impor hanya tersedia bagi super_admin dan hanya jika tahun pendaftaran aktif ada |
+
+### 4.13 Manajemen Informasi
+
+| Kode | Kebutuhan |
+|---|---|
+| F-INFO-01 | Sistem mengelola informasi/pengumuman dengan judul, isi (rich text), lampiran, tanggal, status (Publish/Draft), dan tahun pendaftaran |
+| F-INFO-02 | Informasi berstatus Publish ditampilkan di landing page dan di widget dashboard calon siswa |
+| F-INFO-03 | Notifikasi WhatsApp dapat dikirim untuk satu informasi atau banyak informasi sekaligus |
+| F-INFO-04 | Hanya informasi berstatus Publish yang dapat dikirim notifikasinya |
+
+### 4.14 Dashboard dan Widget
+
+| Kode | Kebutuhan |
+|---|---|
+| F-DASH-01 | Widget FormulirOverview menampilkan statistik per status formulir dan pendaftaran dengan sparkline chart |
+| F-DASH-02 | Widget FormulirOverview menampilkan view berbeda untuk calon_siswa (status diri sendiri) vs admin (statistik global) |
+| F-DASH-03 | Widget InformasiPublished menampilkan daftar informasi terbaru yang berstatus Publish |
+| F-DASH-04 | Widget UserRegisters menampilkan log akun calon siswa terbaru berdasarkan email_verified_at, hanya untuk non-calon_siswa |
+
+### 4.15 Landing Page
+
+| Kode | Kebutuhan |
+|---|---|
+| F-LANDING-01 | Landing page menampilkan informasi PPDB: jalur, jadwal, alur, persyaratan, program, informasi, dan FAQ |
+| F-LANDING-02 | Countdown timer menampilkan sisa waktu hingga deadline pendaftaran terdekat |
+| F-LANDING-03 | Progress bar kuota per jalur ditampilkan berdasarkan jumlah pendaftar aktual |
+| F-LANDING-04 | Landing page mendukung mode gelap dan terang dengan preferensi disimpan di localStorage |
+| F-LANDING-05 | Data landing page di-cache 60-300 detik untuk performa |
+
+### 4.16 Manajemen Pengguna
+
+| Kode | Kebutuhan |
+|---|---|
+| F-USER-01 | super_admin dapat membuat, mengedit, menonaktifkan, memulihkan, dan menghapus permanen akun pengguna |
+| F-USER-02 | Pengguna memiliki kolom status (Aktif/Nonaktif) |
+| F-USER-03 | Pengguna baru tanpa role akan otomatis mendapat role calon_siswa |
+| F-USER-04 | Avatar pengguna dapat diunggah; jika tidak ada, sistem menggunakan foto dari formulir calon siswa |
+| F-USER-05 | Manajemen pengguna tidak terlihat di navigasi utama tetapi dapat diakses melalui user menu oleh super_admin |
+
+---
+
+## 5. Kebutuhan Non-Fungsional
+
+### 5.1 Performa
+
+Cache TahunPendaftaran aktif menggunakan rememberForever untuk meminimalkan query berulang. Data landing page di-cache 60-300 detik. Widget menggunakan polling 60 detik bukan realtime. Dropdown wilayah menggunakan searchable dengan limit 50 hasil per query untuk mencegah loading seluruh data.
+
+### 5.2 Keamanan
+
+Kolom sensitif (NIK, KK, nomor telepon orang tua) dienkripsi di database. Perbandingan OTP menggunakan hash_equals(). Mekanisme cooldown mencegah brute force OTP. File yang diunggah disimpan dengan visibility private. Akses kontrol berbasis role menggunakan Spatie Permission dengan Filament Shield.
+
+### 5.3 Ketersediaan
+
+Antrian job menggunakan Redis dengan tries 3 dan backoff. Cache menggunakan Redis. Session menggunakan Redis. Sistem dirancang untuk berjalan dengan Laravel Octane.
+
+### 5.4 Skalabilitas
+
+Pengiriman WhatsApp menggunakan antrian dengan delay acak untuk mencegah lonjakan permintaan ke gateway eksternal. Ekspor dan impor menggunakan chunk 250 baris.
+
+---
+
+## 6. Daftar Fitur yang Perlu Disempurnakan
+
+### 6.1 Keamanan dan Validasi
+
+**F-SEMPURNA-01: Validasi kuota pendaftaran akun**
+Sistem saat ini tidak memverifikasi apakah jumlah akun yang terdaftar sudah mencapai kuota maksimal (kolom kuantitas di TahunPendaftaran). RegisterCustom::isRegistrationOpen() hanya memeriksa periode tanggal, bukan jumlah akun. Perlu ditambahkan pengecekan User::count() terhadap TahunPendaftaran::kuantitas sebelum mengizinkan registrasi baru.
+
+**F-SEMPURNA-02: Validasi kuota jalur pendaftaran**
+Saat calon siswa memilih jalur pendaftaran di formulir, sistem tidak memverifikasi apakah kuota jalur tersebut masih tersedia (JalurPendaftaran::kuantitas versus jumlah pendaftar di jalur tersebut). Perlu ditambahkan validasi sebelum formulir berhasil disimpan.
+
+**F-SEMPURNA-03: Rate limiting pada endpoint OTP**
+Tidak ada rate limiting berbasis IP pada endpoint verifikasi OTP. Hanya ada cooldown per user. Pengguna yang berbeda dari IP yang sama dapat melakukan banyak request. Perlu ditambahkan throttle middleware pada route OTP.
+
+**F-SEMPURNA-04: Validasi tanggal periode pendaftaran per jalur**
+Saat calon siswa memilih jalur pendaftaran, sistem tidak memeriksa apakah saat ini berada dalam periode pendaftaran jalur tersebut. Pengguna bisa memilih jalur Prestasi padahal periode pendaftarannya sudah tutup.
+
+**F-SEMPURNA-05: Enkripsi NIK pada CalonSiswaExporter**
+CalonSiswaExporter mengekspor kolom nik dan kk yang di model dikonfigurasi sebagai cast "encrypted". Perlu dipastikan nilai yang diekspor sudah terdekripsi dengan benar, bukan ciphertext.
+
+### 6.2 Logika Bisnis
+
+**F-SEMPURNA-06: Konsistensi cek calon_siswa di ListCalonSiswas**
+Method getCalonSiswaRecord() menggunakan query where('nisn', Auth::user()->username), bukan where('user_id', Auth::id()). Ini berpotensi salah jika ada user non-calon_siswa dengan username yang sama dengan NISN seseorang. Seharusnya menggunakan user_id.
+
+**F-SEMPURNA-07: Penanganan edge case isSuperAdmin dan isCalonSiswa**
+Beberapa method di ListCalonSiswas menggunakan roles->first()->name yang akan error jika user tidak memiliki role apapun. Perlu diganti dengan hasRole() yang lebih aman.
+
+**F-SEMPURNA-08: Pembatasan edit formulir berdasarkan periode**
+Saat ini calon siswa diblokir mengedit formulir hanya berdasarkan status pendaftaran final. Belum ada pembatasan berdasarkan tanggal periode pendaftaran jalur yang dipilih. Setelah periode pendaftaran jalur berakhir, formulir seharusnya terkunci meski status masih "Diproses".
+
+**F-SEMPURNA-09: Relasi calon_siswa di model CalonSiswa**
+Model CalonSiswa memiliki relasi pimpinan(), ketua(), sekretaris(), dan bendahara() ke model terkait, tetapi tidak ada foreign key kolom-kolom tersebut di tabel calon_siswas. Relasi ini tidak akan berfungsi. Perlu dihapus dari model atau ditambahkan foreign key yang sesuai.
+
+**F-SEMPURNA-10: Global scope tahun_aktif pada FormulirPrestasi**
+FormulirPrestasi tidak memiliki kolom tahun_pendaftaran_id, namun relasinya ke CalonSiswa yang memiliki scope tahun_aktif. Saat query formulir prestasi melibatkan join ke calon_siswas, scope tahun_aktif dapat menyebabkan data lintas tahun tidak muncul. Perlu dipastikan withoutGlobalScopes digunakan konsisten di seluruh query terkait.
+
+**F-SEMPURNA-11: Status formulir "Berkas Tidak Lengkap" bisa dihapus dari form edit**
+Di CalonSiswaResource::form(), dropdown status_formulir untuk admin hanya menampilkan Diproses, Disetujui, dan Ditolak — menghilangkan "Berkas Tidak Lengkap". Namun di FormOptions::STATUS_FORMULIR, opsi ini ada. Perlu diseragamkan.
+
+### 6.3 Antarmuka dan Pengalaman Pengguna
+
+**F-SEMPURNA-12: Formulir.blade.php dalam kondisi dikomentari**
+Seluruh konten view formulir.blade.php dibungkus dalam blok komentar Blade (@php ... @endphp dan HTML dalam --}}). Akibatnya, fitur cetak formulir tidak berfungsi. View ini perlu diaktifkan dan diuji.
+
+**F-SEMPURNA-13: Penanganan kasus CalonSiswaFormTrait::getWilayahFields dengan prefix kosong**
+Di getSekolahAsalForm(), method getWilayahFields('') dipanggil dengan string kosong sebagai prefix. Ini menghasilkan field name seperti "_negara_id" dengan underscore di depan. Perlu disesuaikan agar field name valid.
+
+**F-SEMPURNA-14: ViewCalonSiswa::canPrintFormulir menggunakan getCalonSiswa()**
+Method canPrintFormulir() dan canPrintKartuTes() memanggil getCalonSiswa() yang melakukan query where('nisn', Auth::user()->username). Saat admin membuka ViewCalonSiswa milik calon lain, metode ini akan mengembalikan null karena admin tidak punya NISN yang cocok, sehingga tombol cetak tidak muncul. Tombol cetak seharusnya selalu terlihat bagi admin tanpa pembatasan periode.
+
+**F-SEMPURNA-15: Tailwind config path tidak sesuai**
+Di vite.config.js, theme yang di-build adalah resources/css/filament/dashboard/theme.css. Di AdminPanelProvider, ->theme() mengarah ke asset publik css/filament/dashboard/theme.css, sementara ->viteTheme() menggunakan path yang sama. Namun di file tree awal, path yang tertera adalah resources/css/filament/admin/ dan public/css/filament/admin/. Setelah perubahan menjadi "dashboard", perlu dipastikan seluruh referensi path konsisten.
+
+**F-SEMPURNA-16: Paginasi Sekolah dan SekolahAsal menggunakan nilai 0**
+ListSekolahs dan ListSekolahAsals menggunakan paginationPageOptions([0]). Nilai 0 tidak valid sebagai ukuran halaman dan dapat menyebabkan error. Seharusnya menggunakan opsi seperti [10, 25, 50] atau menampilkan semua dengan cara yang benar.
+
+### 6.4 Performa dan Arsitektur
+
+**F-SEMPURNA-17: Cache::rememberForever berpotensi stale pada multi-instance**
+Jika sistem dijalankan dengan multiple worker (Octane), cache flush melalui Cache::forget di satu event mungkin tidak langsung tersebar ke semua instance tergantung konfigurasi cache driver. Perlu dipastikan cache driver Redis digunakan dan konfigurasinya mendukung invalidasi lintas instance.
+
+**F-SEMPURNA-18: once() di FormulirPrestasiResource tidak aman di Octane**
+Fungsi once() Laravel menyimpan hasil di dalam request lifecycle. Namun di lingkungan Octane, jika request di-reuse antar pengguna, once() bisa mengembalikan hasil dari request sebelumnya. Perlu dievaluasi apakah once() aman digunakan di konteks ini atau perlu diganti dengan pendekatan yang lebih eksplisit.
+
+**F-SEMPURNA-19: Tidak ada mekanisme cleanup Redis key yang kadaluarsa**
+Meski TTL diset di setiap key OTP, belum ada mekanisme audit atau pembersihan untuk key yang mungkin tersisa karena kondisi race. Perlu dipastikan konfigurasi Redis menggunakan eviction policy yang tepat (allkeys-lru atau volatile-lru).
+
+**F-SEMPURNA-20: Query N+1 pada CalonSiswaObserver::kirim()**
+Di method kirim(), jika $model->user sudah di-load maka tidak ada masalah. Namun jika tidak, baris $model->user?->telepon akan memicu lazy load, lalu baris berikutnya $model->loadMissing('user') juga dipanggil yang mengakibatkan dua query untuk kasus yang sama. Perlu disederhanakan menjadi satu ekspresi.
+
+### 6.5 Fitur yang Belum Diimplementasi
+
+**F-SEMPURNA-21: Konfirmasi email belum digunakan**
+User mengimplementasikan MustVerifyEmail, namun verifikasi dilakukan melalui OTP WhatsApp, bukan melalui link email Laravel standar. Method canAccessPanel() mengembalikan true tanpa kondisi, bukan memeriksa hasVerifiedEmail(). Ini desain yang disengaja tetapi perlu didokumentasikan agar tidak membingungkan saat maintenance.
+
+**F-SEMPURNA-22: Fitur databaseNotifications dikomentari**
+Di AdminPanelProvider, ->databaseNotifications() dikomentari. Jika notifikasi in-app diperlukan di masa depan, tabel notifications sudah ada di migrasi. Perlu keputusan apakah fitur ini akan diaktifkan.
+
+**F-SEMPURNA-23: Tidak ada halaman pengumuman hasil yang dapat diakses publik**
+Hasil seleksi hanya dapat dilihat melalui login ke dashboard. Tidak ada halaman publik untuk mengecek hasil berdasarkan nomor pendaftaran atau NISN tanpa login. Fitur ini umum pada sistem PPDB dan perlu dipertimbangkan.
+
+**F-SEMPURNA-24: Impor data belum memvalidasi tahun pendaftaran aktif sebelum update**
+CalonSiswaImporter::resolveRecord() menggunakan withoutGlobalScopes() dan firstOrNew berdasarkan NISN. Ini berarti bisa mengupdate data calon siswa dari tahun pendaftaran berbeda tanpa konfirmasi. Perlu ditambahkan filter atau konfirmasi bahwa record yang diupdate adalah dari tahun pendaftaran aktif.
+
+**F-SEMPURNA-25: Tidak ada validasi unik nomor pendaftaran lintas soft delete**
+Nomor pendaftaran memiliki unique constraint di database. Namun jika record di-soft delete dan calon siswa mendaftar ulang, generateNomorPendaftaran() menggunakan withoutGlobalScopes() yang menyertakan soft deleted records dalam query orderByDesc. Ini sudah benar. Tetapi jika record soft deleted kemudian di-restore, ada potensi konflik nomor pendaftaran jika setelah soft delete sudah ada nomor dengan urutan yang sama. Perlu diverifikasi.
 
 ```
 
@@ -22964,3 +29771,4 @@ export default defineConfig({
 ```
 
 ---
+

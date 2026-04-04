@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('logo_institusi')->nullable();
             $table->enum('jenjang', ['PAUD', 'TK', 'SD', 'MI', 'SMP', 'MTS', 'SMA', 'SMK', 'MA'])->nullable();
             $table->enum('status', ['NEGERI', 'SWASTA'])->nullable();
-            $table->enum('akreditasi', ['A', 'B', 'C', 'D'])->nullable();
+            $table->enum('akreditasi', ['A', 'B', 'C', 'D', 'TT'])->nullable();
             $table->string('alamat', 50)->nullable();
             $table->foreignId('negara_id')->nullable()->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('provinsi_id')->nullable()->constrained('provinsis')->cascadeOnDelete()->cascadeOnUpdate();

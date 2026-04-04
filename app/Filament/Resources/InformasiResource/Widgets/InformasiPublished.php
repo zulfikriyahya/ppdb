@@ -104,9 +104,9 @@ class InformasiPublished extends TableWidget
         $hasTerminalStatus = $calonSiswa && in_array($statusPendaftaran, $terminalStatuses);
         $showPendaftaranBadge = $this->isCalonSiswa() && $calonSiswa !== null && ! $hasTerminalStatus;
 
-        $urlFormulir = $calonSiswa ? '/formulir' : '';
-        $urlViewFormulir = $calonSiswa ? "/formulir/{$calonSiswa->id}" : '';
-        $urlInformasi = $calonSiswa ? '/informasi' : '';
+        $urlFormulir = $calonSiswa ? '/dashboard/formulir' : '';
+        $urlViewFormulir = $calonSiswa ? "/dashboard/formulir/{$calonSiswa->id}" : '';
+        $urlInformasi = $calonSiswa ? '/dashboard/informasi' : '';
 
         return $table
             ->query(
