@@ -3,7 +3,7 @@
     use Illuminate\Support\Facades\Storage;
 
     $fotoUrl = $record->berkas_foto ? Storage::url($record->berkas_foto) : null;
-    $qrPayload = url('/admin/formulir/' . $record->id);
+    $qrPayload = url('/dashboard/formulir/' . $record->id);
 
     $now = Carbon::now();
     $tanggalTtd = $now;
@@ -205,10 +205,10 @@
     @include('partials.pdf-header', ['instansi' => $instansi])
 
     <div class="doc-title">SURAT KEPUTUSAN KELULUSAN</div>
-    <div class="doc-nomor">Nomor: {{ $instansi?->nomor_surat ?? '......./Mts.01/PPDB/' . date('Y') }}</div>
+    <div class="doc-nomor">Nomor: {{ $instansi?->nomor_surat ?? '......./Mts.01/PMBM/' . date('Y') }}</div>
 
     <p>
-        Berdasarkan hasil Keputusan Sidang Pleno Panitia Penerimaan Peserta Didik Baru (PPDB) <b>{{ $namaMadrasah }}</b>
+        Berdasarkan hasil Keputusan Sidang Pleno Panitia Penerimaan Peserta Didik Baru (PMBM) <b>{{ $namaMadrasah }}</b>
         Tahun Pelajaran {{ $tahunPendaftaran?->nama ?? '' }}, setelah melakukan evaluasi terhadap kelengkapan
         administrasi dan hasil uji seleksi, maka Panitia menetapkan bahwa peserta didik di bawah ini:
     </p>
@@ -260,7 +260,7 @@
                 <td style="width: 25%; vertical-align: bottom;">{!! QrCode::size(70)->margin(0)->generate($qrPayload) !!}</td>
                 <td class="sig-block" style="width: 37.5%; vertical-align: top;">
                     <span class="sig-title">{{ $kota }}, {{ $tanggalTtd->translatedFormat('d F Y') }}<br>Ketua
-                        Panitia PPDB,</span>
+                        Panitia PMBM,</span>
                     <div style="position: relative; top: -50px; height: 0;">
                         @if ($ketua?->berkas_tte)
                             <img src="{{ Storage::url($ketua->berkas_tte) }}" style="height:60px;">
@@ -324,7 +324,8 @@
         <li>Seluruh data dan dokumen yang saya berikan kepada pihak panitia adalah <b>benar, absah, dan dapat
                 dipertanggungjawabkan secara hukum</b>.</li>
         <li>Apabila dikemudian hari ditemukan indikasi pemalsuan data/dokumen, saya bersedia menerima sanksi berupa
-            <b>pembatalan kelulusan</b> putra/putri saya.</li>
+            <b>pembatalan kelulusan</b> putra/putri saya.
+        </li>
         <li>Saya sepenuhnya sanggup dan bersedia bekerja sama dengan pihak madrasah untuk membimbing putra/putri saya
             agar senantiasa mematuhi <b>Tata Tertib dan Peraturan Madarasah</b>.</li>
         <li>Saya berkomitmen untuk tidak melakukan tindakan penyuapan, pemaksaan, maupun gratifikasi kepada panitia
@@ -435,7 +436,7 @@
                 <td style="text-align:center;">1</td>
                 <td>Formulir Pendaftaran (Lembar 1)</td>
                 <td style="text-align:center; font-weight:bold;">1 Lembar</td>
-                <td>Dicetak dari sistem PPDB</td>
+                <td>Dicetak dari sistem PMBM</td>
                 <td style="font-size: 14pt; text-align:center;">☐</td>
             </tr>
             <tr>

@@ -4,7 +4,7 @@
     $isJalurPrestasi = optional($record->jalurPendaftaran)->nama === 'Prestasi';
     $jenisKelamin    = $record->jenis_kelamin === 'Pria' ? 'Laki-laki' : 'Perempuan';
     $fotoUrl         = $record->berkas_foto ? Storage::url($record->berkas_foto) : null;
-    $qrPayload       = url('/admin/formulir/' . $record->id);
+    $qrPayload       = url('/dashboard/formulir/' . $record->id);
     $isDraft         = $record->status_formulir !== 'Disetujui';
     $kota            = ucwords(strtolower(optional($instansi?->kabupaten)->nama ?? 'Pandeglang'));
 
@@ -139,7 +139,7 @@
             </td>
             <td class="sig-box" style="width: 37.5%;">
                 {{ $kota }}, {{ date('d F Y', strtotime($record->updated_at)) }}<br>
-                <span style="color: #6b7280; font-size: 9pt;">Ketua Panitia PPDB,</span>
+                <span style="color: #6b7280; font-size: 9pt;">Ketua Panitia PMBM,</span>
                 <div style="height: 70px;">
                     @if ($ketua?->berkas_tte) <img src="{{ Storage::url($ketua->berkas_tte) }}" style="height:60px; margin-top:5px;"> @endif
                 </div>

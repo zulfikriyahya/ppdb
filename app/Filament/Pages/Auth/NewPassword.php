@@ -94,8 +94,8 @@ class NewPassword extends SimplePage implements HasForms
         session()->forget('reset_otp_user_id');
 
         $message = "Halo {$user->name},\n\n"
-            ."Password akun PPDB MTsN 1 Pandeglang Anda telah berhasil diubah.\n\n"
-            .'Jika Anda tidak merasa melakukan perubahan ini, segera hubungi panitia PPDB.';
+            . "Password akun PMBM MTsN 1 Pandeglang Anda telah berhasil diubah.\n\n"
+            . 'Jika Anda tidak merasa melakukan perubahan ini, segera hubungi panitia PMBM.';
 
         app(WhatsAppService::class)->send(
             phone: $user->telepon,

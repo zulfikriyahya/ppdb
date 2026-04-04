@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'name' => env('APP_NAME', 'PPDB MTs Negeri 1 Pandeglang'),
+    'name' => env('APP_NAME', 'PMBM MTs Negeri 1 Pandeglang'),
     'env' => env('APP_ENV', 'production'),
     'debug' => (bool) env('APP_DEBUG', false),
     'url' => env('APP_URL', 'https://daftar.mtsn1pandeglang.sch.id'),

@@ -11,8 +11,8 @@ class PimpinanSeeder extends Seeder
     {
         $dataPimpinan = [
             [
-                'nama' => 'H. Eman Sulaiman, S.Ag., M.Pd.',
-                'nip' => '197006032000031002',
+                'nama' => 'Hj. Yanti Mariah, S.S., M.Pd.',
+                'nip' => '198008072005012006',
                 'tahun_pendaftaran_id' => '1',
                 'berkas_foto' => '/img/avatar.png',
                 'berkas_tte' => '/img/tte.png',

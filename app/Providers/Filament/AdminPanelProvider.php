@@ -39,7 +39,7 @@ class AdminPanelProvider extends PanelProvider
     {
         return $panel
             ->id('admin')
-            ->path('')
+            ->path('dashboard')
             ->default()
             ->spa()
             // ->topNavigation()
@@ -64,9 +64,9 @@ class AdminPanelProvider extends PanelProvider
             ->userMenuItems([
                 MenuItem::make()
                     ->label('Manajemen Pengguna')
-                    ->url(fn (): string => UserResource::getUrl())
+                    ->url(fn(): string => UserResource::getUrl())
                     ->icon('heroicon-o-identification')
-                    ->visible(fn () => Auth::user()?->roles?->where('name', 'super_admin')->first() !== null),
+                    ->visible(fn() => Auth::user()?->roles?->where('name', 'super_admin')->first() !== null),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -93,8 +93,8 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            ->theme(asset('css/filament/admin/theme.css'))
-            ->viteTheme('resources/css/filament/admin/theme.css')
+            ->theme(asset('css/filament/dashboard/theme.css'))
+            ->viteTheme('resources/css/filament/dashboard/theme.css')
             ->plugins([
                 FilamentShieldPlugin::make()
                     ->gridColumns([
@@ -114,12 +114,12 @@ class AdminPanelProvider extends PanelProvider
                     ]),
 
                 EasyFooterPlugin::make()
-                    ->withFooterPosition('footer')
-                    ->withLinks([
-                        ['title' => 'Dibuat dan dikembangkan dengan ❤ oleh Yahya Zulfikri', 'url' => 'https://github.com/zulfikriyahya', 'open_in_new_tab' => true],
-                    ])
-                    ->withLoadTime('Halaman ini dimuat dalam')
-                    ->withBorder(),
+                    ->withFooterPosition('footer'),
+                // ->withLinks([
+                //     ['title' => 'Dibuat dan dikembangkan dengan ❤ oleh Yahya Zulfikri', 'url' => 'https://github.com/zulfikriyahya', 'open_in_new_tab' => true],
+                // ])
+                // ->withLoadTime('Halaman ini dimuat dalam')
+                // ->withBorder(),
 
                 AuthUIEnhancerPlugin::make()
                     ->formPanelPosition('left')

@@ -23,7 +23,7 @@ class RegisterCustom extends Register
     use HasCustomLayout;
 
     // -----------------------------------------------------------------------
-    // Guard: cek jadwal PPDB setiap kali halaman di-render
+    // Guard: cek jadwal PMBM setiap kali halaman di-render
     // Octane-safe karena mount() dipanggil per-request
     // -----------------------------------------------------------------------
 
@@ -66,7 +66,7 @@ class RegisterCustom extends Register
 
                 return $now->between($start, $end);
             } catch (\Throwable $e) {
-                Log::error('RegisterCustom::isRegistrationOpen error: '.$e->getMessage());
+                Log::error('RegisterCustom::isRegistrationOpen error: ' . $e->getMessage());
 
                 return false;
             }
@@ -163,7 +163,7 @@ class RegisterCustom extends Register
             ->revealable(filament()->arePasswordsRevealable())
             ->required()
             ->rule(Password::default())
-            ->dehydrateStateUsing(fn ($state) => Hash::make($state))
+            ->dehydrateStateUsing(fn($state) => Hash::make($state))
             ->same('passwordConfirmation')
             ->validationMessages([
                 'same' => 'Password: Password tidak sesuai dengan isian password konfirmasi.',
@@ -199,9 +199,9 @@ class RegisterCustom extends Register
         Redis::setex("otp:{$user->id}", $ttl, $otp);
 
         $message = "Halo {$user->name},\n\n"
-            ."Kode OTP verifikasi akun PPDB MTsN 1 Pandeglang Anda:\n\n"
-            ."*{$otp}*\n\n"
-            .'Kode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.';
+            . "Kode OTP verifikasi akun PMBM MTsN 1 Pandeglang Anda:\n\n"
+            . "*{$otp}*\n\n"
+            . 'Kode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.';
 
         app(WhatsAppService::class)->send(
             phone: $user->telepon,

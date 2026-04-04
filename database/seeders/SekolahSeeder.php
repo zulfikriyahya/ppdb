@@ -27,7 +27,7 @@ class SekolahSeeder extends Seeder
                 'kelurahan_id' => '7729',
                 'pimpinan_id' => '1',
                 'website' => 'https://mtsn1pandeglang.sch.id',
-                'telepon' => '089612050291',
+                'telepon' => '0895351856267',
                 'email' => 'adm@mtsn1pandeglang.sch.id',
                 'nomor_surat' => null,
             ],

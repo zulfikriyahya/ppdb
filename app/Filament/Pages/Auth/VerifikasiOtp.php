@@ -104,7 +104,7 @@ class VerifikasiOtp extends SimplePage implements HasForms
 
         Auth::login($user);
 
-        Notification::make()->title('Akun berhasil diverifikasi!')->body('Selamat datang di PPDB MTsN 1 Pandeglang.')->success()->send();
+        Notification::make()->title('Akun berhasil diverifikasi!')->body('Selamat datang di PMBM MTsN 1 Pandeglang.')->success()->send();
         $this->redirect(filament()->getUrl());
     }
 
@@ -131,7 +131,7 @@ class VerifikasiOtp extends SimplePage implements HasForms
         Redis::setex("otp:{$userId}", 300, $otp);
         Redis::setex($cooldownKey, 60, 1);
 
-        $message = "Halo {$user->name},\n\nKode OTP baru verifikasi akun PPDB MTsN 1 Pandeglang Anda:\n\n*{$otp}*\n\nKode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.";
+        $message = "Halo {$user->name},\n\nKode OTP baru verifikasi akun PMBM MTsN 1 Pandeglang Anda:\n\n*{$otp}*\n\nKode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.";
         app(WhatsAppService::class)->send(
             phone: $user->telepon,
             message: $message,

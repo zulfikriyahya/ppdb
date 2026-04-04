@@ -110,7 +110,7 @@ class ResetPasswordOtp extends SimplePage implements HasForms
         Redis::setex("reset_otp:{$userId}", 300, $otp);
         Redis::setex($cooldownKey, 60, 1);
 
-        $message = "Halo {$user->name},\n\nKode OTP baru reset password PPDB MTsN 1 Pandeglang Anda:\n\n*{$otp}*\n\nKode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.";
+        $message = "Halo {$user->name},\n\nKode OTP baru reset password PMBM MTsN 1 Pandeglang Anda:\n\n*{$otp}*\n\nKode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.";
 
         app(WhatsAppService::class)->send(
             phone: $user->telepon,

@@ -1,6 +1,6 @@
-# PPDB MTsN 1 Pandeglang
+# PMBM MTsN 1 Pandeglang
 
-Sistem Penerimaan Peserta Didik Baru (PPDB) berbasis web untuk **MTsN 1 Pandeglang** — mengelola seluruh proses pendaftaran siswa baru secara digital, mulai dari registrasi akun hingga pengumuman hasil seleksi.
+Sistem Penerimaan Peserta Didik Baru (PMBM) berbasis web untuk **MTsN 1 Pandeglang** — mengelola seluruh proses pendaftaran siswa baru secara digital, mulai dari registrasi akun hingga pengumuman hasil seleksi.
 
 ---
 
@@ -162,7 +162,7 @@ Semua data utama di-scope ke `tahun_pendaftaran_id` aktif. Admin dapat mengakses
 
 ### Nomor Pendaftaran
 
-Auto-generated format `PPDB-{TAHUN}-{6 digit seq}` dengan `lockForUpdate()` untuk mencegah race condition.
+Auto-generated format `PMBM-{TAHUN}-{6 digit seq}` dengan `lockForUpdate()` untuk mencegah race condition.
 
 ---
 
