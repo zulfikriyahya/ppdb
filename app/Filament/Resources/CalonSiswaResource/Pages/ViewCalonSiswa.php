@@ -36,7 +36,7 @@ class ViewCalonSiswa extends ViewRecord
                 ->icon('heroicon-o-trophy')
                 ->collapsible()
                 ->columnSpanFull()
-                ->visible(fn() => $this->record->formulirPrestasis()->exists())
+                ->visible(fn () => $this->record->formulirPrestasis()->exists())
                 ->schema([
                     Repeater::make('formulirPrestasis')
                         ->relationship('formulirPrestasis')

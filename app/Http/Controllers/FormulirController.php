@@ -25,18 +25,18 @@ class FormulirController extends Controller
     private function getInstansi(): Fluent
     {
         return new Fluent([
-            'nama'           => 'MTs Negeri 1 Pandeglang',
-            'alamat'         => 'Jl. Raya Labuan',
-            'website'        => 'mtsn1pandeglang.sch.id',
-            'email'          => 'adm@mtsn1pandeglang.sch.id',
-            'telepon'        => '+62 8953-5185-6267',
-            'nomor_surat'    => null,
-            'logo'           => asset('img/logo.png'),
+            'nama' => 'MTs Negeri 1 Pandeglang',
+            'alamat' => 'Jl. Raya Labuan',
+            'website' => 'mtsn1pandeglang.sch.id',
+            'email' => 'adm@mtsn1pandeglang.sch.id',
+            'telepon' => '+62 8953-5185-6267',
+            'nomor_surat' => null,
+            'logo' => asset('img/logo.png'),
             'logo_institusi' => asset('img/logo-institusi.png'),
-            'kabupaten'      => new Fluent(['nama' => 'Pandeglang']),
-            'kecamatan'      => new Fluent(['nama' => 'Kaduhejo']),
-            'kelurahan'      => new Fluent(['nama' => 'Palurahan']),
-            'provinsi'       => new Fluent(['nama' => 'Banten']),
+            'kabupaten' => new Fluent(['nama' => 'Pandeglang']),
+            'kecamatan' => new Fluent(['nama' => 'Kaduhejo']),
+            'kelurahan' => new Fluent(['nama' => 'Palurahan']),
+            'provinsi' => new Fluent(['nama' => 'Banten']),
         ]);
     }
 
@@ -155,7 +155,7 @@ class FormulirController extends Controller
             abort(403, 'Pengumuman hasil belum tersedia.');
         }
 
-        $tahun   = $this->getTahun();
+        $tahun = $this->getTahun();
         $periodes = [
             ['tanggal_pengumuman_jalur_prestasi_mulai',  'tanggal_pengumuman_jalur_prestasi_selesai'],
             ['tanggal_pengumuman_jalur_reguler_mulai',   'tanggal_pengumuman_jalur_reguler_selesai'],

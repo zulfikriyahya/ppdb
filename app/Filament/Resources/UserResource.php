@@ -64,13 +64,13 @@ class UserResource extends Resource
                         TextInput::make('username')
                             ->label('Nomor Induk Siswa Nasional (NISN)')
                             ->unique(ignoreRecord: true)
-                            ->rule(fn($record) => $record === null
+                            ->rule(fn ($record) => $record === null
                                 ? 'unique:users,username'
-                                : 'unique:users,username,' . $record->id)
-                            ->dehydrateStateUsing(fn($state) => $state ?: null)
+                                : 'unique:users,username,'.$record->id)
+                            ->dehydrateStateUsing(fn ($state) => $state ?: null)
                             ->when(
                                 $isCreate,
-                                fn(TextInput $field) => $field
+                                fn (TextInput $field) => $field
                                     ->required()
                                     ->numeric()
                                     ->minLength(10)
@@ -86,13 +86,13 @@ class UserResource extends Resource
                         TextInput::make('telepon')
                             ->label('Nomor Telepon')
                             ->unique(ignoreRecord: true)
-                            ->rule(fn($record) => $record === null
+                            ->rule(fn ($record) => $record === null
                                 ? 'unique:users,telepon'
-                                : 'unique:users,telepon,' . $record->id)
-                            ->dehydrateStateUsing(fn($state) => $state ?: null)
+                                : 'unique:users,telepon,'.$record->id)
+                            ->dehydrateStateUsing(fn ($state) => $state ?: null)
                             ->when(
                                 $isCreate,
-                                fn(TextInput $field) => $field
+                                fn (TextInput $field) => $field
                                     ->required()
                                     ->numeric()
                                     ->minLength(10)
@@ -109,10 +109,10 @@ class UserResource extends Resource
                             ->label('Email')
                             ->email()
                             ->unique(ignoreRecord: true)
-                            ->rule(fn($record) => $record === null
+                            ->rule(fn ($record) => $record === null
                                 ? 'unique:users,email'
-                                : 'unique:users,email,' . $record->id)
-                            ->dehydrateStateUsing(fn($state) => $state ?: null)
+                                : 'unique:users,email,'.$record->id)
+                            ->dehydrateStateUsing(fn ($state) => $state ?: null)
                             ->disabledOn('edit')
                             ->required()
                             ->validationMessages([
@@ -123,8 +123,8 @@ class UserResource extends Resource
                         TextInput::make('password')
                             ->label('Password')
                             ->password()
-                            ->required(fn($record) => $record === null)
-                            ->dehydrateStateUsing(fn($state, $record) => $state ? bcrypt($state) : $record->password),
+                            ->required(fn ($record) => $record === null)
+                            ->dehydrateStateUsing(fn ($state, $record) => $state ? bcrypt($state) : $record->password),
 
                         DateTimePicker::make('email_verified_at')
                             ->label('Diverifikasi')
@@ -138,7 +138,7 @@ class UserResource extends Resource
                             ->searchable()
                             ->when(
                                 $isCreate,
-                                fn(Select $field) => $field
+                                fn (Select $field) => $field
                                     ->required()
                                     ->validationMessages(['required' => 'Form ini wajib diisi.'])
                             ),
@@ -188,18 +188,18 @@ class UserResource extends Resource
 
                 TextColumn::make('roles.name')
                     ->label('Peran')
-                    ->formatStateUsing(fn(string $state): string => Str::headline($state))
+                    ->formatStateUsing(fn (string $state): string => Str::headline($state))
                     ->badge()
                     ->sortable(),
 
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'Aktif' => 'success',
                         'Nonaktif' => 'gray',
                     })
-                    ->icon(fn(string $state): string => match ($state) {
+                    ->icon(fn (string $state): string => match ($state) {
                         'Aktif' => 'heroicon-o-check-circle',
                         'Nonaktif' => 'heroicon-o-x-mark',
                     })
@@ -229,7 +229,7 @@ class UserResource extends Resource
                     DeleteAction::make(),
                     ForceDeleteAction::make(),
                     RestoreAction::make(),
-                ])->hidden(fn($record) => $record->username === 'super_admin'),
+                ])->hidden(fn ($record) => $record->username === 'super_admin'),
             ], ActionsPosition::BeforeColumns)
             ->striped()
             ->filtersLayout(FiltersLayout::AboveContentCollapsible)

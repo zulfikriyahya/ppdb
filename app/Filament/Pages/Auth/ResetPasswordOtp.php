@@ -16,8 +16,8 @@ use Illuminate\Support\Facades\Redis;
 
 class ResetPasswordOtp extends SimplePage implements HasForms
 {
-    use InteractsWithForms;
     use HasCustomLayout;
+    use InteractsWithForms;
 
     protected static string $view = 'filament.pages.auth.reset-password-otp';
 

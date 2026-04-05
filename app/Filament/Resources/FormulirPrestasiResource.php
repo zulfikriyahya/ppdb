@@ -117,10 +117,10 @@ class FormulirPrestasiResource extends Resource
                 ->relationship(
                     'calonSiswa',
                     'nama',
-                    fn(Builder $query) => $query->withoutGlobalScopes()
+                    fn (Builder $query) => $query->withoutGlobalScopes()
                 )
                 ->getOptionLabelFromRecordUsing(
-                    fn($record) => "{$record->nama} — {$record->nisn}"
+                    fn ($record) => "{$record->nama} — {$record->nisn}"
                 )
                 ->searchable()
                 ->preload()
@@ -148,14 +148,13 @@ class FormulirPrestasiResource extends Resource
                     Prestasi::all()
                         ->groupBy('jenis')
                         ->map(
-                            fn($group) =>
-                            $group->mapWithKeys(fn($p) => [
+                            fn ($group) => $group->mapWithKeys(fn ($p) => [
                                 $p->id => collect([
                                     $p->nama,
-                                    $p->tingkat   ? "Tk. {$p->tingkat}"    : null,
-                                    $p->kategori  ? "Kat. {$p->kategori}"  : null,
+                                    $p->tingkat ? "Tk. {$p->tingkat}" : null,
+                                    $p->kategori ? "Kat. {$p->kategori}" : null,
                                     $p->peringkat ? "Juara {$p->peringkat}" : null,
-                                ])->filter()->implode(' — ')
+                                ])->filter()->implode(' — '),
                             ])
                         )
                         ->toArray()
@@ -165,22 +164,25 @@ class FormulirPrestasiResource extends Resource
                 ->disabled(! $isCalonSiswa && ! $isEditor)
                 ->columnSpanFull()
                 ->helperText(function (?string $state) {
-                    if (! $state) return new HtmlString(
-                        '<small style="color:var(--gray-400)">Pilih jenis prestasi yang sesuai dengan sertifikat yang dimiliki.</small>'
-                    );
+                    if (! $state) {
+                        return new HtmlString(
+                            '<small style="color:var(--gray-400)">Pilih jenis prestasi yang sesuai dengan sertifikat yang dimiliki.</small>'
+                        );
+                    }
 
                     $p = Prestasi::find($state);
-                    if (! $p) return null;
+                    if (! $p) {
+                        return null;
+                    }
 
                     $rows = collect([
-                        'Jenis'     => $p->jenis,
-                        'Nama'      => $p->nama,
-                        'Tingkat'   => $p->tingkat,
-                        'Kategori'  => $p->kategori,
+                        'Jenis' => $p->jenis,
+                        'Nama' => $p->nama,
+                        'Tingkat' => $p->tingkat,
+                        'Kategori' => $p->kategori,
                         'Peringkat' => $p->peringkat,
                     ])->filter()->map(
-                        fn($v, $k) =>
-                        "<tr>
+                        fn ($v, $k) => "<tr>
                 <td style='padding:2px 8px 2px 0;color:#9ca3af;font-size:.78rem;white-space:nowrap'>{$k}</td>
                 <td style='padding:2px 0;font-size:.78rem;font-weight:600'>: {$v}</td>
             </tr>"
@@ -219,7 +221,7 @@ class FormulirPrestasiResource extends Resource
                 ->helperText('Format: JPG, PNG, atau PDF. Ukuran: 10 KB – 1 MB.')
                 ->acceptedFileTypes(['image/jpeg', 'image/png', 'application/pdf'])
                 ->minSize(10)
-                ->required(fn($get) => $get('nama_prestasi') && $get('tahun_prestasi') && $get('penyelenggara_prestasi'))
+                ->required(fn ($get) => $get('nama_prestasi') && $get('tahun_prestasi') && $get('penyelenggara_prestasi'))
                 ->acceptedFileTypes(['image/jpeg', 'image/png', 'application/pdf'])
                 ->validationMessages([
                     'accepted_file_types' => 'Berkas harus berupa JPG, PNG, atau PDF.',
@@ -229,7 +231,7 @@ class FormulirPrestasiResource extends Resource
                 ])
                 ->maxSize(1024)
                 ->visibility('private')
-                ->directory(fn() => 'berkas/prestasi/' . ($nisn ?? 'umum'))
+                ->directory(fn () => 'berkas/prestasi/'.($nisn ?? 'umum'))
                 ->downloadable()
                 ->openable()
                 ->fetchFileInformation(false)
@@ -266,7 +268,7 @@ class FormulirPrestasiResource extends Resource
                 TextColumn::make('prestasi.tingkat')
                     ->label('Tingkat')
                     ->badge()
-                    ->color(fn($state) => match ($state) {
+                    ->color(fn ($state) => match ($state) {
                         'Nasional' => 'danger',
                         'Provinsi' => 'warning',
                         'Kabupaten/Kota' => 'info',
@@ -284,9 +286,9 @@ class FormulirPrestasiResource extends Resource
 
                 TextColumn::make('berkas_prestasi')
                     ->label('Berkas')
-                    ->formatStateUsing(fn($state) => $state ? '✅ Ada' : '❌ Belum upload')
+                    ->formatStateUsing(fn ($state) => $state ? '✅ Ada' : '❌ Belum upload')
                     ->badge()
-                    ->color(fn($state) => $state ? 'success' : 'danger'),
+                    ->color(fn ($state) => $state ? 'success' : 'danger'),
 
                 TextColumn::make('updated_at')
                     ->label('Diperbarui')
@@ -301,14 +303,13 @@ class FormulirPrestasiResource extends Resource
                         Prestasi::all()
                             ->groupBy('jenis')
                             ->map(
-                                fn($group) =>
-                                $group->mapWithKeys(fn($p) => [
+                                fn ($group) => $group->mapWithKeys(fn ($p) => [
                                     $p->id => collect([
                                         $p->nama,
-                                        $p->tingkat   ? "Tk. {$p->tingkat}"   : null,
-                                        $p->kategori  ? "Kat. {$p->kategori}" : null,
+                                        $p->tingkat ? "Tk. {$p->tingkat}" : null,
+                                        $p->kategori ? "Kat. {$p->kategori}" : null,
                                         $p->peringkat ? "Juara {$p->peringkat}" : null,
-                                    ])->filter()->implode(' — ')
+                                    ])->filter()->implode(' — '),
                                 ])
                             )
                             ->toArray()

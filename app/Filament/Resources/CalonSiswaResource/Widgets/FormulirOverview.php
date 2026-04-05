@@ -27,7 +27,7 @@ class FormulirOverview extends BaseWidget
     private function chartBy(string $col, ?string $val = null): array
     {
         return CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-            ->when($val, fn($q) => $q->where($col, $val))
+            ->when($val, fn ($q) => $q->where($col, $val))
             ->groupBy('hari')
             ->orderBy('hari')
             ->pluck('total')
@@ -53,7 +53,7 @@ class FormulirOverview extends BaseWidget
             ->color($color)
             ->chart($chart)
             ->extraAttributes([
-                'class'   => 'cursor-pointer transition hover:opacity-80',
+                'class' => 'cursor-pointer transition hover:opacity-80',
                 'onclick' => $onclick,
             ]);
     }
@@ -89,7 +89,9 @@ class FormulirOverview extends BaseWidget
     private function isWithinPengumumanPeriod(): bool
     {
         $t = $this->getActiveTahunPendaftaran();
-        if (! $t) return false;
+        if (! $t) {
+            return false;
+        }
 
         foreach (
             [
@@ -115,13 +117,17 @@ class FormulirOverview extends BaseWidget
 
     private function canPrintKartuTes(CalonSiswa $cs): bool
     {
-        if ($cs->status_formulir !== 'Disetujui') return false;
+        if ($cs->status_formulir !== 'Disetujui') {
+            return false;
+        }
 
         if (in_array($cs->status_pendaftaran, [
             'Tidak Diterima',
             'Diterima Di Kelas Reguler',
             'Diterima Di Kelas Unggulan',
-        ])) return false;
+        ])) {
+            return false;
+        }
 
         return $this->isWithinKartuTesPeriod();
     }
@@ -133,7 +139,9 @@ class FormulirOverview extends BaseWidget
             'Diterima Di Kelas Reguler',
             'Diterima Di Kelas Unggulan',
             'Tidak Diterima',
-        ])) return false;
+        ])) {
+            return false;
+        }
 
         return $this->isWithinPengumumanPeriod();
     }
@@ -144,7 +152,7 @@ class FormulirOverview extends BaseWidget
 
     protected function getStats(): array
     {
-        $user         = Auth::user();
+        $user = Auth::user();
         $isCalonSiswa = $user->hasRole('calon_siswa');
 
         $statusCount = CalonSiswa::selectRaw('status_pendaftaran, COUNT(*) as total')
@@ -157,17 +165,17 @@ class FormulirOverview extends BaseWidget
             ->pluck('total', 'status_formulir')
             ->toArray();
 
-        $totalPendaftar  = array_sum($statusCount);
-        $diproses        = $statusCount['Diproses'] ?? 0;
-        $diterima        = $statusCount['Diterima'] ?? 0;
+        $totalPendaftar = array_sum($statusCount);
+        $diproses = $statusCount['Diproses'] ?? 0;
+        $diterima = $statusCount['Diterima'] ?? 0;
         $diterimaReguler = $statusCount['Diterima Di Kelas Reguler'] ?? 0;
         $diterimaUnggulan = $statusCount['Diterima Di Kelas Unggulan'] ?? 0;
-        $tidakDiterima   = $statusCount['Tidak Diterima'] ?? 0;
+        $tidakDiterima = $statusCount['Tidak Diterima'] ?? 0;
 
-        $fDiproses  = $formulirCount['Diproses'] ?? 0;
-        $fBerkas    = $formulirCount['Berkas Tidak Lengkap'] ?? 0;
+        $fDiproses = $formulirCount['Diproses'] ?? 0;
+        $fBerkas = $formulirCount['Berkas Tidak Lengkap'] ?? 0;
         $fDisetujui = $formulirCount['Disetujui'] ?? 0;
-        $fDitolak   = $formulirCount['Ditolak'] ?? 0;
+        $fDitolak = $formulirCount['Ditolak'] ?? 0;
 
         // ── CALON SISWA ───────────────────────────────────────────────────────
         if ($isCalonSiswa) {
@@ -176,25 +184,25 @@ class FormulirOverview extends BaseWidget
                 ->latest()
                 ->first();
 
-            $statusLabel   = $cs?->status_pendaftaran ?? 'Belum Mendaftar';
-            $formulirLabel = $cs?->status_formulir    ?? 'Daftar Sekarang!';
+            $statusLabel = $cs?->status_pendaftaran ?? 'Belum Mendaftar';
+            $formulirLabel = $cs?->status_formulir ?? 'Daftar Sekarang!';
 
             [$statusColor, $statusIcon] = match ($cs?->status_pendaftaran) {
                 'Diterima',
                 'Diterima Di Kelas Reguler',
                 'Diterima Di Kelas Unggulan' => ['success', 'heroicon-o-check-circle'],
-                'Tidak Diterima'             => ['danger',  'heroicon-o-no-symbol'],
-                default                      => ['warning', 'heroicon-o-arrow-path'],
+                'Tidak Diterima' => ['danger',  'heroicon-o-no-symbol'],
+                default => ['warning', 'heroicon-o-arrow-path'],
             };
 
             [$formulirColor, $formulirIcon] = match ($cs?->status_formulir) {
-                'Disetujui'           => ['success', 'heroicon-o-document-check'],
+                'Disetujui' => ['success', 'heroicon-o-document-check'],
                 'Berkas Tidak Lengkap',
-                'Ditolak'             => ['danger', match ($cs?->status_formulir) {
+                'Ditolak' => ['danger', match ($cs?->status_formulir) {
                     'Berkas Tidak Lengkap' => 'heroicon-o-document-minus',
-                    default                => 'heroicon-o-x-circle',
+                    default => 'heroicon-o-x-circle',
                 }],
-                default               => ['warning', 'heroicon-o-arrow-path'],
+                default => ['warning', 'heroicon-o-arrow-path'],
             };
 
             $stats = [
@@ -261,7 +269,7 @@ class FormulirOverview extends BaseWidget
                             'Diterima',
                             'Diterima Di Kelas Reguler',
                             'Diterima Di Kelas Unggulan' => 'success',
-                            default                      => 'danger',
+                            default => 'danger',
                         },
                         [],
                         route('skl.cetak', $cs->id),

@@ -126,7 +126,7 @@ class ListCalonSiswas extends ListRecords
             ->color('success')
             ->exporter(CalonSiswaExporter::class)
             ->chunkSize(250)
-            ->visible(fn() => CalonSiswa::count() > 0 && ! $this->isCalonSiswa());
+            ->visible(fn () => CalonSiswa::count() > 0 && ! $this->isCalonSiswa());
     }
 
     private function getImportAction(): ImportAction

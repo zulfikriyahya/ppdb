@@ -18,8 +18,8 @@ use Illuminate\Validation\Rules\Password;
 
 class NewPassword extends SimplePage implements HasForms
 {
-    use InteractsWithForms;
     use HasCustomLayout;
+    use InteractsWithForms;
 
     protected static string $view = 'filament.pages.auth.new-password';
 
