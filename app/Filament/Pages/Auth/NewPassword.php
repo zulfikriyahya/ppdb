@@ -3,7 +3,9 @@
 namespace App\Filament\Pages\Auth;
 
 use App\Models\User;
+use App\Services\OtpMessageService;
 use App\Services\WhatsAppService;
+use DiogoGPinto\AuthUIEnhancer\Pages\Auth\Concerns\HasCustomLayout;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -17,6 +19,7 @@ use Illuminate\Validation\Rules\Password;
 class NewPassword extends SimplePage implements HasForms
 {
     use InteractsWithForms;
+    use HasCustomLayout;
 
     protected static string $view = 'filament.pages.auth.new-password';
 
@@ -93,9 +96,7 @@ class NewPassword extends SimplePage implements HasForms
         Redis::del("otp_cooldown:{$userId}");
         session()->forget('reset_otp_user_id');
 
-        $message = "Halo {$user->name},\n\n"
-            ."Password akun PMBM MTsN 1 Pandeglang Anda telah berhasil diubah.\n\n"
-            .'Jika Anda tidak merasa melakukan perubahan ini, segera hubungi panitia PMBM.';
+        $message = OtpMessageService::passwordBerhasilDiubah($user->name);
 
         app(WhatsAppService::class)->send(
             phone: $user->telepon,

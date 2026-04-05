@@ -44,10 +44,6 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         ];
     }
 
-    // public function canAccessPanel(Panel $panel): bool
-    // {
-    //     return $this->hasVerifiedEmail();
-    // }
     public function canAccessPanel(Panel $panel): bool
     {
         return true;
@@ -71,10 +67,6 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         return $this->hasOne(CalonSiswa::class)->withoutGlobalScopes();
     }
 
-    // -----------------------------------------------------------------------
-    // Filament Avatar
-    // -----------------------------------------------------------------------
-
     public function getFilamentAvatarUrl(): ?string
     {
         // Prioritas 1: avatar yang di-upload langsung di profil user
@@ -90,10 +82,6 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
 
         return null;
     }
-
-    // -----------------------------------------------------------------------
-    // Booted
-    // -----------------------------------------------------------------------
 
     protected static function booted(): void
     {

@@ -1,7 +1,97 @@
-@import '../../../../vendor/filament/filament/resources/css/base.css';
+@import "../../../../vendor/filament/filament/resources/css/base.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 @tailwind variants;
-
 @config 'tailwind.config.js';
+
+@layer components {
+
+    /* ══════════════════════════════════════
+       AUTH FORM WRAPPER — Border Gradient
+    ══════════════════════════════════════ */
+    .custom-auth-form-wrapper {
+        border: 2px solid transparent;
+        background:
+            linear-gradient(#111827, #111827) padding-box,
+            linear-gradient(135deg, #10b981, #06b6d4, #f59e0b) border-box;
+        border-radius: 1rem;
+        padding: 1.5rem;
+    }
+
+    /* Input wrapper border gradient */
+    .custom-auth-form-wrapper .fi-input-wrp {
+        border: 1.5px solid transparent !important;
+        background:
+            linear-gradient(#1f2937, #1f2937) padding-box,
+            linear-gradient(135deg, #10b981, #06b6d4, #f59e0b) border-box !important;
+        border-radius: 0.5rem !important;
+        box-shadow: none !important;
+        --tw-ring-shadow: none !important;
+        --tw-shadow: none !important;
+    }
+
+    .custom-auth-form-wrapper .fi-input-wrp:focus-within {
+        background:
+            linear-gradient(#1f2937, #1f2937) padding-box,
+            linear-gradient(135deg, #f59e0b, #06b6d4, #10b981) border-box !important;
+    }
+
+    /* ── Teks input ── */
+    .custom-auth-form-wrapper .fi-input,
+    .custom-auth-form-wrapper input {
+        color: #f3f4f6 !important;
+        background: transparent !important;
+    }
+
+    .custom-auth-form-wrapper input::placeholder {
+        color: #6b7280 !important;
+    }
+
+    /* ── Label field ── */
+    .custom-auth-form-wrapper label,
+    .custom-auth-form-wrapper .fi-fo-field-wrp-label label {
+        color: #d1d5db !important;
+    }
+
+    /* ── Judul halaman ── */
+    .custom-auth-form-wrapper h1,
+    .custom-auth-form-wrapper h2 {
+        color: #f9fafb !important;
+    }
+
+    /* ── Sub-teks / deskripsi ── */
+    .custom-auth-form-wrapper p {
+        color: #9ca3af !important;
+    }
+
+    /* ── Span teks biasa ── */
+    .custom-auth-form-wrapper span {
+        color: #d1d5db !important;
+    }
+
+    /* ── Checkbox label ── */
+    .custom-auth-form-wrapper .fi-checkbox-label,
+    .custom-auth-form-wrapper [class*="checkbox"] label {
+        color: #d1d5db !important;
+    }
+
+    /* ── Link ── */
+    .custom-auth-form-wrapper a {
+        color: #10b981 !important;
+    }
+
+    .custom-auth-form-wrapper a:hover {
+        color: #34d399 !important;
+    }
+
+    /* ── Icon SVG dalam input ── */
+    .custom-auth-form-wrapper .fi-input-wrp svg {
+        color: #6b7280 !important;
+    }
+
+    /* ── Required asterisk (*) ── */
+    .custom-auth-form-wrapper .fi-fo-field-wrp-label .fi-fo-field-wrp-label-required {
+        color: #f87171 !important;
+    }
+}

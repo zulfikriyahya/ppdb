@@ -54,11 +54,13 @@ app/Policies/SekolahPolicy.php
 app/Policies/SekretarisPolicy.php
 app/Policies/TahunPendaftaranPolicy.php
 app/Policies/UserPolicy.php
+app/Services/OtpMessageService.php
 app/Services/WhatsAppService.php
 app/Jobs/SendWhatsAppJob.php
 app/Helpers/PdfDataHelper.php
 app/Constants/FormOptions.php
 app/Http/Controllers/Controller.php
+app/Http/Controllers/FormulirController.php
 app/Http/Controllers/LandingController.php
 app/Filament/Resources/AnggotaResource/Pages/CreateAnggota.php
 app/Filament/Resources/AnggotaResource/Pages/EditAnggota.php
@@ -231,16 +233,18 @@ database/migrations/2026_03_05_060527_create_formulir_prestasis.php
 routes/api.php
 routes/console.php
 routes/web.php
-resources/views/filament/pages/auth/forgot-password-custom.blade.php
+resources/views/filament/pages/auth/edit-profile.blade.php
+resources/views/filament/pages/auth/forgot-password.blade.php
+resources/views/filament/pages/auth/login.blade.php
 resources/views/filament/pages/auth/new-password.blade.php
+resources/views/filament/pages/auth/register.blade.php
 resources/views/filament/pages/auth/reset-password-otp.blade.php
 resources/views/filament/pages/auth/verifikasi-otp.blade.php
 resources/views/partials/pdf-header.blade.php
+resources/views/components/auth-wrapper.blade.php
 resources/views/formulir.blade.php
 resources/views/kartu-tes.blade.php
 resources/views/landing.blade.php
-resources/views/landing.blade.php.bkp
-resources/views/landing.blade.php.bkp2
 resources/views/skl.blade.php
 resources/views/vendor/filament-easy-footer/easy-footer.blade.php
 resources/views/vendor/filament-easy-footer/github-version.blade.php
@@ -267,6 +271,7 @@ config/services.php
 config/session.php
 bootstrap/app.php
 bootstrap/providers.php
+public/js/devonab/filament-easy-footer/filament-easy-footer-scripts.js
 public/.htaccess
 public/index.php
 public/robots.txt
@@ -274,6 +279,7 @@ composer.json
 .env.example
 juknis-bersama.md
 juknis-mandiri.md
+konsep.md
 lirik.md
 package.json
 postcss.config.js
@@ -555,7 +561,7 @@ class CalonSiswa extends Model
     {
         // Scope 1: Isolasi per tahun pendaftaran aktif menggunakan Cache Forever
         static::addGlobalScope('tahun_aktif', function (Builder $builder) {
-            $tahun = Cache::rememberForever('tahun_pendaftaran_aktif', fn () => TahunPendaftaran::where('status', 'Aktif')->first());
+            $tahun = Cache::rememberForever('tahun_pendaftaran_aktif', fn() => TahunPendaftaran::where('status', 'Aktif')->first());
             if ($tahun) {
                 $builder->where('tahun_pendaftaran_id', $tahun->id);
             }
@@ -578,18 +584,18 @@ class CalonSiswa extends Model
 
     public static function generateNomorPendaftaran(): string
     {
-        $tahun = Cache::rememberForever('tahun_pendaftaran_aktif', fn () => TahunPendaftaran::where('status', 'Aktif')->first());
-        $prefix = 'PMBM-'.($tahun ? substr($tahun->nama, 0, 4) : date('Y'));
+        $tahun = Cache::rememberForever('tahun_pendaftaran_aktif', fn() => TahunPendaftaran::where('status', 'Aktif')->first());
+        $prefix = 'PMBM-' . ($tahun ? substr($tahun->nama, 0, 4) : date('Y'));
 
         $last = static::withoutGlobalScopes()
-            ->where('nomor_pendaftaran', 'like', $prefix.'-%')
+            ->where('nomor_pendaftaran', 'like', $prefix . '-%')
             ->orderByDesc('nomor_pendaftaran')
             ->lockForUpdate()
             ->value('nomor_pendaftaran');
 
         $seq = $last ? ((int) substr($last, -6)) + 1 : 1;
 
-        return $prefix.'-'.str_pad($seq, 6, '0', STR_PAD_LEFT);
+        return $prefix . '-' . str_pad($seq, 6, '0', STR_PAD_LEFT);
     }
 
     // -----------------------------------------------------------------------
@@ -764,6 +770,17 @@ class CalonSiswa extends Model
     public function formulirPrestasis(): HasMany
     {
         return $this->hasMany(FormulirPrestasi::class, 'calon_siswa_id');
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($model) {
+            if ($model->ayah_status !== 'Meninggal' || $model->ibu_status !== 'Meninggal') {
+                $model->wali_status = null; // kosongkan jika wali tidak relevan
+            }
+        });
     }
 }
 
@@ -1825,10 +1842,6 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         ];
     }
 
-    // public function canAccessPanel(Panel $panel): bool
-    // {
-    //     return $this->hasVerifiedEmail();
-    // }
     public function canAccessPanel(Panel $panel): bool
     {
         return true;
@@ -1852,10 +1865,6 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         return $this->hasOne(CalonSiswa::class)->withoutGlobalScopes();
     }
 
-    // -----------------------------------------------------------------------
-    // Filament Avatar
-    // -----------------------------------------------------------------------
-
     public function getFilamentAvatarUrl(): ?string
     {
         // Prioritas 1: avatar yang di-upload langsung di profil user
@@ -1871,10 +1880,6 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
 
         return null;
     }
-
-    // -----------------------------------------------------------------------
-    // Booted
-    // -----------------------------------------------------------------------
 
     protected static function booted(): void
     {
@@ -4658,6 +4663,43 @@ class UserPolicy
 
 ## Services
 
+### ./app/Services/OtpMessageService.php
+
+```php
+<?php
+
+namespace App\Services;
+
+class OtpMessageService
+{
+    public static function verifikasi(string $name, string $otp): string
+    {
+        return "Halo {$name},\n\n"
+            . "Kode OTP verifikasi akun PMBM MTsN 1 Pandeglang Anda:\n\n"
+            . "*{$otp}*\n\n"
+            . 'Kode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.';
+    }
+
+    public static function resetPassword(string $name, string $otp): string
+    {
+        return "Halo {$name},\n\n"
+            . "Kode OTP reset password PMBM MTsN 1 Pandeglang Anda:\n\n"
+            . "*{$otp}*\n\n"
+            . 'Kode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.';
+    }
+
+    public static function passwordBerhasilDiubah(string $name): string
+    {
+        return "Halo {$name},\n\n"
+            . "Password akun PMBM MTsN 1 Pandeglang Anda telah berhasil diubah.\n\n"
+            . 'Jika Anda tidak merasa melakukan perubahan ini, segera hubungi panitia PMBM.';
+    }
+}
+
+```
+
+---
+
 ### ./app/Services/WhatsAppService.php
 
 ```php
@@ -5008,7 +5050,7 @@ class FormOptions
     // Helper untuk tahun lulus
     public static function tahunLulusOptions(): array
     {
-        $tahun = range(date('Y'), date('Y') - 2);
+        $tahun = range(date('Y'), date('Y') - 1);
 
         return array_combine($tahun, $tahun);
     }
@@ -5052,6 +5094,203 @@ namespace App\Http\Controllers;
 abstract class Controller
 {
     //
+}
+
+```
+
+---
+
+### ./app/Http/Controllers/FormulirController.php
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\CalonSiswa;
+use App\Models\Ketua;
+use App\Models\Pimpinan;
+use App\Models\Sekretaris;
+use App\Models\TahunPendaftaran;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Fluent;
+
+class FormulirController extends Controller
+{
+    // =========================================================================
+    // SHARED
+    // =========================================================================
+
+    private function getTahun(): ?TahunPendaftaran
+    {
+        return TahunPendaftaran::where('status', 'Aktif')->first();
+    }
+
+    private function getInstansi(): Fluent
+    {
+        return new Fluent([
+            'nama'           => 'MTs Negeri 1 Pandeglang',
+            'alamat'         => 'Jl. Raya Labuan',
+            'website'        => 'mtsn1pandeglang.sch.id',
+            'email'          => 'adm@mtsn1pandeglang.sch.id',
+            'telepon'        => '+62 8953-5185-6267',
+            'nomor_surat'    => null,
+            'logo'           => asset('img/logo.png'),
+            'logo_institusi' => asset('img/logo-institusi.png'),
+            'kabupaten'      => new Fluent(['nama' => 'Pandeglang']),
+            'kecamatan'      => new Fluent(['nama' => 'Kaduhejo']),
+            'kelurahan'      => new Fluent(['nama' => 'Palurahan']),
+            'provinsi'       => new Fluent(['nama' => 'Banten']),
+        ]);
+    }
+
+    private function getViewData(CalonSiswa $record): array
+    {
+        $tahunPendaftaran = $this->getTahun();
+
+        $ketua = Ketua::where('tahun_pendaftaran_id', $tahunPendaftaran?->id)
+            ->where('status', 'Aktif')
+            ->first();
+
+        $sekretaris = Sekretaris::where('tahun_pendaftaran_id', $tahunPendaftaran?->id)
+            ->where('status', 'Aktif')
+            ->first();
+
+        $pimpinan = Pimpinan::where('tahun_pendaftaran_id', $tahunPendaftaran?->id)
+            ->where('status', 'Aktif')
+            ->first();
+
+        return compact('record', 'tahunPendaftaran', 'ketua', 'sekretaris', 'pimpinan')
+            + ['instansi' => $this->getInstansi()];
+    }
+
+    private function authorize(CalonSiswa $calonSiswa): void
+    {
+        if (
+            Auth::user()->hasRole('calon_siswa') &&
+            $calonSiswa->user_id !== Auth::id()
+        ) {
+            abort(403, 'Anda tidak memiliki akses.');
+        }
+    }
+
+    private function loadRelasi(CalonSiswa $calonSiswa): void
+    {
+        $calonSiswa->load([
+            'jalurPendaftaran',
+            'sekolahAsal',
+            'siswaKelurahan',
+            'siswaKecamatan',
+            'siswaKabupaten',
+            'siswaProvinsi',
+            'formulirPrestasis.prestasi',
+        ]);
+    }
+
+    // =========================================================================
+    // CETAK FORMULIR
+    // =========================================================================
+
+    public function cetak(CalonSiswa $calonSiswa)
+    {
+        $this->authorize($calonSiswa);
+
+        if ($calonSiswa->status_formulir !== 'Disetujui') {
+            abort(403, 'Formulir belum disetujui.');
+        }
+
+        $this->loadRelasi($calonSiswa);
+
+        return view('formulir', $this->getViewData($calonSiswa));
+    }
+
+    // =========================================================================
+    // CETAK KARTU TES
+    // =========================================================================
+
+    public function cetakKartuTes(CalonSiswa $calonSiswa)
+    {
+        $this->authorize($calonSiswa);
+
+        if ($calonSiswa->status_formulir !== 'Disetujui') {
+            abort(403, 'Formulir belum disetujui.');
+        }
+
+        if (in_array($calonSiswa->status_pendaftaran, [
+            'Tidak Diterima',
+            'Diterima Di Kelas Reguler',
+            'Diterima Di Kelas Unggulan',
+        ])) {
+            abort(403, 'Kartu tes tidak tersedia untuk status pendaftaran ini.');
+        }
+
+        $tahun = $this->getTahun();
+
+        if (
+            ! $tahun?->tanggal_penerbitan_kartu_tes_mulai ||
+            ! $tahun?->tanggal_penerbitan_kartu_tes_selesai ||
+            ! Carbon::now()->between(
+                Carbon::parse($tahun->tanggal_penerbitan_kartu_tes_mulai),
+                Carbon::parse($tahun->tanggal_penerbitan_kartu_tes_selesai)
+            )
+        ) {
+            abort(403, 'Kartu tes belum atau sudah tidak dapat dicetak.');
+        }
+
+        $this->loadRelasi($calonSiswa);
+
+        return view('kartu-tes', $this->getViewData($calonSiswa));
+    }
+
+    // =========================================================================
+    // CETAK SKL / PENGUMUMAN HASIL
+    // =========================================================================
+
+    public function cetakSkl(CalonSiswa $calonSiswa)
+    {
+        $this->authorize($calonSiswa);
+
+        if (! in_array($calonSiswa->status_pendaftaran, [
+            'Diterima',
+            'Diterima Di Kelas Reguler',
+            'Diterima Di Kelas Unggulan',
+            'Tidak Diterima',
+        ])) {
+            abort(403, 'Pengumuman hasil belum tersedia.');
+        }
+
+        $tahun   = $this->getTahun();
+        $periodes = [
+            ['tanggal_pengumuman_jalur_prestasi_mulai',  'tanggal_pengumuman_jalur_prestasi_selesai'],
+            ['tanggal_pengumuman_jalur_reguler_mulai',   'tanggal_pengumuman_jalur_reguler_selesai'],
+            ['tanggal_pengumuman_jalur_afirmasi_mulai',  'tanggal_pengumuman_jalur_afirmasi_selesai'],
+            ['tanggal_pengumuman_jalur_zonasi_mulai',    'tanggal_pengumuman_jalur_zonasi_selesai'],
+            ['tanggal_pengumuman_jalur_mutasi_mulai',    'tanggal_pengumuman_jalur_mutasi_selesai'],
+        ];
+
+        $dalamPeriode = false;
+        foreach ($periodes as [$mulai, $selesai]) {
+            if (
+                $tahun?->{$mulai} && $tahun?->{$selesai} &&
+                Carbon::now()->between(
+                    Carbon::parse($tahun->{$mulai}),
+                    Carbon::parse($tahun->{$selesai})
+                )
+            ) {
+                $dalamPeriode = true;
+                break;
+            }
+        }
+
+        if (! $dalamPeriode) {
+            abort(403, 'Pengumuman hasil belum atau sudah tidak dapat dicetak.');
+        }
+
+        $this->loadRelasi($calonSiswa);
+
+        return view('skl', $this->getViewData($calonSiswa));
+    }
 }
 
 ```
@@ -5591,7 +5830,7 @@ class ListCalonSiswas extends ListRecords
 
     private function getLihatFormulirAction(?CalonSiswa $calonSiswa): Action
     {
-        $allowedStatuses = ['Diproses', 'Berkas Tidak Lengkap'];
+        $visibleStatuses = ['Disetujui'];
 
         return Action::make('lihat_formulir_pendaftaran')
             ->label('Lihat')
@@ -5602,17 +5841,16 @@ class ListCalonSiswas extends ListRecords
             ->hidden(
                 ! $this->isCalonSiswa()
                     || $calonSiswa === null
-                    || in_array($calonSiswa->status_pendaftaran, $allowedStatuses)
+                    || ! in_array($calonSiswa->status_formulir, $visibleStatuses)
             );
     }
 
     private function getUbahFormulirAction(?CalonSiswa $calonSiswa): Action
     {
-        $blockedStatuses = [
-            'Diterima',
-            'Diterima Di Kelas Unggulan',
-            'Diterima Di Kelas Reguler',
-            'Tidak Diterima',
+        $visibleStatuses = [
+            'Diproses',
+            'Berkas Tidak Lengkap',
+            'Ditolak',
         ];
 
         return Action::make('ubah_formulir_pendaftaran')
@@ -5624,7 +5862,7 @@ class ListCalonSiswas extends ListRecords
             ->hidden(
                 ! $this->isCalonSiswa()
                     || $calonSiswa === null
-                    || in_array($calonSiswa->status_pendaftaran, $blockedStatuses)
+                    || ! in_array($calonSiswa->status_formulir, $visibleStatuses)
             )
             ->successRedirectUrl($this->getFormulirUrl($calonSiswa, 'view'));
     }
@@ -5677,8 +5915,6 @@ namespace App\Filament\Resources\CalonSiswaResource\Pages;
 
 use App\Filament\Resources\CalonSiswaResource;
 use App\Filament\Traits\CalonSiswaFormTrait;
-use App\Models\CalonSiswa;
-use Carbon\Carbon;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
@@ -5687,9 +5923,6 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Wizard;
 use Filament\Forms\Form;
 use Filament\Resources\Pages\ViewRecord;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Torgodly\Html2Media\Actions\Html2MediaAction;
 
 class ViewCalonSiswa extends ViewRecord
 {
@@ -5699,26 +5932,7 @@ class ViewCalonSiswa extends ViewRecord
 
     protected function getHeaderActions(): array
     {
-        return [
-            $this->buildPdfAction(
-                'cetak_formulir',
-                'Formulir',
-                'formulir',
-                fn () => $this->canPrintFormulir()
-            ),
-            $this->buildPdfAction(
-                'cetak_kartu_tes',
-                'Kartu Tes',
-                'kartu-tes',
-                fn () => $this->canPrintKartuTes()
-            ),
-            $this->buildPdfAction(
-                'cetak_skl',
-                'Hasil',
-                'skl',
-                fn () => $this->canPrintHasil()
-            ),
-        ];
+        return [];
     }
 
     public function form(Form $form): Form
@@ -5729,14 +5943,11 @@ class ViewCalonSiswa extends ViewRecord
                 includeDataTes: false
             ))->columnSpanFull(),
 
-            // ----------------------------------------------------------------
-            // Section FormulirPrestasi — hanya tampil jika ada data
-            // ----------------------------------------------------------------
             Section::make('Data Formulir Prestasi')
                 ->icon('heroicon-o-trophy')
                 ->collapsible()
                 ->columnSpanFull()
-                ->visible(fn () => $this->record->formulirPrestasis()->exists())
+                ->visible(fn() => $this->record->formulirPrestasis()->exists())
                 ->schema([
                     Repeater::make('formulirPrestasis')
                         ->relationship('formulirPrestasis')
@@ -5774,96 +5985,82 @@ class ViewCalonSiswa extends ViewRecord
                 ]),
         ]);
     }
+}
+
+```
+
+---
+
+### ./app/Filament/Resources/CalonSiswaResource/Widgets/FormulirOverview.php
+
+```php
+<?php
+
+namespace App\Filament\Resources\CalonSiswaResource\Widgets;
+
+use App\Models\CalonSiswa;
+use Carbon\Carbon;
+use Filament\Support\Enums\IconPosition;
+use Filament\Widgets\StatsOverviewWidget as BaseWidget;
+use Filament\Widgets\StatsOverviewWidget\Stat;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+
+class FormulirOverview extends BaseWidget
+{
+    protected static bool $isLazy = false;
+
+    protected ?string $heading = 'Statistik Pendaftaran';
+
+    protected static ?int $sort = 0;
+
+    protected static ?string $pollingInterval = '60s';
 
     // =========================================================================
-    // PDF ACTION BUILDER
+    // HELPERS
     // =========================================================================
 
-    private function buildPdfAction(
-        string $name,
+    private function chartBy(string $col, ?string $val = null): array
+    {
+        return CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
+            ->when($val, fn($q) => $q->where($col, $val))
+            ->groupBy('hari')
+            ->orderBy('hari')
+            ->pluck('total')
+            ->toArray();
+    }
+
+    private function makeStat(
+        string $value,
         string $label,
-        string $view,
-        callable $visibleCallback
-    ): Html2MediaAction {
-        return Html2MediaAction::make($name)
-            ->label($label)
-            ->outlined()
-            ->icon('heroicon-o-printer')
-            ->filename(fn ($record) => "{$label}_{$record->nama}_{$record->nisn}.pdf")
-            ->savePdf()
-            ->orientation('portrait')
-            ->format('a4', 'mm')
-            ->enableLinks()
-            ->margin([10, 10, 10, 10])
-            ->content(fn ($record) => view($view, ['record' => $record]))
-            ->visible($visibleCallback);
+        string $icon,
+        string $color,
+        array $chart,
+        string $href,
+        bool $newTab = false
+    ): Stat {
+        $onclick = $newTab
+            ? "window.open('{$href}', '_blank')"
+            : "window.location.href='{$href}'";
+
+        return Stat::make('', $value)
+            ->description($label)
+            ->descriptionIcon($icon, IconPosition::Before)
+            ->color($color)
+            ->chart($chart)
+            ->extraAttributes([
+                'class'   => 'cursor-pointer transition hover:opacity-80',
+                'onclick' => $onclick,
+            ]);
+    }
+
+    private function url(string $filter = ''): string
+    {
+        return "/dashboard/formulir{$filter}";
     }
 
     // =========================================================================
-    // VISIBILITY RULES
-    // =========================================================================
-
-    private function getCalonSiswa(): ?CalonSiswa
-    {
-        return CalonSiswa::where('nisn', Auth::user()->username)->first();
-    }
-
-    private function canPrintFormulir(): bool
-    {
-        $cs = $this->getCalonSiswa();
-        if (! $cs) {
-            return false;
-        }
-
-        // Boleh cetak jika formulir sudah Disetujui
-        return $cs->status_formulir === 'Disetujui';
-    }
-
-    private function canPrintKartuTes(): bool
-    {
-        $cs = $this->getCalonSiswa();
-        if (! $cs) {
-            return false;
-        }
-
-        // Blokir jika belum disetujui atau sudah final
-        if (! in_array($cs->status_formulir, ['Disetujui'])) {
-            return false;
-        }
-
-        if (in_array($cs->status_pendaftaran, [
-            'Tidak Diterima',
-            'Diterima Di Kelas Reguler',
-            'Diterima Di Kelas Unggulan',
-        ])) {
-            return false;
-        }
-
-        return $this->isWithinKartuTesPeriod();
-    }
-
-    private function canPrintHasil(): bool
-    {
-        $cs = $this->getCalonSiswa();
-        if (! $cs) {
-            return false;
-        }
-
-        // Hanya yang sudah punya keputusan final
-        if (! in_array($cs->status_pendaftaran, [
-            'Diterima',
-            'Diterima Di Kelas Reguler',
-            'Diterima Di Kelas Unggulan',
-            'Tidak Diterima',
-        ])) {
-            return false;
-        }
-
-        return $this->isWithinPengumumanPeriod();
-    }
-
-    // =========================================================================
-    // DATE RANGE HELPERS
+    // CETAK HELPERS
     // =========================================================================
 
     private function getActiveTahunPendaftaran(): ?object
@@ -5888,9 +6085,7 @@ class ViewCalonSiswa extends ViewRecord
     private function isWithinPengumumanPeriod(): bool
     {
         $t = $this->getActiveTahunPendaftaran();
-        if (! $t) {
-            return false;
-        }
+        if (! $t) return false;
 
         foreach (
             [
@@ -5913,72 +6108,39 @@ class ViewCalonSiswa extends ViewRecord
 
         return false;
     }
-}
 
-```
-
----
-
-### ./app/Filament/Resources/CalonSiswaResource/Widgets/FormulirOverview.php
-
-```php
-<?php
-
-namespace App\Filament\Resources\CalonSiswaResource\Widgets;
-
-use App\Models\CalonSiswa;
-use Filament\Support\Enums\IconPosition;
-use Filament\Widgets\StatsOverviewWidget as BaseWidget;
-use Filament\Widgets\StatsOverviewWidget\Stat;
-use Illuminate\Support\Facades\Auth;
-
-class FormulirOverview extends BaseWidget
-{
-    protected static bool $isLazy = false;
-
-    protected ?string $heading = 'Statistik Pendaftaran';
-
-    protected static ?int $sort = 0;
-
-    protected static ?string $pollingInterval = '60s';
-
-    private function chartBy(string $col, ?string $val = null): array
+    private function canPrintKartuTes(CalonSiswa $cs): bool
     {
-        return CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-            ->when($val, fn ($q) => $q->where($col, $val))
-            ->groupBy('hari')
-            ->orderBy('hari')
-            ->pluck('total')
-            ->toArray();
+        if ($cs->status_formulir !== 'Disetujui') return false;
+
+        if (in_array($cs->status_pendaftaran, [
+            'Tidak Diterima',
+            'Diterima Di Kelas Reguler',
+            'Diterima Di Kelas Unggulan',
+        ])) return false;
+
+        return $this->isWithinKartuTesPeriod();
     }
 
-    private function makeStat(
-        string $value,
-        string $label,
-        string $icon,
-        string $color,
-        array $chart,
-        string $href
-    ): Stat {
-        return Stat::make('', $value)
-            ->description($label)
-            ->descriptionIcon($icon, IconPosition::Before)
-            ->color($color)
-            ->chart($chart)
-            ->extraAttributes([
-                'class' => 'cursor-pointer transition hover:opacity-80',
-                'onclick' => "window.location.href='{$href}'",
-            ]);
-    }
-
-    private function url(string $filter = ''): string
+    private function canPrintHasil(CalonSiswa $cs): bool
     {
-        return "/dashboard/formulir{$filter}";
+        if (! in_array($cs->status_pendaftaran, [
+            'Diterima',
+            'Diterima Di Kelas Reguler',
+            'Diterima Di Kelas Unggulan',
+            'Tidak Diterima',
+        ])) return false;
+
+        return $this->isWithinPengumumanPeriod();
     }
+
+    // =========================================================================
+    // STATS
+    // =========================================================================
 
     protected function getStats(): array
     {
-        $user = Auth::user();
+        $user         = Auth::user();
         $isCalonSiswa = $user->hasRole('calon_siswa');
 
         $statusCount = CalonSiswa::selectRaw('status_pendaftaran, COUNT(*) as total')
@@ -5991,60 +6153,53 @@ class FormulirOverview extends BaseWidget
             ->pluck('total', 'status_formulir')
             ->toArray();
 
-        $totalPendaftar = array_sum($statusCount);
-        $diproses = $statusCount['Diproses'] ?? 0;
-        $diterima = $statusCount['Diterima'] ?? 0;
+        $totalPendaftar  = array_sum($statusCount);
+        $diproses        = $statusCount['Diproses'] ?? 0;
+        $diterima        = $statusCount['Diterima'] ?? 0;
         $diterimaReguler = $statusCount['Diterima Di Kelas Reguler'] ?? 0;
         $diterimaUnggulan = $statusCount['Diterima Di Kelas Unggulan'] ?? 0;
-        $tidakDiterima = $statusCount['Tidak Diterima'] ?? 0;
+        $tidakDiterima   = $statusCount['Tidak Diterima'] ?? 0;
 
-        $fDiproses = $formulirCount['Diproses'] ?? 0;
-        $fBerkas = $formulirCount['Berkas Tidak Lengkap'] ?? 0;
+        $fDiproses  = $formulirCount['Diproses'] ?? 0;
+        $fBerkas    = $formulirCount['Berkas Tidak Lengkap'] ?? 0;
         $fDisetujui = $formulirCount['Disetujui'] ?? 0;
-        $fDitolak = $formulirCount['Ditolak'] ?? 0;
+        $fDitolak   = $formulirCount['Ditolak'] ?? 0;
 
+        // ── CALON SISWA ───────────────────────────────────────────────────────
         if ($isCalonSiswa) {
             $cs = CalonSiswa::withoutGlobalScope('tahun_aktif')
                 ->where('user_id', $user->id)
                 ->latest()
                 ->first();
 
-            $statusLabel = $cs?->status_pendaftaran ?? 'Belum Mendaftar';
-            $formulirLabel = $cs?->status_formulir ?? '-';
+            $statusLabel   = $cs?->status_pendaftaran ?? 'Belum Mendaftar';
+            $formulirLabel = $cs?->status_formulir    ?? 'Daftar Sekarang!';
 
             [$statusColor, $statusIcon] = match ($cs?->status_pendaftaran) {
                 'Diterima',
                 'Diterima Di Kelas Reguler',
                 'Diterima Di Kelas Unggulan' => ['success', 'heroicon-o-check-circle'],
-                'Tidak Diterima' => ['danger',  'heroicon-o-no-symbol'],
-                default => ['warning', 'heroicon-o-arrow-path'],
+                'Tidak Diterima'             => ['danger',  'heroicon-o-no-symbol'],
+                default                      => ['warning', 'heroicon-o-arrow-path'],
             };
 
             [$formulirColor, $formulirIcon] = match ($cs?->status_formulir) {
-                'Disetujui' => ['success', 'heroicon-o-document-check'],
+                'Disetujui'           => ['success', 'heroicon-o-document-check'],
                 'Berkas Tidak Lengkap',
-                'Ditolak' => ['danger',  match ($cs?->status_formulir) {
+                'Ditolak'             => ['danger', match ($cs?->status_formulir) {
                     'Berkas Tidak Lengkap' => 'heroicon-o-document-minus',
-                    default => 'heroicon-o-x-circle',
+                    default                => 'heroicon-o-x-circle',
                 }],
-                default => ['warning', 'heroicon-o-arrow-path'],
+                default               => ['warning', 'heroicon-o-arrow-path'],
             };
 
-            return [
+            $stats = [
                 $this->makeStat(
                     "{$totalPendaftar} Peserta",
                     'Total Pendaftar',
                     'heroicon-o-users',
                     'gray',
                     $this->chartBy('status_pendaftaran'),
-                    $this->url()
-                ),
-                $this->makeStat(
-                    $statusLabel,
-                    'Status Pendaftaran Kamu',
-                    $statusIcon,
-                    $statusColor,
-                    $this->chartBy('status_pendaftaran', $cs?->status_pendaftaran),
                     $this->url()
                 ),
                 $this->makeStat(
@@ -6055,9 +6210,66 @@ class FormulirOverview extends BaseWidget
                     $this->chartBy('status_formulir', $cs?->status_formulir),
                     $this->url()
                 ),
+                $this->makeStat(
+                    $statusLabel,
+                    'Status Pendaftaran Kamu',
+                    $statusIcon,
+                    $statusColor,
+                    $this->chartBy('status_pendaftaran', $cs?->status_pendaftaran),
+                    $this->url()
+                ),
             ];
+
+            if ($cs) {
+                // Cetak Formulir
+                if ($cs->status_formulir === 'Disetujui') {
+                    $stats[] = $this->makeStat(
+                        'Cetak Formulir',
+                        'Klik untuk mencetak formulir pendaftaran',
+                        'heroicon-o-printer',
+                        'info',
+                        [],
+                        route('formulir.cetak', $cs->id),
+                        newTab: true
+                    );
+                }
+
+                // Cetak Kartu Tes
+                if ($this->canPrintKartuTes($cs)) {
+                    $stats[] = $this->makeStat(
+                        'Cetak Kartu Tes',
+                        'Klik untuk mencetak kartu tes',
+                        'heroicon-o-identification',
+                        'warning',
+                        [],
+                        route('kartu-tes.cetak', $cs->id),
+                        newTab: true
+                    );
+                }
+
+                // Cetak SKL / Pengumuman Hasil
+                if ($this->canPrintHasil($cs)) {
+                    $stats[] = $this->makeStat(
+                        'Cetak Hasil',
+                        'Klik untuk mencetak pengumuman hasil',
+                        'heroicon-o-document-text',
+                        match ($cs->status_pendaftaran) {
+                            'Diterima',
+                            'Diterima Di Kelas Reguler',
+                            'Diterima Di Kelas Unggulan' => 'success',
+                            default                      => 'danger',
+                        },
+                        [],
+                        route('skl.cetak', $cs->id),
+                        newTab: true
+                    );
+                }
+            }
+
+            return $stats;
         }
 
+        // ── ADMIN / STAFF ─────────────────────────────────────────────────────
         return [
             $this->makeStat(
                 "{$totalPendaftar} Peserta",
@@ -6597,6 +6809,16 @@ class InformasiPublished extends TableWidget
         return 'Informasi';
     }
 
+    public function getColumnSpan(): int | string | array
+    {
+        return Auth::user()->hasRole('calon_siswa') ? 'full' : 1;
+    }
+
+    protected function getTableRecordsPerPageSelectOptions(): array
+    {
+        return Auth::user()->hasRole('calon_siswa') ? [5, 10] : [5];
+    }
+    
     private function getCalonSiswa(): ?CalonSiswa
     {
         return CalonSiswa::withoutGlobalScope('milik_sendiri')
@@ -6677,7 +6899,7 @@ class InformasiPublished extends TableWidget
 
         $urlFormulir = $calonSiswa ? '/dashboard/formulir' : '';
         $urlViewFormulir = $calonSiswa ? "/dashboard/formulir/{$calonSiswa->id}" : '';
-        $urlInformasi = $calonSiswa ? '/informasi' : '';
+        $urlInformasi = $calonSiswa ? '/dashboard/informasi' : '';
 
         return $table
             ->query(
@@ -10694,6 +10916,22 @@ class CalonSiswaResource extends Resource
         return self::isSuperAdmin() ? array_merge($base, $admin) : $base;
     }
 
+    private static function opsiStatusFormulir(): array
+    {
+        $base = [
+            'Diproses' => 'Diproses',
+        ];
+
+        $admin = [
+            'Diproses' => 'Diproses',
+            'Berkas Tidak Lengkap' => 'Berkas Tidak Lengkap',
+            'Disetujui' => 'Disetujui',
+            'Ditolak' => 'Ditolak',
+        ];
+
+        return self::isSuperAdmin() ? array_merge($base, $admin) : $base;
+    }
+
     // -----------------------------------------------------------------------
     // Wilayah — reusable field group
     // -----------------------------------------------------------------------
@@ -10720,7 +10958,7 @@ class CalonSiswaResource extends Resource
                 ->native(false)
                 ->preload()
                 ->live()
-                ->afterStateUpdated(fn (Set $set) => $set($pro, null)),
+                ->afterStateUpdated(fn(Set $set) => $set($pro, null)),
 
             Select::make($pro)
                 ->label('Provinsi')
@@ -10728,13 +10966,13 @@ class CalonSiswaResource extends Resource
                 ->required($required)
                 ->live()
                 ->getSearchResultsUsing(
-                    fn (string $search, Get $get) => Provinsi::query()
+                    fn(string $search, Get $get) => Provinsi::query()
                         ->where('negara_id', $get($neg))
                         ->where('nama', 'like', "%{$search}%")
                         ->limit(50)->pluck('nama', 'id')->toArray()
                 )
-                ->getOptionLabelUsing(fn ($v): ?string => Provinsi::find($v)?->nama)
-                ->afterStateUpdated(fn (Set $set) => $set($kab, null)),
+                ->getOptionLabelUsing(fn($v): ?string => Provinsi::find($v)?->nama)
+                ->afterStateUpdated(fn(Set $set) => $set($kab, null)),
 
             Select::make($kab)
                 ->label('Kabupaten / Kota')
@@ -10742,13 +10980,13 @@ class CalonSiswaResource extends Resource
                 ->required($required)
                 ->live()
                 ->getSearchResultsUsing(
-                    fn (string $search, Get $get) => Kabupaten::query()
+                    fn(string $search, Get $get) => Kabupaten::query()
                         ->where('provinsi_id', $get($pro))
                         ->where('nama', 'like', "%{$search}%")
                         ->limit(50)->pluck('nama', 'id')->toArray()
                 )
-                ->getOptionLabelUsing(fn ($v): ?string => Kabupaten::find($v)?->nama)
-                ->afterStateUpdated(fn (Set $set) => $set($kec, null)),
+                ->getOptionLabelUsing(fn($v): ?string => Kabupaten::find($v)?->nama)
+                ->afterStateUpdated(fn(Set $set) => $set($kec, null)),
 
             Select::make($kec)
                 ->label('Kecamatan')
@@ -10756,25 +10994,25 @@ class CalonSiswaResource extends Resource
                 ->required($required)
                 ->live()
                 ->getSearchResultsUsing(
-                    fn (string $search, Get $get) => Kecamatan::query()
+                    fn(string $search, Get $get) => Kecamatan::query()
                         ->where('kabupaten_id', $get($kab))
                         ->where('nama', 'like', "%{$search}%")
                         ->limit(50)->pluck('nama', 'id')->toArray()
                 )
-                ->getOptionLabelUsing(fn ($v): ?string => Kecamatan::find($v)?->nama)
-                ->afterStateUpdated(fn (Set $set) => $set($kel, null)),
+                ->getOptionLabelUsing(fn($v): ?string => Kecamatan::find($v)?->nama)
+                ->afterStateUpdated(fn(Set $set) => $set($kel, null)),
 
             Select::make($kel)
                 ->label('Kelurahan / Desa')
                 ->searchable()
                 ->required($required)
                 ->getSearchResultsUsing(
-                    fn (string $search, Get $get) => Kelurahan::query()
+                    fn(string $search, Get $get) => Kelurahan::query()
                         ->where('kecamatan_id', $get($kec))
                         ->where('nama', 'like', "%{$search}%")
                         ->limit(50)->pluck('nama', 'id')->toArray()
                 )
-                ->getOptionLabelUsing(fn ($v): ?string => Kelurahan::find($v)?->nama),
+                ->getOptionLabelUsing(fn($v): ?string => Kelurahan::find($v)?->nama),
         ];
     }
 
@@ -10803,7 +11041,7 @@ class CalonSiswaResource extends Resource
                             ->schema([
                                 Select::make('status_pendaftaran')
                                     ->label('Status Pendaftaran')
-                                    ->options(fn () => self::opsiStatusPendaftaran())
+                                    ->options(fn() => self::opsiStatusPendaftaran())
                                     ->default('Diproses')
                                     ->required()
                                     ->native(false)
@@ -10826,11 +11064,11 @@ class CalonSiswaResource extends Resource
                                     ->native(false)
                                     ->searchable()
                                     ->preload()
-                                    ->visible(fn (Get $get) => in_array($get('status_pendaftaran'), [
+                                    ->visible(fn(Get $get) => in_array($get('status_pendaftaran'), [
                                         'Diterima Di Kelas Reguler',
                                         'Diterima Di Kelas Unggulan',
                                     ]))
-                                    ->required(fn (Get $get) => in_array($get('status_pendaftaran'), [
+                                    ->required(fn(Get $get) => in_array($get('status_pendaftaran'), [
                                         'Diterima Di Kelas Reguler',
                                         'Diterima Di Kelas Unggulan',
                                     ])),
@@ -10846,13 +11084,13 @@ class CalonSiswaResource extends Resource
                                     ->relationship(
                                         'jalurPendaftaran',
                                         'nama',
-                                        fn (Builder $q) => $q->where('status', 'Aktif')
+                                        fn(Builder $q) => $q->where('status', 'Aktif')
                                     )
                                     ->required()
                                     ->native(false)
                                     ->live()
                                     ->getOptionLabelFromRecordUsing(
-                                        fn (Model $r) => "{$r->nama} | {$r->tahunPendaftaran->nama}"
+                                        fn(Model $r) => "{$r->nama} | {$r->tahunPendaftaran->nama}"
                                     ),
 
                                 TextInput::make('nama')
@@ -10860,7 +11098,7 @@ class CalonSiswaResource extends Resource
                                     ->required()
                                     ->maxLength(50)
                                     ->readOnly()
-                                    ->default(fn () => Auth::user()->name),
+                                    ->default(fn() => Auth::user()->name),
 
                                 TextInput::make('nisn')
                                     ->label('NISN')
@@ -10869,7 +11107,7 @@ class CalonSiswaResource extends Resource
                                     ->minLength(10)
                                     ->maxLength(10)
                                     ->readOnly()
-                                    ->default(fn () => Auth::user()->username)
+                                    ->default(fn() => Auth::user()->username)
                                     ->unique(table: 'calon_siswas', column: 'nisn', ignoreRecord: true),
 
                                 TextInput::make('nik')
@@ -10900,7 +11138,7 @@ class CalonSiswaResource extends Resource
 
                                 Select::make('tahun_lulus')
                                     ->label('Tahun Lulus SD/MI')
-                                    ->options(fn () => array_combine(
+                                    ->options(fn() => array_combine(
                                         range(date('Y'), date('Y') - 2),
                                         range(date('Y'), date('Y') - 2)
                                     ))
@@ -10958,7 +11196,7 @@ class CalonSiswaResource extends Resource
                                     ->label('Sekolah Asal')
                                     ->relationship('sekolahAsal', 'nama')
                                     ->required()->native(false)->searchable()->preload()
-                                    ->getOptionLabelFromRecordUsing(fn (Model $r) => "{$r->nama} | NPSN: {$r->npsn}"),
+                                    ->getOptionLabelFromRecordUsing(fn(Model $r) => "{$r->nama} | NPSN: {$r->npsn}"),
 
                                 Select::make('ekstrakurikuler_id')
                                     ->label('Pilihan Ekstrakurikuler')
@@ -10975,18 +11213,18 @@ class CalonSiswaResource extends Resource
                                     ->live()->columnSpanFull(),
 
                                 TextInput::make('no_kip')->label('Nomor KIP')
-                                    ->visible(fn (Get $get) => (bool) $get('penerima_kip'))
-                                    ->required(fn (Get $get) => (bool) $get('penerima_kip'))
+                                    ->visible(fn(Get $get) => (bool) $get('penerima_kip'))
+                                    ->required(fn(Get $get) => (bool) $get('penerima_kip'))
                                     ->maxLength(30)->live()
                                     ->unique(table: 'calon_siswas', column: 'no_kip', ignoreRecord: true),
 
                                 TextInput::make('no_kks')->label('Nomor KKS')
-                                    ->visible(fn (Get $get) => (bool) $get('penerima_kip'))
+                                    ->visible(fn(Get $get) => (bool) $get('penerima_kip'))
                                     ->maxLength(30)->live()
                                     ->unique(table: 'calon_siswas', column: 'no_kks', ignoreRecord: true),
 
                                 TextInput::make('no_pkh')->label('Nomor PKH')
-                                    ->visible(fn (Get $get) => (bool) $get('penerima_kip'))
+                                    ->visible(fn(Get $get) => (bool) $get('penerima_kip'))
                                     ->maxLength(30)->live()
                                     ->unique(table: 'calon_siswas', column: 'no_pkh', ignoreRecord: true),
                             ]),
@@ -11013,14 +11251,14 @@ class CalonSiswaResource extends Resource
                                 FileUpload::make('berkas_foto')
                                     ->label('Foto Formal (Latar Merah)')
                                     ->image()->required()
-                                    ->directory(fn () => 'berkas/foto/'.Auth::user()->username)
+                                    ->directory(fn() => 'berkas/foto/' . Auth::user()->username)
                                     ->maxSize(1024)->minSize(10)
                                     ->helperText('JPG/PNG. 10 KB – 1 MB.'),
 
                                 FileUpload::make('berkas_kk')
                                     ->label('Kartu Keluarga (KK)')
                                     ->image()->required()
-                                    ->directory(fn () => 'berkas/kk/'.Auth::user()->username)
+                                    ->directory(fn() => 'berkas/kk/' . Auth::user()->username)
                                     ->maxSize(1024)->minSize(10)
                                     ->helperText('JPG/PNG. 10 KB – 1 MB.'),
 
@@ -11028,7 +11266,7 @@ class CalonSiswaResource extends Resource
                                     ->label('Akta Kelahiran')
                                     ->acceptedFileTypes(['image/jpeg', 'image/png', 'application/pdf'])
                                     ->required()
-                                    ->directory(fn () => 'berkas/akta/'.Auth::user()->username)
+                                    ->directory(fn() => 'berkas/akta/' . Auth::user()->username)
                                     ->maxSize(1024)->minSize(10)
                                     ->helperText('JPG/PNG/PDF. 10 KB – 1 MB.'),
 
@@ -11036,7 +11274,7 @@ class CalonSiswaResource extends Resource
                                     ->label('SKBB')
                                     ->acceptedFileTypes(['image/jpeg', 'image/png', 'application/pdf'])
                                     ->required()
-                                    ->directory(fn () => 'berkas/skbb/'.Auth::user()->username)
+                                    ->directory(fn() => 'berkas/skbb/' . Auth::user()->username)
                                     ->maxSize(1024)->minSize(10)
                                     ->helperText('JPG/PNG/PDF. 10 KB – 1 MB.'),
 
@@ -11044,37 +11282,37 @@ class CalonSiswaResource extends Resource
                                     ->label('SKAB')
                                     ->acceptedFileTypes(['image/jpeg', 'image/png', 'application/pdf'])
                                     ->required()
-                                    ->directory(fn () => 'berkas/skab/'.Auth::user()->username)
+                                    ->directory(fn() => 'berkas/skab/' . Auth::user()->username)
                                     ->maxSize(1024)->minSize(10)
                                     ->helperText('JPG/PNG/PDF. 10 KB – 1 MB.'),
 
                                 FileUpload::make('berkas_nisn')
                                     ->label('Kartu NISN')
                                     ->image()
-                                    ->directory(fn () => 'berkas/nisn/'.Auth::user()->username)
+                                    ->directory(fn() => 'berkas/nisn/' . Auth::user()->username)
                                     ->maxSize(1024)->minSize(10)
                                     ->helperText('Opsional. JPG/PNG. 10 KB – 1 MB.'),
 
                                 FileUpload::make('berkas_kip')
                                     ->label('Kartu KIP')
                                     ->image()
-                                    ->visible(fn (Get $get) => (bool) $get('penerima_kip'))
-                                    ->required(fn (Get $get) => (bool) $get('penerima_kip') && $get('no_kip'))
-                                    ->directory(fn () => 'berkas/kip/'.Auth::user()->username)
+                                    ->visible(fn(Get $get) => (bool) $get('penerima_kip'))
+                                    ->required(fn(Get $get) => (bool) $get('penerima_kip') && $get('no_kip'))
+                                    ->directory(fn() => 'berkas/kip/' . Auth::user()->username)
                                     ->maxSize(1024)->minSize(10),
 
                                 FileUpload::make('berkas_kks')
                                     ->label('Kartu KKS')
                                     ->image()
-                                    ->visible(fn (Get $get) => (bool) $get('penerima_kip') && $get('no_kks'))
-                                    ->directory(fn () => 'berkas/kks/'.Auth::user()->username)
+                                    ->visible(fn(Get $get) => (bool) $get('penerima_kip') && $get('no_kks'))
+                                    ->directory(fn() => 'berkas/kks/' . Auth::user()->username)
                                     ->maxSize(1024)->minSize(10),
 
                                 FileUpload::make('berkas_pkh')
                                     ->label('Kartu PKH')
                                     ->image()
-                                    ->visible(fn (Get $get) => (bool) $get('penerima_kip') && $get('no_pkh'))
-                                    ->directory(fn () => 'berkas/pkh/'.Auth::user()->username)
+                                    ->visible(fn(Get $get) => (bool) $get('penerima_kip') && $get('no_pkh'))
+                                    ->directory(fn() => 'berkas/pkh/' . Auth::user()->username)
                                     ->maxSize(1024)->minSize(10),
                             ]),
                     ]),
@@ -11095,10 +11333,10 @@ class CalonSiswaResource extends Resource
                                 TextInput::make('ibu_nama')->label('Nama Ibu')->required()->maxLength(50),
                                 TextInput::make('ibu_nik')->label('NIK Ibu')->required()->numeric()->minLength(16)->maxLength(16),
                                 TextInput::make('ibu_telepon')->label('Nomor Telepon')->tel()->required()->maxLength(20),
-                                Select::make('ibu_pekerjaan')->label('Pekerjaan')->options(fn () => self::opsiPekerjaan())->required()->native(false),
-                                Select::make('ibu_penghasilan')->label('Penghasilan')->options(fn () => self::opsiPenghasilan())->required()->native(false),
-                                Select::make('ibu_pendidikan')->label('Pendidikan Terakhir')->options(fn () => self::opsiPendidikan())->required()->native(false),
-                                Select::make('ibu_status')->label('Status')->options(fn () => self::opsiStatus())->required()->native(false)->live(),
+                                Select::make('ibu_pekerjaan')->label('Pekerjaan')->options(fn() => self::opsiPekerjaan())->required()->native(false),
+                                Select::make('ibu_penghasilan')->label('Penghasilan')->options(fn() => self::opsiPenghasilan())->required()->native(false),
+                                Select::make('ibu_pendidikan')->label('Pendidikan Terakhir')->options(fn() => self::opsiPendidikan())->required()->native(false),
+                                Select::make('ibu_status')->label('Status')->options(fn() => self::opsiStatus())->required()->native(false)->live(),
                                 TextInput::make('ibu_alamat')->label('Jalan / Kampung / Dusun')->maxLength(255),
                                 ...self::wilayahFields('ibu'),
                             ]),
@@ -11112,10 +11350,10 @@ class CalonSiswaResource extends Resource
                                 TextInput::make('ayah_nama')->label('Nama Ayah')->required()->maxLength(50),
                                 TextInput::make('ayah_nik')->label('NIK Ayah')->required()->numeric()->minLength(16)->maxLength(16),
                                 TextInput::make('ayah_telepon')->label('Nomor Telepon')->tel()->required()->maxLength(20),
-                                Select::make('ayah_pekerjaan')->label('Pekerjaan')->options(fn () => self::opsiPekerjaan())->required()->native(false),
-                                Select::make('ayah_penghasilan')->label('Penghasilan')->options(fn () => self::opsiPenghasilan())->required()->native(false),
-                                Select::make('ayah_pendidikan')->label('Pendidikan Terakhir')->options(fn () => self::opsiPendidikan())->required()->native(false),
-                                Select::make('ayah_status')->label('Status')->options(fn () => self::opsiStatus())->required()->native(false)->live(),
+                                Select::make('ayah_pekerjaan')->label('Pekerjaan')->options(fn() => self::opsiPekerjaan())->required()->native(false),
+                                Select::make('ayah_penghasilan')->label('Penghasilan')->options(fn() => self::opsiPenghasilan())->required()->native(false),
+                                Select::make('ayah_pendidikan')->label('Pendidikan Terakhir')->options(fn() => self::opsiPendidikan())->required()->native(false),
+                                Select::make('ayah_status')->label('Status')->options(fn() => self::opsiStatus())->required()->native(false)->live(),
                                 Select::make('kepemilikan_rumah')
                                     ->label('Status Kepemilikan Rumah')
                                     ->options(['Rumah Pribadi' => 'Rumah Pribadi', 'Kontrakan' => 'Kontrakan', 'Rumah Dinas' => 'Rumah Dinas', 'Menumpang Saudara' => 'Menumpang Saudara'])
@@ -11134,10 +11372,10 @@ class CalonSiswaResource extends Resource
                                 TextInput::make('wali_nama')->label('Nama Wali')->maxLength(50),
                                 TextInput::make('wali_nik')->label('NIK Wali')->numeric()->minLength(16)->maxLength(16),
                                 TextInput::make('wali_telepon')->label('Nomor Telepon')->tel()->maxLength(20),
-                                Select::make('wali_pekerjaan')->label('Pekerjaan')->options(fn () => self::opsiPekerjaan())->native(false),
-                                Select::make('wali_penghasilan')->label('Penghasilan')->options(fn () => self::opsiPenghasilan())->native(false),
-                                Select::make('wali_pendidikan')->label('Pendidikan Terakhir')->options(fn () => self::opsiPendidikan())->native(false),
-                                Select::make('wali_status')->label('Status')->options(fn () => self::opsiStatus())->native(false),
+                                Select::make('wali_pekerjaan')->label('Pekerjaan')->options(fn() => self::opsiPekerjaan())->native(false),
+                                Select::make('wali_penghasilan')->label('Penghasilan')->options(fn() => self::opsiPenghasilan())->native(false),
+                                Select::make('wali_pendidikan')->label('Pendidikan Terakhir')->options(fn() => self::opsiPendidikan())->native(false),
+                                Select::make('wali_status')->label('Status')->options(fn() => self::opsiStatus())->native(false),
                                 TextInput::make('wali_alamat')->label('Jalan / Kampung / Dusun')->maxLength(255),
                                 ...self::wilayahFields('wali', required: false),
                             ]),
@@ -11148,7 +11386,7 @@ class CalonSiswaResource extends Resource
                 // ============================================================
                 Step::make('Data Tes')
                     ->icon('heroicon-o-clipboard-document-check')
-                    ->hidden(fn () => $isCalonSiswa)
+                    ->hidden(fn() => $isCalonSiswa)
                     ->schema([
                         Section::make('Jadwal Tes')
                             ->columns(2)
@@ -11227,13 +11465,12 @@ class CalonSiswaResource extends Resource
                 ImageColumn::make('berkas_foto')
                     ->label('Foto')
                     ->circular()
-                    ->defaultImageUrl(fn () => 'https://ui-avatars.com/api/?name=CS&color=7F9CF5&background=EBF4FF'),
+                    ->defaultImageUrl(fn() => 'https://ui-avatars.com/api/?name=CS&color=7F9CF5&background=EBF4FF'),
 
                 TextColumn::make('nomor_pendaftaran')
                     ->label('No. Daftar')
                     ->searchable()
-                    ->copyable()
-                    ->visible(! $isCalonSiswa),
+                    ->copyable(),
 
                 TextColumn::make('jalurPendaftaran.nama')
                     ->label('Jalur')
@@ -11261,11 +11498,11 @@ class CalonSiswaResource extends Resource
                     ->searchable()
                     ->visible(! $isCalonSiswa)
                     ->limit(30)
-                    ->tooltip(fn (TextColumn $col): ?string => strlen($col->getState()) > 30 ? $col->getState() : null),
+                    ->tooltip(fn(TextColumn $col): ?string => strlen($col->getState()) > 30 ? $col->getState() : null),
                 TextColumn::make('status_formulir')
                     ->label('Status Formulir')
                     ->badge()
-                    ->color(fn ($state) => match ($state) {
+                    ->color(fn($state) => match ($state) {
                         'Diproses' => 'warning',
                         'Berkas Tidak Lengkap' => 'danger',
                         'Disetujui' => 'success',
@@ -11275,15 +11512,14 @@ class CalonSiswaResource extends Resource
                 TextColumn::make('status_pendaftaran')
                     ->label('Status Pendaftaran')
                     ->badge()
-                    ->color(fn ($state) => match ($state) {
+                    ->color(fn($state) => match ($state) {
                         'Diproses' => 'gray',
                         'Diterima',
                         'Diterima Di Kelas Reguler',
                         'Diterima Di Kelas Unggulan' => 'success',
                         'Tidak Diterima' => 'danger',
                         default => 'gray',
-                    })
-                    ->visible(fn () => ! $isCalonSiswa || $isSuperAdmin),
+                    }),
                 TextColumn::make('kelas.nama')
                     ->label('Kelas')
                     ->badge()
@@ -11302,7 +11538,7 @@ class CalonSiswaResource extends Resource
                 SelectFilter::make('jalur_pendaftaran_id')
                     ->label('Jalur Pendaftaran')
                     ->options(
-                        fn () => JalurPendaftaran::where('status', 'Aktif')
+                        fn() => JalurPendaftaran::where('status', 'Aktif')
                             ->pluck('nama', 'id')
                             ->toArray()
                     )
@@ -11320,34 +11556,34 @@ class CalonSiswaResource extends Resource
                 SelectFilter::make('kelas_id')
                     ->label('Kelas')
                     ->options(
-                        fn () => Kelas::pluck('nama', 'id')->toArray()
+                        fn() => Kelas::pluck('nama', 'id')->toArray()
                     )
                     ->visible(! $isCalonSiswa),
             ])
             ->actions([
+                Tables\Actions\EditAction::make()
+                    ->visible(fn() => ! $isCalonSiswa),
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
 
-                    Tables\Actions\EditAction::make()
-                        ->visible(fn () => ! $isCalonSiswa),
 
                     Tables\Actions\DeleteAction::make()
-                        ->visible(fn ($record) => $isSuperAdmin && ! $record->trashed()),
+                        ->visible(fn($record) => $isSuperAdmin && ! $record->trashed()),
 
                     Tables\Actions\RestoreAction::make()
-                        ->visible(fn ($record) => $isSuperAdmin && $record->trashed()),
+                        ->visible(fn($record) => $isSuperAdmin && $record->trashed()),
 
                     Tables\Actions\ForceDeleteAction::make()
-                        ->visible(fn ($record) => $isSuperAdmin && $record->trashed()),
+                        ->visible(fn($record) => $isSuperAdmin && $record->trashed()),
                     Tables\Actions\Action::make('kirim_notifikasi')
                         ->label('Kirim Notifikasi')
                         ->icon('heroicon-o-chat-bubble-left-ellipsis')
                         ->color('info')
                         ->requiresConfirmation()
                         ->modalHeading('Kirim Notifikasi WhatsApp')
-                        ->modalDescription(fn ($record) => "Kirim ulang notifikasi status pendaftaran ke {$record->nama}?")
+                        ->modalDescription(fn($record) => "Kirim ulang notifikasi status pendaftaran ke {$record->nama}?")
                         ->modalSubmitActionLabel('Kirim Sekarang')
-                        ->visible(fn () => auth()->user()->hasAnyRole(['super_admin', 'admin', 'verifikator', 'panitia']))
+                        ->visible(fn() => auth()->user()->hasAnyRole(['super_admin', 'admin', 'verifikator']))
                         ->action(function ($record) {
                             $telepon = $record->user?->telepon;
 
@@ -11362,13 +11598,13 @@ class CalonSiswaResource extends Resource
                             }
 
                             $pesan = "📢 *Informasi Status Pendaftaran*\n\n"
-                                ."Halo, *{$record->nama}*!\n"
-                                ."Berikut status pendaftaran kamu saat ini:\n\n"
-                                ."📋 No. Pendaftaran : *{$record->nomor_pendaftaran}*\n"
-                                ."📄 Status Formulir : *{$record->status_formulir}*\n"
-                                ."📌 Status Pendaftaran : *{$record->status_pendaftaran}*\n\n"
-                                ."Silakan login ke sistem PMBM untuk informasi lebih lanjut.\n"
-                                .'_MTsN 1 Pandeglang_';
+                                . "Halo, *{$record->nama}*!\n"
+                                . "Berikut status pendaftaran kamu saat ini:\n\n"
+                                . "📋 No. Pendaftaran : *{$record->nomor_pendaftaran}*\n"
+                                . "📄 Status Formulir : *{$record->status_formulir}*\n"
+                                . "📌 Status Pendaftaran : *{$record->status_pendaftaran}*\n\n"
+                                . "Silakan login ke sistem PMBM untuk informasi lebih lanjut.\n"
+                                . '_MTsN 1 Pandeglang_';
 
                             app(WhatsAppService::class)->send(
                                 phone: $telepon,
@@ -11419,10 +11655,31 @@ class CalonSiswaResource extends Resource
                                 ->required(),
                         ])
                         ->action(
-                            fn (Collection $records, array $data) => $records->each(
-                                fn ($r) => CalonSiswa::where('id', $r->id)
+                            fn(Collection $records, array $data) => $records->each(
+                                fn($r) => CalonSiswa::where('id', $r->id)
                                     ->update(['jalur_pendaftaran_id' => $data['jalur_pendaftaran_id']])
                             )
+                        ),
+
+                    BulkAction::make('set_status_formulir')
+                        ->label('Set Status Formulir')
+                        ->icon('heroicon-o-check-badge')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->visible($isSuperAdmin)
+                        ->form([
+                            Select::make('status_formulir')
+                                ->label('Status')
+                                ->options(fn() => self::opsiStatusFormulir())
+                                ->native(false)
+                                ->required(),
+                        ])
+                        ->action(
+                            fn(Collection $records, array $data) => $records->each(function ($r) use ($data) {
+                                $update = ['status_formulir' => $data['status_formulir']];
+
+                                CalonSiswa::where('id', $r->id)->update($update);
+                            })
                         ),
 
                     BulkAction::make('set_status_pendaftaran')
@@ -11434,7 +11691,7 @@ class CalonSiswaResource extends Resource
                         ->form([
                             Select::make('status_pendaftaran')
                                 ->label('Status')
-                                ->options(fn () => self::opsiStatusPendaftaran())
+                                ->options(fn() => self::opsiStatusPendaftaran())
                                 ->native(false)
                                 ->required(),
 
@@ -11446,17 +11703,17 @@ class CalonSiswaResource extends Resource
                                 )
                                 ->native(false)
                                 ->live()
-                                ->visible(fn (Get $get) => in_array($get('status_pendaftaran'), [
+                                ->visible(fn(Get $get) => in_array($get('status_pendaftaran'), [
                                     'Diterima Di Kelas Reguler',
                                     'Diterima Di Kelas Unggulan',
                                 ]))
-                                ->required(fn (Get $get) => in_array($get('status_pendaftaran'), [
+                                ->required(fn(Get $get) => in_array($get('status_pendaftaran'), [
                                     'Diterima Di Kelas Reguler',
                                     'Diterima Di Kelas Unggulan',
                                 ])),
                         ])
                         ->action(
-                            fn (Collection $records, array $data) => $records->each(function ($r) use ($data) {
+                            fn(Collection $records, array $data) => $records->each(function ($r) use ($data) {
                                 $update = ['status_pendaftaran' => $data['status_pendaftaran']];
 
                                 if (! empty($data['kelas_id'])) {
@@ -11466,6 +11723,7 @@ class CalonSiswaResource extends Resource
                                 CalonSiswa::where('id', $r->id)->update($update);
                             })
                         ),
+
                     BulkAction::make('kirim_notifikasi_massal')
                         ->label('Kirim Notifikasi')
                         ->icon('heroicon-o-chat-bubble-left-ellipsis')
@@ -11475,7 +11733,7 @@ class CalonSiswaResource extends Resource
                         ->modalDescription('Notifikasi status pendaftaran akan dikirim ke semua peserta yang dipilih.')
                         ->modalSubmitActionLabel('Kirim Sekarang')
                         ->deselectRecordsAfterCompletion()
-                        ->visible(fn () => auth()->user()->hasAnyRole(['super_admin', 'admin', 'verifikator', 'panitia']))
+                        ->visible(fn() => auth()->user()->hasAnyRole(['super_admin', 'admin', 'verifikator', 'panitia']))
                         ->action(function (Collection $records) {
                             $wa = app(WhatsAppService::class);
 
@@ -11492,13 +11750,13 @@ class CalonSiswaResource extends Resource
                                 }
 
                                 $pesan = "📢 *Informasi Status Pendaftaran*\n\n"
-                                    ."Halo, *{$record->nama}*!\n"
-                                    ."Berikut status pendaftaran kamu saat ini:\n\n"
-                                    ."📋 No. Pendaftaran : *{$record->nomor_pendaftaran}*\n"
-                                    ."📄 Status Formulir : *{$record->status_formulir}*\n"
-                                    ."📌 Status Pendaftaran : *{$record->status_pendaftaran}*\n\n"
-                                    ."Silakan login ke sistem PMBM untuk informasi lebih lanjut.\n"
-                                    .'_MTsN 1 Pandeglang_';
+                                    . "Halo, *{$record->nama}*!\n"
+                                    . "Berikut status pendaftaran kamu saat ini:\n\n"
+                                    . "📋 No. Pendaftaran : *{$record->nomor_pendaftaran}*\n"
+                                    . "📄 Status Formulir : *{$record->status_formulir}*\n"
+                                    . "📌 Status Pendaftaran : *{$record->status_pendaftaran}*\n\n"
+                                    . "Silakan login ke sistem PMBM untuk informasi lebih lanjut.\n"
+                                    . '_MTsN 1 Pandeglang_';
 
                                 // Delay lebih besar untuk bulk — spread pengiriman
                                 $wa->send(
@@ -11957,8 +12215,24 @@ class FormulirPrestasiResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('prestasi_id')
-                    ->relationship('prestasi', 'jenis')
-                    ->label('Jenis Prestasi'),
+                    ->label('Jenis Prestasi')
+                    ->options(
+                        Prestasi::all()
+                            ->groupBy('jenis')
+                            ->map(
+                                fn($group) =>
+                                $group->mapWithKeys(fn($p) => [
+                                    $p->id => collect([
+                                        $p->nama,
+                                        $p->tingkat   ? "Tk. {$p->tingkat}"   : null,
+                                        $p->kategori  ? "Kat. {$p->kategori}" : null,
+                                        $p->peringkat ? "Juara {$p->peringkat}" : null,
+                                    ])->filter()->implode(' — ')
+                                ])
+                            )
+                            ->toArray()
+                    )
+                    ->attribute('prestasi_id'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -14831,6 +15105,7 @@ use Illuminate\Validation\Rules\Password;
 class EditProfileCustom extends EditProfile
 {
     use HasCustomLayout;
+    protected static string $view = 'filament.pages.auth.edit-profile';
 
     protected function getForms(): array
     {
@@ -14916,7 +15191,7 @@ class EditProfileCustom extends EditProfile
             ->placeholder('Contoh: 08123456789')
             ->helperText('Nomor ini digunakan untuk notifikasi dan verifikasi OTP.')
             // Hanya calon_siswa yang wajib isi — role lain opsional
-            ->required(fn () => Auth::user()->hasRole('calon_siswa'))
+            ->required(fn() => Auth::user()->hasRole('calon_siswa'))
             ->validationMessages([
                 'required' => 'Nomor WhatsApp wajib diisi.',
                 'max' => 'Nomor WhatsApp maksimal 15 karakter.',
@@ -14947,8 +15222,8 @@ class EditProfileCustom extends EditProfile
             ->revealable(filament()->arePasswordsRevealable())
             ->rule(Password::default())
             ->autocomplete('new-password')
-            ->dehydrated(fn ($state): bool => filled($state))
-            ->dehydrateStateUsing(fn ($state): string => Hash::make($state))
+            ->dehydrated(fn($state): bool => filled($state))
+            ->dehydrateStateUsing(fn($state): string => Hash::make($state))
             ->live(debounce: 500)
             ->same('passwordConfirmation')
             ->validationMessages([
@@ -14965,7 +15240,7 @@ class EditProfileCustom extends EditProfile
             ->password()
             ->revealable(filament()->arePasswordsRevealable())
             ->required()
-            ->visible(fn (Get $get): bool => filled($get('password')))
+            ->visible(fn(Get $get): bool => filled($get('password')))
             ->dehydrated(false);
     }
 }
@@ -14982,7 +15257,9 @@ class EditProfileCustom extends EditProfile
 namespace App\Filament\Pages\Auth;
 
 use App\Models\User;
+use App\Services\OtpMessageService;
 use App\Services\WhatsAppService;
+use DiogoGPinto\AuthUIEnhancer\Pages\Auth\Concerns\HasCustomLayout;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -14993,9 +15270,10 @@ use Illuminate\Support\Facades\Redis;
 
 class ForgotPasswordCustom extends SimplePage implements HasForms
 {
+    use HasCustomLayout;
     use InteractsWithForms;
 
-    protected static string $view = 'filament.pages.auth.forgot-password-custom';
+    protected static string $view = 'filament.pages.auth.forgot-password';
 
     protected static bool $shouldRegisterNavigation = false;
 
@@ -15072,10 +15350,7 @@ class ForgotPasswordCustom extends SimplePage implements HasForms
         Redis::setex("reset_otp:{$user->id}", 300, $otp);   // OTP TTL 5 menit
         Redis::setex($cooldownKey, 60, 1);                    // cooldown 60 detik
 
-        $message = "Halo {$user->name},\n\n"
-            ."Kode OTP reset password PMBM MTsN 1 Pandeglang Anda:\n\n"
-            ."*{$otp}*\n\n"
-            .'Kode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.';
+        $message = OtpMessageService::resetPassword($user->name, $otp);
 
         app(WhatsAppService::class)->send(
             phone: $user->telepon,
@@ -15112,16 +15387,55 @@ class ForgotPasswordCustom extends SimplePage implements HasForms
 namespace App\Filament\Pages\Auth;
 
 use DiogoGPinto\AuthUIEnhancer\Pages\Auth\Concerns\HasCustomLayout;
+use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Component;
 use Filament\Forms\Components\TextInput;
 use Filament\Http\Responses\Auth\Contracts\LoginResponse;
 use Filament\Pages\Auth\Login;
+use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\HtmlString;
 use Illuminate\Validation\ValidationException;
 
 class LoginCustom extends Login
 {
     use HasCustomLayout;
+
+    protected static string $view = 'filament.pages.auth.login';
+
+    public function getTitle(): string|Htmlable
+    {
+        return 'Masuk ke Sistem PMBM MTsN 1 Pandeglang';
+    }
+
+    public function getHeading(): string|Htmlable
+    {
+        return 'Selamat Datang Kembali';
+    }
+
+    public function getSubheading(): string|Htmlable|null
+    {
+        return 'Silakan masuk dengan akun Anda untuk melanjutkan';
+    }
+
+    protected function getLayoutData(): array
+    {
+        return [
+            'emptyPanelBackgroundImageUrl' => $this->getBackgroundImage(),
+            'emptyPanelBackgroundColor' => $this->getBackgroundColor(),
+        ];
+    }
+
+    protected function getBackgroundImage(): string
+    {
+        return asset('/img/wallpaper.png');
+    }
+
+    protected function getBackgroundColor(): string
+    {
+        return '';
+    }
 
     protected function getForms(): array
     {
@@ -15138,6 +15452,18 @@ class LoginCustom extends Login
         ];
     }
 
+    protected function getRememberFormComponent(): Component
+    {
+        return Checkbox::make('remember')
+            ->label(__('Ingat Saya'))
+            ->hint(new HtmlString(
+                '<a href="https://daftar.mtsn1pandeglang.sch.id"
+                class="text-sm text-blue-500 transition hover:text-primary-600">
+                ← Kembali Beranda
+            </a>'
+            ));
+    }
+
     protected function getLoginFormComponent(): Component
     {
         return TextInput::make('login')
@@ -15147,6 +15473,11 @@ class LoginCustom extends Login
             ->autocomplete()
             ->autofocus()
             ->extraInputAttributes(['tabindex' => 1]);
+    }
+
+    public function getFooter(): ?View
+    {
+        return view('filament.pages.auth.login-footer');
     }
 
     protected function getCredentialsFromFormData(array $data): array
@@ -15198,7 +15529,9 @@ class LoginCustom extends Login
 namespace App\Filament\Pages\Auth;
 
 use App\Models\User;
+use App\Services\OtpMessageService;
 use App\Services\WhatsAppService;
+use DiogoGPinto\AuthUIEnhancer\Pages\Auth\Concerns\HasCustomLayout;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -15212,6 +15545,7 @@ use Illuminate\Validation\Rules\Password;
 class NewPassword extends SimplePage implements HasForms
 {
     use InteractsWithForms;
+    use HasCustomLayout;
 
     protected static string $view = 'filament.pages.auth.new-password';
 
@@ -15288,9 +15622,7 @@ class NewPassword extends SimplePage implements HasForms
         Redis::del("otp_cooldown:{$userId}");
         session()->forget('reset_otp_user_id');
 
-        $message = "Halo {$user->name},\n\n"
-            ."Password akun PMBM MTsN 1 Pandeglang Anda telah berhasil diubah.\n\n"
-            .'Jika Anda tidak merasa melakukan perubahan ini, segera hubungi panitia PMBM.';
+        $message = OtpMessageService::passwordBerhasilDiubah($user->name);
 
         app(WhatsAppService::class)->send(
             phone: $user->telepon,
@@ -15321,6 +15653,7 @@ class NewPassword extends SimplePage implements HasForms
 
 namespace App\Filament\Pages\Auth;
 
+use App\Services\OtpMessageService;
 use App\Services\WhatsAppService;
 use Carbon\Carbon;
 use DiogoGPinto\AuthUIEnhancer\Pages\Auth\Concerns\HasCustomLayout;
@@ -15341,10 +15674,7 @@ class RegisterCustom extends Register
 {
     use HasCustomLayout;
 
-    // -----------------------------------------------------------------------
-    // Guard: cek jadwal PMBM setiap kali halaman di-render
-    // Octane-safe karena mount() dipanggil per-request
-    // -----------------------------------------------------------------------
+    protected static string $view = 'filament.pages.auth.register';
 
     public function mount(): void
     {
@@ -15365,7 +15695,7 @@ class RegisterCustom extends Register
 
     protected function isRegistrationOpen(): bool
     {
-        return Cache::remember('ppdb:registration_open', 60, function () {
+        return Cache::remember('ppdb:registration_open', 5, function () {
             try {
                 if (! Schema::hasTable('tahun_pendaftarans')) {
                     return false;
@@ -15385,16 +15715,12 @@ class RegisterCustom extends Register
 
                 return $now->between($start, $end);
             } catch (\Throwable $e) {
-                Log::error('RegisterCustom::isRegistrationOpen error: '.$e->getMessage());
+                Log::error('RegisterCustom::isRegistrationOpen error: ' . $e->getMessage());
 
                 return false;
             }
         });
     }
-
-    // -----------------------------------------------------------------------
-    // Form
-    // -----------------------------------------------------------------------
 
     protected function getForms(): array
     {
@@ -15436,8 +15762,8 @@ class RegisterCustom extends Register
             ->validationMessages([
                 'max_digits' => 'NISN: Masukkan maksimal 10 Angka.',
                 'min_digits' => 'NISN: Masukkan minimal 10 Angka.',
-                'unique' => 'NISN: Nomor ini sudah pernah diisi.',
-                'required' => 'Form ini wajib diisi.',
+                'unique' => 'NISN: Nomor ini sudah pernah dipakai.',
+                'required' => 'Form ini harus diisi.',
             ])
             ->unique($this->getUserModel());
     }
@@ -15451,11 +15777,12 @@ class RegisterCustom extends Register
             ->tel()
             ->maxLength(15)
             ->placeholder('Contoh: 08123456789')
-            ->helperText('Nomor ini akan digunakan untuk mengirim kode OTP verifikasi.')
             ->validationMessages([
-                'required' => 'Nomor WhatsApp wajib diisi.',
+                'required' => 'Nomor WhatsApp harus diisi.',
                 'max' => 'Nomor WhatsApp maksimal 15 karakter.',
-            ]);
+                'unique' => 'Nomor WhatsApp: Nomor ini sudah pernah dipakai.',
+            ])
+            ->unique($this->getUserModel());
     }
 
     protected function getEmailFormComponent(): Component
@@ -15468,8 +15795,8 @@ class RegisterCustom extends Register
             ->maxLength(50)
             ->validationMessages([
                 'max' => 'Email: Masukkan maksimal 50 Karakter.',
-                'unique' => 'Email: Email ini sudah pernah diisi.',
-                'required' => 'Form ini wajib diisi.',
+                'unique' => 'Email: Email ini sudah pernah dipakai.',
+                'required' => 'Form ini harus diisi.',
             ])
             ->unique($this->getUserModel());
     }
@@ -15482,12 +15809,12 @@ class RegisterCustom extends Register
             ->revealable(filament()->arePasswordsRevealable())
             ->required()
             ->rule(Password::default())
-            ->dehydrateStateUsing(fn ($state) => Hash::make($state))
+            ->dehydrateStateUsing(fn($state) => Hash::make($state))
             ->same('passwordConfirmation')
             ->validationMessages([
                 'same' => 'Password: Password tidak sesuai dengan isian password konfirmasi.',
                 'min' => 'Password: Masukkan minimal 8 karakter alfanumerik.',
-                'required' => 'Form ini wajib diisi.',
+                'required' => 'Form ini harus diisi.',
             ])
             ->validationAttribute(__('filament-panels::pages/auth/register.form.password.validation_attribute'));
     }
@@ -15517,10 +15844,7 @@ class RegisterCustom extends Register
 
         Redis::setex("otp:{$user->id}", $ttl, $otp);
 
-        $message = "Halo {$user->name},\n\n"
-            ."Kode OTP verifikasi akun PMBM MTsN 1 Pandeglang Anda:\n\n"
-            ."*{$otp}*\n\n"
-            .'Kode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.';
+        $message = OtpMessageService::verifikasi($user->name, $otp);
 
         app(WhatsAppService::class)->send(
             phone: $user->telepon,
@@ -15549,7 +15873,9 @@ class RegisterCustom extends Register
 namespace App\Filament\Pages\Auth;
 
 use App\Models\User;
+use App\Services\OtpMessageService;
 use App\Services\WhatsAppService;
+use DiogoGPinto\AuthUIEnhancer\Pages\Auth\Concerns\HasCustomLayout;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -15561,6 +15887,7 @@ use Illuminate\Support\Facades\Redis;
 class ResetPasswordOtp extends SimplePage implements HasForms
 {
     use InteractsWithForms;
+    use HasCustomLayout;
 
     protected static string $view = 'filament.pages.auth.reset-password-otp';
 
@@ -15656,7 +15983,7 @@ class ResetPasswordOtp extends SimplePage implements HasForms
         Redis::setex("reset_otp:{$userId}", 300, $otp);
         Redis::setex($cooldownKey, 60, 1);
 
-        $message = "Halo {$user->name},\n\nKode OTP baru reset password PMBM MTsN 1 Pandeglang Anda:\n\n*{$otp}*\n\nKode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.";
+        $message = OtpMessageService::resetPassword($user->name, $otp);
 
         app(WhatsAppService::class)->send(
             phone: $user->telepon,
@@ -15686,7 +16013,9 @@ class ResetPasswordOtp extends SimplePage implements HasForms
 namespace App\Filament\Pages\Auth;
 
 use App\Models\User;
+use App\Services\OtpMessageService;
 use App\Services\WhatsAppService;
+use DiogoGPinto\AuthUIEnhancer\Pages\Auth\Concerns\HasCustomLayout;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -15699,6 +16028,7 @@ use Illuminate\Support\Facades\Redis;
 class VerifikasiOtp extends SimplePage implements HasForms
 {
     use InteractsWithForms;
+    use HasCustomLayout;
 
     protected static string $view = 'filament.pages.auth.verifikasi-otp';
 
@@ -15814,7 +16144,8 @@ class VerifikasiOtp extends SimplePage implements HasForms
         Redis::setex("otp:{$userId}", 300, $otp);
         Redis::setex($cooldownKey, 60, 1);
 
-        $message = "Halo {$user->name},\n\nKode OTP baru verifikasi akun PMBM MTsN 1 Pandeglang Anda:\n\n*{$otp}*\n\nKode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.";
+        $message = OtpMessageService::verifikasi($user->name, $otp);
+
         app(WhatsAppService::class)->send(
             phone: $user->telepon,
             message: $message,
@@ -15976,6 +16307,9 @@ use App\Models\Kecamatan;
 use App\Models\Kelurahan;
 use App\Models\Provinsi;
 use App\Models\Sekolah;
+use Carbon\Carbon;
+use Closure;
+use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
@@ -16004,7 +16338,7 @@ trait CalonSiswaFormTrait
             ->label('Jalur Pendaftaran')
             ->relationship('jalurPendaftaran', 'nama', fn($query) => $query->where('status', 'Aktif'))
             ->required()
-            ->validationMessages(['required' => 'Form ini wajib diisi.'])
+            ->validationMessages(['required' => 'Form ini perlu diisi.'])
             ->native(false)
             ->live()
             ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->nama} | {$record->tahunPendaftaran->nama}");
@@ -16018,7 +16352,7 @@ trait CalonSiswaFormTrait
             ->disabledOn('create')
             ->dehydrated()
             ->default(fn() => Auth::user()->name)
-            ->validationMessages(['required' => 'Form ini wajib diisi.']);
+            ->validationMessages(['required' => 'Form ini perlu diisi.']);
     }
 
     protected function getNikField(): TextInput
@@ -16029,13 +16363,14 @@ trait CalonSiswaFormTrait
             ->unique(ignoreRecord: true)
             ->dehydrateStateUsing(fn($state) => $state ?: null)
             ->numeric()
+            ->placeholder('Contoh: 3201234567890123')
             ->maxLength(16)
             ->minLength(16)
             ->validationMessages([
                 'max_digits' => 'NIK: Masukkan maksimal 16 Angka.',
                 'min_digits' => 'NIK: Masukkan minimal 16 Angka.',
                 'unique' => 'NIK: Nomor ini sudah pernah di isi.',
-                'required' => 'Form ini wajib diisi.',
+                'required' => 'Form ini perlu diisi.',
             ]);
     }
 
@@ -16044,13 +16379,14 @@ trait CalonSiswaFormTrait
         return TextInput::make('kk')
             ->label('Nomor Kartu Keluarga (KK)')
             ->required()
+            ->placeholder('Contoh: 3201234567890123')
             ->maxLength(16)
             ->numeric()
             ->minLength(16)
             ->validationMessages([
                 'max_digits' => 'KK: Masukkan maksimal 16 Angka.',
                 'min_digits' => 'KK: Masukkan minimal 16 Angka.',
-                'required' => 'Form ini wajib diisi.',
+                'required' => 'Form ini perlu diisi.',
             ]);
     }
 
@@ -16071,7 +16407,7 @@ trait CalonSiswaFormTrait
                 'max_digits' => 'NISN: Masukkan maksimal 10 Angka.',
                 'min_digits' => 'NISN: Masukkan minimal 10 Angka.',
                 'unique' => 'NISN: Nomor ini sudah pernah di isi.',
-                'required' => 'Form ini wajib diisi.',
+                'required' => 'Form ini perlu diisi.',
             ]);
     }
 
@@ -16080,30 +16416,44 @@ trait CalonSiswaFormTrait
         return TextInput::make('tempat_lahir')
             ->label('Tempat Lahir')
             ->required()
-            ->validationMessages(['required' => 'Form ini wajib diisi.']);
+            ->placeholder('Contoh: Pandeglang')
+            ->formatStateUsing(fn($state) => strtoupper($state))
+            ->dehydrateStateUsing(fn($state) => strtoupper($state))
+            ->validationMessages(['required' => 'Form ini perlu diisi.']);
     }
 
     protected function getTanggalLahirField(): DatePicker
     {
         return DatePicker::make('tanggal_lahir')
             ->label('Tanggal Lahir')
-            ->maxDate(now())
+            ->minDate(fn() => Carbon::create(now()->year, 7, 1)->subYears(15)) // 1 Juli 2011
+            ->maxDate(fn() => Carbon::create(now()->year, 7, 1)->subYears(13)) // 1 Juli 2013
             ->required()
-            ->validationMessages(['required' => 'Form ini wajib diisi.']);
+            ->rules([
+                'date',
+                'after_or_equal:'  . Carbon::create(now()->year, 7, 1)->subYears(15)->toDateString(),
+                'before_or_equal:' . Carbon::create(now()->year, 7, 1)->subYears(13)->toDateString(),
+            ])
+            ->validationMessages([
+                'required'        => 'Form ini perlu diisi.',
+                'after_or_equal'  => 'Usia minimal 13 tahun dihitung per 1 Juli ' . now()->year . '.',
+                'before_or_equal' => 'Usia maksimal 15 tahun dihitung per 1 Juli ' . now()->year . '.',
+                'date'            => 'Format tanggal tidak valid.',
+            ]);
     }
 
     // ========================================================================
     // FIELD GROUPS (Complex reusable structures)
     // ========================================================================
 
-    protected function getWilayahFields(string $prefix, bool $required = true): array
+    protected function getWilayahFields(string $prefix, bool|Closure $required = true): array
     {
         return [
             Select::make("{$prefix}_negara_id")
                 ->label('Negara')
                 ->relationship("{$prefix}Negara", 'nama')
                 ->required($required)
-                ->validationMessages(['required' => 'Form ini wajib diisi.'])
+                ->validationMessages(['required' => 'Form ini perlu diisi.'])
                 ->native(false)
                 ->preload()
                 ->live()
@@ -16120,7 +16470,7 @@ trait CalonSiswaFormTrait
                     ->where('negara_id', $get("{$prefix}_negara_id"))
                     ->pluck('nama', 'id'))
                 ->required($required)
-                ->validationMessages(['required' => 'Form ini wajib diisi.'])
+                ->validationMessages(['required' => 'Form ini perlu diisi.'])
                 ->native(false)
                 ->preload()
                 ->live()
@@ -16131,12 +16481,12 @@ trait CalonSiswaFormTrait
                 }),
 
             Select::make("{$prefix}_kabupaten_id")
-                ->label('Kabupaten')
+                ->label('Kabupaten/Kota')
                 ->options(fn(Get $get): Collection => Kabupaten::query()
                     ->where('provinsi_id', $get("{$prefix}_provinsi_id"))
                     ->pluck('nama', 'id'))
                 ->required($required)
-                ->validationMessages(['required' => 'Form ini wajib diisi.'])
+                ->validationMessages(['required' => 'Form ini perlu diisi.'])
                 ->native(false)
                 ->preload()
                 ->live()
@@ -16151,7 +16501,7 @@ trait CalonSiswaFormTrait
                     ->where('kabupaten_id', $get("{$prefix}_kabupaten_id"))
                     ->pluck('nama', 'id'))
                 ->required($required)
-                ->validationMessages(['required' => 'Form ini wajib diisi.'])
+                ->validationMessages(['required' => 'Form ini perlu diisi.'])
                 ->native(false)
                 ->preload()
                 ->live()
@@ -16160,19 +16510,19 @@ trait CalonSiswaFormTrait
                 }),
 
             Select::make("{$prefix}_kelurahan_id")
-                ->label('Kelurahan')
+                ->label('Kelurahan/Desa')
                 ->options(fn(Get $get): Collection => Kelurahan::query()
                     ->where('kecamatan_id', $get("{$prefix}_kecamatan_id"))
                     ->pluck('nama', 'id'))
                 ->required($required)
-                ->validationMessages(['required' => 'Form ini wajib diisi.'])
+                ->validationMessages(['required' => 'Form ini perlu diisi.'])
                 ->native(false),
 
             TextInput::make("{$prefix}_alamat")
                 ->label('Jalan/Kampung/Dusun')
                 ->required($required)
                 ->placeholder('KP KEBON CAU RT 001 RW 005')
-                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+                ->validationMessages(['required' => 'Form ini perlu diisi.']),
         ];
     }
 
@@ -16180,20 +16530,28 @@ trait CalonSiswaFormTrait
     {
         $label = ucfirst($type);
 
+        // Untuk wali: wajib hanya jika ayah DAN ibu meninggal
+        $isWali         = $type === 'wali';
+        $wajibJikaWali  = fn(Get $get) => $get('ayah_status') === 'Meninggal' && $get('ibu_status') === 'Meninggal';
+
+        $isRequired     = $isWali
+            ? $wajibJikaWali
+            : $required;
+
         return [
             TextInput::make("{$type}_nama")
-                ->label("Nama Lengkap {$label} Kandung")
-                ->required($required)
-                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+                ->label($isWali ? 'Nama Lengkap Wali' : "Nama Lengkap {$label} Kandung")
+                ->required($isRequired)
+                ->validationMessages(['required' => 'Form ini perlu diisi.']),
 
             TextInput::make("{$type}_nik")
-                ->label("NIK {$label} Kandung")
-                ->required($required)
+                ->label($isWali ? 'NIK Wali' : "NIK {$label} Kandung")
+                ->required($isRequired)
                 ->maxLength(16)
                 ->minLength(16)
                 ->numeric()
                 ->validationMessages([
-                    'required' => 'Form ini wajib diisi.',
+                    'required'   => 'Form ini perlu diisi.',
                     'max_digits' => 'NIK: Masukkan maksimal 16 Angka.',
                     'min_digits' => 'NIK: Masukkan minimal 16 Angka.',
                 ]),
@@ -16201,42 +16559,72 @@ trait CalonSiswaFormTrait
             Select::make("{$type}_status")
                 ->label('Status')
                 ->options(FormOptions::STATUS_HIDUP)
-                ->required($required)
-                ->validationMessages(['required' => 'Form ini wajib diisi.'])
+                ->required($isRequired)
+                ->validationMessages(['required' => 'Form ini perlu diisi.'])
                 ->native(false)
-                ->live(),
+                ->live()
+                ->default($isWali ? 'Hidup' : null)
+                ->disabled($isWali)
+                ->dehydrated(),
 
             TextInput::make("{$type}_telepon")
                 ->label('Nomor Telepon')
                 ->tel()
-                ->required(fn(Get $get) => $required && $get("{$type}_status") !== 'Meninggal')
+                ->required(function (Get $get) use ($isWali, $required, $type) {
+                    if ($isWali) {
+                        return $get('ayah_status') === 'Meninggal'
+                            && $get('ibu_status')  === 'Meninggal'
+                            && $get("{$type}_status") !== 'Meninggal';
+                    }
+                    return $required && $get("{$type}_status") !== 'Meninggal';
+                })
                 ->hidden(fn(Get $get) => $get("{$type}_status") === 'Meninggal')
-                ->validationMessages(['required' => 'Form ini wajib diisi.']),
+                ->validationMessages(['required' => 'Form ini perlu diisi.']),
 
             Select::make("{$type}_pekerjaan")
                 ->label('Pekerjaan')
                 ->options(FormOptions::PEKERJAAN)
-                ->required(fn(Get $get) => $required && $get("{$type}_status") !== 'Meninggal')
+                ->required(function (Get $get) use ($isWali, $required, $type) {
+                    if ($isWali) {
+                        return $get('ayah_status') === 'Meninggal'
+                            && $get('ibu_status')  === 'Meninggal'
+                            && $get("{$type}_status") !== 'Meninggal';
+                    }
+                    return $required && $get("{$type}_status") !== 'Meninggal';
+                })
                 ->hidden(fn(Get $get) => $get("{$type}_status") === 'Meninggal')
-                ->validationMessages(['required' => 'Form ini wajib diisi.'])
+                ->validationMessages(['required' => 'Form ini perlu diisi.'])
                 ->native(false),
 
             Select::make("{$type}_penghasilan")
                 ->label('Penghasilan Bulanan')
                 ->options(FormOptions::PENGHASILAN)
-                ->required(fn(Get $get) => $required && $get("{$type}_status") !== 'Meninggal')
+                ->required(function (Get $get) use ($isWali, $required, $type) {
+                    if ($isWali) {
+                        return $get('ayah_status') === 'Meninggal'
+                            && $get('ibu_status')  === 'Meninggal'
+                            && $get("{$type}_status") !== 'Meninggal';
+                    }
+                    return $required && $get("{$type}_status") !== 'Meninggal';
+                })
                 ->hidden(fn(Get $get) => $get("{$type}_status") === 'Meninggal')
-                ->validationMessages(['required' => 'Form ini wajib diisi.'])
+                ->validationMessages(['required' => 'Form ini perlu diisi.'])
                 ->native(false),
 
             Select::make("{$type}_pendidikan")
                 ->label('Pendidikan')
                 ->options(FormOptions::PENDIDIKAN)
-                ->required(fn(Get $get) => $required && $get("{$type}_status") !== 'Meninggal')
+                ->required(function (Get $get) use ($isWali, $required, $type) {
+                    if ($isWali) {
+                        return $get('ayah_status') === 'Meninggal'
+                            && $get('ibu_status')  === 'Meninggal'
+                            && $get("{$type}_status") !== 'Meninggal';
+                    }
+                    return $required && $get("{$type}_status") !== 'Meninggal';
+                })
                 ->hidden(fn(Get $get) => $get("{$type}_status") === 'Meninggal')
-                ->validationMessages(['required' => 'Form ini wajib diisi.'])
+                ->validationMessages(['required' => 'Form ini perlu diisi.'])
                 ->native(false),
-
         ];
     }
 
@@ -16245,7 +16633,7 @@ trait CalonSiswaFormTrait
         $field = FileUpload::make("berkas_{$type}")
             ->label($label)
             ->required($required)
-            ->validationMessages(['required' => 'Form ini wajib diisi.'])
+            ->validationMessages(['required' => 'Form ini perlu diisi.'])
             ->fetchFileInformation(false)
             ->directory(fn($get) => "berkas/{$type}/" . $get('nisn'))
             ->downloadable()
@@ -16288,69 +16676,93 @@ trait CalonSiswaFormTrait
                 $this->getTanggalLahirField(),
 
                 Select::make('tahun_lulus')
-                    ->label('Tahun Lulus')
+                    ->label('Tahun Lulus Dari Sekolah Asal')
                     ->options(FormOptions::tahunLulusOptions())
                     ->required()
-                    ->validationMessages(['required' => 'Form ini wajib diisi.'])
+                    ->validationMessages(['required' => 'Form ini perlu diisi.'])
+                    ->default(date('Y'))
                     ->native(false),
 
                 Select::make('jenis_kelamin')
                     ->label('Jenis Kelamin')
                     ->options(FormOptions::JENIS_KELAMIN)
                     ->required()
-                    ->validationMessages(['required' => 'Form ini wajib diisi.'])
+                    ->validationMessages(['required' => 'Form ini perlu diisi.'])
                     ->native(false),
 
                 Select::make('golongan_darah')
                     ->label('Golongan Darah')
                     ->options(FormOptions::GOLONGAN_DARAH)
                     ->required()
-                    ->validationMessages(['required' => 'Form ini wajib diisi.'])
+                    ->validationMessages(['required' => 'Form ini perlu diisi.'])
                     ->native(false),
 
                 Select::make('agama')
                     ->label('Agama')
                     ->options(FormOptions::AGAMA)
+                    ->default('Islam')
                     ->required()
-                    ->validationMessages(['required' => 'Form ini wajib diisi.'])
+                    ->validationMessages(['required' => 'Form ini perlu diisi.'])
                     ->native(false),
 
                 TextInput::make('anak_ke')
                     ->label('Anak Ke')
                     ->required()
-                    ->validationMessages(['required' => 'Form ini wajib diisi.'])
-                    ->numeric(),
+                    ->placeholder('Contoh: 1')
+                    ->numeric()
+                    ->minValue(1)
+                    ->maxValue(20)
+                    ->live()
+                    ->validationMessages(['required' => 'Form ini perlu diisi.']),
 
                 TextInput::make('jumlah_saudara')
                     ->label('Dari (Jumlah Anak)')
                     ->required()
-                    ->validationMessages(['required' => 'Form ini wajib diisi.'])
-                    ->numeric(),
+                    ->numeric()
+                    ->placeholder('Contoh: 3')
+                    ->minValue(1)
+                    ->maxValue(20)
+                    ->live()
+                    ->rules([
+                        fn(Get $get) => function (string $attribute, $value, Closure $fail) use ($get) {
+                            $anakKe = (int) $get('anak_ke');
+                            $jumlah = (int) $value;
+
+                            if ($anakKe && $jumlah < $anakKe) {
+                                $fail("Jumlah anak tidak boleh kurang dari anak ke-{$anakKe}.");
+                            }
+                        }
+                    ])
+                    ->validationMessages([
+                        'required' => 'Form ini perlu diisi.',
+                        'max' => 'Form ini perlu diisi.'
+                    ]),
 
                 Select::make('tinggal_bersama')
                     ->label('Tinggal Bersama')
                     ->options(FormOptions::TINGGAL_BERSAMA)
                     ->required()
-                    ->validationMessages(['required' => 'Form ini wajib diisi.'])
+                    ->validationMessages(['required' => 'Form ini perlu diisi.'])
                     ->native(false),
 
                 Select::make('jarak_ke_sekolah')
                     ->label('Jarak Ke Sekolah')
                     ->options(FormOptions::JARAK_KE_SEKOLAH)
                     ->required()
-                    ->validationMessages(['required' => 'Form ini wajib diisi.'])
+                    ->validationMessages(['required' => 'Form ini perlu diisi.'])
                     ->native(false),
 
                 Select::make('disabilitas')
                     ->label('Disabilitas')
                     ->options(FormOptions::DISABILITAS)
                     ->required()
-                    ->validationMessages(['required' => 'Form ini wajib diisi.'])
+                    ->validationMessages(['required' => 'Form ini perlu diisi.'])
                     ->native(false),
 
                 TextInput::make('tinggi_badan')
                     ->label('Tinggi Badan')
                     ->suffix('cm')
+                    ->placeholder('Contoh: 150')
                     ->maxValue(300)
                     ->minValue(30)
                     ->validationMessages(['max' => 'Tinggi badan tidak boleh lebih dari 300 cm.', 'min' => 'Tinggi badan tidak boleh kurang dari 30 cm.'])
@@ -16359,6 +16771,7 @@ trait CalonSiswaFormTrait
                 TextInput::make('berat_badan')
                     ->label('Berat Badan')
                     ->suffix('kg')
+                    ->placeholder('Contoh: 45')
                     ->maxValue(500)
                     ->minValue(10)
                     ->validationMessages(['max' => 'Berat badan tidak boleh lebih dari 500 kg.', 'min' => 'Berat badan tidak boleh kurang dari 10 kg.'])
@@ -16369,14 +16782,14 @@ trait CalonSiswaFormTrait
                     ->helperText(new HtmlString('<small><i>Jangan diisi jika tidak memiliki bukti KIP.<sup style="color:red">*</sup></i></small>'))
                     ->unique(ignoreRecord: true)
                     ->dehydrateStateUsing(fn($state) => $state ?: null)
-                    ->numeric()
-                    ->minLength(16)
-                    ->maxLength(19)
+                    ->placeholder('Contoh: 180234')
+                    ->minLength(6)
+                    ->maxLength(6)
                     ->live()
                     ->validationMessages([
-                        'min_digits'    => 'KIP: Nomor harus 16 digit.',
-                        'max_digits'    => 'KIP: Nomor harus 19 digit.',
-                        'unique' => 'KIP: Nomor ini sudah pernah diisi.',
+                        'min' => 'KIP: Nomor harus 6 digit.',
+                        'max' => 'KIP: Nomor harus 6 digit.',
+                        'unique'     => 'KIP: Nomor ini sudah pernah diisi.',
                     ]),
 
                 TextInput::make('no_kks')
@@ -16384,14 +16797,14 @@ trait CalonSiswaFormTrait
                     ->helperText(new HtmlString('<small><i>Jangan diisi jika tidak memiliki bukti KKS.<sup style="color:red">*</sup></i></small>'))
                     ->unique(ignoreRecord: true)
                     ->dehydrateStateUsing(fn($state) => $state ?: null)
-                    ->numeric()
-                    ->minLength(16)
+                    ->placeholder('Contoh: A1B2C3 atau sesuai kartu')
+                    ->minLength(5)
                     ->maxLength(16)
                     ->live()
                     ->validationMessages([
-                        'min_digits'    => 'KKS: Nomor harus 16 digit.',
-                        'max_digits'    => 'KKS: Nomor harus 16 digit.',
-                        'unique' => 'KKS: Nomor ini sudah pernah diisi.',
+                        'min' => 'KKS: Nomor harus 5-16 karakter.',
+                        'max' => 'KKS: Nomor harus 5-16 karakter.',
+                        'unique'     => 'KKS: Nomor ini sudah pernah diisi.',
                     ]),
 
                 TextInput::make('no_pkh')
@@ -16399,13 +16812,13 @@ trait CalonSiswaFormTrait
                     ->helperText(new HtmlString('<small><i>Jangan diisi jika tidak memiliki bukti PKH.<sup style="color:red">*</sup></i></small>'))
                     ->unique(ignoreRecord: true)
                     ->dehydrateStateUsing(fn($state) => $state ?: null)
-                    ->numeric()
-                    ->minLength(16)
-                    ->maxLength(16)
+                    ->placeholder('Contoh: 3201234567890123')
+                    ->minLength(15)
+                    ->maxLength(15)
                     ->live()
                     ->validationMessages([
-                        'min_digits'    => 'PKH: Nomor harus 16 digit.',
-                        'max_digits'    => 'PKH: Nomor harus 16 digit.',
+                        'min'    => 'PKH: Nomor harus 15 karakter.',
+                        'max'    => 'PKH: Nomor harus 15 karakter.',
                         'unique' => 'PKH: Nomor ini sudah pernah diisi.',
                     ]),
 
@@ -16415,6 +16828,7 @@ trait CalonSiswaFormTrait
                     ->unique(ignoreRecord: true)
                     ->dehydrateStateUsing(fn($state) => $state ?: null)
                     ->minLength(8)
+                    ->placeholder('Contoh: 474.3/001/DS-NAMADESA/2024')
                     ->maxLength(50)
                     ->live()
                     ->validationMessages([
@@ -16451,7 +16865,7 @@ trait CalonSiswaFormTrait
             ->label('Sekolah Asal')
             ->relationship('sekolahAsal', 'nama')
             ->required()
-            ->validationMessages(['required' => 'Form ini wajib diisi.'])
+            ->validationMessages(['required' => 'Form ini perlu diisi.'])
             ->native(false)
             ->searchable()
             ->preload()
@@ -16469,7 +16883,7 @@ trait CalonSiswaFormTrait
                             ->label('Nama Instansi')
                             ->prefixIcon('heroicon-o-building-library')
                             ->required()
-                            ->validationMessages(['required' => 'Form ini wajib diisi.'])
+                            ->validationMessages(['required' => 'Form ini perlu diisi.'])
                             ->columnSpanFull(),
 
                         Select::make('jenjang')
@@ -16477,7 +16891,7 @@ trait CalonSiswaFormTrait
                             ->native(false)
                             ->required()
                             ->live()
-                            ->validationMessages(['required' => 'Form ini wajib diisi.'])
+                            ->validationMessages(['required' => 'Form ini perlu diisi.'])
                             ->options(fn() => FormOptions::jenjangSekolahAsal(Sekolah::first()?->jenjang)),
 
                         TextInput::make('npsn')
@@ -16486,10 +16900,17 @@ trait CalonSiswaFormTrait
                             ->minLength(8)
                             ->maxLength(8)
                             ->required()
+                            ->hintAction(
+                                Action::make('cek_npsn')
+                                    ->label('Buka Web NPSN')
+                                    ->icon('heroicon-o-arrow-top-right-on-square')
+                                    ->url('https://sekolah.data.kemendikdasmen.go.id/sekolah')
+                                    ->openUrlInNewTab()
+                            )
                             ->validationMessages([
                                 'min_digits' => 'NPSN harus 8 digit.',
                                 'max_digits' => 'NPSN harus 8 digit.',
-                                'required' => 'Form ini wajib diisi.',
+                                'required'   => 'Form ini perlu diisi.',
                             ]),
 
                         TextInput::make('nss')
@@ -16502,21 +16923,21 @@ trait CalonSiswaFormTrait
                             ->validationMessages([
                                 'min_digits' => 'NSS/NSM harus 12 digit.',
                                 'max_digits' => 'NSS/NSM harus 12 digit.',
-                                'required' => 'Form ini wajib diisi.',
+                                'required' => 'Form ini perlu diisi.',
                             ]),
 
                         Select::make('akreditasi')
                             ->label('Akreditasi')
                             ->native(false)
                             ->required()
-                            ->validationMessages(['required' => 'Form ini wajib diisi.'])
+                            ->validationMessages(['required' => 'Form ini perlu diisi.'])
                             ->options(FormOptions::AKREDITASI),
 
                         Select::make('status')
                             ->label('Status')
                             ->native(false)
                             ->required()
-                            ->validationMessages(['required' => 'Form ini wajib diisi.'])
+                            ->validationMessages(['required' => 'Form ini perlu diisi.'])
                             ->options(FormOptions::STATUS_SEKOLAH),
 
                         // FileUpload::make('logo')
@@ -16532,7 +16953,7 @@ trait CalonSiswaFormTrait
                         //     ->minSize(10)
                         //     ->visibility('private')
                         //     ->required()
-                        //     ->validationMessages(['required' => 'Form ini wajib diisi.']),
+                        //     ->validationMessages(['required' => 'Form ini perlu diisi.']),
                     ])
                     ->columns(['sm' => '100%', 'md' => 3, 'lg' => 3]),
 
@@ -16581,7 +17002,8 @@ trait CalonSiswaFormTrait
                     ->options(FormOptions::STATUS_FORMULIR)
                     ->native(false)
                     ->default('Diproses')
-                    ->required(),
+                    ->required()
+                    ->live(),
             ]);
     }
 
@@ -16589,7 +17011,16 @@ trait CalonSiswaFormTrait
     {
         return Section::make('Status Pendaftaran')
             ->icon('heroicon-m-clipboard-document-list')
-            ->visible(Auth::user()->roles->first()->name !== 'calon_siswa')
+            ->visible(function () {
+                if (Auth::user()->roles->first()->name === 'calon_siswa') {
+                    return false;
+                }
+
+                // Ambil nilai status_formulir dari state form
+                $statusFormulir = $this->data['status_formulir'] ?? 'Diproses';
+
+                return $statusFormulir !== 'Diproses';
+            })
             ->columns(['sm' => '100%', 'md' => 2, 'lg' => 2])
             ->schema([
                 Select::make('status_pendaftaran')
@@ -16604,11 +17035,11 @@ trait CalonSiswaFormTrait
 
                 Select::make('kelas_id')
                     ->label('Kelas')
-                    ->visible(fn($get) => in_array($get('status_pendaftaran'), [
+                    ->visible(fn(Get $get) => in_array($get('status_pendaftaran'), [
                         'Diterima Di Kelas Reguler',
                         'Diterima Di Kelas Unggulan',
                     ]))
-                    ->required(fn($get) => in_array($get('status_pendaftaran'), [
+                    ->required(fn(Get $get) => in_array($get('status_pendaftaran'), [
                         'Diterima Di Kelas Reguler',
                         'Diterima Di Kelas Unggulan',
                     ]))
@@ -16734,7 +17165,14 @@ trait CalonSiswaFormTrait
                 $this->getBerkasField('foto', 'Foto Latar Merah'),
                 $this->getBerkasField('kk', 'Kartu Keluarga'),
                 $this->getBerkasField('akta', 'Akta Kelahiran'),
-                $this->getBerkasField('nisn', 'Kartu NISN/Tangkapan Layar NISN (Web)'),
+                $this->getBerkasField('nisn', 'Kartu NISN/Tangkapan Layar NISN (Web)')
+                    ->hintAction(
+                        Action::make('cek_nisn')
+                            ->label('Buka Web NISN')
+                            ->icon('heroicon-o-arrow-top-right-on-square')
+                            ->url(fn(Get $get) => 'https://nisn.data.kemdikbud.go.id/index.php/Cindex/formcaribynisn/' . $get('nisn'))
+                            ->openUrlInNewTab()
+                    ),
                 $this->getBerkasField('skbb', 'Surat Keterangan Berkelakuan Baik'),
                 $this->getBerkasField('skab', 'Surat Keterangan Aktif Belajar'),
 
@@ -16775,30 +17213,38 @@ trait CalonSiswaFormTrait
 
                 $this->getBerkasField(
                     'rumah_depan',
-                    'Foto Rumah Depan',
+                    'Foto Depan Rumah',
                     fn($get) => $get('no_sktm') !== null,
                     '<small><i>Unggah foto depan rumah.<sup style="color:red">*</sup></i></small>'
                 )->visible(fn($get) => $get('no_sktm') !== null),
 
                 $this->getBerkasField(
                     'rumah_dalam',
-                    'Foto Rumah Dalam',
+                    'Foto Dalam Rumah',
                     fn($get) => $get('no_sktm') !== null,
                     '<small><i>Unggah foto dalam rumah.<sup style="color:red">*</sup></i></small>'
                 )->visible(fn($get) => $get('no_sktm') !== null),
 
                 $this->getBerkasField(
                     'rumah_belakang',
-                    'Foto Rumah Belakang',
+                    'Foto Belakang Rumah',
                     fn($get) => $get('no_sktm') !== null,
                     '<small><i>Unggah foto belakang rumah.<sup style="color:red">*</sup></i></small>'
                 )->visible(fn($get) => $get('no_sktm') !== null),
             ]);
     }
 
+
     protected function getOrangTuaTabs(string $type, string $label, bool $required = true): Tabs
     {
+        $isWali        = $type === 'wali';
+        $wajibJikaWali = fn(Get $get) =>
+        $get('ayah_status') === 'Meninggal' &&
+            $get('ibu_status')  === 'Meninggal';
+
         return Tabs::make("Data {$label}")
+            // Tab wali hanya tampil jika ayah DAN ibu meninggal
+            ->visible($isWali ? $wajibJikaWali : true)
             ->tabs([
                 Tabs\Tab::make("Data {$label}")
                     ->icon('heroicon-m-bell')
@@ -16808,7 +17254,11 @@ trait CalonSiswaFormTrait
                 Tabs\Tab::make('Alamat')
                     ->icon('heroicon-m-bell')
                     ->iconPosition(IconPosition::After)
-                    ->schema($this->getWilayahFields($type, $required)),
+                    ->schema($this->getWilayahFields(
+                        $type,
+                        // Alamat wali wajib hanya jika ayah DAN ibu meninggal
+                        $isWali ? $wajibJikaWali : $required
+                    )),
             ])
             ->columns(['sm' => '100%', 'md' => 3, 'lg' => 3]);
     }
@@ -16823,7 +17273,7 @@ trait CalonSiswaFormTrait
                     ->label('Status Kepemilikan Rumah')
                     ->options(FormOptions::KEPEMILIKAN_RUMAH)
                     ->required()
-                    ->validationMessages(['required' => 'Form ini wajib diisi.'])
+                    ->validationMessages(['required' => 'Form ini perlu diisi.'])
                     ->native(false),
             ]);
     }
@@ -16844,6 +17294,8 @@ namespace App\Providers;
 
 use App\Models\CalonSiswa;
 use App\Observers\CalonSiswaObserver;
+use Filament\Support\Colors\Color;
+use Filament\Support\Facades\FilamentColor;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\ServiceProvider;
 
@@ -16859,6 +17311,14 @@ class AppServiceProvider extends ServiceProvider
         setlocale(LC_TIME, 'id_ID.utf8');
         Carbon::setLocale('id');
         CalonSiswa::observe(CalonSiswaObserver::class);
+        FilamentColor::register([
+            'primary' => Color::hex('#0f766e'),
+            'gray' => Color::hex('#1e293b'),
+            'info' => Color::hex('#6366f1'),
+            'success' => Color::hex('#10b981'),
+            'warning' => Color::hex('#f59e0b'),
+            'danger' => Color::hex('#ef4444'),
+        ]);
     }
 }
 
@@ -16912,8 +17372,9 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('dashboard')
             ->default()
+            ->breadcrumbs(false)
             ->spa()
-            // ->topNavigation()
+            ->topNavigation()
             ->login(LoginCustom::class)
             ->registration(RegisterCustom::class)
             ->passwordReset(ForgotPasswordCustom::class)
@@ -16922,12 +17383,12 @@ class AdminPanelProvider extends PanelProvider
             ->globalSearch(false)
             ->maxContentWidth(MaxWidth::Full)
             ->unsavedChangesAlerts()
-            // ->databaseNotifications()
+            ->databaseNotifications()
+            ->darkMode(true)
             ->defaultThemeMode(ThemeMode::Dark)
             ->font('Lexend')
             ->favicon(asset('/favicon.ico'))
-            ->darkModeBrandLogo(asset('/img/brand-darkmode.png'))
-            ->brandLogo(asset('/img/brand-lightmode.png'))
+            ->brandLogo(asset('/img/brand-darkmode.png'))
             ->brandLogoHeight('2.6rem')
             ->colors([
                 'primary' => Color::Emerald,
@@ -16935,9 +17396,9 @@ class AdminPanelProvider extends PanelProvider
             ->userMenuItems([
                 MenuItem::make()
                     ->label('Manajemen Pengguna')
-                    ->url(fn (): string => UserResource::getUrl())
+                    ->url(fn(): string => UserResource::getUrl())
                     ->icon('heroicon-o-identification')
-                    ->visible(fn () => Auth::user()?->roles?->where('name', 'super_admin')->first() !== null),
+                    ->visible(fn() => Auth::user()?->roles?->where('name', 'super_admin')->first() !== null),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -16985,18 +17446,14 @@ class AdminPanelProvider extends PanelProvider
                     ]),
 
                 EasyFooterPlugin::make()
-                    ->withFooterPosition('footer'),
-                // ->withLinks([
-                //     ['title' => 'Dibuat dan dikembangkan dengan ❤ oleh Yahya Zulfikri', 'url' => 'https://github.com/zulfikriyahya', 'open_in_new_tab' => true],
-                // ])
-                // ->withLoadTime('Halaman ini dimuat dalam')
-                // ->withBorder(),
+                    ->withFooterPosition('footer')
+                    ->withBorder(),
 
                 AuthUIEnhancerPlugin::make()
                     ->formPanelPosition('left')
                     ->formPanelWidth('45%')
                     ->formPanelBackgroundColor(Color::hex('#010101'))
-                    ->emptyPanelBackgroundImageUrl('img/wallpaper.png')
+                    ->emptyPanelBackgroundImageUrl('/img/wallpaper.png')
                     ->emptyPanelBackgroundColor(Color::hex('#010101'))
                     ->showEmptyPanelOnMobile(false),
             ]);
@@ -17836,7 +18293,7 @@ return new class extends Migration
         Schema::disableForeignKeyConstraints();
         Schema::create('prestasis', function (Blueprint $table) {
             $table->id();
-            $table->enum('jenis', ['Hafalan Al-Quran', 'Olimpiade/Kejuaraan']);
+            $table->enum('jenis', ['Hafalan Al-Quran', 'Olimpiade/Kejuaraan', 'Lainnya'])->nullable();
             $table->string('nama');
             $table->enum('tingkat', ['Nasional', 'Provinsi', 'Kabupaten/Kota'])->nullable();
             $table->enum('kategori', ['Regu/Kelompok', 'Individu'])->nullable();
@@ -17851,6 +18308,10 @@ return new class extends Migration
         Schema::dropIfExists('prestasis');
     }
 };
+
+
+
+
 
 ```
 
@@ -18434,8 +18895,15 @@ use App\Filament\Pages\Auth\ResetPasswordOtp;
 use App\Filament\Pages\Auth\VerifikasiOtp;
 use App\Http\Controllers\LandingController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\FormulirController;
 
 Route::get('/', [LandingController::class, 'index'])->name('landing');
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/formulir/{calonSiswa}/cetak',  [FormulirController::class, 'cetak'])->name('formulir.cetak');
+    Route::get('/kartu-tes/{calonSiswa}/cetak', [FormulirController::class, 'cetakKartuTes'])->name('kartu-tes.cetak');
+    Route::get('/skl/{calonSiswa}/cetak',       [FormulirController::class, 'cetakSkl'])->name('skl.cetak');
+});
 
 Route::middleware('web')->group(function () {
     Route::get('/verifikasi-otp', VerifikasiOtp::class)->name('otp.verifikasi');
@@ -18450,10 +18918,35 @@ Route::middleware('web')->group(function () {
 
 ## Views - Filament
 
-### ./resources/views/filament/pages/auth/forgot-password-custom.blade.php
+### ./resources/views/filament/pages/auth/edit-profile.blade.php
 
 ```blade
 <x-filament-panels::page.simple>
+
+
+    <x-filament-panels::form wire:submit="authenticate">
+        {{ $this->form }}
+
+        <x-filament-panels::form.actions :actions="$this->getCachedFormActions()" :full-width="$this->hasFullWidthFormActions()" />
+    </x-filament-panels::form>
+
+
+    <hr>
+    <p class="text-xs text-center text-gray-500 ">
+        &copy; {{ date('Y') }} PMBM MTsN 1 Pandeglang. All rights reserved.
+    </p>
+</x-filament-panels::page.simple>
+
+```
+
+---
+
+### ./resources/views/filament/pages/auth/forgot-password.blade.php
+
+```blade
+<x-filament-panels::page.simple>
+
+
     <x-filament-panels::form wire:submit="kirim">
         {{ $this->form }}
 
@@ -18464,13 +18957,44 @@ Route::middleware('web')->group(function () {
 
     <div class="mt-6 text-sm text-center text-gray-600 dark:text-gray-400">
         Sudah ingat password?
-        <a
-            href="{{ filament()->getLoginUrl() }}"
-            class="font-semibold transition duration-200 text-primary-600 hover:text-primary-500 hover:underline dark:text-primary-400 dark:hover:text-primary-300"
-        >
+        <a href="{{ filament()->getLoginUrl() }}"
+            class="font-semibold transition duration-200 text-primary-600 hover:text-primary-500 hover:underline dark:text-primary-400 dark:hover:text-primary-300">
             Kembali ke Login
         </a>
     </div>
+
+    <hr>
+    <p class="text-xs text-center text-gray-500 ">
+        &copy; {{ date('Y') }} PMBM MTsN 1 Pandeglang. All rights reserved.
+    </p>
+</x-filament-panels::page.simple>
+
+```
+
+---
+
+### ./resources/views/filament/pages/auth/login.blade.php
+
+```blade
+<x-filament-panels::page.simple>
+    @if (filament()->hasRegistration())
+        <x-slot name="subheading">
+            {{ __('filament-panels::pages/auth/login.actions.register.before') }}
+            {{ $this->registerAction }}
+        </x-slot>
+    @endif
+
+
+    <x-filament-panels::form wire:submit="authenticate">
+        {{ $this->form }}
+        <x-filament-panels::form.actions :actions="$this->getCachedFormActions()" :full-width="$this->hasFullWidthFormActions()" />
+    </x-filament-panels::form>
+
+
+    {{-- <hr>
+    <p class="text-xs text-center text-gray-500">
+        &copy; {{ date('Y') }} PMBM MTsN 1 Pandeglang. All rights reserved.
+    </p> --}}
 </x-filament-panels::page.simple>
 
 ```
@@ -18481,6 +19005,8 @@ Route::middleware('web')->group(function () {
 
 ```blade
 <x-filament-panels::page.simple>
+
+
     <x-filament-panels::form wire:submit="simpanPassword">
         {{ $this->form }}
 
@@ -18490,13 +19016,45 @@ Route::middleware('web')->group(function () {
     </x-filament-panels::form>
 
     <div class="mt-6 text-sm text-center">
-        <a
-            href="{{ route('otp.forgot-password') }}"
-            class="font-medium text-gray-500 transition duration-200 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
-        >
+        <a href="{{ route('otp.forgot-password') }}"
+            class="font-medium text-gray-500 transition duration-200 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
             &larr; Kembali
         </a>
     </div>
+
+
+    <hr>
+    <p class="text-xs text-center text-gray-500 ">
+        &copy; {{ date('Y') }} PMBM MTsN 1 Pandeglang. All rights reserved.
+    </p>
+</x-filament-panels::page.simple>
+
+```
+
+---
+
+### ./resources/views/filament/pages/auth/register.blade.php
+
+```blade
+<x-filament-panels::page.simple>
+    @if (filament()->hasLogin())
+        <x-slot name="subheading">
+            {{ __('filament-panels::pages/auth/register.actions.login.before') }}
+            {{ $this->loginAction }}
+        </x-slot>
+    @endif
+
+
+    <x-filament-panels::form wire:submit="register">
+        {{ $this->form }}
+
+        <x-filament-panels::form.actions :actions="$this->getCachedFormActions()" :full-width="$this->hasFullWidthFormActions()" />
+    </x-filament-panels::form>
+
+    <hr>
+    <p class="text-xs text-center text-gray-500 ">
+        &copy; {{ date('Y') }} PMBM MTsN 1 Pandeglang. All rights reserved.
+    </p>
 </x-filament-panels::page.simple>
 
 ```
@@ -18507,6 +19065,8 @@ Route::middleware('web')->group(function () {
 
 ```blade
 <x-filament-panels::page.simple>
+
+
     <x-filament-panels::form wire:submit="verifikasiOtp">
         {{ $this->form }}
 
@@ -18518,26 +19078,24 @@ Route::middleware('web')->group(function () {
     <div class="mt-6 space-y-4 text-sm text-center text-gray-600 dark:text-gray-400">
         <div>
             Belum menerima kode OTP?
-            <button
-                wire:click="resend"
-                wire:loading.attr="disabled"
-                wire:loading.class="opacity-50 cursor-not-allowed"
+            <button wire:click="resend" wire:loading.attr="disabled" wire:loading.class="opacity-50 cursor-not-allowed"
                 type="button"
-                class="font-semibold transition duration-200 text-primary-600 hover:text-primary-500 hover:underline dark:text-primary-400 dark:hover:text-primary-300"
-            >
+                class="font-semibold transition duration-200 text-primary-600 hover:text-primary-500 hover:underline dark:text-primary-400 dark:hover:text-primary-300">
                 Kirim ulang
             </button>
         </div>
 
         <div>
-            <a
-                href="{{ route('otp.forgot-password') }}"
-                class="inline-block font-medium text-gray-500 transition duration-200 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
-            >
+            <a href="{{ route('otp.forgot-password') }}"
+                class="inline-block font-medium text-gray-500 transition duration-200 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
                 &larr; Kembali
             </a>
         </div>
     </div>
+    <hr>
+    <p class="text-xs text-center text-gray-500 ">
+        &copy; {{ date('Y') }} PMBM MTsN 1 Pandeglang. All rights reserved.
+    </p>
 </x-filament-panels::page.simple>
 
 ```
@@ -18548,6 +19106,8 @@ Route::middleware('web')->group(function () {
 
 ```blade
 <x-filament-panels::page.simple>
+
+
     <x-filament-panels::form wire:submit="verifikasi">
         {{ $this->form }}
 
@@ -18558,16 +19118,17 @@ Route::middleware('web')->group(function () {
 
     <div class="mt-6 text-sm text-center text-gray-600 dark:text-gray-400">
         Belum menerima kode OTP?
-        <button
-            wire:click="resend"
-            wire:loading.attr="disabled"
-            wire:loading.class="opacity-50 cursor-not-allowed"
+        <button wire:click="resend" wire:loading.attr="disabled" wire:loading.class="opacity-50 cursor-not-allowed"
             type="button"
-            class="font-semibold transition duration-200 text-primary-600 hover:text-primary-500 hover:underline dark:text-primary-400 dark:hover:text-primary-300"
-        >
+            class="font-semibold transition duration-200 text-primary-600 hover:text-primary-500 hover:underline dark:text-primary-400 dark:hover:text-primary-300">
             Kirim ulang
         </button>
     </div>
+
+    <hr>
+    <p class="text-xs text-center text-gray-500 ">
+        &copy; {{ date('Y') }} PMBM MTsN 1 Pandeglang. All rights reserved.
+    </p>
 </x-filament-panels::page.simple>
 
 ```
@@ -18581,8 +19142,8 @@ Route::middleware('web')->group(function () {
 ```blade
 @php
     use Illuminate\Support\Facades\Storage;
-    $logoInstitusi = $instansi?->logo_institusi ? Storage::url($instansi->logo_institusi) : null;
-    $logoMadrasah  = $instansi?->logo ? Storage::url($instansi->logo) : null;
+    $logoMadrasah = $instansi?->logo ?? null;
+    $logoInstitusi = $instansi?->logo_institusi ?? null;
 
     $alamat = collect([
         $instansi?->alamat,
@@ -18590,13 +19151,18 @@ Route::middleware('web')->group(function () {
         optional($instansi?->kecamatan)->nama,
         optional($instansi?->kabupaten)->nama,
         optional($instansi?->provinsi)->nama,
-    ])->filter()->map(fn($item) => ucwords(strtolower($item)))->implode(', ');
+    ])
+        ->filter()
+        ->map(fn($item) => ucwords(strtolower($item)))
+        ->implode(', ');
 
     $kontak = collect([
         $instansi?->website ? 'Website: ' . $instansi->website : null,
-        $instansi?->email   ? 'Email: '   . $instansi->email   : null,
-        $instansi?->telepon ? 'Telp: '    . $instansi->telepon : null,
-    ])->filter()->implode('  |  ');
+        $instansi?->email ? 'Email: ' . $instansi->email : null,
+        $instansi?->telepon ? 'Telp: ' . $instansi->telepon : null,
+    ])
+        ->filter()
+        ->implode('  |  ');
 @endphp
 
 <table width="100%" style="border-collapse: collapse; margin-bottom: 0; padding: 0;">
@@ -18612,9 +19178,11 @@ Route::middleware('web')->group(function () {
         <td align="center" valign="middle" style="padding: 0 10px; line-height: 1.3;">
             <div style="font-size: 11pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5pt;">
                 Kementerian Agama Republik Indonesia<br>
-                Kantor Kementerian Agama {{ ucwords(strtolower(optional($instansi?->kabupaten)->nama ?? 'Kabupaten Pandeglang')) }}
+                Kantor Kementerian Agama
+                {{ ucwords(strtolower(optional($instansi?->kabupaten)->nama ?? 'Kabupaten Pandeglang')) }}
             </div>
-            <div style="font-size: 14pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1pt; margin-top: 3px;">
+            <div
+                style="font-size: 14pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1pt; margin-top: 3px;">
                 {{ $instansi?->nama ?? 'MTs Negeri 1 Pandeglang' }}
             </div>
             @if ($alamat)
@@ -18644,31 +19212,60 @@ Route::middleware('web')->group(function () {
 
 ## Views
 
+### ./resources/views/components/auth-wrapper.blade.php
+
+```blade
+<div class="custom-auth-form-wrapper">
+    {{ $slot }}
+
+    <hr class="my-3 border-gray-700">
+    <p class="text-xs text-center text-gray-500">
+        &copy; {{ date('Y') }} PMBM MTsN 1 Pandeglang. All rights reserved.
+    </p>
+</div>
+
+```
+
+---
+
 ### ./resources/views/formulir.blade.php
 
 ```blade
-{{-- @php
+@php
     use Illuminate\Support\Facades\Storage;
+    use Carbon\Carbon;
+
+    // Set locale Carbon ke Indonesia
+    Carbon::setLocale('id');
 
     $isJalurPrestasi = optional($record->jalurPendaftaran)->nama === 'Prestasi';
-    $jenisKelamin    = $record->jenis_kelamin === 'Pria' ? 'Laki-laki' : 'Perempuan';
-    $fotoUrl         = $record->berkas_foto ? Storage::url($record->berkas_foto) : null;
-    $qrPayload       = url('/dashboard/formulir/' . $record->id);
-    $isDraft         = $record->status_formulir !== 'Disetujui';
-    $kota            = ucwords(strtolower(optional($instansi?->kabupaten)->nama ?? 'Pandeglang'));
+    $jenisKelamin = $record->jenis_kelamin === 'Pria' ? 'Laki-laki' : 'Perempuan';
+    $fotoUrl = $record->berkas_foto ? Storage::url($record->berkas_foto) : null;
+    $qrPayload = url('/dashboard/formulir/' . $record->id);
+    $isDraft = $record->status_formulir !== 'Disetujui';
+    $kota = ucwords(strtolower(optional($instansi?->kabupaten)->nama ?? 'Pandeglang'));
+
+    // Format tanggal Indonesia
+    $tglLahir = $record->tanggal_lahir ? Carbon::parse($record->tanggal_lahir)->translatedFormat('d F Y') : '-';
+
+    $tglDibuatPada = Carbon::parse($record->updated_at)->translatedFormat('d F Y');
 
     $alamatSiswa = collect([
-        $record->siswa_alamat, optional($record->siswaKelurahan)->nama,
-        optional($record->siswaKecamatan)->nama, optional($record->siswaKabupaten)->nama,
+        $record->siswa_alamat,
+        optional($record->siswaKelurahan)->nama,
+        optional($record->siswaKecamatan)->nama,
+        optional($record->siswaKabupaten)->nama,
         optional($record->siswaProvinsi)->nama,
-    ])->filter()->implode(', ');
+    ])
+        ->filter()
+        ->implode(', ');
 
     $biodata = [
         ['No. Pendaftaran', $record->nomor_pendaftaran ?? '-'],
         ['Nama Lengkap', strtoupper($record->nama ?? '-')],
         ['Jalur Pendaftaran', strtoupper(optional($record->jalurPendaftaran)->nama ?? '-')],
         ['NISN / NIK', ($record->nisn ?? '-') . '  /  ' . ($record->nik ?? '-')],
-        ['Tempat, Tgl Lahir', ucwords(strtolower($record->tempat_lahir ?? '')) . ', ' . ($record->tanggal_lahir ? date('d F Y', strtotime($record->tanggal_lahir)) : '-')],
+        ['Tempat, Tgl Lahir', ucwords(strtolower($record->tempat_lahir ?? '')) . ', ' . $tglLahir],
         ['Jenis Kelamin', $jenisKelamin],
         ['Agama', ucwords(strtolower($record->agama ?? '-'))],
         ['Asal Sekolah', strtoupper(optional($record->sekolahAsal)->nama ?? '-')],
@@ -18677,139 +19274,318 @@ Route::middleware('web')->group(function () {
     ];
 
     if ($record->penerima_kip) {
-        $biodata[] = ['KIP / KKS / PKH', ($record->no_kip ?? '-') . ' / ' . ($record->no_kks ?? '-') . ' / ' . ($record->no_pkh ?? '-')];
+        $biodata[] = [
+            'KIP / KKS / PKH',
+            ($record->no_kip ?? '-') . ' / ' . ($record->no_kks ?? '-') . ' / ' . ($record->no_pkh ?? '-'),
+        ];
     }
 @endphp
 
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
-<meta charset="UTF-8">
-<style>
-    @page { size: A4 portrait; margin: 15mm; }
-    body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 9.5pt; color: #374151; line-height: 1.5; }
-    table { border-collapse: collapse; width: 100%; }
-    .title-doc { font-family: 'Georgia', serif; text-align: center; font-size: 14pt; font-weight: bold; color: #111827; letter-spacing: 1px; text-transform: uppercase; margin-top: 15px; }
-    .subtitle-doc { text-align: center; font-size: 10pt; color: #6b7280; margin-bottom: 20px; letter-spacing: 0.5px; }
-    .section-title { background-color: #f3f4f6; color: #111827; padding: 6px 10px; font-size: 9pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; border-left: 4px solid #059669; margin: 15px 0 8px 0; }
-    .data-table td { padding: 6px 4px; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
-    .data-table tr:last-child td { border-bottom: none; }
-    .data-table .lbl { width: 30%; color: #6b7280; font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.5px; }
-    .data-table .cln { width: 3%; text-align: center; color: #9ca3af; }
-    .data-table .val { font-weight: bold; color: #1f2937; }
-    .photo-wrapper { width: 3.5cm; padding-left: 15px; vertical-align: top; }
-    .photo-box { width: 3cm; height: 4cm; border: 2px solid #e5e7eb; border-radius: 4px; padding: 3px; text-align: center; background: #f9fafb; display: table-cell; vertical-align: middle; }
-    .photo-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 2px; }
-    .photo-text { font-size: 8pt; color: #9ca3af; letter-spacing: 1px; }
-    .watermark { position: absolute; top: 35%; left: 0; right: 0; text-align: center; font-size: 80pt; font-family: 'Georgia', serif; color: rgba(220, 38, 38, 0.05); transform: rotate(-30deg); z-index: -1000; letter-spacing: 5px; }
-    .signature-area { margin-top: 30px; page-break-inside: avoid; }
-    .sig-box { text-align: center; font-size: 9.5pt; color: #374151; vertical-align: bottom; }
-    .sig-name { font-weight: bold; color: #111827; text-decoration: underline; margin-bottom: 2px; display: inline-block; }
-</style>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 15mm;
+        }
+
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            font-size: 9.5pt;
+            color: #374151;
+            line-height: 1.5;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        .title-doc {
+            font-family: 'Georgia', serif;
+            text-align: center;
+            font-size: 14pt;
+            font-weight: bold;
+            color: #111827;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-top: 15px;
+        }
+
+        .subtitle-doc {
+            text-align: center;
+            font-size: 10pt;
+            color: #6b7280;
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        .section-title {
+            background-color: #f3f4f6;
+            color: #111827;
+            padding: 6px 10px;
+            font-size: 9pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-left: 4px solid #059669;
+            margin: 15px 0 8px 0;
+        }
+
+        .data-table td {
+            padding: 6px 4px;
+            border-bottom: 1px solid #f3f4f6;
+            vertical-align: top;
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table .lbl {
+            width: 30%;
+            color: #6b7280;
+            font-size: 8.5pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table .cln {
+            width: 3%;
+            text-align: center;
+            color: #9ca3af;
+        }
+
+        .data-table .val {
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .photo-wrapper {
+            width: 3.5cm;
+            padding-left: 15px;
+            vertical-align: top;
+        }
+
+        .photo-box {
+            width: 3cm;
+            height: 4cm;
+            border: 2px solid #e5e7eb;
+            border-radius: 4px;
+            padding: 3px;
+            text-align: center;
+            background: #f9fafb;
+            display: table-cell;
+            vertical-align: middle;
+        }
+
+        .photo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 2px;
+        }
+
+        .photo-text {
+            font-size: 8pt;
+            color: #9ca3af;
+            letter-spacing: 1px;
+        }
+
+        .watermark {
+            position: absolute;
+            top: 35%;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 80pt;
+            font-family: 'Georgia', serif;
+            color: rgba(220, 38, 38, 0.05);
+            transform: rotate(-30deg);
+            z-index: -1000;
+            letter-spacing: 5px;
+        }
+
+        .signature-area {
+            margin-top: 30px;
+            page-break-inside: avoid;
+        }
+
+        .sig-box {
+            text-align: center;
+            font-size: 9.5pt;
+            color: #374151;
+            vertical-align: bottom;
+        }
+
+        .sig-name {
+            font-weight: bold;
+            color: #111827;
+            text-decoration: underline;
+            margin-bottom: 2px;
+            display: inline-block;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+
+            body {
+                margin: 0;
+            }
+        }
+    </style>
 </head>
+
 <body>
 
-@if ($isDraft) <div class="watermark">DRAFT DOCUMENT</div> @endif
+    @if ($isDraft)
+        <div class="watermark">DRAFT DOCUMENT</div>
+    @endif
 
-@include('partials.pdf-header', ['instansi' => $instansi])
+    @include('partials.pdf-header', ['instansi' => $instansi])
 
-<div class="title-doc">Formulir Pendaftaran Calon Peserta Didik</div>
-<div class="subtitle-doc">Tahun Pelajaran {{ $tahunPendaftaran?->nama ?? '' }}</div>
+    <div class="title-doc">Formulir Pendaftaran Murid Baru Madrasah</div>
+    <div class="subtitle-doc">Tahun Pelajaran {{ $tahunPendaftaran?->nama ?? '' }}</div>
 
-<div class="section-title">A. Identitas Calon Peserta Didik</div>
-<table>
-    <tr>
-        <td style="vertical-align: top; padding: 0;">
-            <table class="data-table">
-                @foreach ($biodata as [$label, $value])
-                <tr>
-                    <td class="lbl">{{ $label }}</td><td class="cln">:</td><td class="val">{{ $value }}</td>
-                </tr>
-                @endforeach
-            </table>
-        </td>
-        <td class="photo-wrapper">
-            <div class="photo-box">
-                @if ($fotoUrl) <img src="{{ $fotoUrl }}" alt="Foto">
-                @else <span class="photo-text">FOTO<br>3x4</span> @endif
-            </div>
-        </td>
-    </tr>
-</table>
-
-<div class="section-title">B. Data Orang Tua / Wali</div>
-<table class="data-table">
-    <tr>
-        <td class="lbl" style="width: 25%;">Nama Ayah / Ibu</td><td class="cln">:</td>
-        <td class="val">{{ strtoupper($record->ayah_nama ?? '-') }} &nbsp;|&nbsp; {{ strtoupper($record->ibu_nama ?? '-') }}</td>
-    </tr>
-    <tr>
-        <td class="lbl">Pekerjaan</td><td class="cln">:</td>
-        <td class="val">{{ $record->ayah_pekerjaan ?? '-' }} &nbsp;|&nbsp; {{ $record->ibu_pekerjaan ?? '-' }}</td>
-    </tr>
-    <tr>
-        <td class="lbl">No. Telepon/WhatsApp</td><td class="cln">:</td>
-        <td class="val">{{ $record->ayah_telepon ?? $record->ibu_telepon ?? '-' }}</td>
-    </tr>
-</table>
-
-@if ($isJalurPrestasi)
-<div class="section-title">C. Rekam Prestasi</div>
-<table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
-    <thead>
-        <tr style="background-color: #f9fafb; border-bottom: 2px solid #e5e7eb;">
-            <th style="padding: 8px; text-align: left; font-size: 8.5pt; color: #6b7280; text-transform: uppercase;">No</th>
-            <th style="padding: 8px; text-align: left; font-size: 8.5pt; color: #6b7280; text-transform: uppercase;">Nama Prestasi / Perlombaan</th>
-            <th style="padding: 8px; text-align: center; font-size: 8.5pt; color: #6b7280; text-transform: uppercase;">Tingkat</th>
-            <th style="padding: 8px; text-align: center; font-size: 8.5pt; color: #6b7280; text-transform: uppercase;">Peringkat</th>
-        </tr>
-    </thead>
-    <tbody>
-        @forelse ($record->formulirPrestasis as $i => $fp)
-        <tr style="border-bottom: 1px solid #f3f4f6;">
-            <td style="padding: 8px; font-weight: bold;">{{ $i + 1 }}</td>
-            <td style="padding: 8px; color: #111827;">{{ $fp->nama_prestasi }}</td>
-            <td style="padding: 8px; text-align: center;">{{ optional($fp->prestasi)->tingkat ?? '-' }}</td>
-            <td style="padding: 8px; text-align: center; font-weight: bold;">{{ optional($fp->prestasi)->peringkat ?? '-' }}</td>
-        </tr>
-        @empty
-        <tr><td colspan="4" style="padding: 15px; text-align: center; font-style: italic; color: #9ca3af;">Tidak ada data prestasi yang dilampirkan.</td></tr>
-        @endforelse
-    </tbody>
-</table>
-@endif
-
-<div class="signature-area">
+    <div class="section-title">A. Identitas Calon Peserta Didik</div>
     <table>
         <tr>
-            <td style="width: 25%; vertical-align: bottom;">
-                {!! QrCode::size(70)->margin(0)->generate($qrPayload) !!}
-                <div style="font-size: 7.5pt; color: #9ca3af; margin-top: 5px; letter-spacing: 0.5px;">SCAN TO VERIFY</div>
+            <td style="vertical-align: top; padding: 0;">
+                <table class="data-table">
+                    @foreach ($biodata as [$label, $value])
+                        <tr>
+                            <td class="lbl">{{ $label }}</td>
+                            <td class="cln">:</td>
+                            <td class="val">{{ $value }}</td>
+                        </tr>
+                    @endforeach
+                </table>
             </td>
-            <td class="sig-box" style="width: 37.5%;">
-                {{ $kota }}, {{ date('d F Y', strtotime($record->updated_at)) }}<br>
-                <span style="color: #6b7280; font-size: 9pt;">Ketua Panitia PMBM,</span>
-                <div style="height: 70px;">
-                    @if ($ketua?->berkas_tte) <img src="{{ Storage::url($ketua->berkas_tte) }}" style="height:60px; margin-top:5px;"> @endif
+            <td class="photo-wrapper">
+                <div class="photo-box">
+                    @if ($fotoUrl)
+                        <img src="{{ $fotoUrl }}" alt="Foto">
+                    @else
+                        <span class="photo-text">FOTO<br>3x4</span>
+                    @endif
                 </div>
-                <div class="sig-name">{{ $ketua?->nama ?? str_repeat('.', 35) }}</div><br>
-                <span style="font-size: 8.5pt; color: #6b7280;">NIP. {{ $ketua?->nip ?? '-' }}</span>
-            </td>
-            <td class="sig-box" style="width: 37.5%;">
-                <br>
-                <span style="color: #6b7280; font-size: 9pt;">Sekretaris Panitia,</span>
-                <div style="height: 70px;">
-                    @if ($sekretaris?->berkas_tte) <img src="{{ Storage::url($sekretaris->berkas_tte) }}" style="height:60px; margin-top:5px;"> @endif
-                </div>
-                <div class="sig-name">{{ $sekretaris?->nama ?? str_repeat('.', 35) }}</div><br>
-                <span style="font-size: 8.5pt; color: #6b7280;">NIP. {{ $sekretaris?->nip ?? '-' }}</span>
             </td>
         </tr>
     </table>
-</div>
+
+    <div class="section-title">B. Data Orang Tua / Wali</div>
+    <table class="data-table">
+        <tr>
+            <td class="lbl" style="width: 25%;">Nama Ayah / Ibu</td>
+            <td class="cln">:</td>
+            <td class="val">{{ strtoupper($record->ayah_nama ?? '-') }} &nbsp;|&nbsp;
+                {{ strtoupper($record->ibu_nama ?? '-') }}</td>
+        </tr>
+        <tr>
+            <td class="lbl">Pekerjaan</td>
+            <td class="cln">:</td>
+            <td class="val">{{ $record->ayah_pekerjaan ?? '-' }} &nbsp;|&nbsp; {{ $record->ibu_pekerjaan ?? '-' }}
+            </td>
+        </tr>
+        <tr>
+            <td class="lbl">No. Telepon/WhatsApp</td>
+            <td class="cln">:</td>
+            <td class="val">{{ $record->ayah_telepon ?? ($record->ibu_telepon ?? '-') }}</td>
+        </tr>
+    </table>
+
+    @if ($isJalurPrestasi)
+        <div class="section-title">C. Rekam Prestasi</div>
+        <table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
+            <thead>
+                <tr style="background-color: #f9fafb; border-bottom: 2px solid #e5e7eb;">
+                    <th
+                        style="padding: 8px; text-align: left; font-size: 8.5pt; color: #6b7280; text-transform: uppercase;">
+                        No</th>
+                    <th
+                        style="padding: 8px; text-align: left; font-size: 8.5pt; color: #6b7280; text-transform: uppercase;">
+                        Nama Prestasi / Perlombaan</th>
+                    <th
+                        style="padding: 8px; text-align: center; font-size: 8.5pt; color: #6b7280; text-transform: uppercase;">
+                        Tingkat</th>
+                    <th
+                        style="padding: 8px; text-align: center; font-size: 8.5pt; color: #6b7280; text-transform: uppercase;">
+                        Peringkat</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($record->formulirPrestasis as $i => $fp)
+                    <tr style="border-bottom: 1px solid #f3f4f6;">
+                        <td style="padding: 8px; font-weight: bold;">{{ $i + 1 }}</td>
+                        <td style="padding: 8px; color: #111827;">{{ $fp->nama_prestasi }}</td>
+                        <td style="padding: 8px; text-align: center;">{{ optional($fp->prestasi)->tingkat ?? '-' }}
+                        </td>
+                        <td style="padding: 8px; text-align: center; font-weight: bold;">
+                            {{ optional($fp->prestasi)->peringkat ?? '-' }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="4"
+                            style="padding: 15px; text-align: center; font-style: italic; color: #9ca3af;">Tidak ada
+                            data prestasi yang dilampirkan.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    @endif
+
+    <div class="signature-area">
+        <table>
+            <tr>
+                <td style="width: 25%; vertical-align: bottom;">
+                    {!! QrCode::size(70)->margin(0)->generate($qrPayload) !!}
+                    <div style="font-size: 7.5pt; color: #9ca3af; margin-top: 5px; letter-spacing: 0.5px;">SCAN TO
+                        VERIFY</div>
+                </td>
+                <td class="sig-box" style="width: 37.5%;">
+                    {{ $kota }}, {{ $tglDibuatPada }}<br>
+                    <span style="color: #6b7280; font-size: 9pt;">Ketua Panitia PMBM,</span>
+                    <div style="height: 70px;">
+                        @if ($ketua?->berkas_tte)
+                            <img src="{{ Storage::url($ketua->berkas_tte) }}" style="height:60px; margin-top:5px;">
+                        @endif
+                    </div>
+                    <div class="sig-name">{{ $ketua?->nama ?? str_repeat('.', 35) }}</div><br>
+                    <span style="font-size: 8.5pt; color: #6b7280;">NIP. {{ $ketua?->nip ?? '-' }}</span>
+                </td>
+                <td class="sig-box" style="width: 37.5%;">
+                    <br>
+                    <span style="color: #6b7280; font-size: 9pt;">Sekretaris Panitia,</span>
+                    <div style="height: 70px;">
+                        @if ($sekretaris?->berkas_tte)
+                            <img src="{{ Storage::url($sekretaris->berkas_tte) }}"
+                                style="height:60px; margin-top:5px;">
+                        @endif
+                    </div>
+                    <div class="sig-name">{{ $sekretaris?->nama ?? str_repeat('.', 35) }}</div><br>
+                    <span style="font-size: 8.5pt; color: #6b7280;">NIP. {{ $sekretaris?->nip ?? '-' }}</span>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    {{-- Tombol Print (tidak muncul saat print) --}}
+    <div class="no-print" style="text-align:center; margin-top: 30px;">
+        <button onclick="window.print()"
+            style="padding: 10px 30px; background: #059669; color: white; border: none;
+               border-radius: 8px; font-size: 14px; cursor: pointer; letter-spacing: 0.5px;">
+            🖨️ Cetak Formulir
+        </button>
+    </div>
 
 </body>
-</html> --}}
+
+</html>
 
 ```
 
@@ -18993,8 +19769,9 @@ Route::middleware('web')->group(function () {
 
     <div class="card-container">
         <div class="card-header">
-            <div class="card-title">Kartu Ujian Peserta</div>
-            <div class="card-subtitle">Penerimaan Peserta Didik Baru &mdash; {{ $tahunPendaftaran?->nama ?? '' }}</div>
+            <div class="card-title">Kartu Tes Peserta</div>
+            <div class="card-subtitle">Penerimaan Murid Baru Madrasah Tahun Pelajaran
+                {{ $tahunPendaftaran?->nama ?? '' }}</div>
         </div>
 
         <table>
@@ -19027,7 +19804,7 @@ Route::middleware('web')->group(function () {
 
         <table class="schedule-box">
             <tr>
-                <td style="width: 50%; border-right: 1px solid #d1d5db; padding: 0;">
+                {{-- <td style="width: 50%; border-right: 1px solid #d1d5db; padding: 0;">
                     <div class="schedule-header">UJIAN AKADEMIK (CBT)</div>
                     <div class="schedule-cell">
                         <div class="info-lbl">Ruang / Sesi</div>
@@ -19037,9 +19814,9 @@ Route::middleware('web')->group(function () {
                         <div class="schedule-date">{{ $tglAkademik ? $tglAkademik->translatedFormat('l, d F Y') : '-' }}
                         </div>
                     </div>
-                </td>
+                </td> --}}
                 <td style="width: 50%; padding: 0;">
-                    <div class="schedule-header">UJIAN PRAKTIK IBADAH</div>
+                    <div class="schedule-header">TES PRAKTIK IBADAH & BTQ</div>
                     <div class="schedule-cell">
                         <div class="info-lbl">Ruang / Sesi</div>
                         <div style="font-weight: bold; font-size: 11pt; color: #111827; margin-bottom: 8px;">
@@ -19052,7 +19829,7 @@ Route::middleware('web')->group(function () {
             </tr>
         </table>
 
-        <div class="cbt-alert">
+        {{-- <div class="cbt-alert">
             <div class="cbt-title">Kredensial Login Aplikasi Ujian (CBT)</div>
             <table>
                 <tr>
@@ -19064,7 +19841,7 @@ Route::middleware('web')->group(function () {
                     <td class="cbt-creds">{{ $record->nik ?? '-' }}</td>
                 </tr>
             </table>
-        </div>
+        </div> --}}
 
         <div class="card-footer">
             <table>
@@ -22365,2581 +23142,6 @@ Route::middleware('web')->group(function () {
 
 ---
 
-### ./resources/views/landing.blade.php.bkp
-
-```
-@php
-    use Carbon\Carbon;
-
-    $now = Carbon::now();
-
-    $jadwals = [];
-    if ($tahun) {
-        $map = [
-            [
-                'Jalur Prestasi',
-                'tanggal_pendaftaran_jalur_prestasi_mulai',
-                'tanggal_pendaftaran_jalur_prestasi_selesai',
-            ],
-            [
-                'Jalur Afirmasi',
-                'tanggal_pendaftaran_jalur_afirmasi_mulai',
-                'tanggal_pendaftaran_jalur_afirmasi_selesai',
-            ],
-            ['Tes Seleksi (CBT)', 'tanggal_tes_akademik_mulai', 'tanggal_tes_akademik_selesai'],
-            ['Pengumuman', 'tanggal_pengumuman_jalur_prestasi_mulai', 'tanggal_pengumuman_jalur_prestasi_selesai'],
-            ['Registrasi Berkas', 'tanggal_registrasi_berkas_mulai', 'tanggal_registrasi_berkas_selesai'],
-        ];
-        foreach ($map as [$label, $mk, $sk]) {
-            if ($tahun->$mk) {
-                $jadwals[] = ['label' => $label, 'mulai' => $tahun->$mk, 'selesai' => $tahun->$sk];
-            }
-        }
-    }
-
-    $jalurMeta = [
-        'Prestasi' => ['color' => '#d4a843', 'bg' => 'rgba(212,168,67,.12)', 'border' => 'rgba(212,168,67,.3)'],
-        'Afirmasi' => ['color' => '#60a5fa', 'bg' => 'rgba(96,165,250,.12)', 'border' => 'rgba(96,165,250,.3)'],
-    ];
-
-    $jalurDesc = [
-        'Prestasi' =>
-            'Untuk siswa berprestasi akademik (KSM, OSN, MYRES) atau non-akademik (MTQ, O2SN, FLS2N) minimal tingkat kabupaten/kota. Termasuk jalur Tahfidz minimal 3 juz.',
-        'Afirmasi' =>
-            'Untuk keluarga pemegang KIP, PKH, KKS, atau SKTM yang diterbitkan pemerintah daerah. Bukti kartu bantuan wajib dilampirkan.',
-    ];
-
-    $closestDeadline = null;
-    foreach ($jadwals as $j) {
-        if ($j['selesai'] && Carbon::parse($j['selesai'])->isFuture()) {
-            $closestDeadline = $j['selesai'];
-            break;
-        }
-    }
-@endphp
-<!DOCTYPE html>
-<html lang="id">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description"
-        content="PMBM MTsN 1 Pandeglang {{ $tahun?->nama ?? '' }} — Pendaftaran online peserta didik baru.">
-    <title>PMBM MTsN 1 Pandeglang{{ $tahun ? ' — ' . $tahun->nama : '' }}</title>
-    <style>
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        html {
-            scroll-behavior: smooth;
-            font-size: 16px;
-        }
-
-        :root {
-            --green: #059669;
-            --green-l: #10b981;
-            --gold: #d4a843;
-            --gold-l: #f0c96a;
-            --bg: #0b0f0e;
-            --surface: #111a17;
-            --card: rgba(255, 255, 255, .04);
-            --border: rgba(255, 255, 255, .08);
-            --text: #e8f1ee;
-            --muted: #7a9e92;
-            --radius: 16px;
-        }
-
-        html.light {
-            --bg: #f4f7f5;
-            --surface: #ffffff;
-            --card: rgba(255, 255, 255, .9);
-            --border: rgba(0, 0, 0, .08);
-            --text: #0d1f1a;
-            --muted: #5a7a6e;
-        }
-
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            transition: background .3s, color .3s;
-            overflow-x: hidden;
-            line-height: 1.6;
-        }
-
-        @media (max-width: 400px) {
-            .nav-name {
-                font-size: .78rem;
-            }
-
-            .nav-sub {
-                display: none;
-            }
-        }
-
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--green);
-            border-radius: 4px;
-        }
-
-        .orb {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(110px);
-            opacity: .12;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        html.light .orb {
-            opacity: .06;
-        }
-
-        .orb-1 {
-            width: 600px;
-            height: 600px;
-            background: var(--green);
-            top: -200px;
-            left: -200px;
-        }
-
-        .orb-2 {
-            width: 400px;
-            height: 400px;
-            background: var(--gold);
-            bottom: 0;
-            right: -150px;
-        }
-
-        .wrap {
-            max-width: 1180px;
-            margin: 0 auto;
-            padding: 0 1.5rem;
-        }
-
-        section {
-            padding: 5rem 1.5rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        .section-header {
-            margin-bottom: 3rem;
-        }
-
-        .section-header.center {
-            text-align: center;
-        }
-
-        .section-header.center .divider {
-            margin: .5rem auto 0;
-        }
-
-        .eyebrow {
-            display: inline-flex;
-            align-items: center;
-            gap: .4rem;
-            padding: .28rem .85rem;
-            border-radius: 999px;
-            font-size: .72rem;
-            font-weight: 700;
-            letter-spacing: .08em;
-            text-transform: uppercase;
-            background: rgba(16, 185, 129, .1);
-            color: var(--green-l);
-            border: 1px solid rgba(16, 185, 129, .2);
-            margin-bottom: .75rem;
-        }
-
-        .divider {
-            width: 40px;
-            height: 3px;
-            background: linear-gradient(90deg, var(--green), var(--gold));
-            border-radius: 999px;
-            margin: .5rem 0 0;
-        }
-
-        h1,
-        h2 {
-            font-weight: 800;
-            letter-spacing: -.03em;
-            line-height: 1.1;
-        }
-
-        h1 {
-            font-size: clamp(2.2rem, 5vw, 3.6rem);
-        }
-
-        h2 {
-            font-size: clamp(1.7rem, 3.5vw, 2.5rem);
-            margin-bottom: .75rem;
-        }
-
-        .grad {
-            background: linear-gradient(135deg, var(--green-l), var(--gold));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .lead {
-            font-size: 1.05rem;
-            color: var(--muted);
-            max-width: 540px;
-            line-height: 1.75;
-        }
-
-        .card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            backdrop-filter: blur(10px);
-            transition: border-color .25s, transform .25s, box-shadow .25s;
-        }
-
-        html.light .card {
-            box-shadow: 0 2px 16px rgba(0, 0, 0, .06);
-        }
-
-        .card-hover:hover {
-            border-color: rgba(16, 185, 129, .3);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 32px rgba(5, 150, 105, .12);
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: .4rem;
-            padding: .6rem 1.4rem;
-            border-radius: 10px;
-            font-size: .875rem;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            text-decoration: none;
-            transition: all .2s;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--green), #047857);
-            color: #fff;
-            box-shadow: 0 0 20px rgba(5, 150, 105, .25);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 28px rgba(5, 150, 105, .4);
-        }
-
-        .btn-ghost {
-            background: transparent;
-            color: var(--muted);
-            border: 1px solid var(--border);
-        }
-
-        .btn-ghost:hover {
-            color: var(--green-l);
-            border-color: rgba(16, 185, 129, .4);
-            background: rgba(16, 185, 129, .06);
-        }
-
-        .btn-lg {
-            padding: .8rem 2rem;
-            font-size: 1rem;
-            border-radius: 12px;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: .2rem .7rem;
-            border-radius: 999px;
-            font-size: .7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .06em;
-        }
-
-        nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 200;
-            height: 60px;
-            padding: 0 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: rgba(11, 15, 14, .85);
-            border-bottom: 1px solid var(--border);
-            backdrop-filter: blur(18px) saturate(160%);
-            transition: background .3s, border-color .3s;
-        }
-
-        html.light nav {
-            background: rgba(244, 247, 245, .92);
-        }
-
-        .nav-brand {
-            display: flex;
-            align-items: center;
-            gap: .7rem;
-            text-decoration: none;
-            color: inherit;
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-
-        .nav-logo {
-            width: 34px;
-            height: 34px;
-            border-radius: 9px;
-            flex-shrink: 0;
-            background: linear-gradient(135deg, var(--green), var(--gold));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-        }
-
-        .nav-name {
-            font-size: .88rem;
-            line-height: 1.25;
-        }
-
-        .nav-sub {
-            font-size: .68rem;
-            font-weight: 400;
-            color: var(--muted);
-        }
-
-        .nav-links {
-            display: flex;
-            gap: .1rem;
-            list-style: none;
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: var(--muted);
-            font-size: .82rem;
-            padding: .35rem .65rem;
-            border-radius: 8px;
-            transition: all .2s;
-        }
-
-        .nav-links a:hover,
-        .nav-links a.active {
-            color: var(--green-l);
-            background: rgba(16, 185, 129, .08);
-        }
-
-        .nav-right {
-            display: flex;
-            align-items: center;
-            gap: .6rem;
-            flex-shrink: 0;
-        }
-
-        #themeBtn {
-            width: 34px;
-            height: 34px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: var(--card);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            color: inherit;
-            transition: all .2s;
-        }
-
-        #themeBtn:hover {
-            transform: scale(1.1);
-        }
-
-        #menuBtn {
-            display: none;
-            width: 34px;
-            height: 34px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: var(--card);
-            cursor: pointer;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            color: inherit;
-        }
-
-        #menuBtn span {
-            display: block;
-            width: 16px;
-            height: 2px;
-            background: currentColor;
-            border-radius: 2px;
-            transition: all .3s;
-        }
-
-        #menuBtn.open span:nth-child(1) {
-            transform: translateY(6px) rotate(45deg);
-        }
-
-        #menuBtn.open span:nth-child(2) {
-            opacity: 0;
-            transform: scaleX(0);
-        }
-
-        #menuBtn.open span:nth-child(3) {
-            transform: translateY(-6px) rotate(-45deg);
-        }
-
-        .drawer {
-            position: fixed;
-            top: 56px;
-            left: 0;
-            right: 0;
-            z-index: 190;
-            flex-direction: column;
-            padding: 0 1.25rem;
-            background: #0b0f0e;
-            border-bottom: 1px solid transparent;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height .3s ease, padding .3s ease, border-color .3s;
-            display: flex;
-        }
-
-        html.light .drawer {
-            background: #f4f7f5;
-        }
-
-        .drawer.open {
-            max-height: 420px;
-            padding: 1rem 1.25rem 1.5rem;
-            border-color: var(--border);
-        }
-
-        .drawer a {
-            text-decoration: none;
-            color: var(--muted);
-            font-size: .9rem;
-            font-weight: 500;
-            padding: .6rem .9rem;
-            border-radius: 10px;
-            transition: all .2s;
-        }
-
-        .drawer a:hover {
-            color: var(--green-l);
-            background: rgba(16, 185, 129, .08);
-        }
-
-        .drawer hr {
-            border: none;
-            border-top: 1px solid var(--border);
-            margin: .6rem 0;
-        }
-
-        #hero {
-            min-height: 100vh;
-            padding-top: 60px;
-            display: flex;
-            align-items: center;
-        }
-
-        .hero-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-            align-items: center;
-            max-width: 1180px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        .hero-eyebrow {
-            display: inline-flex;
-            align-items: center;
-            gap: .45rem;
-            padding: .35rem 1rem;
-            border-radius: 999px;
-            font-size: .75rem;
-            font-weight: 600;
-            background: rgba(212, 168, 67, .1);
-            border: 1px solid rgba(212, 168, 67, .2);
-            color: var(--gold-l);
-            margin-bottom: 1.25rem;
-        }
-
-        .hero-cta {
-            display: flex;
-            gap: .85rem;
-            flex-wrap: wrap;
-            margin-top: 2rem;
-        }
-
-        .hero-stats {
-            display: flex;
-            gap: 2rem;
-            flex-wrap: wrap;
-            margin-top: 2.5rem;
-            padding-top: 2rem;
-            border-top: 1px solid var(--border);
-        }
-
-        .stat-val {
-            font-size: 1.6rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--green-l), var(--gold));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .stat-lbl {
-            font-size: .74rem;
-            color: var(--muted);
-            margin-top: .15rem;
-        }
-
-        .hero-card {
-            padding: 1.75rem;
-            border-radius: 22px;
-            max-width: 400px;
-            width: 100%;
-        }
-
-        .cd-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: .65rem;
-            margin-top: 1.25rem;
-        }
-
-        .cd-box {
-            background: rgba(255, 255, 255, .05);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: .9rem .5rem;
-            text-align: center;
-        }
-
-        html.light .cd-box {
-            background: rgba(0, 0, 0, .04);
-        }
-
-        .cd-n {
-            font-size: 1.75rem;
-            font-weight: 900;
-            font-variant-numeric: tabular-nums;
-            background: linear-gradient(135deg, var(--green-l), var(--gold));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .cd-l {
-            font-size: .6rem;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: .1em;
-            margin-top: .15rem;
-        }
-
-        .quota-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: .8rem;
-        }
-
-        .progress {
-            width: 70px;
-            height: 5px;
-            background: rgba(255, 255, 255, .08);
-            border-radius: 999px;
-            overflow: hidden;
-        }
-
-        html.light .progress {
-            background: rgba(0, 0, 0, .08);
-        }
-
-        .progress-fill {
-            height: 100%;
-            border-radius: 999px;
-        }
-
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1px;
-            background: var(--border);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            overflow: hidden;
-            margin: 0 auto;
-            max-width: 1180px;
-        }
-
-        .stat-box {
-            background: var(--surface);
-            padding: 2rem 1.5rem;
-            text-align: center;
-        }
-
-        .stat-box .val {
-            font-size: 2rem;
-            font-weight: 800;
-        }
-
-        .stat-box .lbl {
-            font-size: .78rem;
-            color: var(--muted);
-            margin-top: .25rem;
-        }
-
-        .jalur-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-            gap: 1rem;
-        }
-
-        .jalur-card {
-            padding: 1.5rem;
-            border-radius: var(--radius);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .jalur-icon {
-            width: 46px;
-            height: 46px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-            margin-bottom: 1rem;
-        }
-
-        .jalur-name {
-            font-size: .95rem;
-            font-weight: 700;
-            margin-bottom: .4rem;
-        }
-
-        .jalur-desc {
-            font-size: .78rem;
-            color: var(--muted);
-            line-height: 1.6;
-        }
-
-        .jalur-quota {
-            margin-top: 1rem;
-        }
-
-        .quota-label {
-            display: flex;
-            justify-content: space-between;
-            font-size: .72rem;
-            color: var(--muted);
-            margin-bottom: .35rem;
-        }
-
-        .two-col {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-            align-items: start;
-        }
-
-        .timeline {
-            padding-left: 1.75rem;
-            position: relative;
-        }
-
-        .timeline::before {
-            content: '';
-            position: absolute;
-            left: .35rem;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: linear-gradient(to bottom, var(--green), var(--gold), transparent);
-        }
-
-        .tl-item {
-            position: relative;
-            padding: 1rem 0 1rem 1.25rem;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .tl-item:last-child {
-            border-bottom: none;
-        }
-
-        .tl-dot {
-            position: absolute;
-            left: -1.75rem;
-            top: 1.2rem;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: var(--green);
-            border: 3px solid var(--bg);
-            transition: background .2s;
-        }
-
-        html.light .tl-dot {
-            border-color: var(--bg);
-        }
-
-        .tl-item:hover .tl-dot {
-            background: var(--gold);
-        }
-
-        .tl-step {
-            font-size: .68rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .07em;
-            color: var(--green-l);
-            margin-bottom: .25rem;
-        }
-
-        .tl-title {
-            font-size: .9rem;
-            font-weight: 700;
-            margin-bottom: .2rem;
-        }
-
-        .tl-desc {
-            font-size: .78rem;
-            color: var(--muted);
-            line-height: 1.6;
-        }
-
-        .sched-list {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .sched-item {
-            display: flex;
-            align-items: center;
-            gap: .85rem;
-            padding: .85rem 0;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .sched-item:last-child {
-            border-bottom: none;
-        }
-
-        .sched-title {
-            font-size: .82rem;
-            font-weight: 700;
-        }
-
-        .sched-date {
-            font-size: .72rem;
-            color: var(--muted);
-            margin-top: .1rem;
-        }
-
-        .sched-badge {
-            margin-left: auto;
-        }
-
-        .prog-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 1rem;
-        }
-
-        .prog-card {
-            padding: 1.5rem;
-            border-radius: var(--radius);
-            text-align: center;
-        }
-
-        .prog-title {
-            font-size: .88rem;
-            font-weight: 700;
-            margin-bottom: .35rem;
-        }
-
-        .prog-desc {
-            font-size: .76rem;
-            color: var(--muted);
-            line-height: 1.55;
-        }
-
-        .req-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: .75rem;
-            margin-top: 1.5rem;
-        }
-
-        .req-item {
-            display: flex;
-            align-items: flex-start;
-            gap: .75rem;
-            padding: 1rem;
-            border-radius: 12px;
-        }
-
-        .req-num {
-            min-width: 26px;
-            height: 26px;
-            border-radius: 7px;
-            flex-shrink: 0;
-            background: linear-gradient(135deg, var(--green), #047857);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: .7rem;
-            font-weight: 800;
-            color: #fff;
-        }
-
-        .req-text {
-            font-size: .82rem;
-            line-height: 1.6;
-        }
-
-        .req-text strong {
-            display: block;
-            margin-bottom: .15rem;
-        }
-
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1rem;
-        }
-
-        .info-card {
-            padding: 1.5rem;
-            border-radius: var(--radius);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .info-tag {
-            font-size: .68rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .06em;
-            color: var(--green-l);
-            margin-bottom: .6rem;
-        }
-
-        .info-title {
-            font-size: .95rem;
-            font-weight: 700;
-            margin-bottom: .5rem;
-            line-height: 1.4;
-            flex: 1;
-        }
-
-        .info-excerpt {
-            font-size: .78rem;
-            color: var(--muted);
-            line-height: 1.65;
-        }
-
-        .info-date {
-            font-size: .72rem;
-            color: var(--muted);
-            margin-top: .85rem;
-        }
-
-        .faq-wrap {
-            max-width: 760px;
-            margin: 2.5rem auto 0;
-        }
-
-        .faq-item {
-            border-radius: 12px;
-            overflow: hidden;
-            margin-bottom: .6rem;
-        }
-
-        .faq-btn {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
-            padding: 1.1rem 1.25rem;
-            background: transparent;
-            border: none;
-            color: inherit;
-            cursor: pointer;
-            text-align: left;
-            font-size: .88rem;
-            font-weight: 600;
-            transition: color .2s;
-        }
-
-        .faq-btn:hover {
-            color: var(--green-l);
-        }
-
-        .faq-chevron {
-            min-width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: rgba(16, 185, 129, .1);
-            border: 1px solid rgba(16, 185, 129, .2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: .65rem;
-            color: var(--green-l);
-            transition: transform .3s;
-        }
-
-        .faq-body {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height .35s ease;
-        }
-
-        .faq-body p {
-            padding: 0 1.25rem 1.1rem;
-            font-size: .83rem;
-            color: var(--muted);
-            line-height: 1.75;
-            border-top: 1px solid var(--border);
-        }
-
-        .cta-section {
-            text-align: center;
-            padding: 6rem 1.5rem;
-        }
-
-        .cta-inner {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .cta-inner h2 {
-            font-size: clamp(2rem, 4.5vw, 3rem);
-            margin-bottom: 1rem;
-        }
-
-        .cta-inner .lead {
-            margin: 0 auto 2rem;
-        }
-
-        .cta-btns {
-            display: flex;
-            gap: .85rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        footer {
-            border-top: 1px solid var(--border);
-            padding: 2.5rem 1.5rem;
-            text-align: center;
-            position: relative;
-            z-index: 1;
-        }
-
-        .footer-logo {
-            font-size: .95rem;
-            font-weight: 800;
-            margin-bottom: .3rem;
-        }
-
-        .footer-sub {
-            font-size: .78rem;
-            color: var(--muted);
-        }
-
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 1.25rem;
-            flex-wrap: wrap;
-            margin-top: 1.5rem;
-        }
-
-        .footer-links a {
-            font-size: .78rem;
-            color: var(--muted);
-            text-decoration: none;
-            transition: color .2s;
-        }
-
-        .footer-links a:hover {
-            color: var(--green-l);
-        }
-
-        .footer-copy {
-            font-size: .73rem;
-            color: var(--muted);
-            margin-top: 1.5rem;
-        }
-
-        .footer-copy a {
-            color: var(--green-l);
-            text-decoration: none;
-        }
-
-        @media (max-width: 960px) {
-            .hero-grid {
-                grid-template-columns: 1fr;
-                gap: 3rem;
-            }
-
-            .hero-visual {
-                display: none;
-            }
-
-            .stats-row {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .two-col {
-                grid-template-columns: 1fr;
-                gap: 3rem;
-            }
-        }
-
-        @media (max-width: 768px) {
-            section {
-                padding: 3.5rem 1.25rem;
-            }
-
-            nav {
-                padding: 0 1rem;
-                height: 56px;
-            }
-
-            #hero {
-                padding-top: 56px;
-                min-height: calc(100svh - 56px);
-                padding-bottom: 3rem;
-                align-items: flex-start;
-            }
-
-            .nav-links {
-                display: none;
-            }
-
-            .req-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .prog-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            #loginBtnNav,
-            #registerBtnNav {
-                display: none !important;
-            }
-
-            .hero-grid {
-                padding: 2.5rem 0 0;
-            }
-
-            h1 {
-                font-size: clamp(1.85rem, 7vw, 2.5rem);
-            }
-
-            .lead {
-                font-size: .92rem;
-            }
-
-            .hero-cta {
-                flex-direction: column;
-                gap: .65rem;
-                margin-top: 1.5rem;
-            }
-
-            .hero-cta .btn {
-                width: 100%;
-                justify-content: center;
-                padding: .85rem 1.5rem;
-                font-size: .95rem;
-            }
-
-            .hero-stats {
-                gap: 0;
-                margin-top: 2rem;
-                padding-top: 1.5rem;
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                row-gap: 1.25rem;
-            }
-
-            .stat-val {
-                font-size: 1.4rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            h2 {
-                font-size: 1.5rem;
-            }
-
-            .stats-row {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .cta-btns {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .cta-btns .btn {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .prog-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .jalur-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
-</head>
-
-<body>
-
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-
-    <nav>
-        <a href="{{ route('landing') }}" class="nav-brand">
-            <div class="nav-logo">🕌</div>
-            <div>
-                <div class="nav-name">MTsN 1 Pandeglang</div>
-                <div class="nav-sub">PMBM {{ $tahun?->nama ?? '' }}</div>
-            </div>
-        </a>
-
-        <ul class="nav-links">
-            <li><a href="#jalur">Jalur</a></li>
-            <li><a href="#alur">Alur</a></li>
-            <li><a href="#syarat">Syarat</a></li>
-            <li><a href="#program">Program</a></li>
-            <li><a href="#informasi">Informasi</a></li>
-            <li><a href="#faq">FAQ</a></li>
-        </ul>
-
-        <div class="nav-right">
-            <button id="themeBtn" title="Ganti tema">🌙</button>
-            <button id="menuBtn" aria-label="Menu">
-                <span></span><span></span><span></span>
-            </button>
-            <a href="{{ url('/dashboard/login') }}" class="btn btn-ghost" style="display:none;"
-                id="loginBtnNav">Masuk</a>
-            <a href="{{ url('/dashboard/register') }}" class="btn btn-primary" id="registerBtnNav">Daftar</a>
-        </div>
-    </nav>
-
-    <nav class="drawer" id="drawer">
-        <a href="#jalur" class="d-link">Jalur Pendaftaran</a>
-        <a href="#alur" class="d-link">Alur Daftar</a>
-        <a href="#syarat" class="d-link">Persyaratan</a>
-        <a href="#program" class="d-link">Program Unggulan</a>
-        <a href="#informasi" class="d-link">Informasi</a>
-        <a href="#faq" class="d-link">FAQ</a>
-        <hr>
-        <a href="{{ url('/dashboard/login') }}" class="d-link">Masuk Akun</a>
-        <a href="{{ url('/dashboard/register') }}" class="d-link" style="color:var(--green-l);font-weight:700;">Daftar
-            Sekarang</a>
-    </nav>
-
-    <main>
-
-        <section id="hero">
-            <div class="hero-grid wrap">
-                <div>
-                    <div class="hero-eyebrow">Penerimaan Peserta Didik Baru {{ $tahun?->nama ?? '' }}</div>
-                    <h1>Raih Masa Depan<br><span class="grad">Bersama Kami</span></h1>
-                    <p class="lead" style="margin-top:1rem;">
-                        MTsN 1 Pandeglang — Madrasah unggulan dengan kurikulum terpadu antara ilmu umum dan ilmu agama.
-                        Tempat terbaik untuk generasi penerus bangsa yang berakhlak mulia dan berprestasi.
-                    </p>
-                    <div class="hero-cta">
-                        <a href="{{ url('/dashboard/register') }}" class="btn btn-primary btn-lg">Daftar Sekarang</a>
-                        <a href="#alur" class="btn btn-ghost btn-lg">Lihat Alur</a>
-                    </div>
-                    <div class="hero-stats">
-                        <div>
-                            <div class="stat-val">1.200+</div>
-                            <div class="stat-lbl">Siswa Aktif</div>
-                        </div>
-                        <div>
-                            <div class="stat-val">98%</div>
-                            <div class="stat-lbl">Kelulusan</div>
-                        </div>
-                        <div>
-                            <div class="stat-val">50+</div>
-                            <div class="stat-lbl">Prestasi Nasional</div>
-                        </div>
-                        @if ($tahun)
-                            <div>
-                                <div class="stat-val">{{ $tahun->kuantitas }}</div>
-                                <div class="stat-lbl">Kuota Total</div>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-
-                <div class="hero-visual" style="display:flex;align-items:center;justify-content:center;">
-                    <div class="card hero-card">
-                        <div class="eyebrow" style="justify-content:center;display:flex;margin-bottom:.75rem;">
-                            @if ($closestDeadline)
-                                Pendaftaran Ditutup Dalam
-                            @else
-                                Status PMBM
-                            @endif
-                        </div>
-
-                        @if ($closestDeadline)
-                            <div class="cd-grid" id="countdown"
-                                data-deadline="{{ Carbon::parse($closestDeadline)->toIso8601String() }}">
-                                <div class="cd-box">
-                                    <div class="cd-n" id="cd-d">--</div>
-                                    <div class="cd-l">Hari</div>
-                                </div>
-                                <div class="cd-box">
-                                    <div class="cd-n" id="cd-h">--</div>
-                                    <div class="cd-l">Jam</div>
-                                </div>
-                                <div class="cd-box">
-                                    <div class="cd-n" id="cd-m">--</div>
-                                    <div class="cd-l">Menit</div>
-                                </div>
-                                <div class="cd-box">
-                                    <div class="cd-n" id="cd-s">--</div>
-                                    <div class="cd-l">Detik</div>
-                                </div>
-                            </div>
-                        @else
-                            <p style="text-align:center;padding:1.5rem 0;font-size:.85rem;color:var(--muted);">Tidak ada
-                                sesi pendaftaran aktif saat ini.</p>
-                        @endif
-
-                        @if ($jalurs->isNotEmpty())
-                            <div style="margin-top:1.25rem;padding-top:1.1rem;border-top:1px solid var(--border);">
-                                <p style="font-size:.7rem;color:var(--muted);text-align:center;margin-bottom:.75rem;">
-                                    Sisa Kuota Per Jalur</p>
-                                <div style="display:flex;flex-direction:column;gap:.6rem;">
-                                    @foreach ($jalurs->whereIn('nama', ['Prestasi', 'Afirmasi']) as $j)
-                                        @php
-                                            $m = $jalurMeta[$j->nama] ?? [
-                                                'color' => '#10b981',
-                                                'bg' => 'rgba(16,185,129,.12)',
-                                                'border' => 'rgba(16,185,129,.3)',
-                                            ];
-                                            $sisa = max(0, $j->kuantitas - ($j->terisi ?? 0));
-                                            $pct = $j->kuantitas > 0 ? round(($j->terisi / $j->kuantitas) * 100) : 0;
-                                        @endphp
-                                        <div class="quota-row">
-                                            <span style="font-size:.78rem;">{{ $j->nama }}</span>
-                                            <div style="display:flex;align-items:center;gap:.5rem;">
-                                                <div class="progress">
-                                                    <div class="progress-fill"
-                                                        style="width:{{ $pct }}%;background:{{ $m['color'] }};">
-                                                    </div>
-                                                </div>
-                                                <span
-                                                    style="font-size:.7rem;font-weight:700;color:{{ $m['color'] }};">{{ $sisa }}
-                                                    sisa</span>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <div style="padding:0 1.5rem;position:relative;z-index:1;max-width:1180px;margin:0 auto;">
-            <div class="stats-row">
-                <div class="stat-box">
-                    <div class="val grad">54</div>
-                    <div class="lbl">Tahun Berdiri</div>
-                </div>
-                <div class="stat-box">
-                    <div class="val"
-                        style="background:linear-gradient(135deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
-                        70</div>
-                    <div class="lbl">Tenaga Pendidik</div>
-                </div>
-                <div class="stat-box">
-                    <div class="val grad">A</div>
-                    <div class="lbl">Akreditasi</div>
-                </div>
-                <div class="stat-box">
-                    <div class="val"
-                        style="background:linear-gradient(135deg,#fb923c,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
-                        100+</div>
-                    <div class="lbl">Prestasi Kejuaraan</div>
-                </div>
-            </div>
-        </div>
-
-        <section id="jalur">
-            <div class="wrap">
-                <div class="section-header">
-                    <div class="eyebrow">Jalur Pendaftaran</div>
-                    <h2>Pilih Jalur yang<br><span class="grad">Tepat Untukmu</span></h2>
-                    <div class="divider"></div>
-                </div>
-
-                @php $jalursTampil = $jalurs->whereIn('nama', ['Prestasi', 'Afirmasi']); @endphp
-
-                @if ($jalursTampil->isNotEmpty())
-                    <div class="jalur-grid">
-                        @foreach ($jalursTampil as $j)
-                            @php
-                                $m = $jalurMeta[$j->nama] ?? [
-                                    'color' => '#10b981',
-                                    'bg' => 'rgba(16,185,129,.12)',
-                                    'border' => 'rgba(16,185,129,.3)',
-                                ];
-                                $desc = $jalurDesc[$j->nama] ?? 'Lihat informasi lengkap persyaratan jalur ini.';
-                                $sisa = max(0, $j->kuantitas - ($j->terisi ?? 0));
-                                $pct = $j->kuantitas > 0 ? round(($j->terisi / $j->kuantitas) * 100) : 0;
-                            @endphp
-                            <div class="card card-hover jalur-card"
-                                style="background:linear-gradient(135deg,{{ $m['bg'] }},transparent);">
-                                <div class="badge"
-                                    style="background:{{ $m['bg'] }};color:{{ $m['color'] }};border:1px solid {{ $m['border'] }};margin-bottom:.6rem;">
-                                    {{ $j->kuantitas }} Kursi</div>
-                                <div class="jalur-name">Jalur {{ $j->nama }}</div>
-                                <p class="jalur-desc">{{ $desc }}</p>
-                                <div class="jalur-quota">
-                                    <div class="quota-label">
-                                        <span>Terisi {{ $j->terisi ?? 0 }}</span>
-                                        <span style="color:{{ $m['color'] }};font-weight:700;">{{ $sisa }}
-                                            sisa</span>
-                                    </div>
-                                    <div class="progress" style="width:100%;">
-                                        <div class="progress-fill"
-                                            style="width:{{ $pct }}%;background:{{ $m['color'] }};"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                @else
-                    <div class="card" style="padding:3rem;text-align:center;color:var(--muted);">Informasi jalur
-                        pendaftaran belum tersedia.</div>
-                @endif
-            </div>
-        </section>
-
-        <section id="alur">
-            <div class="wrap">
-                <div class="two-col">
-                    <div>
-                        <div class="section-header">
-                            <div class="eyebrow">Alur Pendaftaran</div>
-                            <h2>Cara<br><span class="grad">Mendaftar</span></h2>
-                            <div class="divider"></div>
-                        </div>
-                        <div class="timeline">
-                            @foreach ([['Langkah 1', 'Buat Akun', 'Daftar menggunakan NISN, email, dan nomor WhatsApp aktif. Verifikasi akun melalui OTP yang dikirim ke WhatsApp.'], ['Langkah 2', 'Isi Formulir', 'Lengkapi data diri, data orang tua, pilih jalur pendaftaran, dan unggah seluruh dokumen yang dipersyaratkan.'], ['Langkah 3', 'Verifikasi Berkas', 'Panitia memeriksa dokumen. Notifikasi status dikirim otomatis ke WhatsApp pendaftar.'], ['Langkah 4', 'Ikuti Tes Seleksi', 'Cetak kartu tes dari sistem, lalu ikuti ujian akademik CBT dan ujian praktik ibadah sesuai jadwal.'], ['Langkah 5', 'Pengumuman & Daftar Ulang', 'Cek hasil seleksi melalui akun. Jika diterima, lakukan daftar ulang dengan membawa berkas asli.']] as [$step, $title, $desc])
-                                <div class="tl-item">
-                                    <div class="tl-dot"></div>
-                                    <div class="tl-step">{{ $step }}</div>
-                                    <div class="tl-title">{{ $title }}</div>
-                                    <div class="tl-desc">{{ $desc }}</div>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-
-                    <div>
-                        <div class="section-header">
-                            <div class="eyebrow">Jadwal PMBM</div>
-                            <h2>Timeline<br><span class="grad">Kegiatan</span></h2>
-                            <div class="divider"></div>
-                        </div>
-                        <div class="card" style="padding:1.5rem;">
-                            <div class="sched-list">
-                                @forelse($jadwals as $j)
-                                    @php
-                                        $m = Carbon::parse($j['mulai']);
-                                        $s = Carbon::parse($j['selesai']);
-                                        if ($now->lt($m)) {
-                                            $st = 'Mendatang';
-                                            $sc = 'rgba(255,255,255,.06)';
-                                            $tc = 'var(--muted)';
-                                        } elseif ($now->between($m, $s)) {
-                                            $st = 'Aktif';
-                                            $sc = 'rgba(212,168,67,.15)';
-                                            $tc = '#d4a843';
-                                        } else {
-                                            $st = 'Selesai';
-                                            $sc = 'rgba(16,185,129,.12)';
-                                            $tc = '#10b981';
-                                        }
-                                    @endphp
-                                    <div class="sched-item">
-                                        <div>
-                                            <div class="sched-title">{{ $j['label'] }}</div>
-                                            <div class="sched-date">{{ $m->translatedFormat('d M') }} –
-                                                {{ $s->translatedFormat('d M Y') }}</div>
-                                        </div>
-                                        <div class="sched-badge badge"
-                                            style="background:{{ $sc }};color:{{ $tc }};border:1px solid {{ $tc }}44;">
-                                            {{ $st }}</div>
-                                    </div>
-                                @empty
-                                    <p style="text-align:center;padding:2rem;font-size:.85rem;color:var(--muted);">
-                                        Jadwal PMBM belum ditetapkan.</p>
-                                @endforelse
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="syarat">
-            <div class="wrap">
-                <div class="two-col">
-                    <div>
-                        <div class="section-header">
-                            <div class="eyebrow">Dokumen</div>
-                            <h2>Berkas yang<br><span class="grad">Diperlukan</span></h2>
-                            <div class="divider"></div>
-                            <p class="lead" style="margin-top:.75rem;">Siapkan dokumen berikut sebelum memulai
-                                pendaftaran. Semua berkas fisik dimasukkan ke map snelhecter dan diantar langsung ke
-                                sekretariat PMBM.</p>
-                        </div>
-                        <div class="req-grid">
-                            @foreach ([['Kartu Keluarga', 'Wajib berbarcode dan masih berlaku.'], ['Akta Kelahiran', 'Scan/foto akta kelahiran yang jelas.'], ['Pas Foto Formal', 'Berlatar merah, berpakaian formal.'], ['Surat Keterangan Aktif', 'Surat aktif sebagai murid kelas VI dari sekolah asal.'], ['Sertifikat Prestasi', 'Sertifikat asli kejuaraan (Jalur Prestasi).'], ['KIP / PKH / KKS / SKTM', 'Fotokopi kartu dilegalisir (Jalur Afirmasi). SKTM wajib lampirkan rekening listrik 3 bulan terakhir dan foto rumah.']] as $i => [$dok, $ket])
-                                <div class="card req-item">
-                                    <div class="req-num">{{ $i + 1 }}</div>
-                                    <div class="req-text"><strong>{{ $dok }}</strong>{{ $ket }}
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-
-                    <div>
-                        <div class="section-header">
-                            <div class="eyebrow">Ketentuan</div>
-                            <h2>Ketentuan<br><span class="grad">Umum</span></h2>
-                            <div class="divider"></div>
-                        </div>
-                        <div class="card" style="padding:1.75rem;">
-                            <ul style="list-style:none;display:flex;flex-direction:column;gap:.9rem;">
-                                @foreach (['Calon peserta didik telah <strong>lulus SD/MI</strong> atau sederajat.', 'Berusia <strong>maksimal 15 tahun</strong> per 1 Juli 2026.', 'Memiliki <strong>Kartu Keluarga berbarcode</strong> yang masih berlaku.', 'Pendaftaran dilakukan <strong>online</strong> melalui website mtsn1pandeglang.sch.id.', 'Setiap pendaftar hanya dapat <strong>memilih satu jalur</strong>.', 'Mengisi formulir online <strong>dan</strong> menyerahkan berkas fisik ke sekretariat.', 'Jam kerja panitia <strong>08.00–14.00 WIB</strong>, istirahat 11.30–13.00 WIB.', 'Peserta tes hadir paling lambat <strong>pukul 07.00 WIB</strong> pada hari tes.'] as $ket)
-                                    <li
-                                        style="display:flex;gap:.65rem;font-size:.85rem;line-height:1.65;align-items:flex-start;">
-                                        <span
-                                            style="color:var(--green-l);font-size:1rem;flex-shrink:0;margin-top:.05rem;">✓</span>
-                                        <span>{!! $ket !!}</span>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="program">
-            <div class="wrap">
-                <div class="section-header center">
-                    <div class="eyebrow">Unggulan</div>
-                    <h2>Program & <span class="grad">Ekstrakurikuler</span></h2>
-                    <div class="divider"></div>
-                </div>
-                <div class="prog-grid">
-                    @foreach ([['Tahfidz Al-Qur\'an', 'Target minimal 3 juz selama 3 tahun belajar.'], ['Olimpiade Sains', 'Persiapan OSN mulai dari tingkat kabupaten hingga nasional.'], ['Teknologi & IT', 'Literasi digital, coding dasar, dan robotika.'], ['Olahraga Prestasi', 'Sepak bola, bulu tangkis, karate, dan atletik.'], ['Seni & Budaya', 'Paskibra, drumband, hadroh, dan seni rupa.'], ['Bahasa Asing', 'English Club dan Arabic Club untuk era global.']] as [$judul, $desc])
-                        <div class="card card-hover prog-card">
-                            <div class="prog-title">{{ $judul }}</div>
-                            <p class="prog-desc">{{ $desc }}</p>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        </section>
-
-        <section id="informasi">
-            <div class="wrap">
-                <div
-                    style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;margin-bottom:2rem;">
-                    <div>
-                        <div class="eyebrow">Informasi</div>
-                        <h2>Berita & <span class="grad">Pengumuman</span></h2>
-                        <div class="divider"></div>
-                    </div>
-                    <a href="{{ url('/informasi') }}" class="btn btn-ghost">Lihat Semua</a>
-                </div>
-                @if ($informasis->isNotEmpty())
-                    <div class="info-grid">
-                        @foreach ($informasis as $info)
-                            <div class="card card-hover info-card">
-                                <div class="info-tag">{{ $info->status === 'Publish' ? 'Pengumuman' : 'Informasi' }}
-                                </div>
-                                <div class="info-title">{{ $info->judul }}</div>
-                                <p class="info-excerpt">
-                                    {{ \Illuminate\Support\Str::limit(strip_tags($info->isi), 110) }}</p>
-                                <div class="info-date">
-                                    {{ ($info->tanggal ?? $info->updated_at)->translatedFormat('d F Y') }}</div>
-                            </div>
-                        @endforeach
-                    </div>
-                @else
-                    <div class="card" style="padding:3rem;text-align:center;color:var(--muted);">Belum ada informasi
-                        yang dipublikasikan.</div>
-                @endif
-            </div>
-        </section>
-
-        <section id="faq">
-            <div class="wrap">
-                <div class="section-header center">
-                    <div class="eyebrow">FAQ</div>
-                    <h2>Pertanyaan yang<br><span class="grad">Sering Diajukan</span></h2>
-                    <div class="divider"></div>
-                </div>
-                <div class="faq-wrap">
-                    @foreach ([
-        ['Apakah pendaftaran bisa dilakukan secara offline?', 'Tidak. Pendaftaran dilakukan secara online melalui website mtsn1pandeglang.sch.id. Namun berkas fisik tetap harus diantar langsung ke sekretariat PMBM pada tanggal 6–8 April 2026.'],
-        ['Apa saja jalur pendaftaran yang tersedia?', 'PMBM MTsN 1 Pandeglang Tahun Pelajaran 2026/2027 membuka dua jalur: Jalur Prestasi (akademik, non-akademik, dan tahfidz) dan Jalur Afirmasi (KIP, PKH, KKS, atau SKTM).'],
-        ['Apa syarat jalur Prestasi bidang Tahfidz?', 'Calon peserta wajib memiliki hafalan minimal 3 juz, dibuktikan dengan sertifikat, dan mengikuti tes kemampuan hafalan pada 13 April 2026.'],
-        ['Prestasi apa saja yang diakui untuk Jalur Prestasi?', 'Prestasi akademik: KSM/OMI, MYRES, OSN, OSP, OSK minimal juara 1–3 tingkat kabupaten/kota. Prestasi non-akademik: MTQ, MHQ, O2SN, FLS2N, dan kompetisi yang diselenggarakan Kemenag, Kemendikdasmen, atau Pemda. Untuk olahraga beregu, hanya diakui sertifikat top score atau pemain terbaik.'],
-        ['Apa yang diperlukan untuk Jalur Afirmasi menggunakan SKTM?', 'Selain SKTM yang dilegalisir, wajib melampirkan print out/fotokopi rekening listrik 3 bulan terakhir dan foto tampak depan, dalam, serta belakang rumah.'],
-        ['Warna map apa yang digunakan untuk menyerahkan berkas?', 'Jalur Prestasi menggunakan map snelhecter warna merah, sedangkan Jalur Afirmasi menggunakan map snelhecter warna kuning. Masing-masing diberi label identitas.'],
-        ['Kapan dan di mana tes dilaksanakan?', 'Tes kemampuan dan tes BTQ dilaksanakan pada 13 April 2026 di sekolah. Seluruh peserta diharuskan hadir pukul 07.00 WIB.'],
-        ['Apa yang terjadi jika tidak lolos seleksi Jalur Prestasi/Afirmasi?', 'Peserta yang tidak lolos dapat mendaftar kembali melalui jalur Reguler (PMBM Bersama). Berkas dapat diambil kembali ke sekretariat sehari setelah pengumuman hasil seleksi.'],
-        ['Kapan pengumuman hasil seleksi?', 'Pengumuman hasil seleksi Jalur Prestasi dan Afirmasi diumumkan pada 14 April 2026 melalui website mtsn1pandeglang.sch.id.'],
-        ['Kapan lapor diri dilakukan?', 'Lapor diri dan pemberkasan dilakukan pada 15–16 April 2026 di sekolah. Peserta yang tidak lapor diri sesuai waktu dinyatakan mengundurkan diri.'],
-        ['Apa penyebab pendaftar dinyatakan gugur?', 'Pendaftar gugur jika: mengisi formulir online tapi tidak menyerahkan berkas, menyerahkan berkas tapi tidak mengisi formulir online, atau dokumen yang diserahkan tidak sesuai dengan yang diunggah.'],
-        ['Apakah ada biaya pendaftaran?', 'Tidak ada. Seluruh proses PMBM MTsN 1 Pandeglang tidak dipungut biaya apapun.'],
-    ] as [$q, $a])
-                        <div class="card faq-item">
-                            <button class="faq-btn" onclick="toggleFaq(this)">
-                                <span>{{ $q }}</span>
-                                <span class="faq-chevron">▼</span>
-                            </button>
-                            <div class="faq-body">
-                                <p>{{ $a }}</p>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        </section>
-
-        <section class="cta-section" style="position:relative;z-index:1;">
-            <div
-                style="position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(5,150,105,.1) 0%,transparent 70%);pointer-events:none;">
-            </div>
-            <div class="cta-inner" style="position:relative;">
-                <h2>Bergabunglah Bersama<br><span class="grad">Generasi Terbaik</span></h2>
-                <p class="lead">
-                    @if ($tahun && $tahun->kuantitas)
-                        Kuota {{ $tahun->kuantitas }} peserta, terbatas.
-                    @endif
-                    Daftarkan diri sekarang dan wujudkan masa depan lebih cerah.
-                </p>
-                <div class="cta-btns">
-                    <a href="{{ url('/dashboard/register') }}" class="btn btn-primary btn-lg">Daftar Sekarang</a>
-                    <a href="{{ url('/dashboard/login') }}" class="btn btn-ghost btn-lg">Masuk Akun</a>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <footer>
-        <div class="wrap">
-            <div class="footer-logo">MTs Negeri 1 Pandeglang</div>
-            <div class="footer-sub">Kementerian Agama Kabupaten Pandeglang · PMBM {{ $tahun?->nama ?? '' }}</div>
-            <div class="footer-sub" style="margin-top:.25rem;">Jl. Raya Labuan, Kabupaten Pandeglang, Banten 42213
-            </div>
-            <div class="footer-links">
-                <a href="#jalur">Jalur</a>
-                <a href="#alur">Alur Daftar</a>
-                <a href="#syarat">Persyaratan</a>
-                <a href="#program">Program</a>
-                <a href="#informasi">Informasi</a>
-                <a href="#faq">FAQ</a>
-                <a href="https://mtsn1pandeglang.sch.id" target="_blank" rel="noopener">Website Resmi</a>
-            </div>
-            <div class="footer-copy">
-                &copy; 2022–{{ date('Y') }} MTs Negeri 1 Pandeglang.
-                Dikembangkan oleh <a href="https://github.com/zulfikriyahya" target="_blank" rel="noopener">Yahya
-                    Zulfikri</a>.
-            </div>
-        </div>
-    </footer>
-
-    <script>
-        const html = document.documentElement;
-        const themeBtn = document.getElementById('themeBtn');
-        const saved = localStorage.getItem('theme');
-        if (saved === 'light') {
-            html.classList.add('light');
-            themeBtn.textContent = '🌙';
-        } else {
-            themeBtn.textContent = '☀️';
-        }
-        themeBtn.addEventListener('click', () => {
-            html.classList.toggle('light');
-            const light = html.classList.contains('light');
-            themeBtn.textContent = light ? '🌙' : '☀️';
-            localStorage.setItem('theme', light ? 'light' : 'dark');
-        });
-
-        const menuBtn = document.getElementById('menuBtn');
-        const drawer = document.getElementById('drawer');
-        menuBtn.addEventListener('click', () => {
-            const open = drawer.classList.toggle('open');
-            menuBtn.classList.toggle('open', open);
-        });
-        drawer.querySelectorAll('.d-link').forEach(a => a.addEventListener('click', () => {
-            drawer.classList.remove('open');
-            menuBtn.classList.remove('open');
-        }));
-        document.addEventListener('click', e => {
-            if (!drawer.contains(e.target) && !menuBtn.contains(e.target)) {
-                drawer.classList.remove('open');
-                menuBtn.classList.remove('open');
-            }
-        });
-
-        const cdEl = document.getElementById('countdown');
-        if (cdEl) {
-            const dead = new Date(cdEl.dataset.deadline);
-            const pad = n => String(n).padStart(2, '0');
-
-            function tick() {
-                const diff = dead - Date.now();
-                if (diff <= 0) {
-                    cdEl.innerHTML =
-                        '<p style="grid-column:span 4;text-align:center;padding:1rem;opacity:.5;font-size:.8rem;">Pendaftaran telah ditutup.</p>';
-                    return;
-                }
-                document.getElementById('cd-d').textContent = pad(Math.floor(diff / 86400000));
-                document.getElementById('cd-h').textContent = pad(Math.floor((diff % 86400000) / 3600000));
-                document.getElementById('cd-m').textContent = pad(Math.floor((diff % 3600000) / 60000));
-                document.getElementById('cd-s').textContent = pad(Math.floor((diff % 60000) / 1000));
-            }
-            tick();
-            setInterval(tick, 1000);
-        }
-
-        const sections = document.querySelectorAll('section[id]');
-        const navAs = document.querySelectorAll('.nav-links a');
-        sections.forEach(s => new IntersectionObserver(entries => {
-            entries.forEach(e => {
-                if (!e.isIntersecting) return;
-                navAs.forEach(a => a.classList.remove('active'));
-                const a = document.querySelector(`.nav-links a[href="#${e.target.id}"]`);
-                if (a) a.classList.add('active');
-            });
-        }, {
-            threshold: 0.35
-        }).observe(s));
-
-        function toggleFaq(btn) {
-            const body = btn.nextElementSibling;
-            const chevron = btn.querySelector('.faq-chevron');
-            const isOpen = body.style.maxHeight && body.style.maxHeight !== '0px';
-            document.querySelectorAll('.faq-body').forEach(b => b.style.maxHeight = '0px');
-            document.querySelectorAll('.faq-chevron').forEach(c => c.style.transform = '');
-            if (!isOpen) {
-                body.style.maxHeight = body.scrollHeight + 'px';
-                chevron.style.transform = 'rotate(180deg)';
-            }
-        }
-    </script>
-</body>
-
-</html>
-
-```
-
----
-
-### ./resources/views/landing.blade.php.bkp2
-
-```
-<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="PMBM MTsN 1 Pandeglang TP 2026/2027 — Pendaftaran peserta didik baru Jalur Prestasi, Afirmasi, dan Reguler.">
-<title>PMBM MTsN 1 Pandeglang — TP 2026/2027</title>
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;font-size:16px}
-:root{
-  --green:#059669;--green-l:#10b981;--gold:#d4a843;--gold-l:#f0c96a;
-  --red:#dc2626;--red-l:#ef4444;--blue:#1d4ed8;--blue-l:#60a5fa;
-  --bg:#0b0f0e;--surface:#111a17;--card:rgba(255,255,255,.04);
-  --border:rgba(255,255,255,.08);--text:#e8f1ee;--muted:#7a9e92;--radius:16px;
-}
-html.light{
-  --bg:#f4f7f5;--surface:#ffffff;--card:rgba(255,255,255,.9);
-  --border:rgba(0,0,0,.08);--text:#0d1f1a;--muted:#5a7a6e;
-}
-body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;line-height:1.6;transition:background .3s,color .3s}
-::-webkit-scrollbar{width:5px}
-::-webkit-scrollbar-thumb{background:var(--green);border-radius:4px}
-.orb{position:fixed;border-radius:50%;filter:blur(110px);opacity:.1;pointer-events:none;z-index:0}
-html.light .orb{opacity:.05}
-.orb-1{width:600px;height:600px;background:var(--green);top:-200px;left:-200px}
-.orb-2{width:400px;height:400px;background:var(--gold);bottom:0;right:-150px}
-
-/* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:200;height:60px;padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;background:rgba(11,15,14,.88);border-bottom:1px solid var(--border);backdrop-filter:blur(18px) saturate(160%);transition:background .3s}
-html.light nav{background:rgba(244,247,245,.94)}
-.nav-brand{display:flex;align-items:center;gap:.7rem;text-decoration:none;color:inherit;font-weight:700;flex-shrink:0}
-.nav-logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--green),var(--gold));display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
-.nav-name{font-size:.88rem;line-height:1.25}
-.nav-sub{font-size:.68rem;font-weight:400;color:var(--muted)}
-.nav-links{display:flex;gap:.1rem;list-style:none}
-.nav-links a{text-decoration:none;color:var(--muted);font-size:.82rem;padding:.35rem .65rem;border-radius:8px;transition:all .2s}
-.nav-links a:hover,.nav-links a.active{color:var(--green-l);background:rgba(16,185,129,.08)}
-.nav-right{display:flex;align-items:center;gap:.6rem;flex-shrink:0}
-#themeBtn,#menuBtn{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--card);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;color:inherit;transition:all .2s}
-#themeBtn:hover{transform:scale(1.1)}
-#menuBtn{flex-direction:column;gap:4px;display:none}
-#menuBtn span{display:block;width:16px;height:2px;background:currentColor;border-radius:2px;transition:all .3s}
-#menuBtn.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
-#menuBtn.open span:nth-child(2){opacity:0;transform:scaleX(0)}
-#menuBtn.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
-.drawer{position:fixed;top:60px;left:0;right:0;z-index:190;flex-direction:column;padding:0 1.25rem;background:#0b0f0e;border-bottom:1px solid transparent;max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s,border-color .3s;display:flex}
-html.light .drawer{background:#f4f7f5}
-.drawer.open{max-height:520px;padding:1rem 1.25rem 1.5rem;border-color:var(--border)}
-.drawer a{text-decoration:none;color:var(--muted);font-size:.9rem;font-weight:500;padding:.6rem .9rem;border-radius:10px;transition:all .2s}
-.drawer a:hover{color:var(--green-l);background:rgba(16,185,129,.08)}
-.drawer hr{border:none;border-top:1px solid var(--border);margin:.6rem 0}
-
-/* UTILS */
-.wrap{max-width:1180px;margin:0 auto;padding:0 1.5rem}
-section{padding:5rem 1.5rem;position:relative;z-index:1}
-.eyebrow{display:inline-flex;align-items:center;gap:.4rem;padding:.28rem .85rem;border-radius:999px;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:rgba(16,185,129,.1);color:var(--green-l);border:1px solid rgba(16,185,129,.2);margin-bottom:.75rem}
-.divider{width:40px;height:3px;background:linear-gradient(90deg,var(--green),var(--gold));border-radius:999px;margin:.5rem 0 0}
-h1,h2{font-weight:800;letter-spacing:-.03em;line-height:1.1}
-h1{font-size:clamp(2.2rem,5vw,3.6rem)}
-h2{font-size:clamp(1.7rem,3.5vw,2.5rem);margin-bottom:.75rem}
-.grad{background:linear-gradient(135deg,var(--green-l),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.lead{font-size:1.05rem;color:var(--muted);max-width:540px;line-height:1.75}
-.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);backdrop-filter:blur(10px);transition:border-color .25s,transform .25s,box-shadow .25s}
-html.light .card{box-shadow:0 2px 16px rgba(0,0,0,.06)}
-.card-hover:hover{border-color:rgba(16,185,129,.3);transform:translateY(-3px);box-shadow:0 8px 32px rgba(5,150,105,.12)}
-.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1.4rem;border-radius:10px;font-size:.875rem;font-weight:600;cursor:pointer;border:none;text-decoration:none;transition:all .2s}
-.btn-primary{background:linear-gradient(135deg,var(--green),#047857);color:#fff;box-shadow:0 0 20px rgba(5,150,105,.25)}
-.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 28px rgba(5,150,105,.4)}
-.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
-.btn-ghost:hover{color:var(--green-l);border-color:rgba(16,185,129,.4);background:rgba(16,185,129,.06)}
-.btn-lg{padding:.8rem 2rem;font-size:1rem;border-radius:12px}
-.badge{display:inline-block;padding:.2rem .7rem;border-radius:999px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
-.section-header{margin-bottom:3rem}
-.section-header.center{text-align:center}
-.section-header.center .divider{margin:.5rem auto 0}
-
-/* HERO */
-#hero{min-height:100vh;padding-top:60px;display:flex;align-items:center}
-.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;max-width:1180px;margin:0 auto;width:100%}
-.hero-eyebrow{display:inline-flex;align-items:center;gap:.45rem;padding:.35rem 1rem;border-radius:999px;font-size:.75rem;font-weight:600;background:rgba(212,168,67,.1);border:1px solid rgba(212,168,67,.2);color:var(--gold-l);margin-bottom:1.25rem}
-.hero-cta{display:flex;gap:.85rem;flex-wrap:wrap;margin-top:2rem}
-.hero-stats{display:flex;gap:2rem;flex-wrap:wrap;margin-top:2.5rem;padding-top:2rem;border-top:1px solid var(--border)}
-.stat-val{font-size:1.6rem;font-weight:800;background:linear-gradient(135deg,var(--green-l),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.stat-lbl{font-size:.74rem;color:var(--muted);margin-top:.15rem}
-.hero-card{padding:1.75rem;border-radius:22px;max-width:400px;width:100%}
-.cd-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.65rem;margin-top:1.25rem}
-.cd-box{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:12px;padding:.9rem .5rem;text-align:center}
-html.light .cd-box{background:rgba(0,0,0,.04)}
-.cd-n{font-size:1.75rem;font-weight:900;font-variant-numeric:tabular-nums;background:linear-gradient(135deg,var(--green-l),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.cd-l{font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-top:.15rem}
-
-/* STATS BAR */
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin:0 auto;max-width:1180px}
-.stat-box{background:var(--surface);padding:2rem 1.5rem;text-align:center}
-.stat-box .val{font-size:2rem;font-weight:800}
-.stat-box .lbl{font-size:.78rem;color:var(--muted);margin-top:.25rem}
-
-/* JALUR PILIH */
-.jalur-picker{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-top:.5rem}
-.jalur-card{padding:1.75rem;border-radius:var(--radius);position:relative;overflow:hidden;display:flex;flex-direction:column;gap:.5rem}
-.jalur-icon{width:48px;height:48px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:.5rem}
-.jalur-tag{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.15rem}
-.jalur-name{font-size:1.05rem;font-weight:800;margin-bottom:.3rem}
-.jalur-desc{font-size:.8rem;color:var(--muted);line-height:1.65;flex:1}
-.jalur-meta{display:flex;align-items:center;justify-content:space-between;margin-top:1rem;padding-top:.85rem;border-top:1px solid var(--border);font-size:.75rem;color:var(--muted)}
-.progress-bar{width:72px;height:5px;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden}
-html.light .progress-bar{background:rgba(0,0,0,.08)}
-.progress-fill{height:100%;border-radius:999px}
-
-/* INFO BOX */
-.infobox{display:flex;gap:.75rem;padding:1rem 1.25rem;border-radius:12px;font-size:.82rem;line-height:1.6;align-items:flex-start;margin-top:1.5rem}
-.infobox-icon{font-size:1.1rem;flex-shrink:0;margin-top:.1rem}
-
-/* TIMELINE / JADWAL */
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start}
-.timeline{padding-left:1.75rem;position:relative}
-.timeline::before{content:'';position:absolute;left:.35rem;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,var(--green),var(--gold),transparent)}
-.tl-item{position:relative;padding:1rem 0 1rem 1.25rem;border-bottom:1px solid var(--border)}
-.tl-item:last-child{border-bottom:none}
-.tl-dot{position:absolute;left:-1.75rem;top:1.2rem;width:12px;height:12px;border-radius:50%;background:var(--green);border:3px solid var(--bg);transition:background .2s}
-html.light .tl-dot{border-color:var(--bg)}
-.tl-item:hover .tl-dot{background:var(--gold)}
-.tl-step{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--green-l);margin-bottom:.25rem}
-.tl-title{font-size:.9rem;font-weight:700;margin-bottom:.2rem}
-.tl-desc{font-size:.78rem;color:var(--muted);line-height:1.6}
-
-/* JADWAL TABLE */
-.jadwal-section{display:flex;flex-direction:column;gap:1.5rem}
-.jadwal-group-title{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:.4rem .9rem;border-radius:999px;display:inline-block;margin-bottom:.75rem}
-.sched-list{display:flex;flex-direction:column}
-.sched-item{display:flex;align-items:center;gap:.85rem;padding:.85rem 0;border-bottom:1px solid var(--border)}
-.sched-item:last-child{border-bottom:none}
-.sched-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
-.sched-title{font-size:.82rem;font-weight:700}
-.sched-date{font-size:.72rem;color:var(--muted);margin-top:.1rem}
-.sched-badge{margin-left:auto;white-space:nowrap}
-
-/* PERSYARATAN */
-.req-tabs{display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap}
-.req-tab{padding:.4rem 1rem;border-radius:999px;font-size:.78rem;font-weight:700;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .2s}
-.req-tab.active{color:#fff;border-color:transparent}
-.req-panel{display:none}
-.req-panel.active{display:block}
-.req-list{display:flex;flex-direction:column;gap:.65rem;margin-top:1rem}
-.req-item{display:flex;align-items:flex-start;gap:.75rem;padding:1rem;border-radius:12px;background:var(--card);border:1px solid var(--border)}
-.req-num{min-width:26px;height:26px;border-radius:7px;flex-shrink:0;background:linear-gradient(135deg,var(--green),#047857);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:#fff}
-.req-text{font-size:.82rem;line-height:1.6}
-.req-text strong{display:block;margin-bottom:.15rem}
-.req-note{font-size:.72rem;color:var(--muted);margin-top:.15rem;font-style:italic}
-
-/* MAP VISUAL */
-.map-boxes{display:flex;gap:1rem;margin-top:1.25rem;flex-wrap:wrap}
-.map-box{flex:1;min-width:140px;padding:1.1rem;border-radius:12px;text-align:center;border:2px solid transparent}
-.map-box-icon{font-size:2rem;margin-bottom:.5rem}
-.map-box-label{font-size:.78rem;font-weight:700;margin-bottom:.2rem}
-.map-box-sub{font-size:.7rem;color:var(--muted)}
-
-/* GUGUR */
-.gugur-list{display:flex;flex-direction:column;gap:.6rem;margin-top:1rem}
-.gugur-item{display:flex;align-items:flex-start;gap:.75rem;padding:.9rem 1rem;border-radius:12px;border:1px solid rgba(220,38,38,.2);background:rgba(220,38,38,.05);font-size:.83rem;line-height:1.6}
-.gugur-icon{color:#ef4444;font-size:1rem;flex-shrink:0;margin-top:.05rem}
-
-/* SELEKSI */
-.seleksi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
-.seleksi-card{padding:1.5rem;border-radius:var(--radius)}
-.seleksi-name{font-size:.88rem;font-weight:800;margin-bottom:.6rem}
-.seleksi-body{font-size:.78rem;color:var(--muted);line-height:1.7}
-.formula-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.5rem;margin-top:1rem;text-align:center;font-size:.9rem;font-weight:700;letter-spacing:.02em}
-.formula-box span{color:var(--green-l)}
-
-/* PROG */
-.prog-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem}
-.prog-card{padding:1.5rem;border-radius:var(--radius);text-align:center}
-.prog-icon{font-size:1.8rem;margin-bottom:.6rem}
-.prog-title{font-size:.88rem;font-weight:700;margin-bottom:.35rem}
-.prog-desc{font-size:.76rem;color:var(--muted);line-height:1.55}
-
-/* FAQ */
-.faq-wrap{max-width:760px;margin:2.5rem auto 0}
-.faq-item{border-radius:12px;overflow:hidden;margin-bottom:.6rem}
-.faq-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.1rem 1.25rem;background:transparent;border:none;color:inherit;cursor:pointer;text-align:left;font-size:.88rem;font-weight:600;transition:color .2s}
-.faq-btn:hover{color:var(--green-l)}
-.faq-chevron{min-width:20px;height:20px;border-radius:50%;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);display:flex;align-items:center;justify-content:center;font-size:.65rem;color:var(--green-l);transition:transform .3s}
-.faq-body{max-height:0;overflow:hidden;transition:max-height .35s ease}
-.faq-body p{padding:0 1.25rem 1.1rem;font-size:.83rem;color:var(--muted);line-height:1.75;border-top:1px solid var(--border)}
-
-/* CTA */
-.cta-section{text-align:center;padding:6rem 1.5rem;position:relative;z-index:1}
-.cta-inner{max-width:600px;margin:0 auto;position:relative}
-.cta-inner h2{font-size:clamp(2rem,4.5vw,3rem);margin-bottom:1rem}
-.cta-inner .lead{margin:0 auto 2rem}
-.cta-btns{display:flex;gap:.85rem;justify-content:center;flex-wrap:wrap}
-
-/* FOOTER */
-footer{border-top:1px solid var(--border);padding:2.5rem 1.5rem;text-align:center;position:relative;z-index:1}
-.footer-logo{font-size:.95rem;font-weight:800;margin-bottom:.3rem}
-.footer-sub{font-size:.78rem;color:var(--muted)}
-.footer-links{display:flex;justify-content:center;gap:1.25rem;flex-wrap:wrap;margin-top:1.5rem}
-.footer-links a{font-size:.78rem;color:var(--muted);text-decoration:none;transition:color .2s}
-.footer-links a:hover{color:var(--green-l)}
-.footer-copy{font-size:.73rem;color:var(--muted);margin-top:1.5rem}
-.footer-copy a{color:var(--green-l);text-decoration:none}
-
-/* RESPONSIVE */
-@media(max-width:960px){
-  .hero-grid,.two-col{grid-template-columns:1fr;gap:3rem}
-  .hero-visual,.jalur-picker{display:none}
-  .jalur-picker-mobile{display:flex!important}
-  .stats-row,.seleksi-grid{grid-template-columns:repeat(2,1fr)}
-}
-@media(max-width:768px){
-  section{padding:3.5rem 1.25rem}
-  nav{padding:0 1rem;height:56px}
-  #hero{padding-top:56px;padding-bottom:3rem;align-items:flex-start}
-  .nav-links,#loginBtnNav,#registerBtnNav{display:none!important}
-  #menuBtn{display:flex}
-  .jalur-picker{grid-template-columns:1fr}
-  .prog-grid{grid-template-columns:repeat(2,1fr)}
-  .req-tabs{gap:.4rem}
-}
-@media(max-width:480px){
-  h2{font-size:1.5rem}
-  .stats-row{grid-template-columns:repeat(2,1fr)}
-  .seleksi-grid{grid-template-columns:1fr}
-  .cta-btns{flex-direction:column;align-items:stretch}
-  .cta-btns .btn{width:100%;justify-content:center}
-}
-@media(max-width:400px){.nav-name{font-size:.78rem}.nav-sub{display:none}}
-</style>
-</head>
-<body>
-
-<div class="orb orb-1"></div>
-<div class="orb orb-2"></div>
-
-<!-- NAV -->
-<nav>
-  <a href="#" class="nav-brand">
-    <div class="nav-logo">🕌</div>
-    <div>
-      <div class="nav-name">MTsN 1 Pandeglang</div>
-      <div class="nav-sub">PMBM TP 2026/2027</div>
-    </div>
-  </a>
-  <ul class="nav-links">
-    <li><a href="#jalur">Jalur</a></li>
-    <li><a href="#jadwal">Jadwal</a></li>
-    <li><a href="#alur">Alur Daftar</a></li>
-    <li><a href="#syarat">Persyaratan</a></li>
-    <li><a href="#seleksi">Seleksi</a></li>
-    <li><a href="#faq">FAQ</a></li>
-  </ul>
-  <div class="nav-right">
-    <button id="themeBtn" title="Ganti tema">☀️</button>
-    <button id="menuBtn" aria-label="Menu"><span></span><span></span><span></span></button>
-    <a href="https://daftar.mtsn1pandeglang.sch.id" class="btn btn-primary" id="registerBtnNav">Daftar</a>
-  </div>
-</nav>
-
-<nav class="drawer" id="drawer">
-  <a href="#jalur" class="d-link">Jalur Pendaftaran</a>
-  <a href="#jadwal" class="d-link">Jadwal Kegiatan</a>
-  <a href="#alur" class="d-link">Alur Mendaftar</a>
-  <a href="#syarat" class="d-link">Persyaratan</a>
-  <a href="#seleksi" class="d-link">Mekanisme Seleksi</a>
-  <a href="#gugur" class="d-link">Ketentuan Gugur</a>
-  <a href="#faq" class="d-link">FAQ</a>
-  <hr>
-  <a href="https://daftar.mtsn1pandeglang.sch.id" class="d-link" style="color:var(--green-l);font-weight:700;">Daftar Sekarang →</a>
-</nav>
-
-<main>
-
-<!-- HERO -->
-<section id="hero">
-  <div class="hero-grid wrap">
-    <div>
-      <div class="hero-eyebrow">📅 Penerimaan Peserta Didik Baru TP 2026/2027</div>
-      <h1>Bergabung &amp;<br><span class="grad">Berprestasi</span></h1>
-      <p class="lead" style="margin-top:1rem;">
-        MTsN 1 Pandeglang membuka pendaftaran peserta didik baru melalui <strong>3 jalur resmi</strong> — Prestasi, Afirmasi, dan Reguler. Pendaftaran online, gratis, dan transparan.
-      </p>
-      <div class="hero-cta">
-        <a href="https://daftar.mtsn1pandeglang.sch.id" class="btn btn-primary btn-lg">Daftar Prestasi / Afirmasi</a>
-        <a href="https://pmbm-kanwilbanten.com" class="btn btn-ghost btn-lg">Daftar Reguler →</a>
-      </div>
-      <div class="hero-stats">
-        <div><div class="stat-val">224</div><div class="stat-lbl">Kuota Reguler</div></div>
-        <div><div class="stat-val">A</div><div class="stat-lbl">Akreditasi</div></div>
-        <div><div class="stat-val">3</div><div class="stat-lbl">Jalur Masuk</div></div>
-        <div><div class="stat-val">Gratis</div><div class="stat-lbl">Biaya Daftar</div></div>
-      </div>
-    </div>
-    <div class="hero-visual" style="display:flex;align-items:center;justify-content:center;">
-      <div class="card hero-card">
-        <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--gold-l);text-align:center;margin-bottom:.5rem;">⏳ Pendaftaran Prestasi &amp; Afirmasi</div>
-        <div class="cd-grid" id="countdown" data-deadline="2026-04-08T16:00:00">
-          <div class="cd-box"><div class="cd-n" id="cd-d">--</div><div class="cd-l">Hari</div></div>
-          <div class="cd-box"><div class="cd-n" id="cd-h">--</div><div class="cd-l">Jam</div></div>
-          <div class="cd-box"><div class="cd-n" id="cd-m">--</div><div class="cd-l">Menit</div></div>
-          <div class="cd-box"><div class="cd-n" id="cd-s">--</div><div class="cd-l">Detik</div></div>
-        </div>
-        <div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.65rem;">
-          <div style="display:flex;align-items:center;justify-content:space-between;font-size:.78rem;">
-            <span>Jalur Prestasi</span>
-            <div style="display:flex;align-items:center;gap:.5rem;">
-              <div class="progress-bar" style="width:70px;"><div class="progress-fill" style="width:0%;background:#d4a843;"></div></div>
-              <span style="font-weight:700;color:#d4a843;font-size:.72rem;">— Kuota</span>
-            </div>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;font-size:.78rem;">
-            <span>Jalur Afirmasi</span>
-            <div style="display:flex;align-items:center;gap:.5rem;">
-              <div class="progress-bar" style="width:70px;"><div class="progress-fill" style="width:0%;background:#60a5fa;"></div></div>
-              <span style="font-weight:700;color:#60a5fa;font-size:.72rem;">— Kuota</span>
-            </div>
-          </div>
-          <div style="margin-top:.4rem;padding-top:.75rem;border-top:1px solid var(--border);font-size:.72rem;color:var(--muted);text-align:center;">Reguler: 224 kursi · Buka 18 April 2026</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- STATS BAR -->
-<div style="padding:0 1.5rem;position:relative;z-index:1;max-width:1180px;margin:0 auto;">
-  <div class="stats-row">
-    <div class="stat-box"><div class="val grad">54</div><div class="lbl">Tahun Berdiri</div></div>
-    <div class="stat-box"><div class="val" style="background:linear-gradient(135deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">70+</div><div class="lbl">Tenaga Pendidik</div></div>
-    <div class="stat-box"><div class="val grad">A</div><div class="lbl">Akreditasi</div></div>
-    <div class="stat-box"><div class="val" style="background:linear-gradient(135deg,#fb923c,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">100+</div><div class="lbl">Prestasi Kejuaraan</div></div>
-  </div>
-</div>
-
-<!-- SECTION JALUR -->
-<section id="jalur">
-  <div class="wrap">
-    <div class="section-header center">
-      <div class="eyebrow">Jalur Pendaftaran</div>
-      <h2>3 Jalur, <span class="grad">1 Tujuan</span></h2>
-      <div class="divider"></div>
-      <p style="color:var(--muted);font-size:.9rem;margin-top:.85rem;max-width:520px;margin-left:auto;margin-right:auto;">Pilih jalur yang sesuai dengan profilmu. Tidak lolos Prestasi/Afirmasi? Kamu masih bisa daftar ke Jalur Reguler.</p>
-    </div>
-
-    <div class="jalur-picker" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;">
-      <!-- Prestasi -->
-      <div class="card card-hover jalur-card" style="background:linear-gradient(135deg,rgba(212,168,67,.1),transparent);">
-        <div class="badge" style="background:rgba(212,168,67,.15);color:#d4a843;border:1px solid rgba(212,168,67,.3);align-self:flex-start;">🏆 Jalur Prestasi</div>
-        <div class="jalur-name">Jalur Prestasi</div>
-        <p class="jalur-desc">Untuk siswa berprestasi di bidang Tahfidz (min. 3 juz), akademik (KSM, OSN, MYRES), atau non-akademik (MTQ, O2SN, FLS2N). Minimal juara tingkat Kabupaten/Kota.</p>
-        <div class="jalur-meta">
-          <span>Buka 6–8 April 2026</span>
-          <span style="color:#d4a843;font-weight:700;font-size:.72rem;">Map Merah 📁</span>
-        </div>
-        <a href="https://daftar.mtsn1pandeglang.sch.id" class="btn btn-ghost" style="margin-top:1rem;width:100%;justify-content:center;border-color:rgba(212,168,67,.4);color:#d4a843;">Daftar Jalur Ini →</a>
-      </div>
-      <!-- Afirmasi -->
-      <div class="card card-hover jalur-card" style="background:linear-gradient(135deg,rgba(96,165,250,.1),transparent);">
-        <div class="badge" style="background:rgba(96,165,250,.15);color:#60a5fa;border:1px solid rgba(96,165,250,.3);align-self:flex-start;">💙 Jalur Afirmasi</div>
-        <div class="jalur-name">Jalur Afirmasi</div>
-        <p class="jalur-desc">Untuk keluarga pemegang KIP, PKH, KKS, atau SKTM yang diterbitkan pemerintah daerah. Memberikan akses pendidikan yang berkeadilan.</p>
-        <div class="jalur-meta">
-          <span>Buka 6–8 April 2026</span>
-          <span style="color:#60a5fa;font-weight:700;font-size:.72rem;">Map Kuning 📁</span>
-        </div>
-        <a href="https://daftar.mtsn1pandeglang.sch.id" class="btn btn-ghost" style="margin-top:1rem;width:100%;justify-content:center;border-color:rgba(96,165,250,.4);color:#60a5fa;">Daftar Jalur Ini →</a>
-      </div>
-      <!-- Reguler -->
-      <div class="card card-hover jalur-card" style="background:linear-gradient(135deg,rgba(16,185,129,.08),transparent);">
-        <div class="badge" style="background:rgba(16,185,129,.12);color:#10b981;border:1px solid rgba(16,185,129,.25);align-self:flex-start;">📝 Jalur Reguler</div>
-        <div class="jalur-name">Jalur Reguler</div>
-        <p class="jalur-desc">Terbuka untuk semua lulusan MI/SD sederajat. Seleksi menggunakan CBT dan Tes BTQ. Kuota 224 kursi melalui sistem PMBM Bersama Kanwil Kemenag Banten.</p>
-        <div class="jalur-meta">
-          <span>Buka 18–27 April 2026</span>
-          <span style="color:#10b981;font-weight:700;font-size:.72rem;">pmbm-kanwilbanten.com</span>
-        </div>
-        <a href="https://pmbm-kanwilbanten.com" class="btn btn-ghost" style="margin-top:1rem;width:100%;justify-content:center;border-color:rgba(16,185,129,.4);color:#10b981;">Daftar Jalur Ini →</a>
-      </div>
-    </div>
-
-    <div class="infobox" style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.2);">
-      <span class="infobox-icon">💡</span>
-      <span>Tidak lolos Jalur Prestasi atau Afirmasi? Berkas dapat diambil kembali <strong>sehari setelah pengumuman (15 April 2026)</strong>. Kamu masih bisa mendaftar ke <strong>Jalur Reguler mulai 18 April 2026</strong> melalui pmbm-kanwilbanten.com.</span>
-    </div>
-  </div>
-</section>
-
-<!-- JADWAL -->
-<section id="jadwal">
-  <div class="wrap">
-    <div class="section-header center">
-      <div class="eyebrow">Timeline Kegiatan</div>
-      <h2>Jadwal <span class="grad">Lengkap PMBM</span></h2>
-      <div class="divider"></div>
-    </div>
-    <div class="two-col">
-      <!-- Prestasi & Afirmasi -->
-      <div>
-        <div class="jadwal-group-title" style="background:rgba(212,168,67,.12);color:#d4a843;border:1px solid rgba(212,168,67,.3);">📁 Jalur Prestasi &amp; Afirmasi</div>
-        <div class="card" style="padding:1.5rem;">
-          <div class="sched-list" id="sched-pa"></div>
-          <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);font-size:.75rem;color:var(--muted);">
-            ⏰ Jam panitia: <strong>08.00–14.00 WIB</strong> | Istirahat: <strong>11.30–13.00 WIB</strong>
-          </div>
-        </div>
-      </div>
-      <!-- Reguler -->
-      <div>
-        <div class="jadwal-group-title" style="background:rgba(16,185,129,.1);color:#10b981;border:1px solid rgba(16,185,129,.25);">📝 Jalur Reguler (PMBM Bersama)</div>
-        <div class="card" style="padding:1.5rem;">
-          <div class="sched-list" id="sched-reg"></div>
-          <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);font-size:.75rem;color:var(--muted);">
-            🌐 Sistem: <a href="https://pmbm-kanwilbanten.com" style="color:var(--green-l);text-decoration:none;">pmbm-kanwilbanten.com</a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ALUR DAFTAR -->
-<section id="alur">
-  <div class="wrap">
-    <div class="section-header center">
-      <div class="eyebrow">Panduan Daftar</div>
-      <h2>Cara <span class="grad">Mendaftar</span></h2>
-      <div class="divider"></div>
-    </div>
-    <div class="two-col">
-      <div>
-        <div style="font-size:.78rem;font-weight:700;color:#d4a843;text-transform:uppercase;letter-spacing:.07em;margin-bottom:1rem;">Jalur Prestasi &amp; Afirmasi</div>
-        <div class="timeline">
-          <div class="tl-item"><div class="tl-dot"></div><div class="tl-step">Langkah 1</div><div class="tl-title">Isi Formulir Online</div><div class="tl-desc">Akses daftar.mtsn1pandeglang.sch.id dan isi formulir menggunakan NISN. Pilih jalur Prestasi atau Afirmasi.</div></div>
-          <div class="tl-item"><div class="tl-dot"></div><div class="tl-step">Langkah 2</div><div class="tl-title">Siapkan Berkas Fisik</div><div class="tl-desc">Masukkan semua dokumen ke map snelhecter sesuai warna jalur. Beri label identitas (nama, asal sekolah, jalur).</div></div>
-          <div class="tl-item"><div class="tl-dot"></div><div class="tl-step">Langkah 3</div><div class="tl-title">Serahkan Berkas ke Sekretariat</div><div class="tl-desc">Antar berkas fisik langsung ke Sekretariat PMBM MTsN 1 Pandeglang pada <strong>6–8 April 2026</strong> jam 08.00–14.00 WIB.</div></div>
-          <div class="tl-item"><div class="tl-dot"></div><div class="tl-step">Langkah 4</div><div class="tl-title">Ikuti Tes Seleksi</div><div class="tl-desc">Hadir di madrasah pada <strong>13 April 2026</strong> paling lambat pukul <strong>07.00 WIB</strong> untuk tes kemampuan dan BTQ.</div></div>
-          <div class="tl-item"><div class="tl-dot"></div><div class="tl-step">Langkah 5</div><div class="tl-title">Cek Pengumuman &amp; Lapor Diri</div><div class="tl-desc">Pengumuman 14 April. Jika diterima, wajib lapor diri <strong>15–16 April 2026</strong>. Tidak lapor diri = gugur/mengundurkan diri.</div></div>
-        </div>
-      </div>
-      <div>
-        <div style="font-size:.78rem;font-weight:700;color:#10b981;text-transform:uppercase;letter-spacing:.07em;margin-bottom:1rem;">Jalur Reguler (PMBM Bersama)</div>
-        <div class="timeline">
-          <div class="tl-item"><div class="tl-dot" style="background:var(--green-l);"></div><div class="tl-step">Langkah 1</div><div class="tl-title">Akses Portal PMBM</div><div class="tl-desc">Buka pmbm-kanwilbanten.com mulai <strong>18 April 2026</strong>. Masukkan NISN untuk memulai pendaftaran.</div></div>
-          <div class="tl-item"><div class="tl-dot" style="background:var(--green-l);"></div><div class="tl-step">Langkah 2</div><div class="tl-title">Isi Formulir &amp; Pilih Madrasah</div><div class="tl-desc">Lengkapi data diri dan pilih MTsN 1 Pandeglang sebagai madrasah tujuan (minimal 1, maksimal 2 pilihan).</div></div>
-          <div class="tl-item"><div class="tl-dot" style="background:var(--green-l);"></div><div class="tl-step">Langkah 3</div><div class="tl-title">Unggah Dokumen</div><div class="tl-desc">Upload KK (terbit sebelum Maret 2026), Ijazah MI/SD, Surat Pernyataan bermaterai Rp 10.000, dan dokumen kondisional lainnya.</div></div>
-          <div class="tl-item"><div class="tl-dot" style="background:var(--green-l);"></div><div class="tl-step">Langkah 4</div><div class="tl-title">Cetak Bukti &amp; Ikuti CBT</div><div class="tl-desc">Cetak bukti pendaftaran. Ikuti Uji Coba CBT (30 April) lalu CBT resmi pada <strong>2 Mei 2026</strong> dan Tes BTQ 2–3 Mei.</div></div>
-          <div class="tl-item"><div class="tl-dot" style="background:var(--green-l);"></div><div class="tl-step">Langkah 5</div><div class="tl-title">Pengumuman &amp; Lapor Diri</div><div class="tl-desc">Pengumuman 5 Mei. Jika diterima, wajib lapor diri langsung ke madrasah <strong>6–12 Mei 2026</strong>.</div></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- PERSYARATAN -->
-<section id="syarat">
-  <div class="wrap">
-    <div class="section-header center">
-      <div class="eyebrow">Dokumen</div>
-      <h2>Persyaratan <span class="grad">Pendaftaran</span></h2>
-      <div class="divider"></div>
-    </div>
-
-    <!-- Syarat Umum -->
-    <div style="margin-bottom:2.5rem;">
-      <div style="font-size:.78rem;font-weight:700;color:var(--green-l);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.85rem;">✅ Persyaratan Umum (Semua Jalur)</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.75rem;">
-        <div class="card req-item"><div class="req-num">1</div><div class="req-text"><strong>Usia Maksimal 15 Tahun</strong>Per 1 Juli 2026</div></div>
-        <div class="card req-item"><div class="req-num">2</div><div class="req-text"><strong>Surat Keterangan Aktif Kelas VI</strong>Dari sekolah/madrasah asal</div></div>
-        <div class="card req-item"><div class="req-num">3</div><div class="req-text"><strong>Akta Kelahiran Berbarcode</strong>Terbitan resmi Dinas Dukcapil</div></div>
-        <div class="card req-item"><div class="req-num">4</div><div class="req-text"><strong>Kartu Keluarga Berbarcode</strong>Terbitan resmi Dinas Dukcapil</div></div>
-      </div>
-    </div>
-
-    <!-- Tabs per jalur -->
-    <div>
-      <div class="req-tabs">
-        <button class="req-tab active" onclick="switchTab(this,'tab-prestasi')" style="border-color:#d4a843;color:#d4a843;background:rgba(212,168,67,.1);">🏆 Prestasi</button>
-        <button class="req-tab" onclick="switchTab(this,'tab-afirmasi')">💙 Afirmasi</button>
-        <button class="req-tab" onclick="switchTab(this,'tab-reguler')">📝 Reguler</button>
-      </div>
-
-      <div id="tab-prestasi" class="req-panel active">
-        <div class="req-list">
-          <div class="card req-item"><div class="req-num">1</div><div class="req-text"><strong>Print Out Formulir Pendaftaran Online</strong>Dicetak dari daftar.mtsn1pandeglang.sch.id</div></div>
-          <div class="card req-item"><div class="req-num">2</div><div class="req-text"><strong>Sertifikat Prestasi Asli</strong>
-            <div class="req-note">Akademik: KSM/OMI, MYRES, OSN, OSP, OSK — juara 1–3 min. Kab/Kota, oleh Kemenag/Kemendikbud/BRIN/PT Terakreditasi</div>
-            <div class="req-note">Non-Akademik: MTQ, MHQ, MSQ, Pidato Arab, Kaligrafi, O2SN, FLS2N — Kab: Juara 1 · Prov: Juara 1–2 · Nasional: Juara 1–3</div>
-            <div class="req-note">Tahfidz: Sertifikat min. 3 juz + akan ada tes hafalan langsung</div>
-            <div class="req-note">Olahraga beregu: hanya top scorer/pemain terbaik yang tercantum di sertifikat</div>
-          </div></div>
-          <div class="card req-item"><div class="req-num">3</div><div class="req-text"><strong>Semua Dokumen dalam Map Snelhecter Merah</strong>Diberi label: nama lengkap, asal sekolah, jalur Prestasi</div></div>
-        </div>
-        <div class="map-boxes" style="margin-top:1.25rem;">
-          <div class="map-box" style="background:rgba(220,38,38,.08);border-color:rgba(220,38,38,.3);">
-            <div class="map-box-icon">📁</div>
-            <div class="map-box-label" style="color:#ef4444;">Map Merah</div>
-            <div class="map-box-sub">Jalur Prestasi</div>
-          </div>
-        </div>
-      </div>
-
-      <div id="tab-afirmasi" class="req-panel">
-        <div class="req-list">
-          <div class="card req-item"><div class="req-num">1</div><div class="req-text"><strong>Print Out Formulir Pendaftaran Online</strong>Dicetak dari daftar.mtsn1pandeglang.sch.id</div></div>
-          <div class="card req-item"><div class="req-num">2</div><div class="req-text"><strong>Fotokopi Kartu KIP / PKH / KKS / SKTM yang Dilegalisir</strong>
-            <div class="req-note">Pilih salah satu sesuai yang dimiliki keluarga</div>
-          </div></div>
-          <div class="card req-item" style="border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.04);">
-            <div class="req-num" style="background:linear-gradient(135deg,#f59e0b,#d97706);">⚠</div>
-            <div class="req-text"><strong>Khusus SKTM — Wajib Tambah:</strong>
-              <div class="req-note">• Fotokopi tagihan/rekening listrik 3 bulan terakhir</div>
-              <div class="req-note">• Foto tampak depan, dalam, dan belakang rumah</div>
-              <div class="req-note">SKTM hanya diterima jika diterbitkan pemerintah daerah (kelurahan/kecamatan/dinas sosial), bukan RT/RW</div>
-            </div>
-          </div>
-          <div class="card req-item"><div class="req-num">3</div><div class="req-text"><strong>Semua Dokumen dalam Map Snelhecter Kuning</strong>Diberi label: nama lengkap, asal sekolah, jalur Afirmasi</div></div>
-        </div>
-        <div class="map-boxes" style="margin-top:1.25rem;">
-          <div class="map-box" style="background:rgba(234,179,8,.08);border-color:rgba(234,179,8,.35);">
-            <div class="map-box-icon">📁</div>
-            <div class="map-box-label" style="color:#eab308;">Map Kuning</div>
-            <div class="map-box-sub">Jalur Afirmasi</div>
-          </div>
-        </div>
-      </div>
-
-      <div id="tab-reguler" class="req-panel">
-        <div class="req-list">
-          <div class="card req-item"><div class="req-num">1</div><div class="req-text"><strong>NISN (Nomor Induk Siswa Nasional)</strong>Terdaftar di EMIS atau DAPODIK</div></div>
-          <div class="card req-item"><div class="req-num">2</div><div class="req-text"><strong>Kartu Keluarga (KK)</strong>Diterbitkan Dinas Dukcapil sebelum Maret 2026</div></div>
-          <div class="card req-item"><div class="req-num">3</div><div class="req-text"><strong>Ijazah MI/SD atau Surat Keterangan Lulus</strong>Dokumen yang membuktikan telah menyelesaikan pendidikan</div></div>
-          <div class="card req-item"><div class="req-num">4</div><div class="req-text"><strong>Surat Pernyataan Pertanggungjawaban Mutlak</strong>Ditandatangani orang tua/wali, bermaterai Rp 10.000 — format dari portal</div></div>
-          <div class="card req-item"><div class="req-num" style="background:rgba(255,255,255,.15);color:var(--muted);">±</div><div class="req-text"><strong>Sertifikat Akreditasi (Kondisional)</strong><div class="req-note">Hanya wajib jika asal sekolah dari luar Provinsi Banten. Sekolah belum/tidak terakreditasi → nilai akreditasi otomatis = 65</div></div></div>
-          <div class="card req-item"><div class="req-num" style="background:rgba(255,255,255,.15);color:var(--muted);">±</div><div class="req-text"><strong>Surat Rekomendasi/Kesetaraan Ijazah (Kondisional)</strong><div class="req-note">Hanya untuk calon murid asal sekolah asing. Diterbitkan Kemenag atau Kemendikdasmen.</div></div></div>
-        </div>
-        <div class="infobox" style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.2);margin-top:1rem;">
-          <span class="infobox-icon">🌐</span>
-          <span>Semua dokumen diunggah secara online melalui <strong>pmbm-kanwilbanten.com</strong>. Setelah berkas lengkap, cetak bukti pendaftaran. Lapor diri fisik dilakukan setelah pengumuman.</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- MEKANISME SELEKSI -->
-<section id="seleksi">
-  <div class="wrap">
-    <div class="section-header center">
-      <div class="eyebrow">Penilaian</div>
-      <h2>Mekanisme <span class="grad">Seleksi</span></h2>
-      <div class="divider"></div>
-    </div>
-    <div class="seleksi-grid">
-      <div class="card jalur-card" style="background:linear-gradient(135deg,rgba(212,168,67,.08),transparent);">
-        <div class="badge" style="background:rgba(212,168,67,.15);color:#d4a843;border:1px solid rgba(212,168,67,.3);">🏆 Prestasi</div>
-        <div class="seleksi-name">Jalur Prestasi</div>
-        <div class="seleksi-body">
-          Seleksi berdasarkan <strong>verifikasi sertifikat prestasi asli</strong> oleh panitia.<br><br>
-          Khusus <strong>Tahfidz</strong>: verifikasi sertifikat + <strong>tes hafalan langsung</strong> pada 13 April 2026.<br><br>
-          Tidak ada CBT untuk jalur ini.
-        </div>
-      </div>
-      <div class="card jalur-card" style="background:linear-gradient(135deg,rgba(96,165,250,.08),transparent);">
-        <div class="badge" style="background:rgba(96,165,250,.15);color:#60a5fa;border:1px solid rgba(96,165,250,.3);">💙 Afirmasi</div>
-        <div class="seleksi-name">Jalur Afirmasi</div>
-        <div class="seleksi-body">
-          Seleksi berdasarkan <strong>verifikasi kelayakan ekonomi</strong> melalui dokumen KIP/PKH/KKS/SKTM.<br><br>
-          SKTM akan dilakukan <strong>pengecekan lapangan</strong> berdasarkan foto rumah dan tagihan listrik.<br><br>
-          Tidak ada CBT untuk jalur ini.
-        </div>
-      </div>
-      <div class="card jalur-card" style="background:linear-gradient(135deg,rgba(16,185,129,.06),transparent);">
-        <div class="badge" style="background:rgba(16,185,129,.12);color:#10b981;border:1px solid rgba(16,185,129,.25);">📝 Reguler</div>
-        <div class="seleksi-name">Jalur Reguler</div>
-        <div class="seleksi-body">
-          Nilai Akhir dihitung dari dua komponen:
-          <div class="formula-box"><span>70%</span> Nilai CBT <span style="color:var(--muted);font-size:.85em;">+</span> <span>30%</span> Nilai BTQ</div>
-          <div style="margin-top:.85rem;font-size:.75rem;color:var(--muted);">
-            Tie-breaking (nilai sama):<br>
-            1. Usia lebih tua diprioritaskan<br>
-            2. Jika usia sama → waktu mendaftar lebih awal
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- KETENTUAN GUGUR -->
-<section id="gugur" style="padding-top:2rem;">
-  <div class="wrap">
-    <div style="max-width:780px;margin:0 auto;">
-      <div class="eyebrow" style="background:rgba(220,38,38,.1);color:#ef4444;border-color:rgba(220,38,38,.2);">⚠️ Perhatian Penting</div>
-      <h2 style="margin-bottom:.5rem;">Ketentuan <span style="background:linear-gradient(135deg,#ef4444,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Gugur</span></h2>
-      <div class="divider" style="background:linear-gradient(90deg,#ef4444,#f97316);"></div>
-      <p style="color:var(--muted);font-size:.85rem;margin-top:.75rem;margin-bottom:1.25rem;">Peserta dinyatakan gugur dan tidak dapat diproses lebih lanjut apabila:</p>
-      <div class="gugur-list">
-        <div class="gugur-item"><span class="gugur-icon">✗</span><span>Mengisi formulir online <strong>tapi tidak menyerahkan berkas fisik</strong> ke sekretariat (Prestasi/Afirmasi)</span></div>
-        <div class="gugur-item"><span class="gugur-icon">✗</span><span>Menyerahkan berkas fisik <strong>tapi tidak mengisi formulir online</strong> (Prestasi/Afirmasi)</span></div>
-        <div class="gugur-item"><span class="gugur-icon">✗</span><span>Dokumen fisik yang diserahkan <strong>tidak sesuai</strong> dengan yang diunggah secara online</span></div>
-        <div class="gugur-item"><span class="gugur-icon">✗</span><span>Tidak lapor diri sesuai jadwal → dianggap <strong>mengundurkan diri</strong> meskipun dinyatakan lulus seleksi</span></div>
-        <div class="gugur-item"><span class="gugur-icon">✗</span><span>Terbukti <strong>memalsukan data atau dokumen</strong> → diskualifikasi + sanksi sesuai peraturan perundang-undangan</span></div>
-      </div>
-      <div class="infobox" style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.2);margin-top:1.25rem;">
-        <span class="infobox-icon">💡</span>
-        <span>Tidak lolos? Tenang. Berkas peserta yang tidak lolos dapat <strong>diambil kembali sehari setelah pengumuman (15 April 2026)</strong>. Kamu masih bisa daftar ke Jalur Reguler mulai 18 April 2026.</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- PROGRAM UNGGULAN -->
-<section id="program">
-  <div class="wrap">
-    <div class="section-header center">
-      <div class="eyebrow">Keunggulan</div>
-      <h2>Program & <span class="grad">Ekstrakurikuler</span></h2>
-      <div class="divider"></div>
-    </div>
-    <div class="prog-grid">
-      <div class="card card-hover prog-card"><div class="prog-icon">📖</div><div class="prog-title">Tahfidz Al-Qur'an</div><p class="prog-desc">Target minimal 3 juz selama 3 tahun belajar dengan bimbingan hafiz berpengalaman.</p></div>
-      <div class="card card-hover prog-card"><div class="prog-icon">🔬</div><div class="prog-title">Olimpiade Sains</div><p class="prog-desc">Persiapan KSM & OSN mulai dari tingkat kabupaten hingga nasional.</p></div>
-      <div class="card card-hover prog-card"><div class="prog-icon">💻</div><div class="prog-title">Teknologi & IT</div><p class="prog-desc">Literasi digital, coding dasar, dan teknologi informasi untuk era global.</p></div>
-      <div class="card card-hover prog-card"><div class="prog-icon">⚽</div><div class="prog-title">Olahraga Prestasi</div><p class="prog-desc">O2SN, sepak bola, bulu tangkis, karate, dan atletik dengan pelatih profesional.</p></div>
-      <div class="card card-hover prog-card"><div class="prog-icon">🎭</div><div class="prog-title">Seni & Budaya</div><p class="prog-desc">Paskibra, drumband, hadroh, kaligrafi, MTQ, dan seni rupa.</p></div>
-      <div class="card card-hover prog-card"><div class="prog-icon">🌍</div><div class="prog-title">Bahasa Asing</div><p class="prog-desc">English Club dan Arabic Club untuk mendukung komunikasi di era global.</p></div>
-    </div>
-  </div>
-</section>
-
-<!-- FAQ -->
-<section id="faq">
-  <div class="wrap">
-    <div class="section-header center">
-      <div class="eyebrow">FAQ</div>
-      <h2>Pertanyaan yang<br><span class="grad">Sering Diajukan</span></h2>
-      <div class="divider"></div>
-    </div>
-    <div class="faq-wrap" id="faqList"></div>
-  </div>
-</section>
-
-<!-- CTA -->
-<section class="cta-section">
-  <div style="position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(5,150,105,.1) 0%,transparent 70%);pointer-events:none;"></div>
-  <div class="cta-inner">
-    <h2>Siap Bergabung?<br><span class="grad">Daftar Sekarang</span></h2>
-    <p class="lead" style="margin:1rem auto 2rem;">Pendaftaran gratis, transparan, dan objektif. Kuota terbatas — jangan sampai ketinggalan.</p>
-    <div class="cta-btns">
-      <a href="https://daftar.mtsn1pandeglang.sch.id" class="btn btn-primary btn-lg">Prestasi / Afirmasi →</a>
-      <a href="https://pmbm-kanwilbanten.com" class="btn btn-ghost btn-lg">Reguler (PMBM Bersama) →</a>
-    </div>
-  </div>
-</section>
-
-</main>
-
-<footer>
-  <div class="wrap">
-    <div class="footer-logo">MTs Negeri 1 Pandeglang</div>
-    <div class="footer-sub">Kementerian Agama Kabupaten Pandeglang · PMBM TP 2026/2027</div>
-    <div class="footer-sub" style="margin-top:.25rem;">Jl. Raya Labuan, Kadulisung, Pandeglang, Banten 42213</div>
-    <div class="footer-sub" style="margin-top:.2rem;">Kepala Madrasah: Hj. Yanti Mariah, S.S., M.Pd. · Ketua PMBM: Umar Mu'tamar, S.Ag</div>
-    <div class="footer-links">
-      <a href="#jalur">Jalur</a>
-      <a href="#jadwal">Jadwal</a>
-      <a href="#alur">Alur Daftar</a>
-      <a href="#syarat">Persyaratan</a>
-      <a href="#seleksi">Seleksi</a>
-      <a href="#faq">FAQ</a>
-      <a href="https://mtsn1pandeglang.sch.id" target="_blank" rel="noopener">Website Resmi</a>
-      <a href="https://pmbm-kanwilbanten.com" target="_blank" rel="noopener">Portal Reguler</a>
-    </div>
-    <div class="footer-copy">
-      &copy; 2026 MTs Negeri 1 Pandeglang. Diselenggarakan berdasarkan SK Kanwil Kemenag Banten No. 009/B/Tahun 2026.<br>
-      Dikembangkan oleh <a href="https://github.com/zulfikriyahya" target="_blank" rel="noopener">Yahya Zulfikri</a>.
-    </div>
-  </div>
-</footer>
-
-<script>
-// ── DATA ──────────────────────────────────────────────────────────
-const schedPA = [
-  {label:'Pendaftaran Online',       mulai:'2026-04-06', selesai:'2026-04-08', note:'daftar.mtsn1pandeglang.sch.id'},
-  {label:'Penyerahan Berkas Fisik',  mulai:'2026-04-06', selesai:'2026-04-08', note:'Sekretariat PMBM MTsN 1 Pandeglang'},
-  {label:'Verifikasi Berkas',        mulai:'2026-04-09', selesai:'2026-04-10', note:'Dilakukan panitia'},
-  {label:'Tes Kemampuan & BTQ',      mulai:'2026-04-13', selesai:'2026-04-13', note:'Hadir pukul 07.00 WIB'},
-  {label:'Pengumuman Hasil',         mulai:'2026-04-14', selesai:'2026-04-14', note:'Website madrasah'},
-  {label:'Lapor Diri & Pemberkasan', mulai:'2026-04-15', selesai:'2026-04-16', note:'Langsung ke madrasah'},
-];
-const schedReg = [
-  {label:'Pendaftaran Online',       mulai:'2026-04-18', selesai:'2026-04-27', note:'Buka 08.00, tutup 16.00 WIB'},
-  {label:'Verifikasi Dokumen',       mulai:'2026-04-19', selesai:'2026-04-28', note:'08.00–16.00 WIB'},
-  {label:'Pengumuman Peserta CBT',   mulai:'2026-04-29', selesai:'2026-04-29', note:'08.00 WIB'},
-  {label:'Uji Coba CBT',             mulai:'2026-04-30', selesai:'2026-04-30', note:'07.30–16.00 WIB'},
-  {label:'Pelaksanaan CBT',          mulai:'2026-05-02', selesai:'2026-05-02', note:'07.30–16.00 WIB'},
-  {label:'Tes BTQ',                  mulai:'2026-05-02', selesai:'2026-05-03', note:'07.30–16.00 WIB'},
-  {label:'Pengumuman Kelulusan',     mulai:'2026-05-05', selesai:'2026-05-05', note:'08.00 WIB'},
-  {label:'Lapor Diri & Berkas',      mulai:'2026-05-06', selesai:'2026-05-12', note:'Buka 08.00, tutup 16.00 WIB'},
-];
-const faqs = [
-  ['Apakah ada biaya pendaftaran?','Tidak. Seluruh proses PMBM MTsN 1 Pandeglang gratis, tidak ada pungutan biaya apapun dari calon peserta didik.'],
-  ['Berapa jalur yang tersedia dan apa bedanya?','Ada 3 jalur: Prestasi (untuk siswa berprestasi akademik/non-akademik/tahfidz), Afirmasi (untuk keluarga pemegang KIP/PKH/KKS/SKTM), dan Reguler (untuk semua lulusan MI/SD, seleksi CBT+BTQ melalui pmbm-kanwilbanten.com).'],
-  ['Apakah boleh mendaftar di dua jalur sekaligus?','Setiap pendaftar hanya dapat memilih satu jalur (Prestasi atau Afirmasi). Namun jika tidak lolos, kamu masih bisa mendaftar ke Jalur Reguler yang dibuka terpisah mulai 18 April 2026.'],
-  ['Apa warna map untuk masing-masing jalur?','Jalur Prestasi menggunakan map snelhecter warna MERAH. Jalur Afirmasi menggunakan map snelhecter warna KUNING. Setiap map harus diberi label identitas (nama, asal sekolah, jalur).'],
-  ['Apa saja prestasi yang diakui untuk Jalur Prestasi?','Tahfidz min. 3 juz; Akademik: KSM/OMI, MYRES, OSN, OSP, OSK; Non-Akademik: MTQ, MHQ, MSQ, Pidato Arab, Kaligrafi, O2SN, FLS2N, Olahraga. Minimal Juara 1 tingkat kab/kota. Untuk beregu hanya top scorer/pemain terbaik yang tercantum di sertifikat.'],
-  ['SKTM dari RT/RW apakah diterima untuk Jalur Afirmasi?','Tidak. SKTM harus diterbitkan oleh pemerintah daerah (kelurahan, kecamatan, atau dinas sosial). Selain itu wajib melampirkan rekening listrik 3 bulan terakhir dan foto rumah (tampak depan, dalam, belakang).'],
-  ['Apa yang terjadi jika formulir online sudah diisi tapi berkas fisik tidak diserahkan?','Pendaftar dinyatakan GUGUR. Kedua syarat (formulir online dan berkas fisik) harus dipenuhi. Begitu pula sebaliknya.'],
-  ['Bagaimana cara kerja seleksi Jalur Reguler?','Nilai Akhir = 70% Nilai CBT + 30% Nilai BTQ. Jika nilai sama, diprioritaskan yang lebih tua usianya. Jika usia pun sama, yang lebih awal mendaftar diprioritaskan.'],
-  ['Kapan dan di mana bisa mengambil berkas jika tidak lolos?','Berkas peserta yang tidak lolos dapat diambil di Sekretariat PMBM MTsN 1 Pandeglang sehari setelah pengumuman, yaitu mulai 15 April 2026 untuk Jalur Prestasi/Afirmasi.'],
-  ['Mengapa KK dan Akta Kelahiran harus berbarcode?','Dokumen harus diterbitkan secara resmi oleh Dinas Kependudukan dan Catatan Sipil (Dukcapil). Barcode adalah tanda keaslian dan validitas dokumen kependudukan resmi.'],
-];
-
-// ── JADWAL RENDER ──────────────────────────────────────────────────
-function statusBadge(mulai, selesai) {
-  const now = new Date(), m = new Date(mulai), s = new Date(selesai);
-  s.setHours(23,59,59);
-  if (now < m) return {text:'Mendatang',sc:'rgba(255,255,255,.06)',tc:'var(--muted)'};
-  if (now <= s) return {text:'Aktif',sc:'rgba(212,168,67,.15)',tc:'#d4a843'};
-  return {text:'Selesai',sc:'rgba(16,185,129,.12)',tc:'#10b981'};
-}
-function fmtDate(a, b) {
-  const opt = {day:'numeric',month:'short'};
-  const da = new Date(a).toLocaleDateString('id-ID',opt);
-  const db = new Date(b).toLocaleDateString('id-ID',{...opt,year:'numeric'});
-  return a === b ? db : da + ' – ' + db;
-}
-function renderSched(data, elId) {
-  const el = document.getElementById(elId);
-  if (!el) return;
-  el.innerHTML = data.map(j => {
-    const {text,sc,tc} = statusBadge(j.mulai, j.selesai);
-    return `<div class="sched-item">
-      <div style="flex:1;">
-        <div class="sched-title">${j.label}</div>
-        <div class="sched-date">${fmtDate(j.mulai,j.selesai)}${j.note ? ' · ' + j.note : ''}</div>
-      </div>
-      <div class="sched-badge badge" style="background:${sc};color:${tc};border:1px solid ${tc}44;">${text}</div>
-    </div>`;
-  }).join('');
-}
-renderSched(schedPA,'sched-pa');
-renderSched(schedReg,'sched-reg');
-
-// ── FAQ RENDER ────────────────────────────────────────────────────
-document.getElementById('faqList').innerHTML = faqs.map(([q,a]) => `
-  <div class="card faq-item">
-    <button class="faq-btn" onclick="toggleFaq(this)">
-      <span>${q}</span><span class="faq-chevron">▼</span>
-    </button>
-    <div class="faq-body"><p>${a}</p></div>
-  </div>`).join('');
-
-// ── COUNTDOWN ────────────────────────────────────────────────────
-const cdEl = document.getElementById('countdown');
-if (cdEl) {
-  const dead = new Date(cdEl.dataset.deadline);
-  const pad = n => String(n).padStart(2,'0');
-  function tick() {
-    const diff = dead - Date.now();
-    if (diff <= 0) { cdEl.innerHTML = '<p style="grid-column:span 4;text-align:center;padding:1rem;opacity:.5;font-size:.8rem;">Pendaftaran telah ditutup.</p>'; return; }
-    document.getElementById('cd-d').textContent = pad(Math.floor(diff/86400000));
-    document.getElementById('cd-h').textContent = pad(Math.floor((diff%86400000)/3600000));
-    document.getElementById('cd-m').textContent = pad(Math.floor((diff%3600000)/60000));
-    document.getElementById('cd-s').textContent = pad(Math.floor((diff%60000)/1000));
-  }
-  tick(); setInterval(tick,1000);
-}
-
-// ── THEME ─────────────────────────────────────────────────────────
-const html = document.documentElement;
-const themeBtn = document.getElementById('themeBtn');
-if (localStorage.getItem('theme')==='light') { html.classList.add('light'); themeBtn.textContent='🌙'; }
-themeBtn.addEventListener('click', () => {
-  html.classList.toggle('light');
-  const l = html.classList.contains('light');
-  themeBtn.textContent = l ? '🌙' : '☀️';
-  localStorage.setItem('theme', l?'light':'dark');
-});
-
-// ── DRAWER ────────────────────────────────────────────────────────
-const menuBtn = document.getElementById('menuBtn');
-const drawer = document.getElementById('drawer');
-menuBtn.addEventListener('click', () => {
-  const o = drawer.classList.toggle('open');
-  menuBtn.classList.toggle('open', o);
-});
-drawer.querySelectorAll('.d-link').forEach(a => a.addEventListener('click', () => {
-  drawer.classList.remove('open'); menuBtn.classList.remove('open');
-}));
-document.addEventListener('click', e => {
-  if (!drawer.contains(e.target) && !menuBtn.contains(e.target)) {
-    drawer.classList.remove('open'); menuBtn.classList.remove('open');
-  }
-});
-
-// ── NAV ACTIVE ────────────────────────────────────────────────────
-const sections = document.querySelectorAll('section[id]');
-const navAs = document.querySelectorAll('.nav-links a');
-sections.forEach(s => new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if (!e.isIntersecting) return;
-    navAs.forEach(a => a.classList.remove('active'));
-    const a = document.querySelector(`.nav-links a[href="#${e.target.id}"]`);
-    if (a) a.classList.add('active');
-  });
-}, {threshold:.35}).observe(s));
-
-// ── FAQ TOGGLE ────────────────────────────────────────────────────
-function toggleFaq(btn) {
-  const body = btn.nextElementSibling;
-  const chev = btn.querySelector('.faq-chevron');
-  const isOpen = body.style.maxHeight && body.style.maxHeight !== '0px';
-  document.querySelectorAll('.faq-body').forEach(b => b.style.maxHeight='0px');
-  document.querySelectorAll('.faq-chevron').forEach(c => c.style.transform='');
-  if (!isOpen) { body.style.maxHeight = body.scrollHeight+'px'; chev.style.transform='rotate(180deg)'; }
-}
-
-// ── REQ TABS ──────────────────────────────────────────────────────
-function switchTab(btn, panelId) {
-  document.querySelectorAll('.req-tab').forEach(t => {
-    t.classList.remove('active');
-    t.style.background='transparent'; t.style.color='var(--muted)'; t.style.borderColor='var(--border)';
-  });
-  document.querySelectorAll('.req-panel').forEach(p => p.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById(panelId).classList.add('active');
-  if (panelId==='tab-prestasi') { btn.style.background='rgba(212,168,67,.1)'; btn.style.color='#d4a843'; btn.style.borderColor='#d4a843'; }
-  else if (panelId==='tab-afirmasi') { btn.style.background='rgba(96,165,250,.1)'; btn.style.color='#60a5fa'; btn.style.borderColor='#60a5fa'; }
-  else { btn.style.background='rgba(16,185,129,.1)'; btn.style.color='#10b981'; btn.style.borderColor='#10b981'; }
-}
-</script>
-</body>
-</html>
-
-```
-
----
-
 ### ./resources/views/skl.blade.php
 
 ```blade
@@ -24949,9 +23151,9 @@ function switchTab(btn, panelId) {
 
     $fotoUrl = $record->berkas_foto ? Storage::url($record->berkas_foto) : null;
     $qrPayload = url('/dashboard/formulir/' . $record->id);
-
     $now = Carbon::now();
     $tanggalTtd = $now;
+
     if ($tahunPendaftaran) {
         $periodes = [
             [
@@ -24975,6 +23177,7 @@ function switchTab(btn, panelId) {
                 $tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai,
             ],
         ];
+
         foreach ($periodes as [$mulai, $selesai]) {
             if ($mulai && $selesai && $now->between(Carbon::parse($mulai), Carbon::parse($selesai))) {
                 $tanggalTtd = Carbon::parse($mulai);
@@ -24985,11 +23188,29 @@ function switchTab(btn, panelId) {
 
     $kota = ucwords(strtolower(optional($instansi?->kabupaten)->nama ?? 'Pandeglang'));
     $namaMadrasah = $instansi?->nama ?? 'MTsN 1 Pandeglang';
+
     $diterima = in_array($record->status_pendaftaran, [
         'Diterima',
         'Diterima Di Kelas Reguler',
         'Diterima Di Kelas Unggulan',
     ]);
+
+    // ── Logika Wali untuk Pakta Integritas ───────────────────────────────────
+    $ayahHidup = $record->ayah_status !== 'Meninggal' && $record->ayah_nama;
+    $ibuHidup = $record->ibu_status !== 'Meninggal' && $record->ibu_nama;
+
+    if ($ayahHidup) {
+        $namaWali = $record->ayah_nama;
+        $hubunganWali = 'Ayah Kandung';
+    } elseif ($ibuHidup) {
+        $namaWali = $record->ibu_nama;
+        $hubunganWali = 'Ibu Kandung';
+    } else {
+        $namaWali = $record->wali_nama;
+        $hubunganWali = 'Wali';
+    }
+
+    $namaWaliDisplay = $namaWali ? strtoupper($namaWali) : '......................................';
 @endphp
 
 <!DOCTYPE html>
@@ -25239,14 +23460,12 @@ function switchTab(btn, panelId) {
         <tr>
             <td style="width: 30%; color: #4b5563;">Nama Lengkap</td>
             <td style="width: 2%;">:</td>
-            <td style="font-weight: bold;">
-                {{ strtoupper($record->ayah_nama ?? ($record->wali_nama ?? '......................................')) }}
-            </td>
+            <td style="font-weight: bold;">{{ $namaWaliDisplay }}</td>
         </tr>
         <tr>
             <td style="color: #4b5563;">Status Hubungan</td>
             <td>:</td>
-            <td>Orang Tua / Wali Peserta Didik</td>
+            <td>{{ $hubunganWali }} Peserta Didik</td>
         </tr>
     </table>
 
@@ -25588,6 +23807,7 @@ function switchTab(btn, panelId) {
 [x-cloak] {
     display: none;
 }
+
 ```
 
 ---
@@ -25614,13 +23834,103 @@ export default {
 ### ./resources/css/filament/dashboard/theme.css
 
 ```css
-@import '../../../../vendor/filament/filament/resources/css/base.css';
+@import "../../../../vendor/filament/filament/resources/css/base.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 @tailwind variants;
-
 @config 'tailwind.config.js';
+
+@layer components {
+
+    /* ══════════════════════════════════════
+       AUTH FORM WRAPPER — Border Gradient
+    ══════════════════════════════════════ */
+    .custom-auth-form-wrapper {
+        border: 2px solid transparent;
+        background:
+            linear-gradient(#111827, #111827) padding-box,
+            linear-gradient(135deg, #10b981, #06b6d4, #f59e0b) border-box;
+        border-radius: 1rem;
+        padding: 1.5rem;
+    }
+
+    /* Input wrapper border gradient */
+    .custom-auth-form-wrapper .fi-input-wrp {
+        border: 1.5px solid transparent !important;
+        background:
+            linear-gradient(#1f2937, #1f2937) padding-box,
+            linear-gradient(135deg, #10b981, #06b6d4, #f59e0b) border-box !important;
+        border-radius: 0.5rem !important;
+        box-shadow: none !important;
+        --tw-ring-shadow: none !important;
+        --tw-shadow: none !important;
+    }
+
+    .custom-auth-form-wrapper .fi-input-wrp:focus-within {
+        background:
+            linear-gradient(#1f2937, #1f2937) padding-box,
+            linear-gradient(135deg, #f59e0b, #06b6d4, #10b981) border-box !important;
+    }
+
+    /* ── Teks input ── */
+    .custom-auth-form-wrapper .fi-input,
+    .custom-auth-form-wrapper input {
+        color: #f3f4f6 !important;
+        background: transparent !important;
+    }
+
+    .custom-auth-form-wrapper input::placeholder {
+        color: #6b7280 !important;
+    }
+
+    /* ── Label field ── */
+    .custom-auth-form-wrapper label,
+    .custom-auth-form-wrapper .fi-fo-field-wrp-label label {
+        color: #d1d5db !important;
+    }
+
+    /* ── Judul halaman ── */
+    .custom-auth-form-wrapper h1,
+    .custom-auth-form-wrapper h2 {
+        color: #f9fafb !important;
+    }
+
+    /* ── Sub-teks / deskripsi ── */
+    .custom-auth-form-wrapper p {
+        color: #9ca3af !important;
+    }
+
+    /* ── Span teks biasa ── */
+    .custom-auth-form-wrapper span {
+        color: #d1d5db !important;
+    }
+
+    /* ── Checkbox label ── */
+    .custom-auth-form-wrapper .fi-checkbox-label,
+    .custom-auth-form-wrapper [class*="checkbox"] label {
+        color: #d1d5db !important;
+    }
+
+    /* ── Link ── */
+    .custom-auth-form-wrapper a {
+        color: #10b981 !important;
+    }
+
+    .custom-auth-form-wrapper a:hover {
+        color: #34d399 !important;
+    }
+
+    /* ── Icon SVG dalam input ── */
+    .custom-auth-form-wrapper .fi-input-wrp svg {
+        color: #6b7280 !important;
+    }
+
+    /* ── Required asterisk (*) ── */
+    .custom-auth-form-wrapper .fi-fo-field-wrp-label .fi-fo-field-wrp-label-required {
+        color: #f87171 !important;
+    }
+}
 
 ```
 
@@ -26750,6 +25060,16 @@ return [
     AppServiceProvider::class,
     AdminPanelProvider::class,
 ];
+
+```
+
+---
+
+## Public - JS
+
+### ./public/js/devonab/filament-easy-footer/filament-easy-footer-scripts.js
+
+```javascript
 
 ```
 
@@ -28237,6 +26557,305 @@ Pendaftar dinyatakan **gugur** apabila:
 
 ---
 
+### ./konsep.md
+
+```markdown
+
+## File Tree
+
+```
+app/Models/Anggota.php
+app/Models/Bendahara.php
+app/Models/CalonSiswa.php
+app/Models/Ekstrakurikuler.php
+app/Models/FormulirPrestasi.php
+app/Models/Informasi.php
+app/Models/JalurPendaftaran.php
+app/Models/Jurusan.php
+app/Models/Kabupaten.php
+app/Models/Kecamatan.php
+app/Models/Kelas.php
+app/Models/Kelurahan.php
+app/Models/Ketua.php
+app/Models/MataPelajaran.php
+app/Models/Negara.php
+app/Models/Pimpinan.php
+app/Models/Prestasi.php
+app/Models/Provinsi.php
+app/Models/SekolahAsal.php
+app/Models/Sekolah.php
+app/Models/Sekretaris.php
+app/Models/TahunPendaftaran.php
+app/Models/User.php
+app/Observers/CalonSiswaObserver.php
+app/Policies/AnggotaPolicy.php
+app/Policies/BendaharaPolicy.php
+app/Policies/CalonSiswaPolicy.php
+app/Policies/EkstrakurikulerPolicy.php
+app/Policies/InformasiPolicy.php
+app/Policies/JalurPendaftaranPolicy.php
+app/Policies/JurusanPolicy.php
+app/Policies/KabupatenPolicy.php
+app/Policies/KecamatanPolicy.php
+app/Policies/KelasPolicy.php
+app/Policies/KelurahanPolicy.php
+app/Policies/KetuaPolicy.php
+app/Policies/MataPelajaranPolicy.php
+app/Policies/NegaraPolicy.php
+app/Policies/PimpinanPolicy.php
+app/Policies/PrestasiPolicy.php
+app/Policies/ProvinsiPolicy.php
+app/Policies/RolePolicy.php
+app/Policies/SekolahAsalPolicy.php
+app/Policies/SekolahPolicy.php
+app/Policies/SekretarisPolicy.php
+app/Policies/TahunPendaftaranPolicy.php
+app/Policies/UserPolicy.php
+app/Services/WhatsAppService.php
+app/Jobs/SendWhatsAppJob.php
+app/Helpers/PdfDataHelper.php
+app/Constants/FormOptions.php
+app/Http/Controllers/Controller.php
+app/Http/Controllers/FormulirController.php
+app/Http/Controllers/LandingController.php
+app/Filament/Resources/AnggotaResource/Pages/CreateAnggota.php
+app/Filament/Resources/AnggotaResource/Pages/EditAnggota.php
+app/Filament/Resources/AnggotaResource/Pages/ListAnggotas.php
+app/Filament/Resources/AnggotaResource/Pages/ViewAnggota.php
+app/Filament/Resources/BendaharaResource/Pages/CreateBendahara.php
+app/Filament/Resources/BendaharaResource/Pages/EditBendahara.php
+app/Filament/Resources/BendaharaResource/Pages/ListBendaharas.php
+app/Filament/Resources/BendaharaResource/Pages/ViewBendahara.php
+app/Filament/Resources/CalonSiswaResource/Pages/CreateCalonSiswa.php
+app/Filament/Resources/CalonSiswaResource/Pages/EditCalonSiswa.php
+app/Filament/Resources/CalonSiswaResource/Pages/ListCalonSiswas.php
+app/Filament/Resources/CalonSiswaResource/Pages/ViewCalonSiswa.php
+app/Filament/Resources/CalonSiswaResource/Widgets/FormulirOverview.php
+app/Filament/Resources/EkstrakurikulerResource/Pages/CreateEkstrakurikuler.php
+app/Filament/Resources/EkstrakurikulerResource/Pages/EditEkstrakurikuler.php
+app/Filament/Resources/EkstrakurikulerResource/Pages/ListEkstrakurikulers.php
+app/Filament/Resources/EkstrakurikulerResource/Pages/ViewEkstrakurikuler.php
+app/Filament/Resources/FormulirPrestasiResource/Pages/CreateFormulirPrestasi.php
+app/Filament/Resources/FormulirPrestasiResource/Pages/EditFormulirPrestasi.php
+app/Filament/Resources/FormulirPrestasiResource/Pages/ListFormulirPrestasis.php
+app/Filament/Resources/FormulirPrestasiResource/Pages/ViewFormulirPrestasi.php
+app/Filament/Resources/InformasiResource/Pages/CreateInformasi.php
+app/Filament/Resources/InformasiResource/Pages/EditInformasi.php
+app/Filament/Resources/InformasiResource/Pages/ListInformasis.php
+app/Filament/Resources/InformasiResource/Pages/ViewInformasi.php
+app/Filament/Resources/InformasiResource/Widgets/InformasiPublished.php
+app/Filament/Resources/JalurPendaftaranResource/Pages/CreateJalurPendaftaran.php
+app/Filament/Resources/JalurPendaftaranResource/Pages/EditJalurPendaftaran.php
+app/Filament/Resources/JalurPendaftaranResource/Pages/ListJalurPendaftarans.php
+app/Filament/Resources/JalurPendaftaranResource/Pages/ViewJalurPendaftaran.php
+app/Filament/Resources/JurusanResource/Pages/CreateJurusan.php
+app/Filament/Resources/JurusanResource/Pages/EditJurusan.php
+app/Filament/Resources/JurusanResource/Pages/ListJurusans.php
+app/Filament/Resources/JurusanResource/Pages/ViewJurusan.php
+app/Filament/Resources/KabupatenResource/Pages/CreateKabupaten.php
+app/Filament/Resources/KabupatenResource/Pages/EditKabupaten.php
+app/Filament/Resources/KabupatenResource/Pages/ListKabupatens.php
+app/Filament/Resources/KabupatenResource/Pages/ViewKabupaten.php
+app/Filament/Resources/KecamatanResource/Pages/CreateKecamatan.php
+app/Filament/Resources/KecamatanResource/Pages/EditKecamatan.php
+app/Filament/Resources/KecamatanResource/Pages/ListKecamatans.php
+app/Filament/Resources/KecamatanResource/Pages/ViewKecamatan.php
+app/Filament/Resources/KelasResource/Pages/CreateKelas.php
+app/Filament/Resources/KelasResource/Pages/EditKelas.php
+app/Filament/Resources/KelasResource/Pages/ListKelas.php
+app/Filament/Resources/KelasResource/Pages/ViewKelas.php
+app/Filament/Resources/KelurahanResource/Pages/CreateKelurahan.php
+app/Filament/Resources/KelurahanResource/Pages/EditKelurahan.php
+app/Filament/Resources/KelurahanResource/Pages/ListKelurahans.php
+app/Filament/Resources/KelurahanResource/Pages/ViewKelurahan.php
+app/Filament/Resources/KetuaResource/Pages/CreateKetua.php
+app/Filament/Resources/KetuaResource/Pages/EditKetua.php
+app/Filament/Resources/KetuaResource/Pages/ListKetuas.php
+app/Filament/Resources/KetuaResource/Pages/ViewKetua.php
+app/Filament/Resources/MataPelajaranResource/Pages/CreateMataPelajaran.php
+app/Filament/Resources/MataPelajaranResource/Pages/EditMataPelajaran.php
+app/Filament/Resources/MataPelajaranResource/Pages/ListMataPelajarans.php
+app/Filament/Resources/MataPelajaranResource/Pages/ViewMataPelajaran.php
+app/Filament/Resources/NegaraResource/Pages/CreateNegara.php
+app/Filament/Resources/NegaraResource/Pages/EditNegara.php
+app/Filament/Resources/NegaraResource/Pages/ListNegaras.php
+app/Filament/Resources/NegaraResource/Pages/ViewNegara.php
+app/Filament/Resources/PimpinanResource/Pages/CreatePimpinan.php
+app/Filament/Resources/PimpinanResource/Pages/EditPimpinan.php
+app/Filament/Resources/PimpinanResource/Pages/ListPimpinans.php
+app/Filament/Resources/PimpinanResource/Pages/ViewPimpinan.php
+app/Filament/Resources/PrestasiResource/Pages/CreatePrestasi.php
+app/Filament/Resources/PrestasiResource/Pages/EditPrestasi.php
+app/Filament/Resources/PrestasiResource/Pages/ListPrestasis.php
+app/Filament/Resources/PrestasiResource/Pages/ViewPrestasi.php
+app/Filament/Resources/ProvinsiResource/Pages/CreateProvinsi.php
+app/Filament/Resources/ProvinsiResource/Pages/EditProvinsi.php
+app/Filament/Resources/ProvinsiResource/Pages/ListProvinsis.php
+app/Filament/Resources/ProvinsiResource/Pages/ViewProvinsi.php
+app/Filament/Resources/RoleResource/Pages/CreateRole.php
+app/Filament/Resources/RoleResource/Pages/EditRole.php
+app/Filament/Resources/RoleResource/Pages/ListRoles.php
+app/Filament/Resources/RoleResource/Pages/ViewRole.php
+app/Filament/Resources/SekolahAsalResource/Concerns/HasSekolahAsalWizardSteps.php
+app/Filament/Resources/SekolahAsalResource/Pages/CreateSekolahAsal.php
+app/Filament/Resources/SekolahAsalResource/Pages/EditSekolahAsal.php
+app/Filament/Resources/SekolahAsalResource/Pages/ListSekolahAsals.php
+app/Filament/Resources/SekolahAsalResource/Pages/ViewSekolahAsal.php
+app/Filament/Resources/SekolahResource/Concerns/HasSekolahWizardSteps.php
+app/Filament/Resources/SekolahResource/Pages/CreateSekolah.php
+app/Filament/Resources/SekolahResource/Pages/EditSekolah.php
+app/Filament/Resources/SekolahResource/Pages/ListSekolahs.php
+app/Filament/Resources/SekolahResource/Pages/ViewSekolah.php
+app/Filament/Resources/SekretarisResource/Pages/CreateSekretaris.php
+app/Filament/Resources/SekretarisResource/Pages/EditSekretaris.php
+app/Filament/Resources/SekretarisResource/Pages/ListSekretaris.php
+app/Filament/Resources/SekretarisResource/Pages/ViewSekretaris.php
+app/Filament/Resources/TahunPendaftaranResource/Pages/CreateTahunPendaftaran.php
+app/Filament/Resources/TahunPendaftaranResource/Pages/EditTahunPendaftaran.php
+app/Filament/Resources/TahunPendaftaranResource/Pages/ListTahunPendaftarans.php
+app/Filament/Resources/TahunPendaftaranResource/Pages/ViewTahunPendaftaran.php
+app/Filament/Resources/UserResource/Pages/CreateUser.php
+app/Filament/Resources/UserResource/Pages/EditUser.php
+app/Filament/Resources/UserResource/Pages/ListUsers.php
+app/Filament/Resources/UserResource/Pages/ViewUser.php
+app/Filament/Resources/UserResource/Widgets/UserRegisters.php
+app/Filament/Resources/AnggotaResource.php
+app/Filament/Resources/BendaharaResource.php
+app/Filament/Resources/CalonSiswaResource.php
+app/Filament/Resources/EkstrakurikulerResource.php
+app/Filament/Resources/FormulirPrestasiResource.php
+app/Filament/Resources/InformasiResource.php
+app/Filament/Resources/JalurPendaftaranResource.php
+app/Filament/Resources/JurusanResource.php
+app/Filament/Resources/KabupatenResource.php
+app/Filament/Resources/KecamatanResource.php
+app/Filament/Resources/KelasResource.php
+app/Filament/Resources/KelurahanResource.php
+app/Filament/Resources/KetuaResource.php
+app/Filament/Resources/MataPelajaranResource.php
+app/Filament/Resources/NegaraResource.php
+app/Filament/Resources/PimpinanResource.php
+app/Filament/Resources/PrestasiResource.php
+app/Filament/Resources/ProvinsiResource.php
+app/Filament/Resources/RoleResource.php
+app/Filament/Resources/SekolahAsalResource.php
+app/Filament/Resources/SekolahResource.php
+app/Filament/Resources/SekretarisResource.php
+app/Filament/Resources/TahunPendaftaranResource.php
+app/Filament/Resources/UserResource.php
+app/Filament/Exports/CalonSiswaExporter.php
+app/Filament/Imports/CalonSiswaImporter.php
+app/Filament/Pages/Auth/EditProfileCustom.php
+app/Filament/Pages/Auth/ForgotPasswordCustom.php
+app/Filament/Pages/Auth/LoginCustom.php
+app/Filament/Pages/Auth/NewPassword.php
+app/Filament/Pages/Auth/RegisterCustom.php
+app/Filament/Pages/Auth/ResetPasswordOtp.php
+app/Filament/Pages/Auth/VerifikasiOtp.php
+app/Filament/Concerns/HasPanitiaWizardSteps.php
+app/Filament/Traits/CalonSiswaFormTrait.php
+app/Providers/AppServiceProvider.php
+app/Providers/Filament/AdminPanelProvider.php
+database/migrations/0001_01_01_000000_create_users_table.php
+database/migrations/0001_01_01_000001_create_calon_siswas_table.php
+database/migrations/0001_01_01_000002_create_cache_table.php
+database/migrations/0001_01_01_000003_create_jobs_table.php
+database/migrations/2025_03_07_143839_create_tahun_pendaftarans_table.php
+database/migrations/2025_03_07_143840_create_pimpinans_table.php
+database/migrations/2025_03_07_143841_create_ketuas_table.php
+database/migrations/2025_03_07_143842_create_sekretaris_table.php
+database/migrations/2025_03_07_143843_create_bendaharas_table.php
+database/migrations/2025_03_07_143844_create_negaras_table.php
+database/migrations/2025_03_07_143845_create_provinsis_table.php
+database/migrations/2025_03_07_143846_create_kabupatens_table.php
+database/migrations/2025_03_07_143847_create_kecamatans_table.php
+database/migrations/2025_03_07_143848_create_kelurahans_table.php
+database/migrations/2025_03_07_143849_create_informasis_table.php
+database/migrations/2025_03_07_143850_create_sekolahs_table.php
+database/migrations/2025_03_07_143851_create_sekolah_asals_table.php
+database/migrations/2025_03_07_143853_create_prestasis_table.php
+database/migrations/2025_03_07_143854_create_jalur_pendaftarans_table.php
+database/migrations/2025_03_07_143855_create_kelas_table.php
+database/migrations/2025_03_07_143958_create_notifications_table.php
+database/migrations/2025_03_10_000722_create_anggotas_table.php
+database/migrations/2025_03_11_203459_create_jurusans_table.php
+database/migrations/2025_03_11_221601_create_ekstrakurikulers_table.php
+database/migrations/2025_03_16_043544_create_imports_table.php
+database/migrations/2025_03_16_043545_create_exports_table.php
+database/migrations/2025_03_16_043546_create_failed_import_rows_table.php
+database/migrations/2025_03_17_054959_create_mata_pelajarans_table.php
+database/migrations/2025_03_17_192122_create_permission_tables.php
+database/migrations/2026_03_05_060527_create_formulir_prestasis.php
+routes/api.php
+routes/console.php
+routes/web.php
+resources/views/filament/pages/auth/forgot-password-custom.blade.php
+resources/views/filament/pages/auth/new-password.blade.php
+resources/views/filament/pages/auth/reset-password-otp.blade.php
+resources/views/filament/pages/auth/verifikasi-otp.blade.php
+resources/views/partials/pdf-header.blade.php
+resources/views/formulir.blade.php
+resources/views/kartu-tes.blade.php
+resources/views/landing.blade.php
+resources/views/skl.blade.php
+resources/views/vendor/filament-easy-footer/easy-footer.blade.php
+resources/views/vendor/filament-easy-footer/github-version.blade.php
+resources/views/vendor/filament-easy-footer/.gitkeep
+resources/css/app.css
+resources/css/filament/dashboard/tailwind.config.js
+resources/css/filament/dashboard/theme.css
+resources/js/app.js
+resources/js/bootstrap.js
+config/app.php
+config/auth.php
+config/cache.php
+config/database.php
+config/filament-easy-footer.php
+config/filament.php
+config/filament-shield.php
+config/filesystems.php
+config/logging.php
+config/mail.php
+config/permission.php
+config/queue.php
+config/sanctum.php
+config/services.php
+config/session.php
+bootstrap/app.php
+bootstrap/providers.php
+public/js/devonab/filament-easy-footer/filament-easy-footer-scripts.js
+public/.htaccess
+public/index.php
+public/robots.txt
+composer.json
+.env.example
+juknis-bersama.md
+juknis-mandiri.md
+lirik.md
+package.json
+postcss.config.js
+ringkasan.md
+SRS-Bersama.md
+SRS-Mandiri.md
+SRS-System.md
+tailwind.config.js
+vite.config.js
+```
+
+---
+
+## DASHBOARD JALUR PRESTASI
+### WIDGET
+- Jumlah Pendaftar Semua Jalur -> (Kecualikan Klik)
+- Jumlah Pendaftar Jalur Prestasi -> (Kecualikan Klik)
+- Status Formulir Pendaftaran -> Jika Belum Mengisi Formulir (Klik -> Masuk ke /dashboard/formulir/create)
+- Status Formulir Prestasi -> ()
+- Status Pendaftaran -> (Kecualikan Klik) -> Munculkan Hanya Pada Tanggal Pengumuman
+
+```
+
+---
+
 ### ./lirik.md
 
 ```markdown
@@ -28424,20 +27043,6 @@ export default {
 ### ./ringkasan.md
 
 ```markdown
-| Jalur/Kegiatan | Mulai | Selesai |
-|---|---|---|
-| **PPDB Global** | 6 Apr 08:00 | 12 Mei 18:00 |
-| **Prestasi** — Pendaftaran | 6 Apr 08:00 | 8 Apr 18:00 |
-| **Prestasi** — Pengumuman | 14 Apr 08:00 | 14 Apr 18:00 |
-| **Afirmasi** — Pendaftaran | 6 Apr 08:00 | 8 Apr 18:00 |
-| **Afirmasi** — Pengumuman | 14 Apr 08:00 | 14 Apr 18:00 |
-
-| **Reguler** — Pendaftaran | 18 Apr 08:00 | 27 Apr 18:00 |
-| **Reguler** — Pengumuman | 5 Mei 08:00 | 5 Mei 18:00 |
-| **Kartu Tes** | 29 Apr 08:00 | 30 Apr 18:00 |
-| **Tes Akademik (CBT)** | 2 Mei 08:00 | 2 Mei 18:00 |
-| **Tes Praktik/BTQ** | 2 Mei 08:00 | 3 Mei 18:00 |
-| **Registrasi Berkas** | 6 Mei 08:00 | 12 Mei 18:00 |
 
 ```
 

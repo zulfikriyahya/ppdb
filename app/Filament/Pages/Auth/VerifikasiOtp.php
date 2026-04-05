@@ -3,7 +3,9 @@
 namespace App\Filament\Pages\Auth;
 
 use App\Models\User;
+use App\Services\OtpMessageService;
 use App\Services\WhatsAppService;
+use DiogoGPinto\AuthUIEnhancer\Pages\Auth\Concerns\HasCustomLayout;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -16,6 +18,7 @@ use Illuminate\Support\Facades\Redis;
 class VerifikasiOtp extends SimplePage implements HasForms
 {
     use InteractsWithForms;
+    use HasCustomLayout;
 
     protected static string $view = 'filament.pages.auth.verifikasi-otp';
 
@@ -131,7 +134,8 @@ class VerifikasiOtp extends SimplePage implements HasForms
         Redis::setex("otp:{$userId}", 300, $otp);
         Redis::setex($cooldownKey, 60, 1);
 
-        $message = "Halo {$user->name},\n\nKode OTP baru verifikasi akun PMBM MTsN 1 Pandeglang Anda:\n\n*{$otp}*\n\nKode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.";
+        $message = OtpMessageService::verifikasi($user->name, $otp);
+
         app(WhatsAppService::class)->send(
             phone: $user->telepon,
             message: $message,

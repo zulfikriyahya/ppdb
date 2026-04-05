@@ -41,6 +41,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('dashboard')
             ->default()
+            ->breadcrumbs(false)
             ->spa()
             ->topNavigation()
             ->login(LoginCustom::class)
@@ -52,11 +53,11 @@ class AdminPanelProvider extends PanelProvider
             ->maxContentWidth(MaxWidth::Full)
             ->unsavedChangesAlerts()
             ->databaseNotifications()
+            ->darkMode(true)
             ->defaultThemeMode(ThemeMode::Dark)
             ->font('Lexend')
             ->favicon(asset('/favicon.ico'))
-            ->darkModeBrandLogo(asset('/img/brand-darkmode.png'))
-            ->brandLogo(asset('/img/brand-lightmode.png'))
+            ->brandLogo(asset('/img/brand-darkmode.png'))
             ->brandLogoHeight('2.6rem')
             ->colors([
                 'primary' => Color::Emerald,
@@ -114,18 +115,14 @@ class AdminPanelProvider extends PanelProvider
                     ]),
 
                 EasyFooterPlugin::make()
-                    ->withFooterPosition('footer'),
-                // ->withLinks([
-                //     ['title' => 'Dibuat dan dikembangkan dengan ❤ oleh Yahya Zulfikri', 'url' => 'https://github.com/zulfikriyahya', 'open_in_new_tab' => true],
-                // ])
-                // ->withLoadTime('Halaman ini dimuat dalam')
-                // ->withBorder(),
+                    ->withFooterPosition('footer')
+                    ->withBorder(),
 
                 AuthUIEnhancerPlugin::make()
                     ->formPanelPosition('left')
                     ->formPanelWidth('45%')
                     ->formPanelBackgroundColor(Color::hex('#010101'))
-                    ->emptyPanelBackgroundImageUrl('img/wallpaper.png')
+                    ->emptyPanelBackgroundImageUrl('/img/wallpaper.png')
                     ->emptyPanelBackgroundColor(Color::hex('#010101'))
                     ->showEmptyPanelOnMobile(false),
             ]);

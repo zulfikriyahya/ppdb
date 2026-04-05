@@ -3,7 +3,9 @@
 namespace App\Filament\Pages\Auth;
 
 use App\Models\User;
+use App\Services\OtpMessageService;
 use App\Services\WhatsAppService;
+use DiogoGPinto\AuthUIEnhancer\Pages\Auth\Concerns\HasCustomLayout;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -14,9 +16,10 @@ use Illuminate\Support\Facades\Redis;
 
 class ForgotPasswordCustom extends SimplePage implements HasForms
 {
+    use HasCustomLayout;
     use InteractsWithForms;
 
-    protected static string $view = 'filament.pages.auth.forgot-password-custom';
+    protected static string $view = 'filament.pages.auth.forgot-password';
 
     protected static bool $shouldRegisterNavigation = false;
 
@@ -93,10 +96,7 @@ class ForgotPasswordCustom extends SimplePage implements HasForms
         Redis::setex("reset_otp:{$user->id}", 300, $otp);   // OTP TTL 5 menit
         Redis::setex($cooldownKey, 60, 1);                    // cooldown 60 detik
 
-        $message = "Halo {$user->name},\n\n"
-            ."Kode OTP reset password PMBM MTsN 1 Pandeglang Anda:\n\n"
-            ."*{$otp}*\n\n"
-            .'Kode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.';
+        $message = OtpMessageService::resetPassword($user->name, $otp);
 
         app(WhatsAppService::class)->send(
             phone: $user->telepon,

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages\Auth;
 
+use App\Services\OtpMessageService;
 use App\Services\WhatsAppService;
 use Carbon\Carbon;
 use DiogoGPinto\AuthUIEnhancer\Pages\Auth\Concerns\HasCustomLayout;
@@ -22,10 +23,7 @@ class RegisterCustom extends Register
 {
     use HasCustomLayout;
 
-    // -----------------------------------------------------------------------
-    // Guard: cek jadwal PMBM setiap kali halaman di-render
-    // Octane-safe karena mount() dipanggil per-request
-    // -----------------------------------------------------------------------
+    protected static string $view = 'filament.pages.auth.register';
 
     public function mount(): void
     {
@@ -73,10 +71,6 @@ class RegisterCustom extends Register
         });
     }
 
-    // -----------------------------------------------------------------------
-    // Form
-    // -----------------------------------------------------------------------
-
     protected function getForms(): array
     {
         return [
@@ -117,8 +111,8 @@ class RegisterCustom extends Register
             ->validationMessages([
                 'max_digits' => 'NISN: Masukkan maksimal 10 Angka.',
                 'min_digits' => 'NISN: Masukkan minimal 10 Angka.',
-                'unique' => 'NISN: Nomor ini sudah pernah diisi.',
-                'required' => 'Form ini wajib diisi.',
+                'unique' => 'NISN: Nomor ini sudah pernah dipakai.',
+                'required' => 'Form ini harus diisi.',
             ])
             ->unique($this->getUserModel());
     }
@@ -132,11 +126,12 @@ class RegisterCustom extends Register
             ->tel()
             ->maxLength(15)
             ->placeholder('Contoh: 08123456789')
-            ->helperText('Nomor ini akan digunakan untuk mengirim kode OTP verifikasi.')
             ->validationMessages([
-                'required' => 'Nomor WhatsApp wajib diisi.',
+                'required' => 'Nomor WhatsApp harus diisi.',
                 'max' => 'Nomor WhatsApp maksimal 15 karakter.',
-            ]);
+                'unique' => 'Nomor WhatsApp: Nomor ini sudah pernah dipakai.',
+            ])
+            ->unique($this->getUserModel());
     }
 
     protected function getEmailFormComponent(): Component
@@ -149,8 +144,8 @@ class RegisterCustom extends Register
             ->maxLength(50)
             ->validationMessages([
                 'max' => 'Email: Masukkan maksimal 50 Karakter.',
-                'unique' => 'Email: Email ini sudah pernah diisi.',
-                'required' => 'Form ini wajib diisi.',
+                'unique' => 'Email: Email ini sudah pernah dipakai.',
+                'required' => 'Form ini harus diisi.',
             ])
             ->unique($this->getUserModel());
     }
@@ -168,7 +163,7 @@ class RegisterCustom extends Register
             ->validationMessages([
                 'same' => 'Password: Password tidak sesuai dengan isian password konfirmasi.',
                 'min' => 'Password: Masukkan minimal 8 karakter alfanumerik.',
-                'required' => 'Form ini wajib diisi.',
+                'required' => 'Form ini harus diisi.',
             ])
             ->validationAttribute(__('filament-panels::pages/auth/register.form.password.validation_attribute'));
     }
@@ -198,10 +193,7 @@ class RegisterCustom extends Register
 
         Redis::setex("otp:{$user->id}", $ttl, $otp);
 
-        $message = "Halo {$user->name},\n\n"
-            . "Kode OTP verifikasi akun PMBM MTsN 1 Pandeglang Anda:\n\n"
-            . "*{$otp}*\n\n"
-            . 'Kode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.';
+        $message = OtpMessageService::verifikasi($user->name, $otp);
 
         app(WhatsAppService::class)->send(
             phone: $user->telepon,

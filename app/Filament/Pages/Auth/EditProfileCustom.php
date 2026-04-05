@@ -15,6 +15,7 @@ use Illuminate\Validation\Rules\Password;
 class EditProfileCustom extends EditProfile
 {
     use HasCustomLayout;
+    protected static string $view = 'filament.pages.auth.edit-profile';
 
     protected function getForms(): array
     {
@@ -100,7 +101,7 @@ class EditProfileCustom extends EditProfile
             ->placeholder('Contoh: 08123456789')
             ->helperText('Nomor ini digunakan untuk notifikasi dan verifikasi OTP.')
             // Hanya calon_siswa yang wajib isi — role lain opsional
-            ->required(fn () => Auth::user()->hasRole('calon_siswa'))
+            ->required(fn() => Auth::user()->hasRole('calon_siswa'))
             ->validationMessages([
                 'required' => 'Nomor WhatsApp wajib diisi.',
                 'max' => 'Nomor WhatsApp maksimal 15 karakter.',
@@ -131,8 +132,8 @@ class EditProfileCustom extends EditProfile
             ->revealable(filament()->arePasswordsRevealable())
             ->rule(Password::default())
             ->autocomplete('new-password')
-            ->dehydrated(fn ($state): bool => filled($state))
-            ->dehydrateStateUsing(fn ($state): string => Hash::make($state))
+            ->dehydrated(fn($state): bool => filled($state))
+            ->dehydrateStateUsing(fn($state): string => Hash::make($state))
             ->live(debounce: 500)
             ->same('passwordConfirmation')
             ->validationMessages([
@@ -149,7 +150,7 @@ class EditProfileCustom extends EditProfile
             ->password()
             ->revealable(filament()->arePasswordsRevealable())
             ->required()
-            ->visible(fn (Get $get): bool => filled($get('password')))
+            ->visible(fn(Get $get): bool => filled($get('password')))
             ->dehydrated(false);
     }
 }
