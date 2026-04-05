@@ -4,9 +4,9 @@
 
     $fotoUrl = $record->berkas_foto ? Storage::url($record->berkas_foto) : null;
     $qrPayload = url('/dashboard/formulir/' . $record->id);
-
     $now = Carbon::now();
     $tanggalTtd = $now;
+
     if ($tahunPendaftaran) {
         $periodes = [
             [
@@ -30,6 +30,7 @@
                 $tahunPendaftaran->tanggal_pengumuman_jalur_mutasi_selesai,
             ],
         ];
+
         foreach ($periodes as [$mulai, $selesai]) {
             if ($mulai && $selesai && $now->between(Carbon::parse($mulai), Carbon::parse($selesai))) {
                 $tanggalTtd = Carbon::parse($mulai);
@@ -40,11 +41,29 @@
 
     $kota = ucwords(strtolower(optional($instansi?->kabupaten)->nama ?? 'Pandeglang'));
     $namaMadrasah = $instansi?->nama ?? 'MTsN 1 Pandeglang';
+
     $diterima = in_array($record->status_pendaftaran, [
         'Diterima',
         'Diterima Di Kelas Reguler',
         'Diterima Di Kelas Unggulan',
     ]);
+
+    // ── Logika Wali untuk Pakta Integritas ───────────────────────────────────
+    $ayahHidup = $record->ayah_status !== 'Meninggal' && $record->ayah_nama;
+    $ibuHidup = $record->ibu_status !== 'Meninggal' && $record->ibu_nama;
+
+    if ($ayahHidup) {
+        $namaWali = $record->ayah_nama;
+        $hubunganWali = 'Ayah Kandung';
+    } elseif ($ibuHidup) {
+        $namaWali = $record->ibu_nama;
+        $hubunganWali = 'Ibu Kandung';
+    } else {
+        $namaWali = $record->wali_nama;
+        $hubunganWali = 'Wali';
+    }
+
+    $namaWaliDisplay = $namaWali ? strtoupper($namaWali) : '......................................';
 @endphp
 
 <!DOCTYPE html>
@@ -294,14 +313,12 @@
         <tr>
             <td style="width: 30%; color: #4b5563;">Nama Lengkap</td>
             <td style="width: 2%;">:</td>
-            <td style="font-weight: bold;">
-                {{ strtoupper($record->ayah_nama ?? ($record->wali_nama ?? '......................................')) }}
-            </td>
+            <td style="font-weight: bold;">{{ $namaWaliDisplay }}</td>
         </tr>
         <tr>
             <td style="color: #4b5563;">Status Hubungan</td>
             <td>:</td>
-            <td>Orang Tua / Wali Peserta Didik</td>
+            <td>{{ $hubunganWali }} Peserta Didik</td>
         </tr>
     </table>
 

@@ -1,7 +1,7 @@
 @php
     use Illuminate\Support\Facades\Storage;
-    $logoInstitusi = $instansi?->logo_institusi ? Storage::url($instansi->logo_institusi) : null;
-    $logoMadrasah  = $instansi?->logo ? Storage::url($instansi->logo) : null;
+    $logoMadrasah = $instansi?->logo ?? null;
+    $logoInstitusi = $instansi?->logo_institusi ?? null;
 
     $alamat = collect([
         $instansi?->alamat,
@@ -9,13 +9,18 @@
         optional($instansi?->kecamatan)->nama,
         optional($instansi?->kabupaten)->nama,
         optional($instansi?->provinsi)->nama,
-    ])->filter()->map(fn($item) => ucwords(strtolower($item)))->implode(', ');
+    ])
+        ->filter()
+        ->map(fn($item) => ucwords(strtolower($item)))
+        ->implode(', ');
 
     $kontak = collect([
         $instansi?->website ? 'Website: ' . $instansi->website : null,
-        $instansi?->email   ? 'Email: '   . $instansi->email   : null,
-        $instansi?->telepon ? 'Telp: '    . $instansi->telepon : null,
-    ])->filter()->implode('  |  ');
+        $instansi?->email ? 'Email: ' . $instansi->email : null,
+        $instansi?->telepon ? 'Telp: ' . $instansi->telepon : null,
+    ])
+        ->filter()
+        ->implode('  |  ');
 @endphp
 
 <table width="100%" style="border-collapse: collapse; margin-bottom: 0; padding: 0;">
@@ -31,9 +36,11 @@
         <td align="center" valign="middle" style="padding: 0 10px; line-height: 1.3;">
             <div style="font-size: 11pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5pt;">
                 Kementerian Agama Republik Indonesia<br>
-                Kantor Kementerian Agama {{ ucwords(strtolower(optional($instansi?->kabupaten)->nama ?? 'Kabupaten Pandeglang')) }}
+                Kantor Kementerian Agama
+                {{ ucwords(strtolower(optional($instansi?->kabupaten)->nama ?? 'Kabupaten Pandeglang')) }}
             </div>
-            <div style="font-size: 14pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1pt; margin-top: 3px;">
+            <div
+                style="font-size: 14pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1pt; margin-top: 3px;">
                 {{ $instansi?->nama ?? 'MTs Negeri 1 Pandeglang' }}
             </div>
             @if ($alamat)

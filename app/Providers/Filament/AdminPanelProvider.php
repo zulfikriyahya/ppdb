@@ -42,7 +42,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('dashboard')
             ->default()
             ->spa()
-            // ->topNavigation()
+            ->topNavigation()
             ->login(LoginCustom::class)
             ->registration(RegisterCustom::class)
             ->passwordReset(ForgotPasswordCustom::class)

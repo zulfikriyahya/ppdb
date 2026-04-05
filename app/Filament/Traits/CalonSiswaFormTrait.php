@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\HtmlString;
+use Closure;
 
 trait CalonSiswaFormTrait
 {
@@ -128,7 +129,7 @@ trait CalonSiswaFormTrait
     // FIELD GROUPS (Complex reusable structures)
     // ========================================================================
 
-    protected function getWilayahFields(string $prefix, bool $required = true): array
+    protected function getWilayahFields(string $prefix, bool|Closure $required = true): array
     {
         return [
             Select::make("{$prefix}_negara_id")
@@ -212,20 +213,28 @@ trait CalonSiswaFormTrait
     {
         $label = ucfirst($type);
 
+        // Untuk wali: wajib hanya jika ayah DAN ibu meninggal
+        $isWali         = $type === 'wali';
+        $wajibJikaWali  = fn(Get $get) => $get('ayah_status') === 'Meninggal' && $get('ibu_status') === 'Meninggal';
+
+        $isRequired     = $isWali
+            ? $wajibJikaWali
+            : $required;
+
         return [
             TextInput::make("{$type}_nama")
-                ->label("Nama Lengkap {$label} Kandung")
-                ->required($required)
+                ->label($isWali ? 'Nama Lengkap Wali' : "Nama Lengkap {$label} Kandung")
+                ->required($isRequired)
                 ->validationMessages(['required' => 'Form ini wajib diisi.']),
 
             TextInput::make("{$type}_nik")
-                ->label("NIK {$label} Kandung")
-                ->required($required)
+                ->label($isWali ? 'NIK Wali' : "NIK {$label} Kandung")
+                ->required($isRequired)
                 ->maxLength(16)
                 ->minLength(16)
                 ->numeric()
                 ->validationMessages([
-                    'required' => 'Form ini wajib diisi.',
+                    'required'   => 'Form ini wajib diisi.',
                     'max_digits' => 'NIK: Masukkan maksimal 16 Angka.',
                     'min_digits' => 'NIK: Masukkan minimal 16 Angka.',
                 ]),
@@ -233,7 +242,7 @@ trait CalonSiswaFormTrait
             Select::make("{$type}_status")
                 ->label('Status')
                 ->options(FormOptions::STATUS_HIDUP)
-                ->required($required)
+                ->required($isRequired)
                 ->validationMessages(['required' => 'Form ini wajib diisi.'])
                 ->native(false)
                 ->live(),
@@ -241,14 +250,28 @@ trait CalonSiswaFormTrait
             TextInput::make("{$type}_telepon")
                 ->label('Nomor Telepon')
                 ->tel()
-                ->required(fn(Get $get) => $required && $get("{$type}_status") !== 'Meninggal')
+                ->required(function (Get $get) use ($isWali, $required, $type) {
+                    if ($isWali) {
+                        return $get('ayah_status') === 'Meninggal'
+                            && $get('ibu_status')  === 'Meninggal'
+                            && $get("{$type}_status") !== 'Meninggal';
+                    }
+                    return $required && $get("{$type}_status") !== 'Meninggal';
+                })
                 ->hidden(fn(Get $get) => $get("{$type}_status") === 'Meninggal')
                 ->validationMessages(['required' => 'Form ini wajib diisi.']),
 
             Select::make("{$type}_pekerjaan")
                 ->label('Pekerjaan')
                 ->options(FormOptions::PEKERJAAN)
-                ->required(fn(Get $get) => $required && $get("{$type}_status") !== 'Meninggal')
+                ->required(function (Get $get) use ($isWali, $required, $type) {
+                    if ($isWali) {
+                        return $get('ayah_status') === 'Meninggal'
+                            && $get('ibu_status')  === 'Meninggal'
+                            && $get("{$type}_status") !== 'Meninggal';
+                    }
+                    return $required && $get("{$type}_status") !== 'Meninggal';
+                })
                 ->hidden(fn(Get $get) => $get("{$type}_status") === 'Meninggal')
                 ->validationMessages(['required' => 'Form ini wajib diisi.'])
                 ->native(false),
@@ -256,7 +279,14 @@ trait CalonSiswaFormTrait
             Select::make("{$type}_penghasilan")
                 ->label('Penghasilan Bulanan')
                 ->options(FormOptions::PENGHASILAN)
-                ->required(fn(Get $get) => $required && $get("{$type}_status") !== 'Meninggal')
+                ->required(function (Get $get) use ($isWali, $required, $type) {
+                    if ($isWali) {
+                        return $get('ayah_status') === 'Meninggal'
+                            && $get('ibu_status')  === 'Meninggal'
+                            && $get("{$type}_status") !== 'Meninggal';
+                    }
+                    return $required && $get("{$type}_status") !== 'Meninggal';
+                })
                 ->hidden(fn(Get $get) => $get("{$type}_status") === 'Meninggal')
                 ->validationMessages(['required' => 'Form ini wajib diisi.'])
                 ->native(false),
@@ -264,11 +294,17 @@ trait CalonSiswaFormTrait
             Select::make("{$type}_pendidikan")
                 ->label('Pendidikan')
                 ->options(FormOptions::PENDIDIKAN)
-                ->required(fn(Get $get) => $required && $get("{$type}_status") !== 'Meninggal')
+                ->required(function (Get $get) use ($isWali, $required, $type) {
+                    if ($isWali) {
+                        return $get('ayah_status') === 'Meninggal'
+                            && $get('ibu_status')  === 'Meninggal'
+                            && $get("{$type}_status") !== 'Meninggal';
+                    }
+                    return $required && $get("{$type}_status") !== 'Meninggal';
+                })
                 ->hidden(fn(Get $get) => $get("{$type}_status") === 'Meninggal')
                 ->validationMessages(['required' => 'Form ini wajib diisi.'])
                 ->native(false),
-
         ];
     }
 
@@ -838,9 +874,17 @@ trait CalonSiswaFormTrait
             ]);
     }
 
+
     protected function getOrangTuaTabs(string $type, string $label, bool $required = true): Tabs
     {
+        $isWali        = $type === 'wali';
+        $wajibJikaWali = fn(Get $get) =>
+        $get('ayah_status') === 'Meninggal' &&
+            $get('ibu_status')  === 'Meninggal';
+
         return Tabs::make("Data {$label}")
+            // Tab wali hanya tampil jika ayah DAN ibu meninggal
+            ->visible($isWali ? $wajibJikaWali : true)
             ->tabs([
                 Tabs\Tab::make("Data {$label}")
                     ->icon('heroicon-m-bell')
@@ -850,7 +894,11 @@ trait CalonSiswaFormTrait
                 Tabs\Tab::make('Alamat')
                     ->icon('heroicon-m-bell')
                     ->iconPosition(IconPosition::After)
-                    ->schema($this->getWilayahFields($type, $required)),
+                    ->schema($this->getWilayahFields(
+                        $type,
+                        // Alamat wali wajib hanya jika ayah DAN ibu meninggal
+                        $isWali ? $wajibJikaWali : $required
+                    )),
             ])
             ->columns(['sm' => '100%', 'md' => 3, 'lg' => 3]);
     }

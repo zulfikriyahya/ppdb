@@ -173,8 +173,9 @@
 
     <div class="card-container">
         <div class="card-header">
-            <div class="card-title">Kartu Ujian Peserta</div>
-            <div class="card-subtitle">Penerimaan Peserta Didik Baru &mdash; {{ $tahunPendaftaran?->nama ?? '' }}</div>
+            <div class="card-title">Kartu Tes Peserta</div>
+            <div class="card-subtitle">Penerimaan Murid Baru Madrasah Tahun Pelajaran
+                {{ $tahunPendaftaran?->nama ?? '' }}</div>
         </div>
 
         <table>
@@ -207,7 +208,7 @@
 
         <table class="schedule-box">
             <tr>
-                <td style="width: 50%; border-right: 1px solid #d1d5db; padding: 0;">
+                {{-- <td style="width: 50%; border-right: 1px solid #d1d5db; padding: 0;">
                     <div class="schedule-header">UJIAN AKADEMIK (CBT)</div>
                     <div class="schedule-cell">
                         <div class="info-lbl">Ruang / Sesi</div>
@@ -217,9 +218,9 @@
                         <div class="schedule-date">{{ $tglAkademik ? $tglAkademik->translatedFormat('l, d F Y') : '-' }}
                         </div>
                     </div>
-                </td>
+                </td> --}}
                 <td style="width: 50%; padding: 0;">
-                    <div class="schedule-header">UJIAN PRAKTIK IBADAH</div>
+                    <div class="schedule-header">TES PRAKTIK IBADAH & BTQ</div>
                     <div class="schedule-cell">
                         <div class="info-lbl">Ruang / Sesi</div>
                         <div style="font-weight: bold; font-size: 11pt; color: #111827; margin-bottom: 8px;">
@@ -232,7 +233,7 @@
             </tr>
         </table>
 
-        <div class="cbt-alert">
+        {{-- <div class="cbt-alert">
             <div class="cbt-title">Kredensial Login Aplikasi Ujian (CBT)</div>
             <table>
                 <tr>
@@ -244,7 +245,7 @@
                     <td class="cbt-creds">{{ $record->nik ?? '-' }}</td>
                 </tr>
             </table>
-        </div>
+        </div> --}}
 
         <div class="card-footer">
             <table>

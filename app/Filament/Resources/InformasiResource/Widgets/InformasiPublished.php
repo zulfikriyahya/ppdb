@@ -26,6 +26,16 @@ class InformasiPublished extends TableWidget
         return 'Informasi';
     }
 
+    public function getColumnSpan(): int | string | array
+    {
+        return Auth::user()->hasRole('calon_siswa') ? 'full' : 1;
+    }
+
+    protected function getTableRecordsPerPageSelectOptions(): array
+    {
+        return Auth::user()->hasRole('calon_siswa') ? [5, 10] : [5];
+    }
+    
     private function getCalonSiswa(): ?CalonSiswa
     {
         return CalonSiswa::withoutGlobalScope('milik_sendiri')
