@@ -8,6 +8,9 @@ use App\Models\Kecamatan;
 use App\Models\Kelurahan;
 use App\Models\Provinsi;
 use App\Models\Sekolah;
+use Carbon\Carbon;
+use Closure;
+use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
@@ -23,7 +26,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\HtmlString;
-use Closure;
 
 trait CalonSiswaFormTrait
 {
@@ -113,6 +115,8 @@ trait CalonSiswaFormTrait
         return TextInput::make('tempat_lahir')
             ->label('Tempat Lahir')
             ->required()
+            ->formatStateUsing(fn($state) => strtoupper($state))
+            ->dehydrateStateUsing(fn($state) => strtoupper($state))
             ->validationMessages(['required' => 'Form ini wajib diisi.']);
     }
 
@@ -120,9 +124,20 @@ trait CalonSiswaFormTrait
     {
         return DatePicker::make('tanggal_lahir')
             ->label('Tanggal Lahir')
-            ->maxDate(now())
+            ->minDate(fn() => Carbon::create(now()->year, 7, 1)->subYears(15)) // 1 Juli 2011
+            ->maxDate(fn() => Carbon::create(now()->year, 7, 1)->subYears(13)) // 1 Juli 2013
             ->required()
-            ->validationMessages(['required' => 'Form ini wajib diisi.']);
+            ->rules([
+                'date',
+                'after_or_equal:'  . Carbon::create(now()->year, 7, 1)->subYears(15)->toDateString(),
+                'before_or_equal:' . Carbon::create(now()->year, 7, 1)->subYears(13)->toDateString(),
+            ])
+            ->validationMessages([
+                'required'        => 'Form ini wajib diisi.',
+                'after_or_equal'  => 'Usia minimal 13 tahun dihitung per 1 Juli ' . now()->year . '.',
+                'before_or_equal' => 'Usia maksimal 15 tahun dihitung per 1 Juli ' . now()->year . '.',
+                'date'            => 'Format tanggal tidak valid.',
+            ]);
     }
 
     // ========================================================================
@@ -386,14 +401,30 @@ trait CalonSiswaFormTrait
                 TextInput::make('anak_ke')
                     ->label('Anak Ke')
                     ->required()
-                    ->validationMessages(['required' => 'Form ini wajib diisi.'])
-                    ->numeric(),
+                    ->numeric()
+                    ->minValue(1)
+                    ->maxValue(20)
+                    ->live()
+                    ->validationMessages(['required' => 'Form ini wajib diisi.']),
 
                 TextInput::make('jumlah_saudara')
                     ->label('Dari (Jumlah Anak)')
                     ->required()
-                    ->validationMessages(['required' => 'Form ini wajib diisi.'])
-                    ->numeric(),
+                    ->numeric()
+                    ->minValue(1)
+                    ->maxValue(20)
+                    ->live()
+                    ->rules([
+                        fn(Get $get) => function (string $attribute, $value, Closure $fail) use ($get) {
+                            $anakKe = (int) $get('anak_ke');
+                            $jumlah = (int) $value;
+
+                            if ($anakKe && $jumlah < $anakKe) {
+                                $fail("Jumlah anak tidak boleh kurang dari anak ke-{$anakKe}.");
+                            }
+                        }
+                    ])
+                    ->validationMessages(['required' => 'Form ini wajib diisi.']),
 
                 Select::make('tinggal_bersama')
                     ->label('Tinggal Bersama')
@@ -548,17 +579,24 @@ trait CalonSiswaFormTrait
                             ->validationMessages(['required' => 'Form ini wajib diisi.'])
                             ->options(fn() => FormOptions::jenjangSekolahAsal(Sekolah::first()?->jenjang)),
 
-                        TextInput::make('npsn')
-                            ->label('NPSN')
-                            ->numeric()
-                            ->minLength(8)
-                            ->maxLength(8)
-                            ->required()
-                            ->validationMessages([
-                                'min_digits' => 'NPSN harus 8 digit.',
-                                'max_digits' => 'NPSN harus 8 digit.',
-                                'required' => 'Form ini wajib diisi.',
-                            ]),
+                    TextInput::make('npsn')
+                        ->label('NPSN')
+                        ->numeric()
+                        ->minLength(8)
+                        ->maxLength(8)
+                        ->required()
+                        ->hintAction(
+                            \Filament\Forms\Components\Actions\Action::make('cek_npsn')
+                                ->label('Buka Web NPSN')
+                                ->icon('heroicon-o-arrow-top-right-on-square')
+                                ->url('https://sekolah.data.kemendikdasmen.go.id/sekolah')
+                                ->openUrlInNewTab()
+                        )
+                        ->validationMessages([
+                            'min_digits' => 'NPSN harus 8 digit.',
+                            'max_digits' => 'NPSN harus 8 digit.',
+                            'required'   => 'Form ini wajib diisi.',
+                        ]),
 
                         TextInput::make('nss')
                             ->visible(fn($get) => in_array($get('jenjang'), ['MI', 'MTS', 'MA']))
@@ -812,7 +850,14 @@ trait CalonSiswaFormTrait
                 $this->getBerkasField('foto', 'Foto Latar Merah'),
                 $this->getBerkasField('kk', 'Kartu Keluarga'),
                 $this->getBerkasField('akta', 'Akta Kelahiran'),
-                $this->getBerkasField('nisn', 'Kartu NISN/Tangkapan Layar NISN (Web)'),
+                $this->getBerkasField('nisn', 'Kartu NISN/Tangkapan Layar NISN (Web)')
+                    ->hintAction(
+                        Action::make('cek_nisn')
+                            ->label('Buka Web NISN')
+                            ->icon('heroicon-o-arrow-top-right-on-square')
+                            ->url(fn(Get $get) => 'https://nisn.data.kemdikbud.go.id/index.php/Cindex/formcaribynisn/' . $get('nisn'))
+                            ->openUrlInNewTab()
+                    ),
                 $this->getBerkasField('skbb', 'Surat Keterangan Berkelakuan Baik'),
                 $this->getBerkasField('skab', 'Surat Keterangan Aktif Belajar'),
 

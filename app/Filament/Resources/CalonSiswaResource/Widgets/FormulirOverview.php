@@ -177,7 +177,7 @@ class FormulirOverview extends BaseWidget
                 ->first();
 
             $statusLabel   = $cs?->status_pendaftaran ?? 'Belum Mendaftar';
-            $formulirLabel = $cs?->status_formulir    ?? '-';
+            $formulirLabel = $cs?->status_formulir    ?? 'Daftar Sekarang!';
 
             [$statusColor, $statusIcon] = match ($cs?->status_pendaftaran) {
                 'Diterima',

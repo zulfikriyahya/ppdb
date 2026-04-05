@@ -139,7 +139,7 @@ class FormOptions
     // Helper untuk tahun lulus
     public static function tahunLulusOptions(): array
     {
-        $tahun = range(date('Y'), date('Y') - 2);
+        $tahun = range(date('Y'), date('Y') - 1);
 
         return array_combine($tahun, $tahun);
     }
