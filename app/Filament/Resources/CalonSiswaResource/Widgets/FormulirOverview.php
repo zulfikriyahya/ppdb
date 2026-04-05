@@ -24,10 +24,11 @@ class FormulirOverview extends BaseWidget
     // HELPERS
     // =========================================================================
 
-    private function chartBy(string $col, ?string $val = null): array
+    private function chartBy(string $col, ?string $val = null, ?int $jalurId = null): array
     {
         return CalonSiswa::selectRaw('COUNT(*) as total, DATE(created_at) as hari')
-            ->when($val, fn ($q) => $q->where($col, $val))
+            ->when($val,     fn($q) => $q->where($col, $val))
+            ->when($jalurId, fn($q) => $q->where('jalur_pendaftaran_id', $jalurId))
             ->groupBy('hari')
             ->orderBy('hari')
             ->pluck('total')
@@ -58,13 +59,27 @@ class FormulirOverview extends BaseWidget
             ]);
     }
 
+    private function makeStatNoClick(
+        string $value,
+        string $label,
+        string $icon,
+        string $color,
+        array $chart = []
+    ): Stat {
+        return Stat::make('', $value)
+            ->description($label)
+            ->descriptionIcon($icon, IconPosition::Before)
+            ->color($color)
+            ->chart($chart);
+    }
+
     private function url(string $filter = ''): string
     {
         return "/dashboard/formulir{$filter}";
     }
 
     // =========================================================================
-    // CETAK HELPERS
+    // TAHUN PENDAFTARAN & PERIOD HELPERS
     // =========================================================================
 
     private function getActiveTahunPendaftaran(): ?object
@@ -95,11 +110,11 @@ class FormulirOverview extends BaseWidget
 
         foreach (
             [
-                ['tanggal_pengumuman_jalur_prestasi_mulai',  'tanggal_pengumuman_jalur_prestasi_selesai'],
-                ['tanggal_pengumuman_jalur_reguler_mulai',   'tanggal_pengumuman_jalur_reguler_selesai'],
-                ['tanggal_pengumuman_jalur_afirmasi_mulai',  'tanggal_pengumuman_jalur_afirmasi_selesai'],
-                ['tanggal_pengumuman_jalur_zonasi_mulai',    'tanggal_pengumuman_jalur_zonasi_selesai'],
-                ['tanggal_pengumuman_jalur_mutasi_mulai',    'tanggal_pengumuman_jalur_mutasi_selesai'],
+                ['tanggal_pengumuman_jalur_prestasi_mulai', 'tanggal_pengumuman_jalur_prestasi_selesai'],
+                ['tanggal_pengumuman_jalur_reguler_mulai',  'tanggal_pengumuman_jalur_reguler_selesai'],
+                ['tanggal_pengumuman_jalur_afirmasi_mulai', 'tanggal_pengumuman_jalur_afirmasi_selesai'],
+                ['tanggal_pengumuman_jalur_zonasi_mulai',   'tanggal_pengumuman_jalur_zonasi_selesai'],
+                ['tanggal_pengumuman_jalur_mutasi_mulai',   'tanggal_pengumuman_jalur_mutasi_selesai'],
             ] as [$mulai, $selesai]
         ) {
             if ($t->{$mulai} && $t->{$selesai}) {
@@ -114,6 +129,10 @@ class FormulirOverview extends BaseWidget
 
         return false;
     }
+
+    // =========================================================================
+    // CALON SISWA HELPERS
+    // =========================================================================
 
     private function canPrintKartuTes(CalonSiswa $cs): bool
     {
@@ -147,12 +166,271 @@ class FormulirOverview extends BaseWidget
     }
 
     // =========================================================================
-    // STATS
+    // STATS — CALON SISWA JALUR PRESTASI & AFIRMASI
+    // =========================================================================
+
+    private function getStatsPrestasiAfirmasi(CalonSiswa $cs): array
+    {
+        $isAfirmasi = (string) $cs->jalur_pendaftaran_id === '3';
+
+        $totalSemua    = CalonSiswa::count();
+        $totalPrestasi = CalonSiswa::where('jalur_pendaftaran_id', 1)->count();
+        $totalAfirmasi = CalonSiswa::where('jalur_pendaftaran_id', 3)->count();
+
+        $stats = [];
+
+        // 1. Total Pendaftar Semua Jalur — no click
+        $stats[] = $this->makeStatNoClick(
+            "{$totalSemua} Peserta",
+            'Total Pendaftar Semua Jalur',
+            'heroicon-o-users',
+            'gray',
+            $this->chartBy('status_pendaftaran')
+        );
+
+        // 2. Total Pendaftar Jalur Prestasi — no click
+        $stats[] = $this->makeStatNoClick(
+            "{$totalPrestasi} Peserta",
+            'Total Pendaftar Jalur Prestasi',
+            'heroicon-o-star',
+            'warning',
+            $this->chartBy('status_pendaftaran', null, 1)
+        );
+
+        // 3. Total Pendaftar Jalur Afirmasi — no click
+        $stats[] = $this->makeStatNoClick(
+            "{$totalAfirmasi} Peserta",
+            'Total Pendaftar Jalur Afirmasi',
+            'heroicon-o-hand-raised',
+            'info',
+            $this->chartBy('status_pendaftaran', null, 3)
+        );
+
+        // 4. Status Formulir Pendaftaran
+        $formulirStatus = $cs->status_formulir;
+
+        [$fColor, $fIcon] = match ($formulirStatus) {
+            'Disetujui'            => ['success', 'heroicon-o-document-check'],
+            'Berkas Tidak Lengkap' => ['danger',  'heroicon-o-document-minus'],
+            'Ditolak'              => ['danger',  'heroicon-o-x-circle'],
+            default                => ['warning', 'heroicon-o-arrow-path'],
+        };
+
+        if ($formulirStatus === 'Disetujui') {
+            $stats[] = $this->makeStatNoClick(
+                $formulirStatus,
+                'Status Formulir Pendaftaran',
+                $fIcon,
+                $fColor,
+                $this->chartBy('status_formulir', $formulirStatus)
+            );
+        } else {
+            $stats[] = $this->makeStat(
+                $formulirStatus,
+                'Status Formulir — Klik untuk memperbarui',
+                $fIcon,
+                $fColor,
+                $this->chartBy('status_formulir', $formulirStatus),
+                "/dashboard/formulir/{$cs->id}/edit"
+            );
+        }
+
+        // 5. Status Formulir Prestasi — sembunyikan untuk jalur Afirmasi
+        if (! $isAfirmasi) {
+            $formulirPrestasi = DB::table('formulir_prestasis')
+                ->where('calon_siswa_id', $cs->id)
+                ->first();
+
+            if (! $formulirPrestasi) {
+                $stats[] = $this->makeStat(
+                    'Lengkapi Sekarang!',
+                    'Status Formulir Prestasi',
+                    'heroicon-o-academic-cap',
+                    'warning',
+                    [],
+                    '/dashboard/formulir-prestasis/create'
+                );
+            } else {
+                $stats[] = $this->makeStat(
+                    'Sudah Diisi',
+                    'Status Formulir Prestasi — Klik untuk melihat',
+                    'heroicon-o-academic-cap',
+                    'success',
+                    [],
+                    '/dashboard/formulir-prestasis'
+                );
+            }
+        }
+
+        // 6. Status Pendaftaran — no click, hanya tampil saat periode pengumuman
+        if ($this->isWithinPengumumanPeriod()) {
+            $statusPendaftaran = $cs->status_pendaftaran ?? 'Diproses';
+
+            [$sColor, $sIcon] = match ($statusPendaftaran) {
+                'Diterima',
+                'Diterima Di Kelas Reguler',
+                'Diterima Di Kelas Unggulan' => ['success', 'heroicon-o-check-circle'],
+                'Tidak Diterima'             => ['danger',  'heroicon-o-no-symbol'],
+                default                      => ['warning', 'heroicon-o-arrow-path'],
+            };
+
+            $stats[] = $this->makeStatNoClick(
+                $statusPendaftaran,
+                'Status Pendaftaran Kamu',
+                $sIcon,
+                $sColor,
+                $this->chartBy('status_pendaftaran', $statusPendaftaran)
+            );
+        }
+
+        // 7. Print Formulir
+        if (in_array($cs->status_formulir, ['Berkas Tidak Lengkap', 'Disetujui', 'Ditolak'])) {
+            $stats[] = $this->makeStat(
+                'Cetak Formulir',
+                'Klik untuk mencetak formulir pendaftaran',
+                'heroicon-o-printer',
+                'info',
+                [],
+                route('formulir.cetak', $cs->id),
+                newTab: true
+            );
+        }
+
+        // 8. Print SKL
+        if ($this->canPrintHasil($cs)) {
+            $sklColor = in_array($cs->status_pendaftaran, [
+                'Diterima',
+                'Diterima Di Kelas Reguler',
+                'Diterima Di Kelas Unggulan',
+            ]) ? 'success' : 'danger';
+
+            $stats[] = $this->makeStat(
+                'Cetak Hasil',
+                'Klik untuk mencetak pengumuman hasil',
+                'heroicon-o-document-text',
+                $sklColor,
+                [],
+                route('skl.cetak', $cs->id),
+                newTab: true
+            );
+        }
+
+        return $stats;
+    }
+
+    // =========================================================================
+    // STATS — CALON SISWA JALUR LAINNYA (Reguler, Zonasi, Mutasi)
+    // =========================================================================
+
+    private function getStatsDefault(CalonSiswa $cs, int $totalPendaftar): array
+    {
+        $statusLabel   = $cs->status_pendaftaran ?? 'Diproses';
+        $formulirLabel = $cs->status_formulir    ?? 'Daftar Sekarang!';
+
+        [$statusColor, $statusIcon] = match ($cs->status_pendaftaran) {
+            'Diterima',
+            'Diterima Di Kelas Reguler',
+            'Diterima Di Kelas Unggulan' => ['success', 'heroicon-o-check-circle'],
+            'Tidak Diterima'             => ['danger',  'heroicon-o-no-symbol'],
+            default                      => ['warning', 'heroicon-o-arrow-path'],
+        };
+
+        [$formulirColor, $formulirIcon] = match ($cs->status_formulir) {
+            'Disetujui'            => ['success', 'heroicon-o-document-check'],
+            'Berkas Tidak Lengkap' => ['danger',  'heroicon-o-document-minus'],
+            'Ditolak'              => ['danger',  'heroicon-o-x-circle'],
+            default                => ['warning', 'heroicon-o-arrow-path'],
+        };
+
+        $formulirStat = $cs->status_formulir === 'Disetujui'
+            ? $this->makeStatNoClick(
+                $formulirLabel,
+                'Status Formulir Kamu',
+                $formulirIcon,
+                $formulirColor,
+                $this->chartBy('status_formulir', $cs->status_formulir)
+            )
+            : $this->makeStat(
+                $formulirLabel,
+                'Status Formulir Kamu — Klik untuk memperbarui',
+                $formulirIcon,
+                $formulirColor,
+                $this->chartBy('status_formulir', $cs->status_formulir),
+                "/dashboard/formulir/{$cs->id}/edit"
+            );
+
+        $stats = [
+            $this->makeStatNoClick(
+                "{$totalPendaftar} Peserta",
+                'Total Pendaftar',
+                'heroicon-o-users',
+                'gray',
+                $this->chartBy('status_pendaftaran')
+            ),
+            $formulirStat,
+            $this->makeStatNoClick(
+                $statusLabel,
+                'Status Pendaftaran Kamu',
+                $statusIcon,
+                $statusColor,
+                $this->chartBy('status_pendaftaran', $cs->status_pendaftaran)
+            ),
+        ];
+
+        // Cetak Formulir
+        if ($cs->status_formulir === 'Disetujui') {
+            $stats[] = $this->makeStat(
+                'Cetak Formulir',
+                'Klik untuk mencetak formulir pendaftaran',
+                'heroicon-o-printer',
+                'info',
+                [],
+                route('formulir.cetak', $cs->id),
+                newTab: true
+            );
+        }
+
+        // Cetak Kartu Tes
+        if ($this->canPrintKartuTes($cs)) {
+            $stats[] = $this->makeStat(
+                'Cetak Kartu Tes',
+                'Klik untuk mencetak kartu tes',
+                'heroicon-o-identification',
+                'warning',
+                [],
+                route('kartu-tes.cetak', $cs->id),
+                newTab: true
+            );
+        }
+
+        // Cetak SKL
+        if ($this->canPrintHasil($cs)) {
+            $stats[] = $this->makeStat(
+                'Cetak Hasil',
+                'Klik untuk mencetak pengumuman hasil',
+                'heroicon-o-document-text',
+                match ($cs->status_pendaftaran) {
+                    'Diterima',
+                    'Diterima Di Kelas Reguler',
+                    'Diterima Di Kelas Unggulan' => 'success',
+                    default                      => 'danger',
+                },
+                [],
+                route('skl.cetak', $cs->id),
+                newTab: true
+            );
+        }
+
+        return $stats;
+    }
+
+    // =========================================================================
+    // MAIN
     // =========================================================================
 
     protected function getStats(): array
     {
-        $user = Auth::user();
+        $user         = Auth::user();
         $isCalonSiswa = $user->hasRole('calon_siswa');
 
         $statusCount = CalonSiswa::selectRaw('status_pendaftaran, COUNT(*) as total')
@@ -165,17 +443,17 @@ class FormulirOverview extends BaseWidget
             ->pluck('total', 'status_formulir')
             ->toArray();
 
-        $totalPendaftar = array_sum($statusCount);
-        $diproses = $statusCount['Diproses'] ?? 0;
-        $diterima = $statusCount['Diterima'] ?? 0;
-        $diterimaReguler = $statusCount['Diterima Di Kelas Reguler'] ?? 0;
+        $totalPendaftar   = array_sum($statusCount);
+        $diproses         = $statusCount['Diproses'] ?? 0;
+        $diterima         = $statusCount['Diterima'] ?? 0;
+        $diterimaReguler  = $statusCount['Diterima Di Kelas Reguler'] ?? 0;
         $diterimaUnggulan = $statusCount['Diterima Di Kelas Unggulan'] ?? 0;
-        $tidakDiterima = $statusCount['Tidak Diterima'] ?? 0;
+        $tidakDiterima    = $statusCount['Tidak Diterima'] ?? 0;
 
-        $fDiproses = $formulirCount['Diproses'] ?? 0;
-        $fBerkas = $formulirCount['Berkas Tidak Lengkap'] ?? 0;
+        $fDiproses  = $formulirCount['Diproses'] ?? 0;
+        $fBerkas    = $formulirCount['Berkas Tidak Lengkap'] ?? 0;
         $fDisetujui = $formulirCount['Disetujui'] ?? 0;
-        $fDitolak = $formulirCount['Ditolak'] ?? 0;
+        $fDitolak   = $formulirCount['Ditolak'] ?? 0;
 
         // ── CALON SISWA ───────────────────────────────────────────────────────
         if ($isCalonSiswa) {
@@ -184,101 +462,34 @@ class FormulirOverview extends BaseWidget
                 ->latest()
                 ->first();
 
-            $statusLabel = $cs?->status_pendaftaran ?? 'Belum Mendaftar';
-            $formulirLabel = $cs?->status_formulir ?? 'Daftar Sekarang!';
-
-            [$statusColor, $statusIcon] = match ($cs?->status_pendaftaran) {
-                'Diterima',
-                'Diterima Di Kelas Reguler',
-                'Diterima Di Kelas Unggulan' => ['success', 'heroicon-o-check-circle'],
-                'Tidak Diterima' => ['danger',  'heroicon-o-no-symbol'],
-                default => ['warning', 'heroicon-o-arrow-path'],
-            };
-
-            [$formulirColor, $formulirIcon] = match ($cs?->status_formulir) {
-                'Disetujui' => ['success', 'heroicon-o-document-check'],
-                'Berkas Tidak Lengkap',
-                'Ditolak' => ['danger', match ($cs?->status_formulir) {
-                    'Berkas Tidak Lengkap' => 'heroicon-o-document-minus',
-                    default => 'heroicon-o-x-circle',
-                }],
-                default => ['warning', 'heroicon-o-arrow-path'],
-            };
-
-            $stats = [
-                $this->makeStat(
-                    "{$totalPendaftar} Peserta",
-                    'Total Pendaftar',
-                    'heroicon-o-users',
-                    'gray',
-                    $this->chartBy('status_pendaftaran'),
-                    $this->url()
-                ),
-                $this->makeStat(
-                    $formulirLabel,
-                    'Status Formulir Kamu',
-                    $formulirIcon,
-                    $formulirColor,
-                    $this->chartBy('status_formulir', $cs?->status_formulir),
-                    $this->url()
-                ),
-                $this->makeStat(
-                    $statusLabel,
-                    'Status Pendaftaran Kamu',
-                    $statusIcon,
-                    $statusColor,
-                    $this->chartBy('status_pendaftaran', $cs?->status_pendaftaran),
-                    $this->url()
-                ),
-            ];
-
-            if ($cs) {
-                // Cetak Formulir
-                if ($cs->status_formulir === 'Disetujui') {
-                    $stats[] = $this->makeStat(
-                        'Cetak Formulir',
-                        'Klik untuk mencetak formulir pendaftaran',
-                        'heroicon-o-printer',
-                        'info',
-                        [],
-                        route('formulir.cetak', $cs->id),
-                        newTab: true
-                    );
-                }
-
-                // Cetak Kartu Tes
-                if ($this->canPrintKartuTes($cs)) {
-                    $stats[] = $this->makeStat(
-                        'Cetak Kartu Tes',
-                        'Klik untuk mencetak kartu tes',
-                        'heroicon-o-identification',
+            // Belum punya formulir
+            if (! $cs) {
+                return [
+                    $this->makeStatNoClick(
+                        "{$totalPendaftar} Peserta",
+                        'Total Pendaftar',
+                        'heroicon-o-users',
+                        'gray',
+                        $this->chartBy('status_pendaftaran')
+                    ),
+                    $this->makeStat(
+                        'Daftar Sekarang!',
+                        'Status Formulir Pendaftaran',
+                        'heroicon-o-document-plus',
                         'warning',
                         [],
-                        route('kartu-tes.cetak', $cs->id),
-                        newTab: true
-                    );
-                }
-
-                // Cetak SKL / Pengumuman Hasil
-                if ($this->canPrintHasil($cs)) {
-                    $stats[] = $this->makeStat(
-                        'Cetak Hasil',
-                        'Klik untuk mencetak pengumuman hasil',
-                        'heroicon-o-document-text',
-                        match ($cs->status_pendaftaran) {
-                            'Diterima',
-                            'Diterima Di Kelas Reguler',
-                            'Diterima Di Kelas Unggulan' => 'success',
-                            default => 'danger',
-                        },
-                        [],
-                        route('skl.cetak', $cs->id),
-                        newTab: true
-                    );
-                }
+                        '/dashboard/formulir/create'
+                    ),
+                ];
             }
 
-            return $stats;
+            // Jalur Prestasi (1) atau Afirmasi (3)
+            if (in_array((string) $cs->jalur_pendaftaran_id, ['1', '3'])) {
+                return $this->getStatsPrestasiAfirmasi($cs);
+            }
+
+            // Jalur lainnya
+            return $this->getStatsDefault($cs, $totalPendaftar);
         }
 
         // ── ADMIN / STAFF ─────────────────────────────────────────────────────

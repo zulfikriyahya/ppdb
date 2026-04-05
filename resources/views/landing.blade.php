@@ -5,11 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <meta name="description"
-        content="PMBM MTsN 1 Pandeglang TP 2026/2027 — Pendaftaran peserta didik baru Jalur Prestasi, Afirmasi, dan Reguler. Gratis, transparan, dan objektif.">
-    <meta property="og:title" content="PMBM MTsN 1 Pandeglang TP 2026/2027">
-    <meta property="og:description"
-        content="3 Jalur Pendaftaran: Prestasi, Afirmasi & Reguler. 224 Kuota Tersedia. Gratis.">
+        content="PMBM MTsN 1 Pandeglang TP 2026/2027 — Pendaftaran peserta didik baru Jalur Prestasi, Afirmasi, dan Reguler.">
     <title>PMBM MTsN 1 Pandeglang — TP 2026/2027</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <style>
         *,
         *::before,
@@ -47,12 +48,12 @@
             --muted: #6aada3;
             --muted2: #4a8078;
             --radius: 16px;
-            --nav-h: 62px;
+            --nav-h: 64px;
             --shadow-teal: 0 0 40px rgba(13, 148, 136, .18);
         }
 
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-family: 'Lexend', system-ui, sans-serif;
             background: var(--bg);
             color: var(--text);
             overflow-x: hidden;
@@ -69,7 +70,7 @@
             border-radius: 4px
         }
 
-        /* ── NOISE TEXTURE OVERLAY ── */
+        /* ── TEXTURE ── */
         body::before {
             content: '';
             position: fixed;
@@ -80,7 +81,7 @@
             z-index: 0
         }
 
-        /* ── ORB / GLOW ── */
+        /* ── ORB ── */
         .orb {
             position: fixed;
             border-radius: 50%;
@@ -118,7 +119,7 @@
             }
         }
 
-        /* ── GRID LINES BG ── */
+        /* ── GRID BG ── */
         .grid-bg {
             position: fixed;
             inset: 0;
@@ -129,7 +130,7 @@
             mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 100%)
         }
 
-        /* ── NAV ── */
+        /* ══ NAV ══ */
         nav {
             position: fixed;
             top: 0;
@@ -137,10 +138,11 @@
             right: 0;
             z-index: 200;
             height: var(--nav-h);
-            padding: 0 1.5rem;
+            padding: 0 2rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 1rem;
             background: rgba(6, 13, 12, .88);
             border-bottom: 1px solid var(--border);
             backdrop-filter: blur(24px) saturate(180%);
@@ -155,7 +157,7 @@
         .nav-brand {
             display: flex;
             align-items: center;
-            gap: .65rem;
+            gap: .75rem;
             text-decoration: none;
             color: inherit;
             font-weight: 700;
@@ -163,25 +165,30 @@
         }
 
         .nav-logo {
-            width: 38px;
-            height: 38px;
+            width: 40px;
+            height: 40px;
             border-radius: 10px;
             overflow: hidden;
             flex-shrink: 0;
-            border: 1px solid var(--border)
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(13, 148, 136, .1)
         }
 
-        .nav-logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover
+        .nav-logo svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--teal-xl)
         }
 
         .nav-name {
-            font-size: .86rem;
+            font-size: .88rem;
             line-height: 1.2;
             font-weight: 700;
-            letter-spacing: -.01em
+            letter-spacing: -.01em;
+            white-space: nowrap
         }
 
         .nav-sub {
@@ -193,15 +200,19 @@
         .nav-links {
             display: flex;
             gap: .1rem;
-            list-style: none
+            list-style: none;
+            flex: 1;
+            justify-content: center;
+            flex-wrap: nowrap;
+            overflow: hidden
         }
 
         .nav-links a {
             text-decoration: none;
             color: var(--muted);
-            font-size: .79rem;
-            font-weight: 500;
-            padding: .38rem .65rem;
+            font-size: .75rem;
+            font-weight: 600;
+            padding: .38rem .6rem;
             border-radius: 8px;
             transition: all .2s;
             white-space: nowrap
@@ -234,7 +245,8 @@
             color: inherit;
             transition: all .2s;
             white-space: nowrap;
-            font-weight: 600
+            font-weight: 600;
+            font-family: 'Lexend', sans-serif
         }
 
         .n-btn:hover {
@@ -245,6 +257,7 @@
 
         #menuBtn {
             width: 36px;
+            height: 36px;
             flex-direction: column;
             gap: 5px;
             display: none
@@ -300,7 +313,7 @@
             text-decoration: none;
             color: var(--muted);
             font-size: .88rem;
-            font-weight: 500;
+            font-weight: 600;
             padding: .6rem .9rem;
             border-radius: 10px;
             transition: all .2s
@@ -317,15 +330,15 @@
             margin: .6rem 0
         }
 
-        /* ── LAYOUT ── */
+        /* ══ LAYOUT ══ */
         .wrap {
             max-width: 1180px;
             margin: 0 auto;
-            padding: 0 1.5rem
+            padding: 0 2rem
         }
 
         section {
-            padding: 5.5rem 1.5rem;
+            padding: 5.5rem 2rem;
             position: relative;
             z-index: 1
         }
@@ -339,11 +352,11 @@
         }
 
         h1 {
-            font-size: clamp(2.2rem, 5vw, 3.8rem)
+            font-size: clamp(2rem, 5vw, 3.8rem)
         }
 
         h2 {
-            font-size: clamp(1.6rem, 3.5vw, 2.4rem)
+            font-size: clamp(1.5rem, 3.5vw, 2.4rem)
         }
 
         .grad {
@@ -399,7 +412,8 @@
         .lead {
             font-size: .95rem;
             color: var(--muted);
-            line-height: 1.85
+            line-height: 1.85;
+            font-weight: 400
         }
 
         .card {
@@ -429,7 +443,9 @@
             text-decoration: none;
             transition: all .25s;
             white-space: nowrap;
-            letter-spacing: -.01em
+            letter-spacing: -.01em;
+            line-height: 1.2;
+            font-family: 'Lexend', sans-serif
         }
 
         .btn-primary {
@@ -497,7 +513,8 @@
             font-size: .82rem;
             line-height: 1.7;
             align-items: flex-start;
-            margin-top: 1.5rem
+            margin-top: 1.5rem;
+            font-weight: 400
         }
 
         .infobox-icon {
@@ -506,7 +523,23 @@
             margin-top: .15rem
         }
 
-        /* ── HERO ── */
+        /* ── ICON SVG ── */
+        .idn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.1em;
+            height: 1.1em;
+            vertical-align: middle;
+            flex-shrink: 0
+        }
+
+        .idn svg {
+            width: 100%;
+            height: 100%
+        }
+
+        /* ══ HERO ══ */
         #hero {
             min-height: 100svh;
             padding-top: var(--nav-h);
@@ -523,7 +556,7 @@
             max-width: 1180px;
             margin: 0 auto;
             width: 100%;
-            padding: 4rem 1.5rem
+            padding: 4rem 2rem
         }
 
         .hero-eyebrow {
@@ -538,11 +571,7 @@
             border: 1px solid rgba(212, 168, 67, .28);
             color: var(--gold-l);
             margin-bottom: 1.25rem;
-            animation: fade-up .6s ease both .1s;
-            max-width: 100%;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis
+            animation: fade-up .6s ease both .1s
         }
 
         .hero-title {
@@ -559,13 +588,6 @@
             flex-wrap: wrap;
             margin-top: 2rem;
             animation: fade-up .7s ease both .4s
-        }
-
-        .hero-cta .btn {
-            flex: 1 1 auto;
-            min-width: 0;
-            justify-content: center;
-            text-align: center
         }
 
         .hero-stats {
@@ -592,7 +614,8 @@
             font-size: .65rem;
             color: var(--muted);
             margin-top: .2rem;
-            line-height: 1.3
+            line-height: 1.3;
+            font-weight: 500
         }
 
         @keyframes fade-up {
@@ -607,7 +630,7 @@
             }
         }
 
-        /* ── COUNTDOWN CARD ── */
+        /* ── COUNTDOWN ── */
         .cd-card {
             padding: 1.85rem;
             border-radius: 22px;
@@ -670,7 +693,8 @@
             color: var(--muted);
             text-transform: uppercase;
             letter-spacing: .12em;
-            margin-top: .28rem
+            margin-top: .28rem;
+            font-weight: 600
         }
 
         .cd-footer {
@@ -701,7 +725,8 @@
             align-items: center;
             justify-content: space-between;
             font-size: .77rem;
-            gap: .5rem
+            gap: .5rem;
+            font-weight: 500
         }
 
         /* ── STATS BAR ── */
@@ -736,10 +761,10 @@
         .stat-box .lbl {
             font-size: .74rem;
             color: var(--muted);
-            margin-top: .3rem
+            margin-top: .3rem;
+            font-weight: 500
         }
 
-        /* ── SECTION DIVIDER ── */
         .sec-sep {
             height: 1px;
             background: linear-gradient(90deg, transparent, var(--border), transparent);
@@ -748,7 +773,7 @@
             z-index: 1
         }
 
-        /* ── JALUR CARDS ── */
+        /* ══ JALUR CARDS ══ */
         .jalur-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -804,7 +829,8 @@
             font-size: .82rem;
             color: var(--muted);
             line-height: 1.75;
-            flex: 1
+            flex: 1;
+            font-weight: 400
         }
 
         .jalur-meta {
@@ -815,10 +841,13 @@
             padding-top: .9rem;
             border-top: 1px solid var(--border2);
             font-size: .73rem;
-            color: var(--muted)
+            color: var(--muted);
+            gap: .5rem;
+            flex-wrap: wrap;
+            font-weight: 500
         }
 
-        /* ── JADWAL / SCHED ── */
+        /* ── JADWAL ── */
         .sched-list {
             display: flex;
             flex-direction: column
@@ -828,12 +857,10 @@
             display: flex;
             align-items: flex-start;
             gap: .85rem;
-            padding: .85rem 0;
+            padding: .85rem .5rem;
             border-bottom: 1px solid var(--border2);
             transition: background .2s;
-            border-radius: 8px;
-            padding-left: .5rem;
-            padding-right: .5rem
+            border-radius: 8px
         }
 
         .sched-item:last-child {
@@ -859,7 +886,8 @@
         }
 
         .sched-content {
-            flex: 1
+            flex: 1;
+            min-width: 0
         }
 
         .sched-title {
@@ -871,12 +899,14 @@
             font-size: .72rem;
             color: var(--muted);
             margin-top: .15rem;
-            line-height: 1.5
+            line-height: 1.5;
+            font-weight: 400
         }
 
         .sched-badge {
             flex-shrink: 0;
-            margin-top: .1rem
+            margin-top: .1rem;
+            white-space: nowrap
         }
 
         /* ── TIMELINE ── */
@@ -935,7 +965,8 @@
         .tl-desc {
             font-size: .79rem;
             color: var(--muted);
-            line-height: 1.7
+            line-height: 1.7;
+            font-weight: 400
         }
 
         /* ── PERSYARATAN ── */
@@ -955,7 +986,8 @@
             border: 1px solid var(--border);
             background: transparent;
             color: var(--muted);
-            transition: all .25s
+            transition: all .25s;
+            font-family: 'Lexend', sans-serif
         }
 
         .req-panel {
@@ -999,12 +1031,15 @@
 
         .req-text {
             font-size: .83rem;
-            line-height: 1.65
+            line-height: 1.65;
+            min-width: 0;
+            font-weight: 400
         }
 
         .req-text strong {
             display: block;
-            margin-bottom: .1rem
+            margin-bottom: .1rem;
+            font-weight: 700
         }
 
         .req-note {
@@ -1070,7 +1105,8 @@
             font-size: .8rem;
             color: var(--muted);
             line-height: 1.8;
-            flex: 1
+            flex: 1;
+            font-weight: 400
         }
 
         .formula-box {
@@ -1096,7 +1132,8 @@
             padding: .8rem;
             background: rgba(255, 255, 255, .03);
             border-radius: 8px;
-            border: 1px solid var(--border2)
+            border: 1px solid var(--border2);
+            font-weight: 400
         }
 
         /* ── GUGUR ── */
@@ -1117,19 +1154,19 @@
             background: rgba(220, 38, 38, .05);
             font-size: .83rem;
             line-height: 1.7;
-            transition: border-color .2s
+            transition: border-color .2s;
+            font-weight: 400
         }
 
         .gugur-item:hover {
             border-color: rgba(220, 38, 38, .38)
         }
 
-        .gugur-no {
-            color: #ef4444;
-            font-size: 1rem;
+        .gugur-icon {
+            width: 20px;
+            height: 20px;
             flex-shrink: 0;
-            margin-top: .05rem;
-            font-weight: 700
+            margin-top: .2rem
         }
 
         /* ── KUOTA ── */
@@ -1165,7 +1202,8 @@
         .kuota-sub {
             font-size: .73rem;
             color: var(--muted);
-            line-height: 1.55
+            line-height: 1.55;
+            font-weight: 400
         }
 
         .kuota-note-grid {
@@ -1190,9 +1228,21 @@
             gap: .3rem
         }
 
-        .prog-icon {
-            font-size: 1.65rem;
-            margin-bottom: .4rem
+        .prog-icon-wrap {
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: .4rem;
+            background: rgba(20, 184, 166, .1);
+            border: 1px solid rgba(20, 184, 166, .18)
+        }
+
+        .prog-icon-wrap svg {
+            width: 22px;
+            height: 22px
         }
 
         .prog-title {
@@ -1203,7 +1253,8 @@
         .prog-desc {
             font-size: .77rem;
             color: var(--muted);
-            line-height: 1.65
+            line-height: 1.65;
+            font-weight: 400
         }
 
         /* ── FAQ ── */
@@ -1233,7 +1284,8 @@
             font-size: .87rem;
             font-weight: 600;
             transition: color .2s;
-            line-height: 1.45
+            line-height: 1.45;
+            font-family: 'Lexend', sans-serif
         }
 
         .faq-btn:hover {
@@ -1249,10 +1301,18 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: .62rem;
-            color: var(--teal-xl);
-            transition: transform .3s;
-            flex-shrink: 0
+            flex-shrink: 0;
+            transition: transform .3s
+        }
+
+        .faq-chev svg {
+            width: 10px;
+            height: 10px;
+            stroke: var(--teal-xl);
+            fill: none;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round
         }
 
         .faq-body {
@@ -1266,7 +1326,8 @@
             font-size: .82rem;
             color: var(--muted);
             line-height: 1.85;
-            border-top: 1px solid var(--border2)
+            border-top: 1px solid var(--border2);
+            font-weight: 400
         }
 
         .faq-group {
@@ -1284,10 +1345,10 @@
             margin: 0 .25rem 1rem
         }
 
-        /* ── CTA FINAL ── */
+        /* ── CTA ── */
         .cta-section {
             text-align: center;
-            padding: 6.5rem 1.5rem;
+            padding: 6.5rem 2rem;
             position: relative;
             z-index: 1
         }
@@ -1316,7 +1377,7 @@
         /* ── FOOTER ── */
         footer {
             border-top: 1px solid var(--border);
-            padding: 3.5rem 1.5rem;
+            padding: 3.5rem 2rem;
             position: relative;
             z-index: 1
         }
@@ -1348,7 +1409,8 @@
             color: var(--muted);
             line-height: 1.8;
             text-decoration: none;
-            display: block
+            display: block;
+            font-weight: 400
         }
 
         .footer-col a:hover {
@@ -1361,7 +1423,8 @@
             text-align: center;
             font-size: .73rem;
             color: var(--muted2);
-            line-height: 1.85
+            line-height: 1.85;
+            font-weight: 400
         }
 
         .footer-bottom a {
@@ -1382,7 +1445,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
             box-shadow: 0 4px 24px rgba(37, 211, 102, .38);
             cursor: pointer;
             border: none;
@@ -1393,6 +1455,12 @@
         .wa-fab:hover {
             transform: scale(1.1);
             box-shadow: 0 6px 32px rgba(37, 211, 102, .55)
+        }
+
+        .wa-fab svg {
+            width: 28px;
+            height: 28px;
+            fill: #fff
         }
 
         .wa-fab-pulse {
@@ -1441,13 +1509,44 @@
             transition-delay: .26s
         }
 
-        /* ── RESPONSIVE ── */
-        @media(max-width:1060px) {
+        /* ── INFO PILL ── */
+        .info-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .4rem 1rem;
+            border-radius: 999px;
+            font-size: .73rem;
+            font-weight: 600;
+            background: rgba(20, 184, 166, .08);
+            border: 1px solid rgba(20, 184, 166, .2);
+            color: var(--teal-xl)
+        }
+
+        /* ══ RESPONSIVE ══ */
+        @media(max-width:1100px) {
+            .nav-links a {
+                font-size: .7rem;
+                padding: .35rem .4rem
+            }
+        }
+
+        @media(max-width:960px) {
+
+            .nav-links,
+            #daftarBtnNav {
+                display: none !important
+            }
+
+            #menuBtn {
+                display: flex
+            }
+
             .hero-grid {
                 grid-template-columns: 1fr;
                 gap: 2.5rem;
                 text-align: center;
-                padding: 3rem 1.25rem
+                padding: 3rem 1.5rem
             }
 
             .hero-cta {
@@ -1461,18 +1560,21 @@
             .hero-visual {
                 display: none !important
             }
-
-            .hero-eyebrow {
-                font-size: .65rem;
-                padding: .3rem .8rem
-            }
         }
 
         @media(max-width:900px) {
+            .jalur-grid {
+                grid-template-columns: 1fr 1fr
+            }
 
-            .jalur-grid,
-            .seleksi-grid,
-            .kuota-grid,
+            .seleksi-grid {
+                grid-template-columns: 1fr 1fr
+            }
+
+            .kuota-grid {
+                grid-template-columns: 1fr 1fr
+            }
+
             .prog-grid {
                 grid-template-columns: 1fr 1fr
             }
@@ -1483,7 +1585,7 @@
 
             .two-col {
                 grid-template-columns: 1fr;
-                gap: 2rem
+                gap: 2.5rem
             }
 
             .footer-top {
@@ -1497,20 +1599,19 @@
             }
 
             section {
-                padding: 3rem 1rem
+                padding: 3.5rem 1rem
             }
 
             .wrap {
                 padding: 0 1rem
             }
 
-            .nav-links,
-            #daftarBtnNav {
-                display: none !important
+            h1 {
+                font-size: clamp(1.75rem, 6vw, 2.2rem)
             }
 
-            #menuBtn {
-                display: flex
+            h2 {
+                font-size: clamp(1.35rem, 5vw, 1.8rem)
             }
 
             .jalur-grid,
@@ -1521,49 +1622,6 @@
 
             .prog-grid {
                 grid-template-columns: repeat(2, 1fr)
-            }
-
-            .cta-btns {
-                flex-direction: column;
-                align-items: center
-            }
-
-            .cta-btns .btn {
-                width: 100%;
-                max-width: 100%;
-                justify-content: center
-            }
-
-            h1 {
-                font-size: 1.95rem;
-                letter-spacing: -.02em
-            }
-
-            h2 {
-                font-size: 1.4rem
-            }
-
-            .footer-top {
-                grid-template-columns: 1fr
-            }
-
-            .two-col {
-                gap: 1.75rem
-            }
-
-            .hero-cta {
-                flex-direction: column;
-                gap: .6rem
-            }
-
-            .hero-cta .btn {
-                width: 100%;
-                max-width: 100%
-            }
-
-            .hero-stats {
-                grid-template-columns: repeat(2, 1fr);
-                gap: .75rem
             }
 
             .stats-row {
@@ -1578,22 +1636,46 @@
                 font-size: 1.6rem
             }
 
-            .seleksi-grid {
-                grid-template-columns: 1fr
+            .hero-stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: .75rem
+            }
+
+            .cta-btns {
+                flex-direction: column;
+                align-items: stretch
+            }
+
+            .cta-btns .btn {
+                justify-content: center
+            }
+
+            .hero-cta {
+                flex-direction: column;
+                gap: .6rem
             }
 
             .kuota-note-grid {
                 grid-template-columns: 1fr
             }
+
+            .footer-top {
+                grid-template-columns: 1fr;
+                gap: 1.75rem
+            }
+
+            .sched-item {
+                gap: .6rem
+            }
         }
 
-        @media(max-width:480px) {
+        @media(max-width:540px) {
             :root {
                 --nav-h: 52px
             }
 
             section {
-                padding: 2.5rem 1rem
+                padding: 2.75rem 1rem
             }
 
             .prog-grid {
@@ -1605,26 +1687,8 @@
                 font-size: .88rem
             }
 
-            .hero-eyebrow {
-                font-size: .62rem;
-                padding: .28rem .7rem
-            }
-
-            h1 {
-                font-size: 1.75rem
-            }
-
-            h2 {
-                font-size: 1.3rem
-            }
-
             .nav-name {
                 font-size: .8rem
-            }
-
-            .nav-logo {
-                width: 32px;
-                height: 32px
             }
 
             .jalur-card {
@@ -1632,7 +1696,11 @@
             }
 
             .cd-n {
-                font-size: 1.6rem
+                font-size: 1.55rem
+            }
+
+            .cd-box {
+                padding: .8rem .3rem
             }
 
             .req-item {
@@ -1648,6 +1716,20 @@
                 flex-direction: column;
                 gap: .5rem
             }
+
+            .hero-eyebrow {
+                white-space: normal;
+                font-size: .65rem
+            }
+
+            .sched-item {
+                flex-wrap: wrap
+            }
+
+            .sched-badge {
+                margin-left: calc(34px + .6rem);
+                margin-top: .1rem
+            }
         }
 
         @media(max-width:360px) {
@@ -1656,17 +1738,20 @@
             }
 
             h1 {
-                font-size: 1.6rem
+                font-size: 1.55rem
             }
 
-            .hero-eyebrow {
-                white-space: normal;
-                text-align: center;
-                font-size: .6rem
+            .cd-grid {
+                grid-template-columns: repeat(2, 1fr)
             }
 
-            .stat-val {
-                font-size: 1.35rem
+            .stats-row {
+                grid-template-columns: 1fr 1fr
+            }
+
+            .jalur-meta {
+                flex-direction: column;
+                align-items: flex-start
             }
         }
     </style>
@@ -1677,14 +1762,18 @@
     <div class="orb orb-2"></div>
     <div class="grid-bg"></div>
 
-    <!-- ═══ NAVBAR ═══ -->
+    <!-- NAV -->
     <nav id="mainNav">
         <a href="#" class="nav-brand">
             <div class="nav-logo">
+                {{-- <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M12 2L3 7v10l9 5 9-5V7L12 2zm0 2.18L19 8.5v7L12 19.5l-7-4V8.5l7-4.32zM12 8a4 4 0 100 8 4 4 0 000-8zm0 2a2 2 0 110 4 2 2 0 010-4z" />
+                </svg> --}}
                 <img src="{{ asset('img/logo.png') }}" alt="Logo MTsN 1 Pandeglang">
             </div>
             <div>
-                <div class="nav-name">MTsN 1 Pandeglang</div>
+                <div class="nav-name">MTSN 1 PANDEGLANG</div>
                 <div class="nav-sub">PMBM TP 2026/2027</div>
             </div>
         </a>
@@ -1700,33 +1789,33 @@
         <div class="nav-right">
             <button class="n-btn" id="menuBtn" aria-label="Menu"><span></span><span></span><span></span></button>
             <a href="https://daftar.mtsn1pandeglang.sch.id/dashboard" class="btn btn-primary" id="daftarBtnNav"
-                style="height:36px;font-size:.78rem;padding:.4rem 1.1rem;">✦ Daftar Sekarang</a>
+                style="height:36px;font-size:.78rem;padding:.4rem 1.1rem;">Daftar Sekarang</a>
         </div>
     </nav>
 
-    <!-- MOBILE DRAWER -->
+    <!-- DRAWER -->
     <div class="drawer" id="drawer">
-        <a href="#jalur" class="d-link">📋 Jalur Pendaftaran</a>
-        <a href="#jadwal" class="d-link">📅 Jadwal Kegiatan</a>
-        <a href="#alur" class="d-link">📌 Cara Mendaftar</a>
-        <a href="#syarat" class="d-link">📄 Persyaratan</a>
-        <a href="#seleksi" class="d-link">⚖️ Mekanisme Seleksi</a>
-        <a href="#gugur" class="d-link">❌ Ketentuan Gugur</a>
-        <a href="#kuota" class="d-link">🏫 Kuota & Rombel</a>
-        <a href="#faq" class="d-link">❓ FAQ</a>
+        <a href="#jalur" class="d-link">Jalur Pendaftaran</a>
+        <a href="#jadwal" class="d-link">Jadwal Kegiatan</a>
+        <a href="#alur" class="d-link">Cara Mendaftar</a>
+        <a href="#syarat" class="d-link">Persyaratan</a>
+        <a href="#seleksi" class="d-link">Mekanisme Seleksi</a>
+        <a href="#gugur" class="d-link">Ketentuan Gugur</a>
+        <a href="#kuota" class="d-link">Kuota &amp; Rombel</a>
+        <a href="#faq" class="d-link">FAQ</a>
         <hr>
-        <a href="https://daftar.mtsn1pandeglang.sch.id/dashboard" style="color:var(--gold-l);font-weight:700;">🏆 Daftar
+        <a href="https://daftar.mtsn1pandeglang.sch.id/dashboard" style="color:var(--gold-l);font-weight:700;">Daftar
             Prestasi / Afirmasi →</a>
-        <a href="https://pmbm-kanwilbanten.com" style="color:var(--teal-xl);font-weight:700;">📝 Daftar Reguler →</a>
+        <a href="https://pmbm-kanwilbanten.com" style="color:var(--teal-xl);font-weight:700;">Daftar Reguler →</a>
     </div>
 
     <main>
 
-        <!-- ═══ HERO ═══ -->
+        <!-- HERO -->
         <section id="hero" style="padding:0">
             <div class="hero-grid">
                 <div>
-                    <div class="hero-eyebrow">Penerimaan Murid Baru Madrasah · TP 2026/2027</div>
+                    <div class="hero-eyebrow">Penerimaan Murid Baru Madrasah &middot; TP 2026/2027</div>
                     <h1 class="hero-title">Bergabung &amp;<br><span class="grad">Berprestasi</span><br>di MTsN 1</h1>
                     <p class="lead hero-desc" style="margin-top:1.1rem;max-width:500px;">
                         MTsN 1 Pandeglang membuka pendaftaran peserta didik baru melalui <strong>3 jalur resmi</strong>
@@ -1734,12 +1823,13 @@
                     </p>
                     <p style="font-size:.79rem;color:var(--muted2);margin-top:.85rem;" class="hero-desc">
                         Kepala Madrasah: <strong style="color:var(--muted)">Hj. Yanti Mariah, S.S., M.Pd.</strong>
-                        &nbsp;·&nbsp; Ketua PMBM: <strong style="color:var(--muted)">Umar Mu'tamar, S.Ag.</strong>
+                        &nbsp;&middot;&nbsp; Ketua PMBM: <strong style="color:var(--muted)">Umar Mu'tamar,
+                            S.Ag.</strong>
                     </p>
                     <div class="hero-cta">
-                        <a href="https://daftar.mtsn1pandeglang.sch.id/dashboard" class="btn btn-gold btn-lg">🏆 Daftar
+                        <a href="https://daftar.mtsn1pandeglang.sch.id/dashboard" class="btn btn-gold btn-lg">Daftar
                             Prestasi / Afirmasi</a>
-                        <a href="https://pmbm-kanwilbanten.com" class="btn btn-ghost btn-lg">📝 Daftar Reguler →</a>
+                        <a href="https://pmbm-kanwilbanten.com" class="btn btn-ghost btn-lg">Daftar Reguler &rarr;</a>
                     </div>
                     <div class="hero-stats">
                         <div>
@@ -1760,7 +1850,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- HERO VISUAL DESKTOP -->
                 <div class="hero-visual" style="display:flex;justify-content:center;">
                     <div class="cd-card" style="width:100%;max-width:360px;">
                         <div class="cd-label" id="cd-label">Menghitung Waktu…</div>
@@ -1785,11 +1874,12 @@
                         <div class="cd-jalur-row">
                             <div class="cd-jalur-item">
                                 <span>Prestasi &amp; Afirmasi</span>
-                                <span style="font-size:.72rem;color:var(--gold);font-weight:700;">6–8 Apr 2026</span>
+                                <span style="font-size:.72rem;color:var(--gold);font-weight:700;">6&ndash;8 Apr
+                                    2026</span>
                             </div>
                             <div class="cd-jalur-item">
                                 <span>Jalur Reguler</span>
-                                <span style="font-size:.72rem;color:var(--teal-xl);font-weight:700;">18–27 Apr
+                                <span style="font-size:.72rem;color:var(--teal-xl);font-weight:700;">18&ndash;27 Apr
                                     2026</span>
                             </div>
                             <div class="cd-jalur-item">
@@ -1797,7 +1887,7 @@
                                 <span style="font-size:.72rem;color:var(--blue-l);font-weight:700;">5 Mei 2026</span>
                             </div>
                         </div>
-                        <div class="cd-footer">Lapor diri terakhir: <strong>12 Mei 2026</strong> · <a
+                        <div class="cd-footer">Lapor diri terakhir: <strong>12 Mei 2026</strong> &middot; <a
                                 href="https://pmbm-kanwilbanten.com">pmbm-kanwilbanten.com</a></div>
                     </div>
                 </div>
@@ -1805,7 +1895,7 @@
         </section>
 
         <!-- STATS BAR -->
-        <div style="padding:0 1.5rem;position:relative;z-index:1;margin-top:.5rem;">
+        <div style="padding:0 2rem;position:relative;z-index:1;margin-top:.5rem;">
             <div class="stats-row wrap" style="padding:0">
                 <div class="stat-box reveal">
                     <div class="val grad-teal">1970</div>
@@ -1832,7 +1922,7 @@
 
         <div class="sec-sep" style="margin-top:3rem"></div>
 
-        <!-- ═══ 3 JALUR ═══ -->
+        <!-- JALUR -->
         <section id="jalur">
             <div class="wrap">
                 <div class="section-header center reveal">
@@ -1849,61 +1939,68 @@
                         style="background:linear-gradient(160deg,rgba(212,168,67,.08),transparent);">
                         <div class="badge"
                             style="background:rgba(212,168,67,.15);color:#d4a843;border:1px solid rgba(212,168,67,.3);align-self:flex-start;">
-                            🏆 Jalur Prestasi</div>
+                            Jalur Prestasi</div>
                         <div class="jalur-name">Jalur Prestasi</div>
                         <p class="jalur-desc">Untuk siswa berprestasi di bidang <strong>Tahfidz</strong> (min. 3 juz),
                             <strong>Akademik</strong> (KSM, OSN, MYRES, OSP, OSK), atau <strong>Non-Akademik</strong>
                             (MTQ, O2SN, FLS2N, Kaligrafi, dll). Minimal Juara 1 tingkat Kabupaten/Kota.
                         </p>
                         <div class="jalur-meta">
-                            <span>📅 Buka: 6–8 April 2026</span>
+                            <span>Buka: 6&ndash;8 April 2026</span>
                             <span style="color:#dc2626;font-weight:700;">Map Merah</span>
                         </div>
                         <a href="https://daftar.mtsn1pandeglang.sch.id/dashboard" class="btn btn-ghost"
                             style="margin-top:1rem;width:100%;justify-content:center;border-color:rgba(212,168,67,.4);color:#d4a843;">Daftar
-                            Jalur Prestasi →</a>
+                            Jalur Prestasi &rarr;</a>
                     </div>
                     <!-- Afirmasi -->
                     <div class="card card-hover jalur-card c-blue reveal reveal-delay-1"
                         style="background:linear-gradient(160deg,rgba(96,165,250,.08),transparent);">
                         <div class="badge"
                             style="background:rgba(96,165,250,.15);color:#60a5fa;border:1px solid rgba(96,165,250,.3);align-self:flex-start;">
-                            🤝 Jalur Afirmasi</div>
+                            Jalur Afirmasi</div>
                         <div class="jalur-name">Jalur Afirmasi</div>
                         <p class="jalur-desc">Untuk keluarga penerima manfaat program sosial pemerintah: pemegang
                             <strong>KIP</strong>, <strong>PKH</strong>, <strong>KKS</strong>, atau <strong>SKTM</strong>
                             dari pemerintah daerah. Memberikan akses pendidikan yang berkeadilan.
                         </p>
                         <div class="jalur-meta">
-                            <span>📅 Buka: 6–8 April 2026</span>
+                            <span>Buka: 6&ndash;8 April 2026</span>
                             <span style="color:#eab308;font-weight:700;">Map Kuning</span>
                         </div>
                         <a href="https://daftar.mtsn1pandeglang.sch.id/dashboard" class="btn btn-ghost"
                             style="margin-top:1rem;width:100%;justify-content:center;border-color:rgba(96,165,250,.4);color:#60a5fa;">Daftar
-                            Jalur Afirmasi →</a>
+                            Jalur Afirmasi &rarr;</a>
                     </div>
                     <!-- Reguler -->
                     <div class="card card-hover jalur-card c-teal reveal reveal-delay-2"
                         style="background:linear-gradient(160deg,rgba(20,184,166,.07),transparent);">
                         <div class="badge"
                             style="background:rgba(20,184,166,.13);color:var(--teal-xl);border:1px solid rgba(20,184,166,.28);align-self:flex-start;">
-                            📝 Jalur Reguler</div>
+                            Jalur Reguler</div>
                         <div class="jalur-name">Jalur Reguler</div>
                         <p class="jalur-desc">Terbuka untuk <strong>semua</strong> lulusan MI/SD sederajat. Seleksi
                             menggunakan <strong>CBT</strong> dan <strong>Tes BTQ</strong>. Kuota 224 kursi melalui
-                            sistem PMBM Bersama Kanwil Kemenag Banten. Pendaftaran di situs khusus.</p>
+                            sistem PMBM Bersama Kanwil Kemenag Banten.</p>
                         <div class="jalur-meta">
-                            <span>📅 Buka: 18–27 April 2026</span>
+                            <span>Buka: 18&ndash;27 April 2026</span>
                             <span style="color:#16a34a;font-weight:700;">Map Hijau</span>
                         </div>
                         <a href="https://pmbm-kanwilbanten.com" class="btn btn-ghost"
                             style="margin-top:1rem;width:100%;justify-content:center;border-color:rgba(20,184,166,.4);color:var(--teal-xl);">Daftar
-                            Jalur Reguler →</a>
+                            Jalur Reguler &rarr;</a>
                     </div>
                 </div>
                 <div class="infobox reveal"
                     style="background:rgba(20,184,166,.06);border:1px solid rgba(20,184,166,.22);">
-                    <span class="infobox-icon">💡</span>
+                    <span class="infobox-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="var(--teal-xl)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="8" x2="12" y2="12" />
+                            <line x1="12" y1="16" x2="12.01" y2="16" />
+                        </svg>
+                    </span>
                     <div><strong>Tidak lolos Prestasi/Afirmasi? Tenang!</strong> Berkas dapat diambil kembali sehari
                         setelah pengumuman <strong>(15 April 2026)</strong>. Kamu masih bisa mendaftar ke <strong>Jalur
                             Reguler mulai 18 April 2026</strong> melalui https://pmbm-kanwilbanten.com.</div>
@@ -1913,7 +2010,7 @@
 
         <div class="sec-sep"></div>
 
-        <!-- ═══ JADWAL ═══ -->
+        <!-- JADWAL -->
         <section id="jadwal"
             style="background:linear-gradient(180deg,transparent,rgba(13,148,136,.03),transparent)">
             <div class="wrap">
@@ -1928,25 +2025,25 @@
                     <div class="reveal">
                         <div class="badge"
                             style="background:rgba(212,168,67,.12);color:#d4a843;border:1px solid rgba(212,168,67,.3);margin-bottom:1rem;font-size:.72rem;padding:.35rem 1rem;">
-                            🏆 Jalur Prestasi &amp; Afirmasi</div>
+                            Jalur Prestasi &amp; Afirmasi</div>
                         <div class="card" style="padding:1.5rem;">
                             <div class="sched-list" id="sched-pa"></div>
                             <div
                                 style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border2);font-size:.73rem;color:var(--muted);">
-                                ⏰ Jam layanan panitia: <strong>08.00–14.00 WIB</strong> &nbsp;|&nbsp; Istirahat:
-                                <strong>11.30–13.00 WIB</strong>
+                                Jam layanan panitia: <strong>08.00&ndash;14.00 WIB</strong> &nbsp;|&nbsp; Istirahat:
+                                <strong>11.30&ndash;13.00 WIB</strong>
                             </div>
                         </div>
                     </div>
                     <div class="reveal reveal-delay-1">
                         <div class="badge"
                             style="background:rgba(20,184,166,.1);color:var(--teal-xl);border:1px solid rgba(20,184,166,.28);margin-bottom:1rem;font-size:.72rem;padding:.35rem 1rem;">
-                            📝 Jalur Reguler (PMBM Bersama Kanwil)</div>
+                            Jalur Reguler (PMBM Bersama Kanwil)</div>
                         <div class="card" style="padding:1.5rem;">
                             <div class="sched-list" id="sched-reg"></div>
                             <div
                                 style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border2);font-size:.73rem;color:var(--muted);">
-                                🔗 Sistem pendaftaran: <a href="https://pmbm-kanwilbanten.com"
+                                Sistem pendaftaran: <a href="https://pmbm-kanwilbanten.com"
                                     style="color:var(--teal-xl);text-decoration:none;font-weight:600;">pmbm-kanwilbanten.com</a>
                             </div>
                         </div>
@@ -1957,7 +2054,7 @@
 
         <div class="sec-sep"></div>
 
-        <!-- ═══ CARA DAFTAR ═══ -->
+        <!-- CARA DAFTAR -->
         <section id="alur">
             <div class="wrap">
                 <div class="section-header center reveal">
@@ -1968,11 +2065,10 @@
                         pilih.</p>
                 </div>
                 <div class="two-col">
-                    <!-- Prestasi & Afirmasi -->
                     <div class="reveal">
                         <div
                             style="font-size:.75rem;font-weight:700;color:#d4a843;text-transform:uppercase;letter-spacing:.08em;margin-bottom:1.15rem;">
-                            🏆 Jalur Prestasi &amp; Afirmasi</div>
+                            Jalur Prestasi &amp; Afirmasi</div>
                         <div class="timeline">
                             <div class="tl-item">
                                 <div class="tl-dot"></div>
@@ -1995,8 +2091,8 @@
                                 <div class="tl-step">Langkah 3</div>
                                 <div class="tl-title">Serahkan Berkas ke Sekretariat PMBM</div>
                                 <div class="tl-desc">Antar langsung ke Sekretariat PMBM MTsN 1 Pandeglang pada
-                                    <strong>6–8 April 2026</strong>, pukul <strong>08.00–14.00 WIB</strong> (istirahat
-                                    11.30–13.00).
+                                    <strong>6&ndash;8 April 2026</strong>, pukul <strong>08.00&ndash;14.00 WIB</strong>
+                                    (istirahat 11.30&ndash;13.00).
                                 </div>
                             </div>
                             <div class="tl-item">
@@ -2012,16 +2108,16 @@
                                 <div class="tl-step">Langkah 5</div>
                                 <div class="tl-title">Cek Pengumuman &amp; Lapor Diri</div>
                                 <div class="tl-desc">Pengumuman hasil: <strong>14 April 2026</strong>. Jika diterima,
-                                    wajib lapor diri langsung ke madrasah pada <strong>15–16 April 2026</strong>. <span
-                                        style="color:#ef4444;font-weight:600;">Tidak lapor diri = gugur.</span></div>
+                                    wajib lapor diri langsung ke madrasah pada <strong>15&ndash;16 April 2026</strong>.
+                                    <span style="color:#ef4444;font-weight:600;">Tidak lapor diri = gugur.</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <!-- Reguler -->
                     <div class="reveal reveal-delay-1">
                         <div
                             style="font-size:.75rem;font-weight:700;color:var(--teal-xl);text-transform:uppercase;letter-spacing:.08em;margin-bottom:1.15rem;">
-                            📝 Jalur Reguler (PMBM Bersama)</div>
+                            Jalur Reguler (PMBM Bersama)</div>
                         <div class="timeline">
                             <div class="tl-item">
                                 <div class="tl-dot"
@@ -2061,7 +2157,7 @@
                                 <div class="tl-title">Cetak Bukti &amp; Ikuti Seleksi CBT</div>
                                 <div class="tl-desc">Cetak bukti pendaftaran setelah berkas dinyatakan lengkap. Ikuti
                                     Uji Coba CBT <strong>30 April</strong>, lalu CBT resmi <strong>2 Mei 2026</strong>
-                                    dan Tes BTQ <strong>2–3 Mei 2026</strong>.</div>
+                                    dan Tes BTQ <strong>2&ndash;3 Mei 2026</strong>.</div>
                             </div>
                             <div class="tl-item">
                                 <div class="tl-dot"
@@ -2070,9 +2166,10 @@
                                 <div class="tl-step">Langkah 5</div>
                                 <div class="tl-title">Cek Hasil &amp; Lapor Diri</div>
                                 <div class="tl-desc">Pengumuman kelulusan: <strong>5 Mei 2026</strong> di
-                                    pmbm-kanwilbanten.com. Jika diterima, wajib lapor diri ke madrasah <strong>6–12 Mei
-                                        2026</strong>. <span style="color:#ef4444;font-weight:600;">Tidak lapor diri =
-                                        gugur.</span></div>
+                                    pmbm-kanwilbanten.com. Jika diterima, wajib lapor diri ke madrasah
+                                    <strong>6&ndash;12 Mei 2026</strong>. <span
+                                        style="color:#ef4444;font-weight:600;">Tidak lapor diri = gugur.</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -2082,7 +2179,7 @@
 
         <div class="sec-sep"></div>
 
-        <!-- ═══ PERSYARATAN ═══ -->
+        <!-- PERSYARATAN -->
         <section id="syarat"
             style="background:linear-gradient(180deg,transparent,rgba(212,168,67,.02),transparent)">
             <div class="wrap">
@@ -2096,7 +2193,7 @@
                     <div
                         style="font-size:.75rem;font-weight:700;color:var(--teal-xl);text-transform:uppercase;letter-spacing:.08em;margin-bottom:1rem;">
                         Persyaratan Umum — Berlaku untuk Semua Jalur</div>
-                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:.7rem;">
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.7rem;">
                         <div class="req-item">
                             <div class="req-num">1</div>
                             <div class="req-text"><strong>Usia Maksimal 15 Tahun</strong>Dihitung per 1 Juli 2026</div>
@@ -2119,7 +2216,15 @@
                     </div>
                     <div class="infobox"
                         style="background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2);margin-top:1rem;">
-                        <span class="infobox-icon">⚠️</span>
+                        <span class="infobox-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                                <line x1="12" y1="9" x2="12" y2="13" />
+                                <line x1="12" y1="17" x2="12.01" y2="17" />
+                            </svg>
+                        </span>
                         <span>KK dan Akta Kelahiran <strong>wajib berbarcode</strong> — yaitu dokumen resmi terbitan
                             Dinas Kependudukan dan Catatan Sipil (Dukcapil). Dokumen lama tanpa barcode <strong>tidak
                                 diterima</strong>.</span>
@@ -2129,10 +2234,10 @@
                 <div class="reveal">
                     <div class="req-tabs" id="reqTabs">
                         <button class="req-tab active" data-panel="tab-prestasi"
-                            style="background:rgba(212,168,67,.1);color:#d4a843;border-color:#d4a843;">🏆 Jalur
+                            style="background:rgba(212,168,67,.1);color:#d4a843;border-color:#d4a843;">Jalur
                             Prestasi</button>
-                        <button class="req-tab" data-panel="tab-afirmasi">🤝 Jalur Afirmasi</button>
-                        <button class="req-tab" data-panel="tab-reguler">📝 Jalur Reguler</button>
+                        <button class="req-tab" data-panel="tab-afirmasi">Jalur Afirmasi</button>
+                        <button class="req-tab" data-panel="tab-reguler">Jalur Reguler</button>
                     </div>
                     <!-- PRESTASI -->
                     <div id="tab-prestasi" class="req-panel active">
@@ -2146,11 +2251,11 @@
                                 <div class="req-num">2</div>
                                 <div class="req-text"><strong>Sertifikat Prestasi Asli</strong>
                                     <div class="req-note"><strong>Akademik:</strong> KSM/OMI, MYRES, OSN, OSP, OSK —
-                                        Juara 1–3 minimal tingkat Kab/Kota, diselenggarakan Kemenag, Kemendikbud, BRIN,
-                                        atau PT Terakreditasi</div>
+                                        Juara 1&ndash;3 minimal tingkat Kab/Kota, diselenggarakan Kemenag, Kemendikbud,
+                                        BRIN, atau PT Terakreditasi</div>
                                     <div class="req-note"><strong>Non-Akademik:</strong> MTQ, MHQ, MSQ, Pidato Arab,
-                                        Kaligrafi, O2SN, FLS2N, Olahraga — Juara 1 Kab/Kota · Juara 1–2 Provinsi · Juara
-                                        1–3 Nasional</div>
+                                        Kaligrafi, O2SN, FLS2N, Olahraga — Juara 1 Kab/Kota &middot; Juara 1&ndash;2
+                                        Provinsi &middot; Juara 1&ndash;3 Nasional</div>
                                     <div class="req-note"><strong>Tahfidz:</strong> Sertifikat hafalan minimal 3 juz.
                                         <em>Akan ada tes hafalan langsung pada 13 April 2026</em>
                                     </div>
@@ -2165,18 +2270,18 @@
                             </div>
                             <div class="req-item"
                                 style="background:rgba(220,38,38,.05);border-color:rgba(220,38,38,.2);">
-                                <div class="req-num" style="background:linear-gradient(135deg,#dc2626,#b91c1c);">📁
+                                <div class="req-num" style="background:linear-gradient(135deg,#dc2626,#b91c1c);">M
                                 </div>
-                                <div class="req-text"><strong>Semua Berkas → Map Snelhecter Warna MERAH</strong>
-                                    <div class="req-note">Tempel label di map: Nama Lengkap · Asal Sekolah · Jalur
-                                        Prestasi</div>
+                                <div class="req-text"><strong>Semua Berkas &rarr; Map Snelhecter Warna MERAH</strong>
+                                    <div class="req-note">Tempel label di map: Nama Lengkap &middot; Asal Sekolah
+                                        &middot; Jalur Prestasi</div>
                                 </div>
                             </div>
                         </div>
                         <div style="margin-top:1.25rem;display:flex;gap:1rem;flex-wrap:wrap;">
                             <div class="map-box"
                                 style="background:rgba(220,38,38,.07);border-color:rgba(220,38,38,.3);">
-                                <div class="map-box-icon">📁</div>
+                                <div class="map-box-icon" style="font-size:1.75rem;">&#128193;</div>
                                 <div class="map-box-label" style="color:#ef4444;">Map Merah</div>
                                 <div class="map-box-sub">Jalur Prestasi</div>
                             </div>
@@ -2200,13 +2305,13 @@
                             </div>
                             <div class="req-item"
                                 style="background:rgba(251,191,36,.05);border-color:rgba(251,191,36,.25);">
-                                <div class="req-num" style="background:linear-gradient(135deg,#f59e0b,#d97706);">⚠️
+                                <div class="req-num" style="background:linear-gradient(135deg,#f59e0b,#d97706);">!
                                 </div>
                                 <div class="req-text"><strong>Khusus Pengguna SKTM — Wajib Tambah 2 Dokumen
                                         Ini:</strong>
-                                    <div class="req-note">📄 Fotokopi tagihan/rekening listrik <strong>3 bulan
+                                    <div class="req-note">Fotokopi tagihan/rekening listrik <strong>3 bulan
                                             terakhir</strong></div>
-                                    <div class="req-note">📸 Foto tampak depan, dalam, dan belakang rumah</div>
+                                    <div class="req-note">Foto tampak depan, dalam, dan belakang rumah</div>
                                     <div class="req-note" style="color:#f59e0b;margin-top:.3rem;">SKTM hanya diterima
                                         jika diterbitkan oleh pemerintah daerah (kelurahan, kecamatan, atau dinas
                                         sosial). SKTM dari RT/RW <strong>tidak diterima</strong></div>
@@ -2219,18 +2324,18 @@
                             </div>
                             <div class="req-item"
                                 style="background:rgba(234,179,8,.05);border-color:rgba(234,179,8,.25);">
-                                <div class="req-num" style="background:linear-gradient(135deg,#ca8a04,#a16207);">📁
+                                <div class="req-num" style="background:linear-gradient(135deg,#ca8a04,#a16207);">K
                                 </div>
-                                <div class="req-text"><strong>Semua Berkas → Map Snelhecter Warna KUNING</strong>
-                                    <div class="req-note">Tempel label di map: Nama Lengkap · Asal Sekolah · Jalur
-                                        Afirmasi</div>
+                                <div class="req-text"><strong>Semua Berkas &rarr; Map Snelhecter Warna KUNING</strong>
+                                    <div class="req-note">Tempel label di map: Nama Lengkap &middot; Asal Sekolah
+                                        &middot; Jalur Afirmasi</div>
                                 </div>
                             </div>
                         </div>
                         <div style="margin-top:1.25rem;display:flex;gap:1rem;flex-wrap:wrap;">
                             <div class="map-box"
                                 style="background:rgba(234,179,8,.07);border-color:rgba(234,179,8,.35);">
-                                <div class="map-box-icon">📁</div>
+                                <div class="map-box-icon" style="font-size:1.75rem;">&#128193;</div>
                                 <div class="map-box-label" style="color:#eab308;">Map Kuning</div>
                                 <div class="map-box-sub">Jalur Afirmasi</div>
                             </div>
@@ -2260,24 +2365,23 @@
                                 <div class="req-num">4</div>
                                 <div class="req-text"><strong>Surat Pernyataan Pertanggungjawaban Mutlak</strong>
                                     <div class="req-note">Ditandatangani orang tua/wali, bermaterai Rp 10.000. Format
-                                        tersedia di portal pmbm-kanwilbanten.com. Menyatakan keabsahan seluruh dokumen
-                                        yang diunggah.</div>
+                                        tersedia di portal pmbm-kanwilbanten.com.</div>
                                 </div>
                             </div>
                             <div class="req-item req-cond">
                                 <div class="req-num"
-                                    style="background:rgba(255,255,255,.12);color:var(--muted);font-size:.8rem;">⚙️
+                                    style="background:rgba(255,255,255,.12);color:var(--muted);font-size:.8rem;">*
                                 </div>
                                 <div class="req-text"><strong>Sertifikat Akreditasi Sekolah Asal</strong> <span
                                         style="color:var(--gold);font-size:.72rem;font-weight:700;">KONDISIONAL</span>
                                     <div class="req-note">Hanya wajib jika asal sekolah dari <strong>luar Provinsi
-                                            Banten.</strong> Sekolah yang belum/tidak terakreditasi → nilai akreditasi
-                                        dihitung otomatis = 65.</div>
+                                            Banten.</strong> Sekolah yang belum/tidak terakreditasi &rarr; nilai
+                                        akreditasi dihitung otomatis = 65.</div>
                                 </div>
                             </div>
                             <div class="req-item req-cond">
                                 <div class="req-num"
-                                    style="background:rgba(255,255,255,.12);color:var(--muted);font-size:.8rem;">⚙️
+                                    style="background:rgba(255,255,255,.12);color:var(--muted);font-size:.8rem;">*
                                 </div>
                                 <div class="req-text"><strong>Surat Rekomendasi / Kesetaraan Ijazah</strong> <span
                                         style="color:var(--gold);font-size:.72rem;font-weight:700;">KONDISIONAL</span>
@@ -2287,35 +2391,49 @@
                             </div>
                             <div class="req-item"
                                 style="background:rgba(22,163,74,.05);border-color:rgba(22,163,74,.25);">
-                                <div class="req-num" style="background:linear-gradient(135deg,#16a34a,#15803d);">📁
+                                <div class="req-num" style="background:linear-gradient(135deg,#16a34a,#15803d);">H
                                 </div>
-                                <div class="req-text"><strong>Semua Berkas → Map Snelhecter Warna HIJAU</strong>
-                                    <div class="req-note">Tempel label di map: Nama Lengkap · Asal Sekolah · Jalur
-                                        Reguler. Berkas fisik diserahkan saat lapor diri ke madrasah pada <strong>6–12
-                                            Mei 2026</strong>.</div>
+                                <div class="req-text"><strong>Semua Berkas &rarr; Map Snelhecter Warna HIJAU</strong>
+                                    <div class="req-note">Tempel label di map: Nama Lengkap &middot; Asal Sekolah
+                                        &middot; Jalur Reguler. Berkas fisik diserahkan saat lapor diri ke madrasah pada
+                                        <strong>6&ndash;12 Mei 2026</strong>.
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div style="margin-top:1.25rem;display:flex;gap:1rem;flex-wrap:wrap;">
                             <div class="map-box"
                                 style="background:rgba(22,163,74,.08);border-color:rgba(22,163,74,.4);">
-                                <div class="map-box-icon">📁</div>
+                                <div class="map-box-icon" style="font-size:1.75rem;">&#128193;</div>
                                 <div class="map-box-label" style="color:#16a34a;">Map Hijau</div>
                                 <div class="map-box-sub">Jalur Reguler</div>
                             </div>
                         </div>
                         <div class="infobox"
                             style="background:rgba(20,184,166,.06);border:1px solid rgba(20,184,166,.2);margin-top:1rem;">
-                            <span class="infobox-icon">ℹ️</span><span>Semua dokumen <strong>diunggah secara
-                                    online</strong> melalui pmbm-kanwilbanten.com. Setelah berkas dinyatakan lengkap,
-                                cetak bukti pendaftaran. Lapor diri fisik dengan <strong>map hijau</strong> hanya
-                                dilakukan setelah pengumuman kelulusan (6–12 Mei 2026).</span>
+                            <span class="infobox-icon"><svg width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="var(--teal-xl)" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <line x1="12" y1="8" x2="12" y2="12" />
+                                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                                </svg></span>
+                            <span>Semua dokumen <strong>diunggah secara online</strong> melalui pmbm-kanwilbanten.com.
+                                Lapor diri fisik dengan <strong>map hijau</strong> hanya dilakukan setelah pengumuman
+                                kelulusan (6&ndash;12 Mei 2026).</span>
                         </div>
                         <div class="infobox"
                             style="background:rgba(220,38,38,.05);border:1px solid rgba(220,38,38,.18);margin-top:.75rem;">
-                            <span class="infobox-icon">🚫</span><span><strong>Pemalsuan dokumen</strong> akan
-                                mengakibatkan diskualifikasi dari seluruh proses seleksi dan <strong>sanksi
-                                    hukum</strong> sesuai peraturan perundang-undangan yang berlaku.</span>
+                            <span class="infobox-icon"><svg width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <line x1="15" y1="9" x2="9" y2="15" />
+                                    <line x1="9" y1="9" x2="15" y2="15" />
+                                </svg></span>
+                            <span><strong>Pemalsuan dokumen</strong> akan mengakibatkan diskualifikasi dari seluruh
+                                proses seleksi dan <strong>sanksi hukum</strong> sesuai peraturan perundang-undangan
+                                yang berlaku.</span>
                         </div>
                     </div>
                 </div>
@@ -2324,7 +2442,7 @@
 
         <div class="sec-sep"></div>
 
-        <!-- ═══ SELEKSI ═══ -->
+        <!-- SELEKSI -->
         <section id="seleksi">
             <div class="wrap">
                 <div class="section-header center reveal">
@@ -2370,8 +2488,9 @@
                             <div class="formula-box">Nilai Akhir = <span>70%</span> CBT <span
                                     style="color:var(--muted)">+</span> <span>30%</span> BTQ</div>
                             <div class="tiebreak"><strong>Aturan jika nilai akhir sama:</strong><br>1. Prioritas siswa
-                                dengan <strong>usia lebih tua</strong><br>2. Jika usia sama → prioritas <strong>waktu
-                                    daftar lebih awal</strong></div>
+                                dengan <strong>usia lebih tua</strong><br>2. Jika usia sama &rarr; prioritas
+                                <strong>waktu daftar lebih awal</strong>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2380,13 +2499,13 @@
 
         <div class="sec-sep"></div>
 
-        <!-- ═══ KETENTUAN GUGUR ═══ -->
+        <!-- GUGUR -->
         <section id="gugur" style="padding-top:2rem;">
             <div class="wrap">
                 <div style="max-width:800px;margin:0 auto;" class="reveal">
                     <div class="eyebrow"
-                        style="background:rgba(220,38,38,.1);color:#ef4444;border-color:rgba(220,38,38,.22);">⚠️
-                        Perhatian Penting</div>
+                        style="background:rgba(220,38,38,.1);color:#ef4444;border-color:rgba(220,38,38,.22);">Perhatian
+                        Penting</div>
                     <h2 style="margin-bottom:.5rem;">Ketentuan <span
                             style="background:linear-gradient(135deg,#ef4444,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Gugur</span>
                     </h2>
@@ -2395,24 +2514,61 @@
                         dengan seksama. Peserta yang melanggar ketentuan berikut <strong>tidak dapat diproses lebih
                             lanjut</strong>:</p>
                     <div class="gugur-list">
-                        <div class="gugur-item"><span class="gugur-no">✗</span><span>Mengisi formulir online
-                                <strong>tanpa menyerahkan berkas fisik</strong> ke sekretariat (Prestasi &amp; Afirmasi)
-                                — keduanya wajib dilakukan</span></div>
-                        <div class="gugur-item"><span class="gugur-no">✗</span><span>Menyerahkan berkas fisik
-                                <strong>tanpa mengisi formulir online</strong> (Prestasi &amp; Afirmasi) — keduanya
-                                wajib dilakukan</span></div>
-                        <div class="gugur-item"><span class="gugur-no">✗</span><span>Dokumen fisik yang diserahkan
-                                <strong>tidak sesuai</strong> dengan data yang diunggah secara online</span></div>
-                        <div class="gugur-item"><span class="gugur-no">✗</span><span>Tidak lapor diri ke madrasah
-                                sesuai jadwal → dianggap secara otomatis <strong>mengundurkan diri</strong>, meskipun
-                                telah dinyatakan lulus seleksi</span></div>
-                        <div class="gugur-item"><span class="gugur-no">✗</span><span>Terbukti <strong>memalsukan data
-                                    atau dokumen</strong> → diskualifikasi dari seluruh proses seleksi + sanksi hukum
-                                sesuai peraturan perundang-undangan</span></div>
+                        <div class="gugur-item">
+                            <svg class="gugur-icon" viewBox="0 0 24 24" fill="none" stroke="#ef4444"
+                                stroke-width="2.5" stroke-linecap="round">
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                            <span>Mengisi formulir online <strong>tanpa menyerahkan berkas fisik</strong> ke sekretariat
+                                (Prestasi &amp; Afirmasi) — keduanya wajib dilakukan</span>
+                        </div>
+                        <div class="gugur-item">
+                            <svg class="gugur-icon" viewBox="0 0 24 24" fill="none" stroke="#ef4444"
+                                stroke-width="2.5" stroke-linecap="round">
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                            <span>Menyerahkan berkas fisik <strong>tanpa mengisi formulir online</strong> (Prestasi
+                                &amp; Afirmasi) — keduanya wajib dilakukan</span>
+                        </div>
+                        <div class="gugur-item">
+                            <svg class="gugur-icon" viewBox="0 0 24 24" fill="none" stroke="#ef4444"
+                                stroke-width="2.5" stroke-linecap="round">
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                            <span>Dokumen fisik yang diserahkan <strong>tidak sesuai</strong> dengan data yang diunggah
+                                secara online</span>
+                        </div>
+                        <div class="gugur-item">
+                            <svg class="gugur-icon" viewBox="0 0 24 24" fill="none" stroke="#ef4444"
+                                stroke-width="2.5" stroke-linecap="round">
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                            <span>Tidak lapor diri ke madrasah sesuai jadwal &rarr; dianggap secara otomatis
+                                <strong>mengundurkan diri</strong>, meskipun telah dinyatakan lulus seleksi</span>
+                        </div>
+                        <div class="gugur-item">
+                            <svg class="gugur-icon" viewBox="0 0 24 24" fill="none" stroke="#ef4444"
+                                stroke-width="2.5" stroke-linecap="round">
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                            <span>Terbukti <strong>memalsukan data atau dokumen</strong> &rarr; diskualifikasi dari
+                                seluruh proses seleksi + sanksi hukum sesuai peraturan perundang-undangan</span>
+                        </div>
                     </div>
                     <div class="infobox"
                         style="background:rgba(20,184,166,.06);border:1px solid rgba(20,184,166,.2);margin-top:1.35rem;">
-                        <span class="infobox-icon">💡</span>
+                        <span class="infobox-icon"><svg width="16" height="16" viewBox="0 0 24 24"
+                                fill="none" stroke="var(--teal-xl)" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="12" y1="8" x2="12" y2="12" />
+                                <line x1="12" y1="16" x2="12.01" y2="16" />
+                            </svg></span>
                         <div>Tidak lolos Jalur Prestasi atau Afirmasi? <strong>Berkas dapat diambil kembali mulai 15
                                 April 2026</strong> (sehari setelah pengumuman) di Sekretariat PMBM. Kamu masih bisa
                             mendaftar ke <strong>Jalur Reguler mulai 18 April 2026</strong>.</div>
@@ -2423,7 +2579,7 @@
 
         <div class="sec-sep"></div>
 
-        <!-- ═══ KUOTA ═══ -->
+        <!-- KUOTA -->
         <section id="kuota">
             <div class="wrap">
                 <div class="section-header center reveal">
@@ -2459,7 +2615,11 @@
                 </div>
                 <div class="kuota-note-grid">
                     <div class="card req-item reveal" style="margin:0">
-                        <div class="req-num" style="background:linear-gradient(135deg,var(--teal),var(--teal-d))">🆓
+                        <div class="req-num" style="background:linear-gradient(135deg,var(--teal),var(--teal-d))">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2v20M2 12h20" />
+                            </svg>
                         </div>
                         <div class="req-text"><strong>Biaya Pendidikan: Rp 0 (GRATIS)</strong>
                             <div class="req-note">Seluruh biaya dibebankan pada anggaran BOS/BOP Madrasah. Tidak ada
@@ -2467,7 +2627,13 @@
                         </div>
                     </div>
                     <div class="card req-item reveal reveal-delay-1" style="margin:0">
-                        <div class="req-num" style="background:linear-gradient(135deg,#1d4ed8,#1e40af)">🏫</div>
+                        <div class="req-num" style="background:linear-gradient(135deg,#1d4ed8,#1e40af)">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="7" width="20" height="14" rx="2" />
+                                <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" />
+                            </svg>
+                        </div>
                         <div class="req-text"><strong>Kapasitas Per Kelas: 32 Murid</strong>
                             <div class="req-note">Sesuai ketentuan rombongan belajar Kemenag RI.</div>
                         </div>
@@ -2478,7 +2644,7 @@
 
         <div class="sec-sep"></div>
 
-        <!-- ═══ PROGRAM ═══ -->
+        <!-- PROGRAM -->
         <section id="program"
             style="background:linear-gradient(180deg,transparent,rgba(13,148,136,.03),transparent)">
             <div class="wrap">
@@ -2491,37 +2657,62 @@
                 </div>
                 <div class="prog-grid">
                     <div class="card card-hover prog-card reveal">
-                        <div class="prog-icon">📖</div>
+                        <div class="prog-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal-xl)"
+                                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                            </svg></div>
                         <div class="prog-title">Tahfidz Al-Qur'an</div>
                         <p class="prog-desc">Target minimal 3 juz selama 3 tahun dengan bimbingan hafiz berpengalaman.
                         </p>
                     </div>
                     <div class="card card-hover prog-card reveal reveal-delay-1">
-                        <div class="prog-icon">🔬</div>
+                        <div class="prog-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal-xl)"
+                                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18" />
+                            </svg></div>
                         <div class="prog-title">Olimpiade Sains</div>
-                        <p class="prog-desc">Persiapan KSM & OSN mulai dari tingkat kabupaten hingga nasional.</p>
+                        <p class="prog-desc">Persiapan KSM &amp; OSN mulai dari tingkat kabupaten hingga nasional.</p>
                     </div>
                     <div class="card card-hover prog-card reveal reveal-delay-2">
-                        <div class="prog-icon">💻</div>
-                        <div class="prog-title">Teknologi & IT</div>
+                        <div class="prog-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal-xl)"
+                                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="3" width="20" height="14" rx="2" />
+                                <path d="M8 21h8M12 17v4" />
+                            </svg></div>
+                        <div class="prog-title">Teknologi &amp; IT</div>
                         <p class="prog-desc">Literasi digital dan coding dasar untuk menyiapkan generasi era global.
                         </p>
                     </div>
                     <div class="card card-hover prog-card reveal">
-                        <div class="prog-icon">⚽</div>
+                        <div class="prog-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal-xl)"
+                                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <path d="M12 8v4l3 3" />
+                            </svg></div>
                         <div class="prog-title">Olahraga Prestasi</div>
                         <p class="prog-desc">O2SN, sepak bola, bulu tangkis, karate, dan atletik bersama pelatih
                             berpengalaman.</p>
                     </div>
                     <div class="card card-hover prog-card reveal reveal-delay-1">
-                        <div class="prog-icon">🎭</div>
-                        <div class="prog-title">Seni & Budaya</div>
+                        <div class="prog-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal-xl)"
+                                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 20h9" />
+                                <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
+                            </svg></div>
+                        <div class="prog-title">Seni &amp; Budaya</div>
                         <p class="prog-desc">Paskibra, drumband, hadroh, kaligrafi, MTQ, dan seni rupa.</p>
                     </div>
                     <div class="card card-hover prog-card reveal reveal-delay-2">
-                        <div class="prog-icon">🌐</div>
+                        <div class="prog-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal-xl)"
+                                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20" />
+                            </svg></div>
                         <div class="prog-title">Bahasa Asing</div>
-                        <p class="prog-desc">English Club & Arabic Club untuk mendukung komunikasi internasional.</p>
+                        <p class="prog-desc">English Club &amp; Arabic Club untuk mendukung komunikasi internasional.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -2529,7 +2720,7 @@
 
         <div class="sec-sep"></div>
 
-        <!-- ═══ FAQ ═══ -->
+        <!-- FAQ -->
         <section id="faq">
             <div class="wrap">
                 <div class="section-header center reveal">
@@ -2541,26 +2732,26 @@
             </div>
         </section>
 
-        <!-- ═══ CTA FINAL ═══ -->
+        <!-- CTA -->
         <section class="cta-section">
             <div class="cta-glow"></div>
             <div class="cta-inner reveal">
-                <div class="eyebrow" style="margin-bottom:1rem;display:inline-flex;">⏳ Kuota Terbatas</div>
+                <div class="eyebrow" style="margin-bottom:1rem;display:inline-flex;">Kuota Terbatas</div>
                 <h2>Siap Bergabung?<br><span class="grad">Daftar Sekarang</span></h2>
                 <p class="lead" style="margin:1rem auto 0;max-width:460px;">Pendaftaran gratis, transparan, dan
                     objektif. Pilih jalur yang tepat dan raih masa depanmu bersama MTsN 1 Pandeglang.</p>
                 <div class="cta-btns">
-                    <a href="https://daftar.mtsn1pandeglang.sch.id/dashboard" class="btn btn-gold btn-lg">🏆 Prestasi
-                        / Afirmasi →</a>
-                    <a href="https://pmbm-kanwilbanten.com" class="btn btn-ghost btn-lg">📝 Reguler (PMBM Bersama)
-                        →</a>
+                    <a href="https://daftar.mtsn1pandeglang.sch.id/dashboard" class="btn btn-gold btn-lg">Prestasi /
+                        Afirmasi &rarr;</a>
+                    <a href="https://pmbm-kanwilbanten.com" class="btn btn-ghost btn-lg">Reguler (PMBM Bersama)
+                        &rarr;</a>
                 </div>
             </div>
         </section>
 
     </main>
 
-    <!-- ═══ FOOTER ═══ -->
+    <!-- FOOTER -->
     <footer>
         <div class="footer-inner">
             <div class="footer-top">
@@ -2570,7 +2761,7 @@
                     <p>Jl. Raya Labuan, Kadulisung</p>
                     <p>Pandeglang, Banten 42253</p>
                     <p style="margin-top:.5rem;">adm@mtsn1pandeglang.sch.id</p>
-                    <p><em>+62895351856267</em></p>
+                    <p><em>+6283189542997</em></p>
                 </div>
                 <div class="footer-col">
                     <div class="footer-col-title">Pimpinan</div>
@@ -2593,121 +2784,148 @@
             <div class="footer-bottom">
                 <p>Diselenggarakan berdasarkan Keputusan Kepala Kanwil Kemenag Provinsi Banten No. 009/B/Tahun 2026
                     &amp; Juknis PMBM MTsN 1 Pandeglang Tahun 2026.</p>
-                <p style="margin-top:.4rem;">© 2026 MTs Negeri 1 Pandeglang</p>
+                <p style="margin-top:.4rem;">&copy; 2026 MTs Negeri 1 Pandeglang</p>
             </div>
         </div>
     </footer>
 
-    <!-- WhatsApp FAB -->
-    <a class="wa-fab" href="https://wa.me/62895351856267" target="_blank" rel="noopener"
+    <!-- WA FAB -->
+    <a class="wa-fab" href="https://wa.me/6283189542997" target="_blank" rel="noopener"
         title="Hubungi Panitia via WhatsApp">
         <div class="wa-fab-pulse"></div>
-        💬
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path
+                d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+        </svg>
     </a>
 
-    <!-- ═══ SCRIPT ═══ -->
     <script>
-        // ── DATA ─────────────────────────────────────────────────────────
+        // ── DATA ──
         const schedPA = [{
-                icon: '📋',
+                icon: '',
                 label: 'Pendaftaran Online',
                 mulai: '2026-04-06',
                 selesai: '2026-04-08',
-                note: 'daftar.mtsn1pandeglang.sch.id/dashboard'
+                note: 'daftar.mtsn1pandeglang.sch.id/dashboard',
+                svgKey: 'form'
             },
             {
-                icon: '📁',
+                icon: '',
                 label: 'Penyerahan Berkas Fisik',
                 mulai: '2026-04-06',
                 selesai: '2026-04-08',
-                note: 'Sekretariat PMBM MTsN 1 Pandeglang'
+                note: 'Sekretariat PMBM MTsN 1 Pandeglang',
+                svgKey: 'folder'
             },
             {
-                icon: '🔍',
+                icon: '',
                 label: 'Verifikasi Berkas',
                 mulai: '2026-04-09',
                 selesai: '2026-04-10',
-                note: 'Dilakukan panitia'
+                note: 'Dilakukan panitia',
+                svgKey: 'check'
             },
             {
-                icon: '✍️',
+                icon: '',
                 label: 'Tes Kemampuan & BTQ',
                 mulai: '2026-04-13',
                 selesai: '2026-04-13',
-                note: 'Hadir max. pukul 07.00 WIB'
+                note: 'Hadir max. pukul 07.00 WIB',
+                svgKey: 'pencil'
             },
             {
-                icon: '📢',
+                icon: '',
                 label: 'Pengumuman Hasil',
                 mulai: '2026-04-14',
                 selesai: '2026-04-14',
-                note: 'Website resmi madrasah'
+                note: 'Website resmi madrasah',
+                svgKey: 'bell'
             },
             {
-                icon: '🏫',
+                icon: '',
                 label: 'Lapor Diri & Pemberkasan',
                 mulai: '2026-04-15',
                 selesai: '2026-04-16',
-                note: 'Langsung ke madrasah'
+                note: 'Langsung ke madrasah',
+                svgKey: 'school'
             },
         ];
         const schedReg = [{
-                icon: '📋',
+                icon: '',
                 label: 'Pendaftaran Online',
                 mulai: '2026-04-18',
                 selesai: '2026-04-27',
-                note: '08.00 buka – 16.00 tutup WIB'
+                note: '08.00 buka – 16.00 tutup WIB',
+                svgKey: 'form'
             },
             {
-                icon: '🔍',
+                icon: '',
                 label: 'Verifikasi Dokumen',
                 mulai: '2026-04-19',
                 selesai: '2026-04-28',
-                note: '08.00–16.00 WIB'
+                note: '08.00–16.00 WIB',
+                svgKey: 'check'
             },
             {
-                icon: '📢',
+                icon: '',
                 label: 'Pengumuman Peserta CBT',
                 mulai: '2026-04-29',
                 selesai: '2026-04-29',
-                note: '08.00 WIB'
+                note: '08.00 WIB',
+                svgKey: 'bell'
             },
             {
-                icon: '🖥️',
+                icon: '',
                 label: 'Uji Coba CBT',
                 mulai: '2026-04-30',
                 selesai: '2026-04-30',
-                note: '07.30–16.00 WIB'
+                note: '07.30–16.00 WIB',
+                svgKey: 'monitor'
             },
             {
-                icon: '🖥️',
+                icon: '',
                 label: 'Pelaksanaan CBT',
                 mulai: '2026-05-02',
                 selesai: '2026-05-02',
-                note: '07.30–16.00 WIB'
+                note: '07.30–16.00 WIB',
+                svgKey: 'monitor'
             },
             {
-                icon: '📖',
+                icon: '',
                 label: "Tes BTQ (Al-Qur'an)",
                 mulai: '2026-05-02',
                 selesai: '2026-05-03',
-                note: '07.30–16.00 WIB'
+                note: '07.30–16.00 WIB',
+                svgKey: 'book'
             },
             {
-                icon: '🎉',
+                icon: '',
                 label: 'Pengumuman Kelulusan',
                 mulai: '2026-05-05',
                 selesai: '2026-05-05',
-                note: '08.00 WIB di pmbm-kanwilbanten.com'
+                note: '08.00 WIB di pmbm-kanwilbanten.com',
+                svgKey: 'award'
             },
             {
-                icon: '🏫',
+                icon: '',
                 label: 'Lapor Diri & Berkas (Map Hijau)',
                 mulai: '2026-05-06',
                 selesai: '2026-05-12',
-                note: '08.00–16.00 WIB · Bawa map hijau'
+                note: '08.00–16.00 WIB · Bawa map hijau',
+                svgKey: 'school'
             },
         ];
+        const svgIcons = {
+            form: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--teal-xl)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>',
+            folder: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--teal-xl)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>',
+            check: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--teal-xl)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg>',
+            pencil: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--teal-xl)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>',
+            bell: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--teal-xl)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>',
+            school: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--teal-xl)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+            monitor: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--teal-xl)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>',
+            book: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--teal-xl)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>',
+            award: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--teal-xl)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>',
+        };
         const faqData = [{
                 group: 'Umum & Teknis',
                 items: [
@@ -2727,13 +2945,13 @@
                         'Barcode pada dokumen kependudukan adalah tanda keaslian yang membuktikan dokumen diterbitkan resmi oleh Dinas Dukcapil. Dokumen lama (format lama tanpa barcode) tidak dapat diterima karena tidak dapat diverifikasi secara digital. Jika dokumenmu belum berbarcode, segera urus pembaruan di kantor Dukcapil setempat — prosesnya gratis.'
                     ],
                     ['Apa warna map snelhecter untuk masing-masing jalur?',
-                        'Warna map berbeda untuk tiap jalur dan wajib sesuai: 🔴 Merah = Jalur Prestasi, 🟡 Kuning = Jalur Afirmasi, 🟢 Hijau = Jalur Reguler. Menggunakan warna yang salah dapat menyebabkan berkas sulit diproses. Tempel label identitas (Nama, Asal Sekolah, Jalur) di bagian depan map.'
+                        'Warna map berbeda untuk tiap jalur dan wajib sesuai: Merah = Jalur Prestasi, Kuning = Jalur Afirmasi, Hijau = Jalur Reguler. Menggunakan warna yang salah dapat menyebabkan berkas sulit diproses. Tempel label identitas (Nama, Asal Sekolah, Jalur) di bagian depan map.'
                     ],
                     ['Di mana lokasi Sekretariat PMBM MTsN 1 Pandeglang?',
                         'Sekretariat PMBM berada di MTsN 1 Pandeglang, Jl. Raya Labuan, Kadulisung, Pandeglang, Banten 42253. Jam pelayanan: 08.00–14.00 WIB (istirahat 11.30–13.00 WIB) selama periode penyerahan berkas berlangsung.'
                     ],
                     ['Bagaimana cara menghubungi panitia jika ada pertanyaan?',
-                        'Kamu bisa menghubungi panitia PMBM melalui WhatsApp di nomor +62895351856267, atau klik tombol 💬 di pojok kanan bawah halaman ini. Bisa juga melalui email adm@mtsn1pandeglang.sch.id. Harap hubungi di jam kerja (08.00–14.00 WIB).'
+                        'Kamu bisa menghubungi panitia PMBM melalui WhatsApp di nomor +6283189542997, atau klik tombol WhatsApp di pojok kanan bawah halaman ini. Bisa juga melalui email adm@mtsn1pandeglang.sch.id. Harap hubungi di jam kerja (08.00–14.00 WIB).'
                     ],
                     ['Apakah ada batas usia untuk mendaftar?',
                         'Ya. Calon peserta didik baru maksimal berusia 15 tahun dihitung per 1 Juli 2026. Artinya, calon murid yang lahir sebelum 1 Juli 2011 tidak dapat diterima.'
@@ -2799,13 +3017,13 @@
                         'Minimal 1 dan maksimal 2 madrasah tujuan dalam satu kali pendaftaran di sistem pmbm-kanwilbanten.com. Pertimbangkan baik-baik pilihan madrasah karena akan memengaruhi penempatan jika diterima.'
                     ],
                     ['Bagaimana sistem penilaian Jalur Reguler?',
-                        'Nilai Akhir dihitung dari: 70% Nilai CBT + 30% Nilai BTQ. Jika nilai akhir sama, prioritas diberikan kepada siswa yang lebih tua usianya. Jika usia pun sama persis, yang mendaftar lebih awal yang diprioritaskan. Tidak ada nilai rapor atau nilai akademik lain yang diperhitungkan.'
+                        'Nilai Akhir dihitung dari: 70% Nilai CBT + 30% Nilai BTQ. Jika nilai akhir sama, prioritas diberikan kepada siswa yang lebih tua usianya. Jika usia pun sama persis, yang mendaftar lebih awal yang diprioritaskan.'
                     ],
                     ['Apa itu CBT dan BTQ? Materi apa yang diujikan?',
-                        'CBT (Computer Based Test) adalah tes berbasis komputer yang menguji kemampuan akademik. BTQ (Baca Tulis Al-Qur\'an) adalah tes kemampuan membaca dan menulis Al-Qur\'an. Untuk persiapan CBT, pelajari materi pelajaran SD/MI kelas 4–6. Untuk BTQ, pastikan kemampuan membaca Al-Qur\'an dengan baik dan benar.'
+                        'CBT (Computer Based Test) adalah tes berbasis komputer yang menguji kemampuan akademik. BTQ (Baca Tulis Al-Qur\'an) adalah tes kemampuan membaca dan menulis Al-Qur\'an. Untuk persiapan CBT, pelajari materi pelajaran SD/MI kelas 4–6.'
                     ],
                     ['Kapan dan di mana pelaksanaan CBT?',
-                        'Uji Coba CBT dilaksanakan pada 30 April 2026 (07.30–16.00 WIB), dan CBT resmi pada 2 Mei 2026 (07.30–16.00 WIB) di MTsN 1 Pandeglang. Tes BTQ dilaksanakan 2–3 Mei 2026. Pastikan hadir tepat waktu karena keterlambatan bisa menyebabkan tidak diperkenankan mengikuti tes.'
+                        'Uji Coba CBT dilaksanakan pada 30 April 2026 (07.30–16.00 WIB), dan CBT resmi pada 2 Mei 2026 (07.30–16.00 WIB) di MTsN 1 Pandeglang. Tes BTQ dilaksanakan 2–3 Mei 2026.'
                     ],
                     ['Apakah ada uji coba CBT sebelum tes resmi?',
                         'Ya. Uji Coba CBT diadakan pada 30 April 2026 agar peserta bisa mengenal sistem dan antarmuka CBT sebelum tes sesungguhnya. Sangat disarankan untuk hadir.'
@@ -2820,10 +3038,10 @@
                         'Bisa. Jika sekolah asal belum atau tidak terakreditasi, sistem akan menghitung nilai akreditasi secara otomatis sebesar 65. Tidak perlu dokumen akreditasi dalam kondisi ini.'
                     ],
                     ['Kapan dan di mana menyerahkan map hijau Jalur Reguler?',
-                        'Map snelhecter warna HIJAU berisi berkas fisik diserahkan langsung ke madrasah saat lapor diri, yaitu 6–12 Mei 2026 (setelah pengumuman kelulusan 5 Mei 2026), pukul 08.00–16.00 WIB. Pendaftaran online dilakukan lebih dulu melalui pmbm-kanwilbanten.com.'
+                        'Map snelhecter warna HIJAU berisi berkas fisik diserahkan langsung ke madrasah saat lapor diri, yaitu 6–12 Mei 2026 (setelah pengumuman kelulusan 5 Mei 2026), pukul 08.00–16.00 WIB.'
                     ],
                     ['Apa yang terjadi jika diterima tapi tidak lapor diri?',
-                        'Peserta dianggap secara otomatis mengundurkan diri dan kursinya hangus. Lapor diri adalah kewajiban mutlak yang harus dilakukan pada 6–12 Mei 2026 dengan membawa map hijau dan seluruh berkas. Tidak ada perpanjangan waktu lapor diri.'
+                        'Peserta dianggap secara otomatis mengundurkan diri dan kursinya hangus. Lapor diri adalah kewajiban mutlak yang harus dilakukan pada 6–12 Mei 2026 dengan membawa map hijau dan seluruh berkas.'
                     ],
                 ]
             },
@@ -2831,13 +3049,13 @@
                 group: 'Jadwal & Pengumuman',
                 items: [
                     ['Di mana bisa melihat pengumuman hasil seleksi?',
-                        'Pengumuman Jalur Prestasi & Afirmasi: 14 April 2026 di website resmi madrasah (daftar.mtsn1pandeglang.sch.id). Pengumuman Jalur Reguler: 5 Mei 2026 pukul 08.00 WIB di pmbm-kanwilbanten.com. Pantau terus kedua situs tersebut pada tanggal pengumuman.'
+                        'Pengumuman Jalur Prestasi & Afirmasi: 14 April 2026 di website resmi madrasah (daftar.mtsn1pandeglang.sch.id). Pengumuman Jalur Reguler: 5 Mei 2026 pukul 08.00 WIB di pmbm-kanwilbanten.com.'
                     ],
                     ['Bagaimana jika tidak lolos Jalur Prestasi atau Afirmasi?',
-                        'Berkas fisik dapat diambil kembali di Sekretariat PMBM mulai 15 April 2026 (sehari setelah pengumuman). Setelah itu, kamu masih bisa mendaftar ke Jalur Reguler yang dibuka 18–27 April 2026 melalui pmbm-kanwilbanten.com. Tidak lolos satu jalur bukan akhir segalanya!'
+                        'Berkas fisik dapat diambil kembali di Sekretariat PMBM mulai 15 April 2026. Setelah itu, kamu masih bisa mendaftar ke Jalur Reguler yang dibuka 18–27 April 2026 melalui pmbm-kanwilbanten.com.'
                     ],
                     ['Apakah ada masa sanggah atau banding hasil seleksi?',
-                        'Untuk Jalur Prestasi dan Afirmasi, keputusan panitia bersifat final berdasarkan verifikasi dokumen. Jika merasa ada kekeliruan, segera hubungi panitia PMBM sebelum batas lapor diri. Untuk Jalur Reguler, nilai dan peringkat ditetapkan otomatis oleh sistem PMBM Bersama Kanwil.'
+                        'Untuk Jalur Prestasi dan Afirmasi, keputusan panitia bersifat final berdasarkan verifikasi dokumen. Jika merasa ada kekeliruan, segera hubungi panitia PMBM sebelum batas lapor diri.'
                     ],
                     ['Kapan tahun ajaran baru dimulai?',
                         'Tahun Pelajaran 2026/2027 diperkirakan dimulai pada Juli 2026. Informasi lebih lanjut mengenai hari pertama masuk sekolah akan diumumkan setelah proses lapor diri selesai.'
@@ -2854,25 +3072,25 @@
                         'Segera koordinasikan dengan operator sekolah asal untuk memastikan NISN sudah terdaftar dan aktif di EMIS/DAPODIK. Proses sinkronisasi data bisa memakan waktu. Jangan menunggu mepet deadline untuk mengecek NISN.'
                     ],
                     ['Dokumen saya ada yang hilang atau belum jadi, apa yang harus dilakukan?',
-                        'Segera urus dokumen yang kurang sebelum periode pendaftaran berakhir. Untuk dokumen kependudukan (KK, Akta), bisa diurus di kantor Dukcapil. Untuk surat keterangan aktif, minta ke sekolah asal. Jangan menunda karena tidak ada perpanjangan waktu untuk pengumpulan berkas.'
+                        'Segera urus dokumen yang kurang sebelum periode pendaftaran berakhir. Untuk dokumen kependudukan (KK, Akta), bisa diurus di kantor Dukcapil. Untuk surat keterangan aktif, minta ke sekolah asal.'
                     ],
                     ['Apakah formulir online harus diisi sebelum menyerahkan berkas fisik (Prestasi/Afirmasi)?',
                         'Ya, keduanya wajib dilakukan dan saling melengkapi. Isi formulir online terlebih dahulu di daftar.mtsn1pandeglang.sch.id/dashboard, lalu cetak buktinya dan lampirkan bersama berkas fisik ke sekretariat. Salah satu saja tanpa yang lain = dinyatakan gugur.'
                     ],
                     ['Apakah berkas yang sudah diserahkan bisa diubah atau ditarik kembali?',
-                        'Berkas yang sudah diserahkan ke sekretariat tidak bisa diubah selama proses verifikasi berlangsung. Jika ada kesalahan data, segera hubungi panitia PMBM sesegera mungkin. Berkas hanya bisa diambil kembali jika dinyatakan tidak lolos seleksi (mulai 15 April 2026 untuk Prestasi/Afirmasi).'
+                        'Berkas yang sudah diserahkan ke sekretariat tidak bisa diubah selama proses verifikasi berlangsung. Jika ada kesalahan data, segera hubungi panitia PMBM sesegera mungkin.'
                     ],
                     ['Format foto rumah untuk Jalur Afirmasi (SKTM) seperti apa?',
-                        'Foto harus jelas, tidak buram, dan menampilkan kondisi nyata rumah dari tiga sudut: tampak depan (terlihat fasad dan pintu utama), tampak dalam (ruang utama), dan tampak belakang. Foto bisa diambil dengan kamera HP. Tidak perlu resolusi tinggi, yang penting terang dan jelas.'
+                        'Foto harus jelas, tidak buram, dan menampilkan kondisi nyata rumah dari tiga sudut: tampak depan (terlihat fasad dan pintu utama), tampak dalam (ruang utama), dan tampak belakang. Foto bisa diambil dengan kamera HP.'
                     ],
                     ['Apakah pendaftaran bisa dilakukan malam hari atau di luar jam kerja?',
-                        'Pendaftaran online (mengisi formulir di website) bisa dilakukan kapan saja selama server aktif. Namun penyerahan berkas fisik ke sekretariat hanya bisa dilakukan pada jam layanan panitia: 08.00–14.00 WIB (istirahat 11.30–13.00 WIB) pada tanggal yang telah ditentukan.'
+                        'Pendaftaran online (mengisi formulir di website) bisa dilakukan kapan saja selama server aktif. Namun penyerahan berkas fisik ke sekretariat hanya bisa dilakukan pada jam layanan panitia: 08.00–14.00 WIB pada tanggal yang telah ditentukan.'
                     ],
                 ]
             },
         ];
 
-        // ── RENDER JADWAL ────────────────────────────────────────────────
+        // ── RENDER JADWAL ──
         function statusBadge(mulai, selesai) {
             const now = new Date(),
                 m = new Date(mulai),
@@ -2884,12 +3102,12 @@
                 tc: 'var(--muted)'
             };
             if (now <= s) return {
-                text: '🔴 Aktif',
+                text: 'Aktif',
                 bg: 'rgba(212,168,67,.15)',
                 tc: '#d4a843'
             };
             return {
-                text: '✓ Selesai',
+                text: 'Selesai',
                 bg: 'rgba(20,184,166,.12)',
                 tc: 'var(--teal-xl)'
             };
@@ -2917,8 +3135,9 @@
                     bg,
                     tc
                 } = statusBadge(j.mulai, j.selesai);
+                const iconSvg = svgIcons[j.svgKey] || '';
                 return `<div class="sched-item">
-      <div class="sched-icon">${j.icon}</div>
+      <div class="sched-icon">${iconSvg}</div>
       <div class="sched-content">
         <div class="sched-title">${j.label}</div>
         <div class="sched-date">${fmtDate(j.mulai,j.selesai)}${j.note?' · '+j.note:''}</div>
@@ -2930,7 +3149,7 @@
         renderSched(schedPA, 'sched-pa');
         renderSched(schedReg, 'sched-reg');
 
-        // ── RENDER FAQ ───────────────────────────────────────────────────
+        // ── RENDER FAQ ──
         const grpClrs = {
             'Umum & Teknis': {
                 bg: 'rgba(20,184,166,.1)',
@@ -2955,7 +3174,7 @@
             'Dokumen & Teknis': {
                 bg: 'rgba(251,146,60,.1)',
                 tc: '#fb923c'
-            }
+            },
         };
         let faqHtml = '';
         faqData.forEach(grp => {
@@ -2967,13 +3186,13 @@
                 `<div class="faq-group"><div class="faq-group-label" style="background:${c.bg};color:${c.tc};border:1px solid ${c.tc}33;">${grp.group}</div>`;
             grp.items.forEach(([q, a]) => {
                 faqHtml +=
-                    `<div class="card faq-item"><button class="faq-btn" onclick="toggleFaq(this)"><span>${q}</span><span class="faq-chev">▼</span></button><div class="faq-body"><p>${a}</p></div></div>`;
+                    `<div class="card faq-item"><button class="faq-btn" onclick="toggleFaq(this)"><span>${q}</span><div class="faq-chev"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div></button><div class="faq-body"><p>${a}</p></div></div>`;
             });
             faqHtml += '</div>';
         });
         document.getElementById('faqList').innerHTML = faqHtml;
 
-        // ── COUNTDOWN ────────────────────────────────────────────────────
+        // ── COUNTDOWN ──
         (function() {
             const pad = n => String(n).padStart(2, '0');
             const deadlines = [{
@@ -3002,19 +3221,19 @@
 
             function getActive() {
                 const now = Date.now();
-                return deadlines.find(d => new Date(d.d).getTime() > now) || null
+                return deadlines.find(d => new Date(d.d).getTime() > now) || null;
             }
 
             function tick() {
                 const active = getActive();
                 if (!active) {
                     lEl.textContent = 'Seluruh proses PMBM 2026 telah selesai.';
-                    return
+                    return;
                 }
                 const diff = new Date(active.d).getTime() - Date.now();
                 if (diff <= 0) {
                     tick();
-                    return
+                    return;
                 }
                 lEl.innerHTML = active.label;
                 dEl.textContent = pad(Math.floor(diff / 86400000));
@@ -3026,33 +3245,33 @@
             setInterval(tick, 1000);
         })();
 
-        // ── NAV SCROLL ───────────────────────────────────────────────────
+        // ── NAV SCROLL ──
         const nav = document.getElementById('mainNav');
         window.addEventListener('scroll', () => {
-            nav.classList.toggle('scrolled', window.scrollY > 40)
+            nav.classList.toggle('scrolled', window.scrollY > 40);
         }, {
             passive: true
         });
 
-        // ── DRAWER ───────────────────────────────────────────────────────
+        // ── DRAWER ──
         const menuBtn = document.getElementById('menuBtn'),
             drawer = document.getElementById('drawer');
         menuBtn.addEventListener('click', () => {
             const o = drawer.classList.toggle('open');
-            menuBtn.classList.toggle('open', o)
+            menuBtn.classList.toggle('open', o);
         });
         drawer.querySelectorAll('.d-link,a').forEach(a => a.addEventListener('click', () => {
             drawer.classList.remove('open');
-            menuBtn.classList.remove('open')
+            menuBtn.classList.remove('open');
         }));
         document.addEventListener('click', e => {
             if (!drawer.contains(e.target) && !menuBtn.contains(e.target)) {
                 drawer.classList.remove('open');
-                menuBtn.classList.remove('open')
+                menuBtn.classList.remove('open');
             }
         });
 
-        // ── NAV ACTIVE ───────────────────────────────────────────────────
+        // ── NAV ACTIVE ──
         const secEls = document.querySelectorAll('section[id]'),
             navAs = document.querySelectorAll('.nav-links a');
         secEls.forEach(s => new IntersectionObserver(entries => {
@@ -3060,13 +3279,13 @@
                 if (!e.isIntersecting) return;
                 navAs.forEach(a => a.classList.remove('active'));
                 const a = document.querySelector(`.nav-links a[href="#${e.target.id}"]`);
-                if (a) a.classList.add('active')
-            })
+                if (a) a.classList.add('active');
+            });
         }, {
             threshold: .3
         }).observe(s));
 
-        // ── FAQ TOGGLE ───────────────────────────────────────────────────
+        // ── FAQ TOGGLE ──
         function toggleFaq(btn) {
             const body = btn.nextElementSibling,
                 chev = btn.querySelector('.faq-chev');
@@ -3075,11 +3294,11 @@
             document.querySelectorAll('.faq-chev').forEach(c => c.style.transform = '');
             if (!isOpen) {
                 body.style.maxHeight = body.scrollHeight + 'px';
-                chev.style.transform = 'rotate(180deg)'
+                chev.style.transform = 'rotate(180deg)';
             }
         }
 
-        // ── REQ TABS ─────────────────────────────────────────────────────
+        // ── REQ TABS ──
         const tabClrs = {
             'tab-prestasi': {
                 bg: 'rgba(212,168,67,.1)',
@@ -3095,7 +3314,7 @@
                 bg: 'rgba(20,184,166,.1)',
                 tc: 'var(--teal-xl)',
                 bc: 'var(--teal)'
-            }
+            },
         };
         document.getElementById('reqTabs').addEventListener('click', e => {
             const btn = e.target.closest('.req-tab');
@@ -3105,7 +3324,7 @@
                 t.classList.remove('active');
                 t.style.background = 'transparent';
                 t.style.color = 'var(--muted)';
-                t.style.borderColor = 'var(--border)'
+                t.style.borderColor = 'var(--border)';
             });
             document.querySelectorAll('.req-panel').forEach(p => p.classList.remove('active'));
             btn.classList.add('active');
@@ -3113,54 +3332,47 @@
             if (c) {
                 btn.style.background = c.bg;
                 btn.style.color = c.tc;
-                btn.style.borderColor = c.bc
+                btn.style.borderColor = c.bc;
             }
             const panel = document.getElementById(pId);
             if (panel) panel.classList.add('active');
         });
 
-        // ── SCROLL REVEAL ────────────────────────────────────────────────
+        // ── SCROLL REVEAL ──
         const revealEls = document.querySelectorAll('.reveal');
         const revealObs = new IntersectionObserver(entries => {
             entries.forEach(e => {
                 if (e.isIntersecting) {
                     e.target.classList.add('visible');
-                    revealObs.unobserve(e.target)
+                    revealObs.unobserve(e.target);
                 }
-            })
+            });
         }, {
             threshold: .12,
             rootMargin: '0px 0px -40px 0px'
         });
         revealEls.forEach(el => revealObs.observe(el));
 
-        // ── TOMBOL DAFTAR DINAMIS ─────────────────────────────────────────
-        // Letakkan script ini di bagian bawah <body>, setelah elemen navbar ada
-        // atau gabungkan dengan script yang sudah ada di halaman
-
+        // ── TOMBOL DAFTAR DINAMIS ──
         (function() {
             const btn = document.getElementById('daftarBtnNav');
             if (!btn) return;
-
-            // Definisi periode — gunakan format YYYY-MM-DDTHH:MM:SS (WIB = UTC+7)
             const phases = [{
-                    // Prestasi & Afirmasi dibuka
                     start: '2026-04-06T08:00:00+07:00',
                     end: '2026-04-08T16:00:00+07:00',
                     href: 'https://daftar.mtsn1pandeglang.sch.id/dashboard',
-                    label: '🏆 Daftar Prestasi / Afirmasi',
+                    label: 'Daftar Prestasi / Afirmasi',
                     style: {
                         background: 'linear-gradient(135deg,#d4a843,#b8882a)',
                         boxShadow: '0 0 24px rgba(212,168,67,.3)'
                     },
-                    disabled: false,
+                    disabled: false
                 },
                 {
-                    // Jeda verifikasi & tes (9–17 April)
                     start: '2026-04-08T16:00:01+07:00',
                     end: '2026-04-17T23:59:59+07:00',
                     href: null,
-                    label: '⏳ Sedang Diverifikasi',
+                    label: 'Sedang Diverifikasi',
                     style: {
                         background: 'rgba(255,255,255,.06)',
                         color: 'var(--muted)',
@@ -3168,26 +3380,24 @@
                         cursor: 'not-allowed',
                         border: '1px solid var(--border)'
                     },
-                    disabled: true,
+                    disabled: true
                 },
                 {
-                    // Reguler dibuka
                     start: '2026-04-18T08:00:00+07:00',
                     end: '2026-04-27T16:00:00+07:00',
                     href: 'https://pmbm-kanwilbanten.com',
-                    label: '📝 Daftar Reguler',
+                    label: 'Daftar Reguler',
                     style: {
                         background: 'linear-gradient(135deg,var(--teal),var(--teal-d))',
                         boxShadow: '0 0 28px rgba(13,148,136,.3)'
                     },
-                    disabled: false,
+                    disabled: false
                 },
                 {
-                    // Pendaftaran ditutup
                     start: '2026-04-27T16:00:01+07:00',
                     end: '2099-12-31T00:00:00+07:00',
                     href: null,
-                    label: '🔒 Pendaftaran Ditutup',
+                    label: 'Pendaftaran Ditutup',
                     style: {
                         background: 'rgba(220,38,38,.12)',
                         color: '#ef4444',
@@ -3195,14 +3405,12 @@
                         cursor: 'not-allowed',
                         border: '1px solid rgba(220,38,38,.3)'
                     },
-                    disabled: true,
+                    disabled: true
                 },
             ];
-
-            // Default — sebelum semua periode (sebelum 6 April)
             const defaultPhase = {
                 href: null,
-                label: '🕐 Belum Dibuka',
+                label: 'Belum Dibuka',
                 style: {
                     background: 'rgba(255,255,255,.05)',
                     color: 'var(--muted)',
@@ -3210,24 +3418,19 @@
                     cursor: 'not-allowed',
                     border: '1px solid var(--border)'
                 },
-                disabled: true,
+                disabled: true
             };
 
             function applyPhase(phase) {
-                // Teks
                 btn.textContent = phase.label;
-
-                // Style
                 Object.assign(btn.style, {
                     background: '',
                     color: '#fff',
                     boxShadow: '',
                     cursor: 'pointer',
                     border: 'none',
-                    ...phase.style,
+                    ...phase.style
                 });
-
-                // Link & klik
                 if (phase.disabled) {
                     btn.removeAttribute('href');
                     btn.style.pointerEvents = 'none';
@@ -3241,16 +3444,11 @@
 
             function update() {
                 const now = Date.now();
-                const active = phases.find(p =>
-                    now >= new Date(p.start).getTime() &&
-                    now <= new Date(p.end).getTime()
-                );
+                const active = phases.find(p => now >= new Date(p.start).getTime() && now <= new Date(p.end).getTime());
                 applyPhase(active || defaultPhase);
             }
-
-            // Jalankan langsung & perbarui tiap menit
             update();
-            setInterval(update, 60_000);
+            setInterval(update, 60000);
         })();
     </script>
 </body>

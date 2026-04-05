@@ -284,8 +284,13 @@ vite.config.js
 
 ## DASHBOARD JALUR PRESTASI
 ### WIDGET
-- Jumlah Pendaftar Semua Jalur -> (Kecualikan Klik)
-- Jumlah Pendaftar Jalur Prestasi -> (Kecualikan Klik)
+- Jumlah Pendaftar Semua Jalur -> (Kecualikan Klik untuk calon_siswa)
+- Jumlah Pendaftar Jalur Prestasi -> (Kecualikan Klik untuk calon_siswa)
+- Jumlah Pendaftar Jalur Afirmasi -> (Kecualikan Klik untuk calon_siswa)
 - Status Formulir Pendaftaran -> Jika Belum Mengisi Formulir (Klik -> Masuk ke /dashboard/formulir/create)
-- Status Formulir Prestasi -> ()
+- Status Formulir Pendaftaran -> Jika Sudah Mengisi Formulir -> Status Formulir [Berkas Tidak Lengkap, Ditolak, Diproses, ]  (Klik -> Masuk ke /dashboard/formulir/update) -> Jika Sudah Mengisi -> Status Formulir [Disetujui] -> (Kecualikan Klik untuk calon_siswa)
+- Status Formulir Prestasi -> Jika Belum Mengisi Formulir Prestasi -> (Klik -> Masuk ke /dashboard/formulir-prestasis/create) -> Jika Sudah Mengisi Formulir Prestasi -> (Klik -> Masuk ke /dashboard/formulir-prestasis)
+- Status Formulir Prestasi -> (Sembunyikan untuk calon_siswa Jalur Afirmasi)
 - Status Pendaftaran -> (Kecualikan Klik) -> Munculkan Hanya Pada Tanggal Pengumuman
+- Print Formulir -> Munculkan Hanya Ketika Status Formulir ['Berkas Tidak Lengkap', 'Disetujui', 'Ditolak']
+- Print SKL -> Munculkan Hanya Ketika Status Pendaftaran [ 'Tidak Diterima', 'Diterima', 'Diterima Di Kelas Reguler', 'Diterima Di Kelas Unggulan'] -> dan Dalam Waktu Setelah Pengumuman 
